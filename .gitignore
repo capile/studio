@@ -3,3 +3,4 @@ app/data/*.less.css
 app/data/studio/index.db*
 app/log/*.log
 sites/*
+app/config/*

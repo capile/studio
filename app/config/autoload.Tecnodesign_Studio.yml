@@ -1,0 +1,4 @@
+---
+response:
+  script: [ /_/studio/z.js, /_/js/site.js ]
+  style: /_/css/site.less
