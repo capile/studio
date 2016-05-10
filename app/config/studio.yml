@@ -1,0 +1,19 @@
+---
+all:
+  tecnodesign:
+    apps-dir: .
+    cache-dir: ../sites/studio/data/cache
+    data-dir: ../sites/studio/data
+    log-dir: log
+    templates-dir: template
+    document-root: ../sites/studio/www
+    addons: []
+    routes:
+      /*:
+        class: Tecnodesign_Studio
+        method: run
+        additional-params: "true"
+  studio:
+    version: 1.1
+    connection: ~
+...

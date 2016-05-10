@@ -1,0 +1,18 @@
+[submodule "app/lib/vendor/Tecnodesign"]
+	path = app/lib/vendor/Tecnodesign
+	url = git@github.com:capile/Tecnodesign.git
+[submodule "app/lib/vendor/Spyc"]
+	path = app/lib/vendor/Spyc
+	url = https://github.com/mustangostang/spyc.git
+[submodule "app/lib/vendor/HTML_To_Markdown"]
+	path = app/lib/vendor/HTML_To_Markdown
+	url = git@github.com:nickcernis/html-to-markdown.git
+[submodule "app/lib/vendor/ParsedownExtra"]
+	path = app/lib/vendor/ParsedownExtra
+	url = git@github.com:tecnodz/parsedown-extra.git
+[submodule "app/lib/vendor/Parsedown"]
+	path = app/lib/vendor/Parsedown
+	url = git@github.com:erusev/parsedown.git
+[submodule "app/lib/vendor/lessc"]
+	path = app/lib/vendor/lessc
+	url = https://github.com/leafo/lessphp.git

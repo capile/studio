@@ -1,0 +1,5 @@
+#!/usr/bin/env php
+<?php
+$env='dev';
+define('TDZ_CLI', true);
+require_once 'studio.php';
