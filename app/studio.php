@@ -6,6 +6,7 @@ $sites=dirname(TDZ_APP_ROOT).'/sites/';
 $root=$sites.$site;
 $c=TDZ_APP_ROOT.'/config/studio.yml';
 if(isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST']) {
+	if(strpos($_SERVER['HTTP_HOST'], ':')) $_SERVER['HTTP_HOST'] = substr($_SERVER['HTTP_HOST'], 0, strpos($_SERVER['HTTP_HOST'], ':'));
 	if(is_dir($h=$sites.$_SERVER['HTTP_HOST'])) {
 		$root = realpath($h);
 		$site = basename($root);
