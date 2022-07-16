@@ -1,0 +1,7 @@
+---
+all:
+  model: Tecnodesign_Studio_Group
+  options:
+    list-parent: i
+    priority: 20
+    index: true

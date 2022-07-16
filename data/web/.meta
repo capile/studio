@@ -1,0 +1,7 @@
+---
+title: Studio Documentation
+#script: 
+#  docs: [ /_/js/docs.js ]
+style:
+  site: [ /_/css/site.less ]
+languages: [ en ]

@@ -1,0 +1,55 @@
+---
+listResult: Há apenas um registro disponível.
+listSearchResult: Há apenas um registro em %s que atende à consulta por %s.
+listSearchResults: Há %s registros em %s que atendem à consulta por %s.
+listResults: Há %s registros disponíveis.
+listCounter: Exibindo de %s até %s.
+listNoResults: Não há registros disponíveis.
+listNoSearchResults: Não há registros disponíveis para esta consulta. Experimente outros parâmetros.
+previewNoResult: Esse registro não está disponível.
+newSuccess: Registro criado com sucesso.
+updateSuccess: Atualização bem-sucedida!
+createSuccess: Registro criado com sucesso.
+deleteSuccess: Eliminado.
+updateError: Não foi possível atualizar. Verifique as mensagens de erro e tente novamente.
+createError: Houve um erro e o registro não foi criado. Corrija se necessário e tente novamente.
+deleteError: "Problemas ao remover o registro, ele não foi removido."
+labelFilter: Refinar listagem
+labelActions: Ações
+labelNew: Criar
+labelPreview: Visualizar
+labelUpdate: Editar
+labelPublish: Publicar
+labelDelete: Remover
+labelList: Consultar
+labelReport: Relatório
+Search: Consultar
+buttonNew: Criar
+buttonUpdate: Atualizar
+buttonClose: Fechar
+Close: Fechar
+or: ou
+'Yes': Sim
+'No': Não
+Search options: Opções de consulta
+Search for: Consultar por
+Search at: Consultar em
+Pages: Páginas
+Files: Arquivos
+Articles: Artigos
+Contents: Conteúdos
+Feeds: Listas
+Site Resources: Recursos do site
+From: A partir de
+from: a partir de
+To: Até
+to: até
+Untitled: Sem título
+API Client Credentials: Credenciais de API cliente
+Interfaces: APIs
+API Connectors: Conectores de API
+Welcome to Studio CMS: Bem-vindo ao Studio CMS
+Configuration: Configurações
+Schema: Estruturas de dados
+Authentication Tokens: Tokens de Autenticação
+API Servers: Provedores de API

@@ -1,0 +1,19 @@
+---
+Sign in: "Entrar"
+Account: "Conta"
+Username: "Apelido"
+Password: "Senha"
+'&#8592; previous': '← anterior'
+'next &#8594;': 'próxima →'
+last: última
+first: primeira
+Clear selection: Limpar seleção
+Select all: Selecionar todos
+Object: Objeto
+Array: Lista
+String: Texto
+Number: Número
+Date: Data
+Datetime: Data e Hora
+Integer: Número Inteiro
+Boolean: Sim/Não

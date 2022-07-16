@@ -1,0 +1,12 @@
+---
+all:
+  model: Studio\Model\Users
+  options:
+    list-parent: site
+    priority: 40
+    index: true
+    scope:
+      list:
+        - username
+        - name
+        - updated

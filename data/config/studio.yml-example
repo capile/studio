@@ -1,0 +1,67 @@
+---
+all:
+  studio:
+    version: 2.5
+    connection: studio
+    enable_interfaces: true
+    enable_interface_content: true
+    enable_interface_credential: true
+    enable_interface_index: true
+    enable_interface_entry: true
+    enable_interface_content: true
+    credential:
+      # basic privilege: is overriden by role/object-specific calls
+      all: ~
+
+      # who is eligible to view the website. This directive is overriden by the next two directives
+      preview: ~
+      # only authorized users may preview unpublished content
+      previewUnpublished: [ Administrator, Developer, Editor, Author ]
+      # everyone may view published content
+      previewPublished: ~
+
+      new: [ Developer, Editor, Author ]
+      # only developers may add the "php" Content type. Note that the most specific
+      # credential will be used. The cascading in this case would be:
+      # newContentTypePhp > newContent(un)Published > newContent > newEntry(un)Published > newEntry > new(un)Published > new > all
+      newContentTypePhp: [ Developer ]
+      # Template are content slots without any associated Entry
+      newTemplate: [ Developer ]
+      # only admins may add new credentials
+      newPermission: ~
+
+      edit: [ Administrator, Developer, Editor, Author ]
+      # Template are content slots without any associated Entry
+      editTemplate: [ Developer ]
+      editContentTypePhp: [ Developer ]
+
+      delete: [ Administrator, Developer, Editor ]
+
+      publish: [ Administrator, Editor ]
+      # Authors may only publish content (and not the entry)
+      # publishContent: [ Administrator, Editor, Author ]
+
+      # only editors may unpublish one entry/content
+      # publishEntryPublished: [ Administrator, Editor ]
+      # publishContentPublished: [ Administrator, Editor ]
+
+      # CMS UI credentials
+      search: [ Administrator, Developer, Editor, Author ]
+  app:
+    export:
+      Tecnodesign_Studio:
+        cliInterface: true
+        webInterface: true
+        connection: studio
+        index: studio
+      tdz:
+        log: 2
+        database:
+          studio:
+            dsn: sqlite:data/studio.db
+    controller-options:
+      class: Tecnodesign_Studio
+      static: true
+      additional-params: true
+      layout: layout
+    default-route: run

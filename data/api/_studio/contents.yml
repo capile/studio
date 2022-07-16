@@ -1,0 +1,94 @@
+---
+all:
+  title: '*Contents'
+  model: Studio\Model\Contents
+  prepare: prepareContentTypes
+  actions:
+    report: false
+    publish: false
+  index: true
+  options:
+    list-parent: site
+    priority: 1010
+    #redirect-by-property:
+    #  entry:
+    #    "*":
+    #      action: [ preview ]
+    #      interface: pages
+    #      key: entry
+    scope:
+      search:
+        - id
+        - entry
+      preview:
+        - "scope::c"
+        - "scope::_e"
+      #new:
+      #  - "scope::e"
+      update:
+        - "scope::c"
+      new:
+        __default:
+          fieldset: '*New Content'
+        '*Content Type':
+            bind: content_type
+            class: i1s2
+        '*Location':
+          bind: slot
+          type: select
+          class: i1s4
+          choices: choicesSlot
+        '*Order':
+          bind: position
+          type: number
+          class: i1s4
+      _e:
+        __default:
+          fieldset: '*Page information'
+        '*Page':
+            bind: entry
+            choices: Tecnodesign_Studio_Page
+            format: select
+            class: i1s2
+            attributes:
+              data-datalist-api: /_studio/page/q?envelope=false&scope=choices 
+        '*Content Type':
+            bind: content_type
+            class: i1s2
+      e:
+        __default:
+          fieldset: '*Page information'
+        '*Page':
+            bind: entry
+            choices: Studio\Model\Page
+            format: search
+            class: i1s2
+            attributes:
+              data-datalist-api: /_studio/page/q?envelope=false&scope=choices 
+        '*Content Type':
+            bind: content_type
+            class: i1s2
+        '*Location':
+          bind: slot
+          type: select
+          class: i1s2
+          choices: choicesSlot
+        '*Order':
+          bind: position
+          type: number
+          class: i1s2
+      c:
+        __default:
+          fieldset: '*Content'
+        'Content':
+          bind: content
+          #class: ih20
+        '*Location':
+          bind: slot
+          type: select
+          class: i1s2
+          choices: choicesSlot
+        '*Order':
+          bind: position
+          type: number
+          class: i1s2

@@ -1,0 +1,4 @@
+#!/usr/bin/env php
+<?php
+define('S_CLI', true);
+require_once 'app.php';

@@ -1,0 +1,81 @@
+---
+all:
+  title: "*Interfaces"
+  model: Studio\Model\Interfaces
+  actions:
+    import:
+      action: executeMethod
+      position: 99
+      identified: false
+      batch: false
+      query: true
+      additional-params: true
+  key: id
+  #search:
+  #  type: server
+  options:
+    priority: 1009
+    index: true
+    scope:
+      uid:
+        - id
+      list:
+        - id
+        - title
+        - indexed
+      preview:
+        - scope::m
+        - scope::s
+      new:
+        - scope::n
+        - scope::s
+      import:
+        __default:
+          fieldset: "*Connect to API"
+          class: i1s2
+        "*Schema Source URL":
+          bind: schema_source
+          format: url
+          required: true
+        "*API Type":
+          bind: _schema_source_type
+          choices:
+            openapi: OpenAPI
+            SCIM: SCIM
+            swagger: Swagger
+          format: select
+          required: true
+        "*ID Prefix": id
+        "*Connection":
+          bind: connection
+          format: select
+          choices: choicesConnection
+      n:
+        __default:
+          type: text
+          fieldset: Interface Definition
+        "*ID": id
+        "*Title": title
+        "*Class Model": model
+        "*Connection": connection
+        "*Endpoint (Table/API base)": source
+        "*Indexing Interval": index_interval
+      m:
+        __default:
+          type: text
+          fieldset: Interface Definition
+        "*Title": title
+        "*Class Model": model
+        "*Connection": connection
+        "*Endpoint (Table/API base)": source
+        "*Indexing Interval": index_interval
+      s:
+        __default:
+          type: text
+          fieldset: Schema
+        "*Source": schema_source
+        "*Schema (overlay)":
+          bind: schema_data
+          format: textarea
+          class: i1h10
+

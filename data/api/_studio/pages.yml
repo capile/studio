@@ -1,0 +1,105 @@
+---
+all:
+  title: '*Pages'
+  model: Studio\Model\Entries
+  search:
+    type: page
+  actions:
+    sitemap:
+      position: ~
+      identified: false
+      batch: false
+      query: true
+      additional-params: true
+      action: executeMethod
+  options:
+    priority: 1001
+    list-parent: site
+    index: true
+    group-by: id
+    order:
+      '${greatest}(`updated`,`Contents.updated`)': desc
+    scope:
+      review:
+        '*Title': title
+        URL: link
+        '*Summary': summary
+        '*Last Modified': '${greatest}(`updated`,`Contents.updated`) updated'
+      search:
+        q:
+          '*Title': title
+          '*Summary': summary
+          URL: link
+          '*Tag': Tag.slug
+        URL: link
+        '*Last modified': 
+          bind: '${greatest}(`updated`,`Contents.updated`)'
+          format: datetime
+        '*Type': "substring_index(`type`,'/',1)"
+        '*Tag': Tag.slug
+      preview:
+        - scope::page
+        - scope::_meta
+        - scope::_content
+        - scope::credentials
+      new:
+        - scope::page
+        - scope::credentials
+        - format: hidden
+          bind: type
+          value: page
+          label: ~
+      update:
+        - scope::page
+        - scope::credentials
+      choices:
+        label: title
+        value: id
+      credentials:
+        '*Credentials':
+          bind: Permission
+          format: form
+          fieldset: '*Page Credentials'
+          scope:
+            '*Role': role
+            '*Credentials': credentials
+      page:
+        __default:
+          fieldset: '*Properties'
+          class: i1s2
+        '*Title': title
+        '*Link': link
+        '*Summary':
+          bind: summary
+          class: ih5
+        '*Published': published
+        '*Tag': _tags
+        '*Template': master
+        '*Sitemap':
+          bind: Related
+          format: form
+          scope:
+            parent:
+              label: ~
+              bind: parent
+              format: select
+              choices: Tecnodesign_Studio_Page
+              attributes:
+                data-datalist-api: /_studio/page/sitemap?envelope=false
+                data-datalist-target: position
+            position:
+              label: ~
+              format: hidden
+      _meta:
+        __default:
+          class: i1s4
+        '*Created': created
+        '*Updated': updated
+        '*Version': version
+        '*Source': source
+      _content:
+        '*Contents':
+          fieldset: '*Contents'
+          bind: contents
+          type: form
+          scope: studio-content

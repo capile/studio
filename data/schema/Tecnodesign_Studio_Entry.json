@@ -1,0 +1,5 @@
+{
+    "ref": "Studio\\Model\\Entries",
+    "className": "Tecnodesign_Studio_Entry",
+    "tableName": "studio_entries"
+}

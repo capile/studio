@@ -1,0 +1,42 @@
+---
+Entry: Artigo
+Page: Página
+Slot: Lacuna
+Content Type: Tipo de conteúdo
+Content: Conteúdo
+Position: Posição
+Published: Publicado em
+Version: Versão
+Created: Criado em
+Updated: Atualizado em
+Expired: Removido em
+Id: ID
+Location: Localização
+Order: Posição
+Attributes: Atributos
+Entry URL: URL do artigo
+Metadata: Metadados
+Feed: Lista de artigos
+Number of items: Quantidade de artigos
+Items per page: Artigos por página
+Options: Opções
+Related: Incluir artigos relacionados
+Include link to page: Incluir link para página
+Preview: Habilitar visualização
+Enable search: Habilitar busca
+Disable page metadata: Omitir metadados na página
+Script: Arquivo de programa
+Script Code: Código de programa
+Title: Título
+Subtitle: Subtítulo
+Image: Imagem
+Template: Modelo
+Number of items: Número de artigos
+Items per page: Artigos por página
+Source: Origem
+Media Format: Formato
+Link Target: Destino do link
+Markdown Text: Texto em Markdown
+Media file: Arquivo multimídia
+PHP script: Programa em PHP
+Plain text: Texto puro

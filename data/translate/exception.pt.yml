@@ -1,0 +1,36 @@
+---
+Not enough privileges: "Acesso restrito"
+Looks like you don't have enough credentials to access this page. Please try logging in or accessing it with a different username.: "Parece que você não possui as credenciais para acessar esta página. Por favor experimente se conectar ou acessar com uma credencial diferente."
+Looks like you don't have enough credentials to access this page. Please try signing in or accessing it with a different username.: "Parece que você não possui as credenciais para acessar esta página. Por favor experimente se conectar ou acessar com uma credencial diferente."
+Oops, where is this page?: "Ôpa, onde foi parar esta página?"
+We haven't found the page you requested. Are you sure the address is correct?: "Não encontramos a página que você requisitou. Você tem certeza de que o endereço está correto?"
+"Could not connect to database. Reasons are: %s": "Não foi possível se conectar ao banco de dados. Os possíveis motivos são: %s"
+This is not a valid value.: Este valor não é válido.
+'This is not a valid value for "%s".': Este não é um valor válido para "%s".
+The supplied code is invalid.: O código informado não é válido.
+The supplied code is expired or doesn't exist.: O código informado expirou ou não existe. 
+You must supply a valid code.: Você deve fornecer um código válido.
+Is mandatory and should not be blank.: É obrigatório e não deve ser vazio.
+'"%s" is mandatory and should not be blank.': '"%s" é obrigatório e não deve ser vazio.'
+Should have between %s and %s characters.: Deve ter entre %s e %s caracteres.
+Should be smaller than %s characters.: Deve ter menos que %s caracteres.
+Should be greater than %s characters.: Deve ter pelo menos %s caracteres.
+Should be between %s and %s.: Deve ser entre %s e %s.
+The supplied code is expired or doesn't exist.: O código informado expirou ou não existe.
+'Relation "%s" is not available at %s.': 'O relacionamento "%s" não está disponível em %s.'
+"This is not a valid e-mail address.": Este endereço de e-mail não é válido.
+"%s is mandatory and should not be blank.": '%s é obrigatório e não deve estar em branco.'
+'Column "%s" is not available at %s.': 'Coluna "%s" não está disponível em %s.'
+"This is not a valid choice.": Esta não é uma escolha válida.
+"Could not save %s.": 'Não foi possível salvar %s.'
+"Issues are": Erros
+"Could not insert new record at %s.": 'Não foi possível inserir novo registro no %s.'
+"%s should not be null.": '%s não deve ser nulo.'
+"You're sending a lot of requests to this page and risks reaching the rate limit for it.":"Você está enviando muitas solicitações para esta página e pode vir a atingir o limite de envios para ela."
+"You've sent more requests than allowed in a short period of time. Please wait some time before retrying to send this request.": "Você enviou mais solicitações do que o permitido para esta página em um curto período de tempo. Por favor aguarde uns instantes antes de enviar uma nova solicitação."
+"This request is expired or invalid. Please try sending this request again.": "Esta solicitação expirou ou não é válida. Por favor tente encaminhá-la novamente."
+"You need to confirm you're not a robot to continue.": "Você precisa confirmar que não é um robô para continuar."
+"There's already a page or file with this link.": "Já existe uma página ou arquivo com esta URL."
+"The client credentials are invalid": "As credenciais de autenticação não são válidas"
+"We could not authenticate your request": "Não pudemos autenticar a sua requisição"
+"Authentication is required, and we could not authenticate your request. Please try signing in.": "É necessário se autenticar para acessar esta página. Por favor experimente se conectar."
