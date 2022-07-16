@@ -1,15 +1,30 @@
-/*! Tecnodesign Z.Interface v2.5 | (c) 2021 Capile Tecnodesign <ti@tecnodz.com> */
+/*! capile/studio Api v1.0 | (c) 2022 Tecnodesign <ti@tecnodz.com> */
 (function()
 {
     "use strict";
-    var _is=false, _init, _cu='/', _i=0, _sel='.tdz-i[data-url]', _root=document, _base, _toLoadTimeout, _toLoad=[], _reload={}, _loading={}, _loadingTimeout=2000, _ids={}, _prop={}, _q=[], _last, _reStandalone=/\btdz-i-standalone\b/, _msgs=[];
+    var Z,
+        _is=false,
+        _init,
+        _cu='/',
+        _i=0,
+        _sel='.s-api-app[data-url]',
+        _root=document,
+        _base,
+        _toLoadTimeout,
+        _toLoad=[],
+        _reload={},
+        _loading={},
+        _loadingTimeout=2000,
+        _ids={},
+        _prop={},
+        _q=[],
+        _last,
+        _reStandalone=/\bs-api-standalone\b/,
+        _msgs=[];
 
     function startup(I)
     {
         /*jshint validthis: true */
-        if(!('Z' in window)) {
-            return setTimeout(startup, 100);
-        }
         //Z.debug('Interface.startup', I);
         if(!('loadInterface' in Z)) {
             Z.loadInterface = loadInterface;
@@ -36,13 +51,12 @@
         if(I.getAttribute('data-startup')) return;
         I.setAttribute('data-startup', '1');
 
-        var b=Z.parentNode(I, '.tdz-i-box[base-url]');;
+        var b=Z.parentNode(I, '.s-api-box[base-url]');;
         if(b) {
             setRoot(b);
         }
         b = null;
         if(_init) Z.init(I);
-
         getBase();
         var base=I.getAttribute('data-base-url');
         if(!base && _base) {
@@ -50,10 +64,10 @@
         }
 
         // activate checkbox and radio buttons in lists
-        var active=(_reStandalone.test(I.className)), ui=(I.className.search(/\btdz-i\b/)>-1)?(I.getAttribute('data-url')):(null), L=I.querySelector('.tdz-i-list');
+        var active=(_reStandalone.test(I.className)), ui=(I.className.search(/\bs-api-app\b/)>-1)?(I.getAttribute('data-url')):(null), L=I.querySelector('.s-api-list');
         if(L) {
             active = true;
-            l=L.querySelectorAll('input[type=checkbox][value],.tdz-i-list input[type=radio][value]');
+            l=L.querySelectorAll('input[type=checkbox][value],.s-api-list input[type=radio][value]');
             i=l.length;
             while(i-- > 0) if(!l[i].getAttribute('data-no-callback')) Z.bind(l[i], 'change', updateInterfaceDelayed);
             l=null;
@@ -61,7 +75,7 @@
 
         if(_reStandalone.test(I.className)) return true;
 
-        var B=Z.parentNode(I, '.tdz-i-body');
+        var B=Z.parentNode(I, '.s-api-body');
 
         if(B && (b=B.querySelector(':scope > .z-i-nav')) && !b.getAttribute('data-startup')) {
             b.setAttribute('data-startup', '1');
@@ -78,7 +92,7 @@
         l=null;
 
         // bind forms
-        l=I.querySelectorAll('form[action^="'+base+'"],.tdz-i-preview form');
+        l=I.querySelectorAll('form[action^="'+base+'"],.s-api-preview form');
         i=l.length;
         while(i-- > 0) Z.bind(l[i], 'submit', (l[i].parentNode.getAttribute('data-action-schema')) ?loadAction :loadInterface);
         l=null;
@@ -102,11 +116,11 @@
                 bu;
             while(j-- > 0) {
                 bu=M[j].getAttribute('data-action-scope');
-                if(M[j].querySelector('.tdz-i') || !bu || bu.substr(0, 1)=='_') continue;
+                if(M[j].querySelector('.s-api-app') || !bu || bu.substr(0, 1)=='_') continue;
                 M[j].removeAttribute('data-action-scope');
                 if(M[j].nodeName.toLowerCase()=='button') {
                     M[j].setAttribute('data-url', u+'?scope='+bu+iurl);
-                    M[j].className = ((M[j].className)?(M[j].className+' '):(''))+'z-i--close';
+                    M[j].className = ((M[j].className)?(M[j].className+' '):(''))+'s-api--close';
                     if(('form' in M[j])) {
                         Z.bind(M[j], 'click', loadAction);
                         if(M[j].form) {
@@ -122,7 +136,7 @@
                 } else {
                     bt= M[j];
                 }
-                Z.element.call(bt, {e:'a',a:{href:u+'?scope='+bu+iurl,'class':'tdz-i-button z-i--'+k},t:{click:loadAction}});
+                Z.element.call(bt, {e:'a',a:{href:u+'?scope='+bu+iurl,'class':'s-button s-api--'+k},t:{click:loadAction}});
                 bt=null;
             }
         }
@@ -133,14 +147,13 @@
             while(j-- > 0) {
                 N = document.createElement('a');
                 N.setAttribute('href', u+'?item='+M[j].getAttribute('data-action-item'));
-                N.className = 'tdz-i-button tdz-i--'+k;
+                N.className = 's-button s-i--'+k;
                 Z.bind(N, 'click', loadAction);
                 Z.bind(M[j], 'dblclick', loadAction);
                 M[j].appendChild(N);
             }
         }
         */
-
         // only full interfaces go beyond this point
         if(!ui) {
             return false;
@@ -151,14 +164,13 @@
         } else {
             updateInterface();
         }
-
         if(_noH) {
             if(_cu==I.getAttribute('data-url')) {
                 _is = true;
             }
         }
         if(!_toLoadTimeout) activeInterface(I);
-        l=_root.querySelectorAll('.tdz-i-header .tdz-i-title');
+        l=_root.querySelectorAll('.s-api-header .s-api-title');
         i=l.length;
         while(i-- > 0) {
             if(!l[i].getAttribute('data-i')) {
@@ -174,7 +186,7 @@
             else return;
         }
 
-        l=_root.querySelectorAll('.tdz-i-header .tdz-i-title.tdz-i-off');
+        l=_root.querySelectorAll('.s-api-header .s-api-title.s-i-off');
         i=l.length;
         /*
         while(i-- > 0) {
@@ -182,7 +194,6 @@
             l[i].parentNode.removeChild(l[i]);
         }
         */
-
         parseHash(); // sets _H
 
         var h;
@@ -194,13 +205,11 @@
                 h=_H[i];
                 if(h.substr(0,1)=='?') h=_base+h;
                 else if(h.substr(0,1)!='/') h = _base+'/'+h;
-                if(_root.querySelector('.tdz-i[data-url="'+h+'"]')) {
+                if(_root.querySelector('.s-api-app[data-url="'+h+'"]')) {
                     _H.splice(i,1);
                 }
             }
         }
-
-
         if(!_is && _H.length>0) {
             var hu,hq;
             _noH = true;
@@ -220,19 +229,21 @@
             setHashLink();
             _is = true;
         }
+
         _last = new Date().getTime();
-        if(I.className.search(/\nbtdz-i-active\b/)>-1) reHash();
+        //if(I.className.search(/\bs-api-active\b/)>-1) reHash();
 
         if(I.getAttribute('data-ui') || (I.getAttribute('data-url') in _prop)) {
             metaInterface(I);
         }
+        return;
     }
 
     function setRoot(el)
     {
         var o=_root, b=el.getAttribute('base-url');
         if(!b) {
-            if(el=Z.parentNode(el, '.tdz-i-box[base-url]')) {
+            if(el=Z.parentNode(el, '.s-api-box[base-url]')) {
                 b=el.getAttribute('base-url');
             } else {
                 return false;
@@ -251,7 +262,7 @@
     {
         if(!_base) {
             if(!_root) {
-                _root = document.querySelector('.tdz-i-box[base-url]');
+                _root = document.querySelector('.s-api-box[base-url]');
                 if(_root) _base = _root.getAttribute('base-url');
                 else _root = document;
             }
@@ -280,7 +291,7 @@
 
         parseHash();
         // removes any interface that was unloaded by using backspace or messing with the hash
-        var i, L=_root.querySelectorAll('.tdz-i-header .tdz-i-title[data-url]'), h, U={}, I, last;
+        var i, L=_root.querySelectorAll('.s-api-header .s-api-title[data-url]'), h, U={}, I, last;
         for(i=0;i<_H.length;i++) {
             h=_H[i];
             if(h.substr(0,1)=='?') h=_base+h;
@@ -310,7 +321,7 @@
             if(h in U) {
                 delete(U[h]);
             } else {
-                I = L[i].parentNode.parentNode.querySelector('.tdz-i[data-url="'+h+'"]');
+                I = L[i].parentNode.parentNode.querySelector('.s-api-app[data-url="'+h+'"]');
                 if(I) {
                     ni--;
                     if(!ni && _H.length==0) break;
@@ -328,7 +339,7 @@
         // checks if active interface is correct
         /*
         if(_H.length>1) {
-            if(!_root.querySelector('.tdz-i-box .tdz-i-title.tdz-i-title-active[data-url="'+last+'"]')) {
+            if(!_root.querySelector('.s-api-box .s-api-title.s-api-title-active[data-url="'+last+'"]')) {
                 _reHash = false;
                 activeInterface(last);
                 _reHash = true;
@@ -378,7 +389,7 @@
         }
 
         if(_H.length==1) {
-            var I = _root.querySelector('.tdz-i-active[data-url]'), ch, p;
+            var I = _root.querySelector('.s-api-active[data-url]'), ch, p;
             if(I) {
                 p=I.getAttribute('data-url');
                 if(I && p==window.location.pathname) {
@@ -405,17 +416,17 @@
     {
         if(!_reHash) return;
         //Z.debug('reHash');
-        var l=_root.querySelectorAll('.tdz-i-header .tdz-i-title[data-url]'), i=0,a,h,I, qs;
+        var l=_root.querySelectorAll('.s-api-header .s-api-title[data-url]'), i=0,a,h,I, qs;
         _H=[];
         for(i=0;i<l.length;i++) {
             h=l[i].getAttribute('data-url');
             if(!h) continue;
-            if((I=_root.querySelector('.tdz-i-body .tdz-i[data-url="'+h+'"][data-qs]'))) {
+            if((I=_root.querySelector('.s-api-body .s-api-app[data-url="'+h+'"][data-qs]'))) {
                 qs = I.getAttribute('data-qs');
                 if(qs) h+='?'+I.getAttribute('data-qs');
             }
             if(h.substr(0,_base.length+1)==_base+'/') h=h.substr(_base.length+1);
-            if(l[i].className.indexOf(/\btdz-i-title-active\b/)>-1)a=h;
+            if(l[i].className.indexOf(/\bs-api-title-active\b/)>-1)a=h;
             else _H.push(h);
         }
         if(a) _H.push(a);
@@ -430,7 +441,7 @@
             var pu=_H[i].replace(/\?.*/, '');
             if(pu.substr(0,1)!='/') pu=_base+'/'+pu;
 
-            o=_root.querySelector('a.tdz-i-title[data-url="'+pu+'"]');
+            o=_root.querySelector('a.s-api-title[data-url="'+pu+'"]');
             if(o) {
                 hr = o.getAttribute('href');
                 if(hr!=_H[i]) o.setAttribute('href', (_H[i].substr(0,1)!='/')?(_base+'/'+_H[i]):(_H[i]));
@@ -442,9 +453,9 @@
     {
         //Z.debug('unloadInterface', I);
         var u=I.getAttribute('data-url'),
-            b=Z.parentNode(I, '.tdz-i-box');
+            b=Z.parentNode(I, '.s-api-box');
         if(!b) b=document;
-        var T=b.querySelector('.tdz-i-header .tdz-i-title[data-url="'+u+'"]');
+        var T=b.querySelector('.s-api-header .s-api-title[data-url="'+u+'"]');
         if(T) {
             T.parentNode.removeChild(T);
             T=null;
@@ -459,8 +470,8 @@
         }
        Z.event(I, 'unloadInterface');
        I=null;
-        if(!(I=b.querySelector('.tdz-i-active[data-url]'))) {
-            if(!B) B=b.querySelector('.tdz-i[data-url]');
+        if(!(I=b.querySelector('.s-api-active[data-url]'))) {
+            if(!B) B=b.querySelector('.s-api-app[data-url]');
             activeInterface(B);
         }
         b=null;
@@ -468,13 +479,13 @@
         I=null;
         if(arguments.length<2 || arguments[1]) reHash();
 
-        if(_root.querySelector('.tdz-i-box .tdz-i-header[data-overflow]')) setTimeout(function() { headerOverflow(true); }, 200);       
+        if(_root.querySelector('.s-api-box .s-api-header[data-overflow]')) setTimeout(function() { headerOverflow(true); }, 200);       
     }
 
     function loadInterface(e, delayed)
     {
         /*jshint validthis: true */
-        //Z.debug('loadInterface', e);
+        Z.debug('loadInterface', e, this);
         _init = true;
         var I, m=false, t, q, urls=[], l, i,u,data,h={'z-action':'Interface'}, ft, method='get',nav=false;
         if(Object.prototype.toString.call(e)=='[object Array]') {
@@ -484,12 +495,12 @@
         } else {
             if(e) Z.stopEvent(e);
             if(typeof(this)=='undefined') return false;
-            if((I=Z.parentNode(this, '.tdz-i'))) {
-            } else if ((I=Z.parentNode(this, '.tdz-i-title[data-url]'))) {
-                I = _root.querySelector('.tdz-i[data-url="'+I.getAttribute('data-url')+'"]');
+            if((I=Z.parentNode(this, '.s-api-app'))) {
+            } else if ((I=Z.parentNode(this, '.s-api-title[data-url]'))) {
+                I = _root.querySelector('.s-api-app[data-url="'+I.getAttribute('data-url')+'"]');
                 if(!I) return true;
             } else if(!Z.parentNode(this, '.z-i-nav')) return true;
-            if(this.className.search(/\bz-i--close\b/)>-1) {
+            if(this.className.search(/\bs-api--close\b/)>-1) {
                 if((u=this.getAttribute('href'))) {
                     activeInterface(u);
                 }
@@ -555,13 +566,13 @@
 
                     // set index interface to be reloaded
                     var iu = u.replace(/\/[^/]+\/[^/]+(\?.*)$/, ''),
-                        ib = Z.parentNode(this, '.tdz-i-box'),
-                        ih = (ib)?(ib.querySelector('.tdz-i-header .z-i--list[data-url^="'+iu+'"]')):(null);
+                        ib = Z.parentNode(this, '.s-api-box'),
+                        ih = (ib)?(ib.querySelector('.s-api-header .s-api--list[data-url^="'+iu+'"]')):(null);
                     if(ih) {
                         _reload[ih.getAttribute('data-url')]=true;
                     }
                     // set z-interface header to the tab interface
-                    if(ib=Z.parentNode(this, '.tdz-i[data-url]')) {
+                    if(ib=Z.parentNode(this, '.s-api-app[data-url]')) {
                         iu = ib.getAttribute('data-url');
                         if(ib.getAttribute('data-qs')) iu += '?'+ib.getAttribute('data-qs');
                         h['z-interface'] = iu;
@@ -586,24 +597,23 @@
                 o=I;
                 B=I;
             } else {
-                o=_root.querySelector('.tdz-i[data-url="'+url+'"]');
+                o=_root.querySelector('.s-api-app[data-url="'+url+'"]');
                 if(!o) {
-                    o=Z.element.call(_root.querySelector('.tdz-i-body'), {e:'div',a:{'class':'tdz-i tdz-i-off','data-url':url}});
+                    o=Z.element.call(_root.querySelector('.s-api-body'), {e:'div',a:{'class':'s-api-app s-api-off','data-url':url}});
                 }
-                if(!_root.querySelector('.tdz-i-title[data-url="'+url+'"]')) {
-                    if(!H) H = _root.querySelector('.tdz-i-box .tdz-i-header');
+                if(!_root.querySelector('.s-api-title[data-url="'+url+'"]')) {
+                    if(!H) H = _root.querySelector('.s-api-box .s-api-header');
                     if(H) {
-                        Z.element.call(H, {e:'a',a:{'class':'tdz-i-title tdz-i-off','data-url':url,href:urls[i]}});
+                        Z.element.call(H, {e:'a',a:{'class':'s-api-title s-api-off','data-url':url,href:urls[i]}});
                     }
                 }
-                B = Z.parentNode(o, '.tdz-i-body');
+                B = Z.parentNode(o, '.s-api-body');
             }
 
             if(delayed) {
                 _toLoad.push(urls[i]);
                 continue;
             }
-
             loading(url, true);
             Z.blur(B);
             //Z.trace('loadInterface: ajax request');
@@ -661,7 +671,7 @@
         var t=(new Date()).getTime(), u=(url) ?url.replace(/\?.*$/, '') :null;
         if(arguments.length==0) {
             for(var u in _loading) {
-                if(t-_loading[u]>_loadingTimeout) {
+                if(t-_loading[u]<_loadingTimeout) {
                     return true;
                 }
             }
@@ -688,7 +698,7 @@
             e.preventDefault();
 
             if(nn==='form') {
-                t=Z.node(Z.parentNode(this, '.tdz-i-scope-block'), this.parentNode);
+                t=Z.node(Z.parentNode(this, '.s-api-scope-block'), this.parentNode);
                 if(this.id) t.setAttribute('data-action-expects', 'form#'+Z.slug(this.id));
                 u=this.getAttribute('action');
 
@@ -706,7 +716,7 @@
                     }
                     if(!data) data = Z.formData(this);
 
-                    var pI=Z.parentNode(this, '.tdz-i[data-url]'), pu;
+                    var pI=Z.parentNode(this, '.s-api-app[data-url]'), pu;
                     if(pI) {
                         pu=pI.getAttribute('data-url');
                         if(pI.getAttribute('data-qs')) pu+='?'+pI.getAttribute('data-qs');
@@ -721,26 +731,26 @@
 
 
             } else if(nn=='button') {
-                t=Z.node(Z.parentNode(this.form, '.tdz-i-scope-block'), this.form.parentNode);
+                t=Z.node(Z.parentNode(this.form, '.s-api-scope-block'), this.form.parentNode);
                 u=this.getAttribute('data-url');
             } else if(this.getAttribute('data-action-item')) {
                 t=this;
                 u=this.children[this.children.length -1].getAttribute('href');
             } else {
-                t=Z.node(Z.parentNode(this.parentNode, '.tdz-i-scope-block'), this.parentNode);
+                t=Z.node(Z.parentNode(this.parentNode, '.s-api-scope-block'), this.parentNode);
                 var ss, sn;
                 if(this.href && (ss=this.href.match(/[\?\&](scope=[^\&]+)/)) && ss.length>0) {
                     sn = new RegExp('\b'+ss[1].replace('=', '-')+'\b');
                 }
                 if(!sn || t.className.search(sn)===false) {
-                    while(t && t.parentNode.className.search(/\btdz-i-scope-block\b/)>-1) {
+                    while(t && t.parentNode.className.search(/\bs-api-scope-block\b/)>-1) {
                         t=t.parentNode;
                         if(sn && t.className.search(sn)!==false) break;
                     }
                 }
                 u=this.getAttribute('href');
             }
-            var a=new Date().getTime(), I=Z.parentNode('.tdz-i[data-url].tdz-i-active');
+            var a=new Date().getTime(), I=Z.parentNode('.s-api-app[data-url].s-api-active');
             if(I) {
                 h['z-referer'] = I.getAttribute('data-url');
                 if(I.getAttribute('data-qs')) h['z-referer'] += '?'+ I.getAttribute('data-qs');
@@ -752,27 +762,25 @@
             Z.ajax(u, data, loadAction, interfaceError, 'html', t, h);
         } else {
             //Z.trace('loadAction: ajax response start');
-            var f = document.createElement('div'), pI=Z.parentNode(this, '.tdz-i'), S, i, expects=this.getAttribute('data-action-expects'), expectsUrl=this.getAttribute('data-action-expects-url');
+            var f = document.createElement('div'), pI=Z.parentNode(this, '.s-api-app'), S, i, expects=this.getAttribute('data-action-expects'), expectsUrl=this.getAttribute('data-action-expects-url');
             f.innerHTML = e;
 
             if(expects && !f.querySelector(expects)) {
                 return setInterface.apply(pI, arguments);
-            } else if(expectsUrl && !f.querySelector('.tdz-i[data-url="'+expectsUrl+'"]')) {
+            } else if(expectsUrl && !f.querySelector('.s-api-app[data-url="'+expectsUrl+'"]')) {
                 return setInterface.apply(pI, arguments);
             }
 
             runActions(f);
 
-
-
-            var I = f.querySelector('.tdz-i[data-url] .tdz-i-preview'), del;
-            if(!I) I = f.querySelector('.tdz-i[data-url] .tdz-i-container');
-            if(!I) I = f.querySelector('.tdz-i[data-url]');
+            var I = f.querySelector('.s-api-app[data-url] .s-api-preview'), del;
+            if(!I) I = f.querySelector('.s-api-app[data-url] .s-api-container');
+            if(!I) I = f.querySelector('.s-api-app[data-url]');
 
             if(I) {
 
                 if(pI) {
-                    S=pI.querySelectorAll('.z-i-summary .z-i-msg,.z-i-summary .tdz-i-msg,.tdz-i-msg[data-message],.z-i-msg[data-message]');
+                    S=pI.querySelectorAll('.s-api-summary .s-msg,.tdz-i-msg[data-message],.z-i-msg[data-message]');
                     i=S.length;
                     while(i--) {
                         del = S[i];
@@ -781,20 +789,20 @@
                     }
                 }
 
-                // get tdz-i only
+                // get s-api-app only
                 if(I.children.length==1) {
                     t=I.children[0];
-                    //while(t.children.length==1 && t.children[0].className.search(/\btdz-i-scope-block\b/)>-1) {
+                    //while(t.children.length==1 && t.children[0].className.search(/\bs-api-scope-block\b/)>-1) {
                     //    t=t.children[0];
                     //}
                     t.className=this.className;
-                    if(t.className.search(/\btdz-i-scope-block\b/)<0) {
-                        t.className+=' tdz-i-scope-block';
+                    if(t.className.search(/\bs-api-scope-block\b/)<0) {
+                        t.className+=' s-api-scope-block';
                     }
                     this.parentNode.replaceChild(t, this);
                 } else {
                     t=this.parentNode.insertBefore(document.createElement('div'), this);
-                    t.className='tdz-i-scope-block';
+                    t.className='s-api-scope-block';
                     this.parentNode.removeChild(this);
                     i=0;
                     while(i<I.children.length) {
@@ -805,7 +813,7 @@
                 if(expectsUrl) t.setAttribute('data-action-expects-url', expectsUrl);
             }
 
-            S=f.querySelectorAll('.z-i-summary .z-i-msg,.z-i-summary .tdz-i-msg');
+            S=f.querySelectorAll('.s-api-summary .s-msg');
             i=S.length;
             var rt=t;
             while(i--) {
@@ -838,7 +846,7 @@
                     qs = u.substr(u.indexOf('?')+1);
                     u=u.substr(0, u.indexOf('?'));
                 }
-                I = _root.querySelector('.tdz-i[data-url="'+u+'"]');
+                I = _root.querySelector('.s-api-app[data-url="'+u+'"]');
             } else {
                 if(I && ('stopPropagation' in I)) {
                     I.stopPropagation();
@@ -860,8 +868,8 @@
         }
         if(I) {
             u=I.getAttribute('data-url');
-            if(u) H = _root.querySelector('.tdz-i-title[data-url="'+u+'"]');
-            if(I==H) I = _root.querySelector('.tdz-i[data-url="'+u+'"]');
+            if(u) H = _root.querySelector('.s-api-title[data-url="'+u+'"]');
+            if(I==H) I = _root.querySelector('.s-api-app[data-url="'+u+'"]');
         }
         if(!I && !u) {
             // get u from hash?
@@ -871,21 +879,21 @@
             loadInterface((qs)?(u+'?'+qs):(u));
             return false;
         } else if(!_reStandalone.test(I.className)) {
-            if(!Z.isNode(Z.parentNode(I, '.tdz-i-body'))) {
+            if(!Z.isNode(Z.parentNode(I, '.s-api-body'))) {
                 //Z.debug('activeInterface(2): '+u);
                 loadInterface((qs)?(u+'?'+qs):(u));
                 return false;
             }
-            if(I.className.search(/\btdz-i-active\b/)<0) I.className += ' tdz-i-active';
-            if(H && H.className.search(/\btdz-i-off\b/)>-1) H.className = H.className.replace(/\s*\btdz-i-off\b/, '');
-            if(H && H.className.search(/\btdz-i-title-active\b/)<0) H.className += ' tdz-i-title-active';
+            if(I.className.search(/\bs-api-active\b/)<0) I.className += ' s-api-active';
+            if(H && H.className.search(/\bs-off\b/)>-1) H.className = H.className.replace(/\s*\bs-off\b/, '');
+            if(H && H.className.search(/\bs-api-title-active\b/)<0) H.className += ' s-api-title-active';
             if(_is) {
                 reHash();
             }
-            var R = _root.querySelectorAll('.tdz-i-title-active,.tdz-i-active'),i=R.length;
+            var R = _root.querySelectorAll('.s-api-title-active,.s-api-active'),i=R.length;
             while(i-- > 0) {
                 if(R[i]==H || R[i]==I) continue;
-                R[i].className = R[i].className.replace(/\btdz-i-(title-)?active\b\s*/g, '').trim();
+                R[i].className = R[i].className.replace(/\bs-api-(title-)?active\b\s*/g, '').trim();
             }
             var txt = Z.text(H);
             if(!txt) {
@@ -896,7 +904,7 @@
             if(txt && txt.trim()) document.title = txt;
         }
 
-        var N = Z.parentNode(I, '.tdz-i-body').querySelector(':scope > .z-i-nav'), nb;
+        var N = Z.parentNode(I, '.s-api-body').querySelector(':scope > .z-i-nav'), nb;
         if(N && (nb = N.getAttribute('data-base-url'))) {
             R=N.querySelectorAll('a.z-current[href]');
             i=R.length;
@@ -912,7 +920,7 @@
 
         updateInterface(I);
 
-        if(_root.querySelector('.tdz-i-box .tdz-i-header[data-overflow]')) headerOverflow(true);
+        if(_root.querySelector('.s-api-box .s-api-header[data-overflow]')) headerOverflow(true);
         if(I.style) I.removeAttribute('style');
         Z.resizeCallback();
 
@@ -922,12 +930,12 @@
     function headerOverflow(timeout)
     {
         // flow & reflow tabs
-        var He = _root.querySelector('.tdz-i-box .tdz-i-header[data-overflow]');
+        var He = _root.querySelector('.s-api-box .s-api-header[data-overflow]');
         if(!He) return;
 
-        var box=Z.parentNode(He, '.tdz-i-box'),
-            Hs = box.querySelectorAll('.tdz-i-header > .tdz-i-title'),
-            H =  box.querySelector('.tdz-i-header > .tdz-i-title.tdz-i-title-active'),
+        var box=Z.parentNode(He, '.s-api-box'),
+            Hs = box.querySelectorAll('.s-api-header > .s-api-title'),
+            H =  box.querySelector('.s-api-header > .s-api-title.s-api-title-active'),
             ew, fw=0, ws={}, i, wmax, hw, el;
 
         i=Hs.length;
@@ -969,7 +977,7 @@
 
     function checkMessages(I)
     {
-        var S=(!I || !Z.isNode(I))?(_root.querySelector('.tdz-i-active .tdz-i-summary')):(I.querySelector('.tdz-i-summary'));
+        var S=(!I || !Z.isNode(I))?(_root.querySelector('.s-api-active .s-api-summary')):(I.querySelector('.s-api-summary'));
         if(!S) return;
         var i=_msgs.length, now=(new Date()).getTime(), next=0, L=S.querySelectorAll(':scope > .z-i-msg[data-created],:scope > .z-i-msg'), timeout=5000, last=(L.length>0)?(L[L.length-1]):(null), el;
         while(i--) {
@@ -981,7 +989,7 @@
                 }
                 _msgs[i].n=null;
                 _msgs.splice(i, 1);
-            } else if(Z.parentNode(_msgs[i].n, '.tdz-i-summary')!=S) {
+            } else if(Z.parentNode(_msgs[i].n, '.s-api-summary')!=S) {
                 if(last) {
                     last = Z.element({e:'div',p:{className:'z-i-msg'},c:[_msgs[i].n]}, null, last);
                 } else {
@@ -1029,7 +1037,7 @@
             if(arguments.length>=4 && arguments[1]==200) {
                 c=parseResponse(c, arguments[3]);
             }
-            var f = document.createElement('div'), O=Z.node(this),box=(O)?(Z.parentNode(O, '.tdz-i-box')):(null), ft, I;
+            var f = document.createElement('div'), O=Z.node(this),box=(O)?(Z.parentNode(O, '.s-api-box')):(null), ft, I;
             if(!box) box=_root;
 
             f.innerHTML = c;
@@ -1037,7 +1045,7 @@
             if(ft=O.getAttribute('data-target-id')) {
                 O.removeAttribute('data-target-id');
                 var from=document.getElementById(ft), to=f.querySelector('#'+ft), fromI;
-                if(from && to && (I=Z.parentNode(from, '.tdz-i'))) {
+                if(from && to && (I=Z.parentNode(from, '.s-api-app'))) {
                     from.parentNode.replaceChild(to, from);
                     I.removeAttribute('data-startup');
                     if(O.parentNode) Z.deleteNode(O);
@@ -1048,12 +1056,12 @@
             runActions(f);
             var r, i, mv, L;
 
-            if(!I) I = f.querySelector('.tdz-i');
-            if(I && box && !box.querySelector('.tdz-i-body') && f.querySelector('.tdz-i-body')) {
+            if(!I) I = f.querySelector('.s-api-app');
+            if(I && box && !box.querySelector('.s-api-body') && f.querySelector('.s-api-body')) {
                 // replace entire box and startup
                 Z.removeChildren(box);
-                if(mv = f.querySelector('.tdz-i-header')) box.appendChild(mv);
-                mv = f.querySelector('.tdz-i-body');
+                if(mv = f.querySelector('.s-api-header')) box.appendChild(mv);
+                mv = f.querySelector('.s-api-body');
 
                 box.appendChild(mv);
 
@@ -1062,9 +1070,9 @@
                 Z.init(box);
                 Z.focus(mv);
                 return;
-            } else if(!box.querySelector('.tdz-i-body .z-i-nav') && (mv=f.querySelector('.tdz-i-body .z-i-nav'))) {
+            } else if(!box.querySelector('.s-api-body .z-i-nav') && (mv=f.querySelector('.s-api-body .z-i-nav'))) {
                 //add nav
-                var B=box.querySelector('.tdz-i-body');
+                var B=box.querySelector('.s-api-body');
                 if(B.children.length==0) B.appendChild(mv);
                 else B.insertBefore(mv, B.children[0]);
                 mv.setAttribute('data-startup', '1');
@@ -1076,9 +1084,9 @@
                 L=mv.querySelectorAll('.z-toggle-active');
                 i=L.length;
                 while(i-- > 0) Z.initToggleActive(L[i]);
-                mv=f.querySelector('.tdz-i-header .z-spacer');
+                mv=f.querySelector('.s-api-header .z-spacer');
                 if(mv) {
-                    B=box.querySelector('.tdz-i-header');
+                    B=box.querySelector('.s-api-header');
                     if(B.children.length==0) B.appendChild(mv);
                     else B.insertBefore(mv, B.children[0]);
                 }
@@ -1086,17 +1094,17 @@
 
             if(!I) {
                 if(O) {
-                    Z.focus(box.querySelector('.tdz-i-body'));
+                    Z.focus(box.querySelector('.s-api-body'));
                 } else {
-                    Z.focus(_root.querySelector('.tdz-i-body.tdz-blur'));
+                    Z.focus(_root.querySelector('.s-api-body.s-blur'));
                 }
                 return false;
             }
 
             var u = I.getAttribute('data-url'), cu=(O)?(O.getAttribute('data-url')):(null), S;
 
-            if(S=O.querySelector('.tdz-i-summary')) {
-                r=S.querySelectorAll(':scope .tdz-i-msg');
+            if(S=O.querySelector('.s-api-summary')) {
+                r=S.querySelectorAll(':scope .s-msg');
                 i=r.length;
                 while(i--) {
                     Z.deleteNode(r[i]);
@@ -1106,12 +1114,12 @@
             if(cu) loading(cu, false);
 
             if(I!==O) {
-                var H = box.querySelector('.tdz-i-header'),
-                    Hs = f.querySelectorAll('.tdz-i-header > .tdz-i-title'),
+                var H = box.querySelector('.s-api-header'),
+                    Hs = f.querySelectorAll('.s-api-header > .s-api-title'),
                     h;
 
                 if(u && u.substr(0, _base.length)!=_base) {
-                    var rbox=f.querySelector('.tdz-i-box[base-url]');
+                    var rbox=f.querySelector('.s-api-box[base-url]');
                     if(rbox) I.setAttribute('data-base-url', rbox.getAttribute('base-url'));
                     rbox=null;
                 }
@@ -1119,16 +1127,16 @@
                 // check if requested interface was not returned (but a different one)
                 if(cu && (!u || u!=cu)) {
                     // remove cu from body and hash
-                    O=box.querySelector('.tdz-i[data-url="'+u+'"]');
+                    O=box.querySelector('.s-api-app[data-url="'+u+'"]');
                     if(!O) O=this;
                     if(H) {
-                        r=H.querySelectorAll('.tdz-i-title[data-url="'+cu+'"]');
+                        r=H.querySelectorAll('.s-api-title[data-url="'+cu+'"]');
                         i=r.length;
                         while(i--) {
                             r[i].parentNode.removeChild(r[i]);
                         }
                     }
-                    r=box.querySelectorAll('.tdz-i[data-url="'+cu+'"]');
+                    r=box.querySelectorAll('.s-api-app[data-url="'+cu+'"]');
                     i=r.length;
                     while(i--) {
                         if(r[i]!=O) {
@@ -1154,10 +1162,10 @@
                 i = Hs.length;
                 while(i-- > 0) {
                     cu=Hs[i].getAttribute('data-url');
-                    h=H.querySelector('.tdz-i-title[data-url="'+cu+'"]');
+                    h=H.querySelector('.s-api-title[data-url="'+cu+'"]');
                     //Z.bind(Hs[i], 'click', activeInterface);
                     if(!Hs[i].querySelector('*[data-action="close"]')) {
-                        Z.element.call(Hs[i], {e:'span',a:{'class':'z-i-a z-i--close','data-action':'close'},t:{click:loadInterface}});
+                        Z.element.call(Hs[i], {e:'span',a:{'class':'z-i-a s-api--close','data-action':'close'},t:{click:loadInterface}});
                     }
                     if(h) H.replaceChild(Hs[i], h);
                     else if(cu==u) H.appendChild(Hs[i]);
@@ -1165,28 +1173,28 @@
                 }
 
                 if(!O || !O.parentNode) {
-                    O=box.querySelector('.tdz-i[data-url="'+u+'"]');
+                    O=box.querySelector('.s-api-app[data-url="'+u+'"]');
                 }
                 if(O) {
                     O.parentNode.replaceChild(I, O);
                 } else {
-                    box.querySelector('.tdz-i-body').appendChild(I);
+                    box.querySelector('.s-api-body').appendChild(I);
                 }
             } else {
                 // copy elements from summary
-                if(S && (r=f.querySelectorAll('.tdz-i .tdz-i-summary .tdz-i-msg'))) {
+                if(S && (r=f.querySelectorAll('.s-api-app .s-api-summary .s-msg'))) {
                     i=r.length;
                     while(i--) {
                         S.appendChild(r[i]);
                     }
                 }
                 if(!I.parentNode && box) {
-                    box.querySelector('.tdz-i-body').appendChild(I);
+                    box.querySelector('.s-api-body').appendChild(I);
                 }
             }
 
             startup(I);
-            Z.focus(Z.parentNode(I, '.tdz-i-body'));
+            Z.focus(Z.parentNode(I, '.s-api-body'));
             Z.event(I, 'loadInterface');
         }
         return false;
@@ -1211,9 +1219,9 @@
         unload:function(o) {
             var 
               ru = (typeof(o)=='string')?(o):(o.getAttribute('data-url')),
-              rn = _root.querySelector('.tdz-i-box .tdz-i-header .tdz-i-title[data-url="'+ru+'"]');
+              rn = _root.querySelector('.s-api-box .s-api-header .s-api-title[data-url="'+ru+'"]');
             if(rn) rn.parentNode.removeChild(rn);
-            rn = _root.querySelector('.tdz-i-box .tdz-i-body .tdz-i[data-url="'+ru+'"]');
+            rn = _root.querySelector('.s-api-box .s-api-body .s-api-app[data-url="'+ru+'"]');
             if(rn) rn.parentNode.removeChild(rn);
             Z.event(rn, 'unloadInterface');
         },
@@ -1227,19 +1235,19 @@
         },
         message:function(o) {
             if(o.getAttribute('data-message')) {
-                msg(o.getAttribute('data-message'), 'tdz-i-message', true);
+                msg(o.getAttribute('data-message'), 's-msg', true);
                 Z.delay(msg, 10000, 'msg');
             }
         },
         success:function(o) {
             if(o.getAttribute('data-message')) {
-                msg(o.getAttribute('data-message'), 'tdz-i-success', true);
+                msg(o.getAttribute('data-message'), 's-msg-success', true);
                 Z.delay(msg, 5000, 'msg');
             }
         },
         error:function(o) {
             if(o.getAttribute('data-message')) {
-                msg(o.getAttribute('data-message'), 'tdz-i-error', true);
+                msg(o.getAttribute('data-message'), 's-msg-error', true);
                 Z.delay(msg, 5000, 'msg');
             }
             Z.event(o, 'error');
@@ -1292,18 +1300,18 @@
 
     function msg(s, c, html)
     {
-        var M=_root.querySelector('.tdz-i.tdz-i-active .tdz-i-msg');
+        var M=_root.querySelector('.s-api-app.s-api-active .s-msg');
         if(!M) {
-            var I = _root.querySelector('.tdz-i-active .tdz-i-summary');
-            if(!I) I = _root.querySelector('.tdz-i-active .tdz-i-container');
-            if(!I) I = _root.querySelector('.tdz-i-active');
+            var I = _root.querySelector('.s-api-active .s-api-summary');
+            if(!I) I = _root.querySelector('.s-api-active .s-api-container');
+            if(!I) I = _root.querySelector('.s-api-active');
             if(!I) return;
-            if(I.children.length>0) M=Z.element({e:'div',p:{className:'tdz-i-msg'}}, I.children[0]);
-            else M=Z.element.call(I, {e:'div',p:{className:'tdz-i-msg'}});
+            if(I.children.length>0) M=Z.element({e:'div',p:{className:'s-msg'}}, I.children[0]);
+            else M=Z.element.call(I, {e:'div',p:{className:'s-msg'}});
         }
         if(!c) c='';
         else c+=' ';
-        c+='tdz-i-msg';
+        c+='s-msg';
         if(s) {
             c+=' tdz-m-active';
         } else {
@@ -1325,7 +1333,7 @@
     {
         var n;
         for(n in _bkg) {
-            Z.ajax(_bkg[n].u, null, setInterface, interfaceError, 'html', _root.querySelector('.tdz-i.tdz-i-active'), {'z-action':'Interface', 'z-param':n});
+            Z.ajax(_bkg[n].u, null, setInterface, interfaceError, 'html', _root.querySelector('.s-api-app.s-api-active'), {'z-action':'Interface', 'z-param':n});
             delete(_bkg[n]);
         }
 
@@ -1339,10 +1347,10 @@
         var m=Z.t(mid);
         if(!m || m==mid) m=Z.t('Error');
         Z.error.call(this, m);
-        msg(m, 'tdz-i-error');
+        msg(m, 's-msg-error');
         Z.delay(msg, 10000, 'msg');
-        Z.focus(_root.querySelector('.tdz-i-body.tdz-blur'));
-        if(this.className.search(/\btdz-i-off\b/)>-1) Z.deleteNode(this);
+        Z.focus(_root.querySelector('.s-api-body.s-blur'));
+        if(this.className.search(/\bs-off\b/)>-1) Z.deleteNode(this);
     }
 
     function updateInterfaceDelayed(e)
@@ -1357,7 +1365,7 @@
     function updateInterface(I)
     {
         var ref=(arguments.length>0 && Z.isNode(I)),
-            isel='.tdz-i-list input[name="uid[]"][value]:checked', 
+            isel='.s-api-list input[name="uid[]"][value]:checked', 
             L,
             i,
             tI,
@@ -1368,17 +1376,17 @@
         if(ref && (I.getAttribute('data-id')) && (id=I.getAttribute('data-url'))) {
             _ids[id] = [I.getAttribute('data-id')];
         } else {
-            L = _root.querySelectorAll('.tdz-i-active'+_sel+', .z-i-standalone');
+            L = _root.querySelectorAll('.s-api-active'+_sel+', .z-i-standalone');
             i=L.length;
             while(i--) {
                 id=L[i].getAttribute('data-url');
                 _ids[id] = [];
             }
 
-            L = _root.querySelectorAll('.tdz-i-active'+_sel+' '+isel+', .z-i-standalone '+isel);
+            L = _root.querySelectorAll('.s-api-active'+_sel+' '+isel+', .z-i-standalone '+isel);
             i=L.length;
             while(i--) {
-                if(!(tI=Z.parentNode(L[i], '.tdz-i'))) continue;
+                if(!(tI=Z.parentNode(L[i], '.s-api-app'))) continue;
                 id=tI.getAttribute('data-url');
                 if(!(id in _ids)) _ids[id] = [];
                 _ids[id].push(L[i].value);
@@ -1430,8 +1438,8 @@
 
     function initAutoRemove()
     {
-        if(!this.querySelector('.z-i--close')) {
-            var el=Z.element.call(this, {e:'i',p:{className:'z-i--close z-i-a z-round'},t:{click:autoRemove}});
+        if(!this.querySelector('.s-api--close')) {
+            var el=Z.element.call(this, {e:'i',p:{className:'s-api--close z-i-a z-round'},t:{click:autoRemove}});
             if(el.previousSibling.nodeName.toLowerCase()=='a' && !el.previousSibling.getAttribute('href')) Z.bind(el.previousSibling, 'click', autoRemove);
             var P=Z.parentNode(this,'.z-i-field,.field');
             if(P) P.className+=' has-auto-remove';
@@ -1462,16 +1470,17 @@
     function init()
     {
         /*jshint validthis: true */
-        if(!('Z' in window)) {
+        if(!('Studio' in window)) {
             return setTimeout(init, 100);
         }
-        Z.loadInterface = loadInterface;
-        Z.setInterface = setInterface;
-        Z.setInterfaceRoot = setRoot;
+        Studio.loadInterface = loadInterface;
+        Studio.setInterface = setInterface;
+        Studio.setInterfaceRoot = setRoot;
+        if(!Z || Z!==Studio) Z=Studio;
     }
 
-    window.Z_Interface = startup;
-    window.Z_Interface_AutoRemove = initAutoRemove;
+    window.Studio_Api = startup;
+    window.Studio_Api_AutoRemove = initAutoRemove;
     init();
 
 })();

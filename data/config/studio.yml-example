@@ -1,7 +1,7 @@
 ---
 all:
   studio:
-    version: 2.5
+    version: 1.0
     connection: studio
     enable_interfaces: true
     enable_interface_content: true

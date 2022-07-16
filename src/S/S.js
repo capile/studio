@@ -1,5 +1,5 @@
-/*! Tecnodesign Z v2.7 | (c) 2022 Capile Tecnodesign <ti@tecnodz.com> */
-if(!('Z' in window)) window.Z={version:2.7, host:null,uid:'/_me',timeout:0,headers:{},env:'prod',timestamp:null};
+/*! capile/studio v1.0 | (c) 2022 Tecnodesign <ti@tecnodz.com> */
+if(!('Studio' in window))window.Z=window.Studio={version:1.0, host:null,uid:'/_me',timeout:0,headers:{},env:'prod',timestamp:null};
 (function(Z) {
 "use strict";
 var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl, _assets={},
@@ -8,29 +8,27 @@ var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl,
     Copy:'a.z-copy[data-target]',
     DisplaySwitch:'*[data-display-switch]',
     ToggleActive:'.z-toggle-active',
-    Z_Form: 'form.z-form',
-    Z_Form_AutoSubmit: 'form.z-auto-submit',
-    Z_Form_CheckLabel:'.i-check-label input[type=radio],.i-check-label input[type=checkbox]',
-    Z_Api: '.s-api-app[data-url]',
-    Z_Api_AutoRemove: '.s-auto-remove',
-    Z_Interface: '.tdz-i[data-url]',
-    Z_Interface_AutoRemove: '.z-auto-remove',
-    Z_Graph: '.z-graph',
-    Recaptcha: '.z-recaptcha',
-    LoadUri: '*.z-action[data-load-uri]'
-  }, _zTimestamp='';
+    Studio_Form: 'form.s-form',
+    Studio_Form_AutoSubmit: 'form.s-auto-submit',
+    Studio_Form_CheckLabel:'.i-check-label input[type=radio],.i-check-label input[type=checkbox]',
+    Studio_Api: '.s-api-app[data-url]',
+    Studio_Api_AutoRemove: '.s-auto-remove',
+    Studio_Graph: '.s-graph',
+    Recaptcha: '.s-recaptcha',
+    LoadUri: '.s-action[data-load-uri]'
+  }, _sTimestamp='';
 
 // load authentication info
 var _reWeb=/^https?:\/\//;
-function initZ(d)
+function initStudio(d)
 {
     Z.lang();
 
-    if(document.querySelector('html[data-z-config]')) {
-        var zh = document.querySelector('html'), zc=zh.getAttribute('data-z-config'), cfg=JSON.parse(zc.indexOf('{')<0 ?atob(zc) :zc), cn;
-        zh.removeAttribute('data-z-config');
+    if(document.querySelector('html[data-studio-config]')) {
+        var zh = document.querySelector('html'), zc=zh.getAttribute('data-studio-config'), cfg=JSON.parse(zc.indexOf('{')<0 ?atob(zc) :zc), cn;
+        zh.removeAttribute('data-studio-config');
         if(cfg) {
-            for(cn in cfg) if((cn in Z) && (typeof(Z[cn])!='function')) Z[cn] = cfg[cn];
+            for(cn in cfg) if((cn in S) && (typeof(Z[cn])!='function')) Z[cn] = cfg[cn];
         }
     }
 
@@ -39,14 +37,14 @@ function initZ(d)
     }
 
     if(!_assetUrl) {
-        var e=document.querySelector('script[src*="/z.js"]');
-        if(!e) e=document.querySelector('script[src*="/Z.js"]');
-        if(e) _assetUrl = e.getAttribute('src').replace(/\/z\.js.*/, '/');
+        var e=document.querySelector('script[src*="/s.js"]');
+        if(!e) e=document.querySelector('script[src*="/S.js"]');
+        if(e) _assetUrl = e.getAttribute('src').replace(/\/s\.js.*/, '/');
         else if((e=document.querySelector('script[src*=".js"]'))) _assetUrl = e.getAttribute('src').replace(/\/[^\/]+\.js.*/, '/');
         else _assetUrl = '/';
         if(_assetUrl.search(/^[a-z0-9]*?\:\/\//)>-1) Z.host=_assetUrl.replace(/^([a-z0-9]*?\:\/\/[^\/]+).*/, '$1');
         // defining assets
-        var L=document.querySelectorAll('script[src^="'+_assetUrl+'/z-.+\.js"]'), i=L.length;
+        var L=document.querySelectorAll('script[src^="'+_assetUrl+'/s-.+\.js"]'), i=L.length;
         while(i--) {
             //Z.debug('asset '+L[i].getAttribute('src').replace(/\.js.*/, ''));
             _assets[L[i].getAttribute('src').replace(/\.js.*/, '')]=true;
@@ -78,14 +76,14 @@ function initZ(d)
                 ts=Z.storage('z-ts');
             }
             if(ts) qs = '?'+ts;
-            Z.ajax(Z.uid+qs, null, initZ, null, 'json');
+            Z.ajax(Z.uid+qs, null, initStudio, null, 'json');
             return;
         }
     }
     if(d) {
         if(!Z.timestamp) {
             var S=document.querySelector('script[src^="'+_assetUrl+'z.js?"]');
-            if(S) _zTimestamp = '?'+encodeURIComponent(S.getAttribute('src').substr(_assetUrl.length + 5));
+            if(S) _sTimestamp = '?'+encodeURIComponent(S.getAttribute('src').substr(_assetUrl.length + 5));
         }
 
         if(Object.prototype.toString.call(d)=='[object Array]') {
@@ -173,9 +171,9 @@ Z.init=function(o)
 
         if(!(ifn in Z) && j && i.search(/_/)>-1) {
             // must load component, then initialize the object
-            var a=i.replace(/^Z_/, '').split(/_/);
+            var a=i.replace(/^S(tudio)?_/, '').split(/_/);
             //Z.debug('initializing module: '+i);
-            if(i.substr(0,2)=='Z_' && (i in window)) {
+            if(i.substr(0,7)==='Studio_' && (i in window)) {
                 if(typeof(window[i])=='function') {
                     //Z.debug('adding plugin: '+i, window[i], Z.modules[i]);
                     ifn=Z.addPlugin(i, window[i], Z.modules[i]);
@@ -183,9 +181,9 @@ Z.init=function(o)
                     delete(window[i]);
                 }
             } else {
-                var u='z-'+Z.slug(a[0]);
+                var u='s-'+Z.slug(a[0]);
                 if(!(u in _assets)) {
-                    loadAsset('z-'+Z.slug(a[0]), Z.init, arguments, c);
+                    loadAsset('s-'+Z.slug(a[0]), Z.init, arguments, c);
                 }
             }
         }
@@ -205,13 +203,13 @@ var _delayed={};
 function loadAsset(f, fn, args, ctx)
 {
     //Z.debug('loadAsset: '+f);
-    var T, o, r, s=((Z.env=='dev' && Z.timestamp) ?'?'+(new Date().getTime()) :_zTimestamp);
+    var T, o, r, s=((Z.env=='dev' && Z.timestamp) ?'?'+(new Date().getTime()) :_sTimestamp);
     if(f in _assets) return;
     _assets[f]=true;
 
     if(f.indexOf('.')<0) {
-        if(!('Z.'+f in window)) window['Z.'+f] = [ctx];
-        else window['Z.'+f].push(ctx);
+        if(!('Studio.'+f in window)) window['Studio.'+f] = [ctx];
+        else window['Studio.'+f].push(ctx);
         loadAsset(f+'.js'+s, fn, args, ctx);
         loadAsset(f+'.css'+s, fn, args, ctx);
         return;
@@ -1650,18 +1648,18 @@ var matchesSelector = function(node, selector) {
 
 if('$' in window) {
     // jquery available, probably needs backwards compatible functions
-    Z.backwardsCompatible();
+    S.backwardsCompatible();
 }
 
-initZ();
+initStudio();
 
-})(window.Z);
+})(window.Studio);
 if (typeof exports !== 'undefined') {
   if (typeof module !== 'undefined' && module.exports) {
-    exports = module.exports = Z;
+    exports = module.exports = Studio;
   }
 }
-/*! end Z */
+/*! end S */
 
 // https://github.com/lazd/scopedQuerySelectorShim
 (function() {

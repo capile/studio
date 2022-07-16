@@ -74,8 +74,8 @@ class Api implements ArrayAccess
         $attrSearchFormClass= 's-form-search',
         $attrSearchClass    = 's-form-search', // deprecated, use attrSearchFormClass
         $attrCounterClass   = 's-counter',
-        $attrGraphClass     = 'z-i-graph',
-        $attrFormClass      = 'z-form',
+        $attrGraphClass     = 's-i-graph',
+        $attrFormClass      = 's-form',
         $attrButtonsClass   = '',
         $attrButtonClass    = '',
         $actionAlias        = [ ],

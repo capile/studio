@@ -1,10 +1,18 @@
-/*! Tecnodesign Z.Graph v2.5 | (c) 2021 Capile Tecnodesign <ti@tecnodz.com> */
+/*! capile/studio Graph v1.0 | (c) 2022 Tecnodesign <ti@tecnodz.com> */
 (function()
 {
 
 "use strict";
 
-var _G={}, _gids=0, _gT, _c;
+var Z, _G={}, _gids=0, _gT, _c;
+
+function init()
+{
+    if(!('Studio' in window)) {
+        return setTimeout(init, 500);
+    }
+    if(!Z) Z=Studio;
+}
 function Graph(o)
 {
     var n=Z.node(o, this), d, D, id;
@@ -99,5 +107,6 @@ function graphInterface(d, el)
 
 // default modules loaded into Z
 window.Z_Graph = Graph
+init();
 
 })();

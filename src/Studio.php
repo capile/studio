@@ -23,8 +23,8 @@ use Tecnodesign_Mail as Mail;
 
 class Studio
 {
-    const VERSION = '2.7.0';
-    const VER = 2.7;
+    const VERSION = '1.0.0';
+    const VER = 1.0;
 
     protected static
     $_app = null,
@@ -2899,6 +2899,8 @@ class Studio
 
     public static function classFile($cn)
     {
+        static $vendor;
+
         $c = str_replace(array('_', '\\'), '/', $cn);
         if (file_exists($f=S_ROOT."/src/{$c}.php")) {
             return $f;
@@ -2914,6 +2916,20 @@ class Studio
                     return $f;
                 }
                 unset($libi, $d, $f);
+            }
+            if($cn==='tdz' || substr($cn, 0, 12)==='Tecnodesign_') {
+                if(is_null($vendor)) {
+                    if(is_dir($d=S_PROJECT_ROOT.'/vendor/capile/tecnodesign')) {
+                        $vendor = $d;
+                    } else if(is_dir($d=S_ROOT.'/../../capile/tecnodesign')) {
+                        $vendor = realpath($d);
+                    } else {
+                        $vendor = false;
+                    }
+                }
+                if($vendor && file_exists($f=$vendor."/src/{$c}.php")) {
+                    return $f;
+                }
             }
         }
         unset($c);

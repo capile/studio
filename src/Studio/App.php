@@ -46,21 +46,20 @@ class App
             'layout'=>false,
             'credentials'=>false,
         ),
-        $assets=array('Z'),
+        $assets=array('S'),
         $assetRequirements=[
-            'Z.Form'=>'moment,pikaday-time/pikaday,pikaday-time/css/pikaday,pell/dist/pell.min',
-            'Z.Graph'=>'d3/dist/d3.min,c3/c3.min',
+            'S.Form'=>'moment,pikaday-time/pikaday,pikaday-time/css/pikaday,pell/dist/pell.min',
+            'S.Graph'=>'d3/dist/d3.min,c3/c3.min',
         ],
         $assetsOptional=[
-            'Z.Form'=>[
+            'S.Form'=>[
                 'quill'=>'quill/dist/quill.min,quill/dist/quill.snow',
                 'choices.js'=>'choices.js/public/assets/scripts/choices.min,choices.js',
             ],
         ],
         $copyNodeAssets=[
-            'Z.Interface'=>'@fortawesome/fontawesome-free/webfonts/fa-solid-900.*',
-            //'Z.Interface'=>'material-design-icons/iconfont/MaterialIcons-Regular.*',
-            'Z.Form'=>'quill/dist/quill.min.js.map',
+            'S.Api'=>'@fortawesome/fontawesome-free/webfonts/fa-solid-900.*',
+            'S.Form'=>'quill/dist/quill.min.js.map',
         ],
         $result,
         $http2push=false,
@@ -83,7 +82,7 @@ class App
         $this->_env = $env;
         if(is_array($s)) {
             array_unshift($s, $env);
-            $this->_vars = S::staticCall('tdz', 'config', $s);
+            $this->_vars = S::staticCall('Studio', 'config', $s);
         } else {
             $this->_vars = S::config($s, $env);
         }
@@ -539,7 +538,6 @@ class App
                    || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$n.'.'.$to)
                    || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$from.'/'.$n.'.'.$from)
                    || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$to.'/'.$n.'.'.$to)
-                   || file_exists($f=S_ROOT.'/src/Tecnodesign/Resources/assets/'.$n.'.'.$from)
                    || file_exists($f=S_ROOT.'/src/'.$n.'/'.$n.'.'.$from)
                    || file_exists($f=S_ROOT.'/src/'.str_replace('.', '/', $n).'.'.$from)
                    || file_exists($f=dirname(S_ROOT).'/'.$n0.'/'.str_replace('.', '/', $n).'.'.$from)

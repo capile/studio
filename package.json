@@ -5,6 +5,7 @@
     "main": "studio.js",
     "author": "Guilherme Capilé",
     "dependencies": {
+        "@composer-asset/capile--tecnodesign": "file:./vendor/foxy/composer-asset/capile/tecnodesign",
         "@fortawesome/fontawesome-free": "5.*",
         "c3": "0.7.*",
         "d3": "5.*",

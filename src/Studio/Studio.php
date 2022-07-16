@@ -15,6 +15,7 @@
 namespace Studio;
 
 use Studio\App as App;
+use Studio\Form;
 use Studio\Model\Entries as Entries;
 use Studio\Model\Contents as Contents;
 use Studio\Model\Permissions as Permissions;
@@ -22,7 +23,6 @@ use Studio\Model\Relations as Relations;
 use Studio\Model\Index as Index;
 use Tecnodesign_Studio_Asset as Asset;
 use Tecnodesign_Collection as Collection;
-use Tecnodesign_Form as Form;
 use Tecnodesign_Translate as Translate;
 use Tecnodesign_Query as Query;
 use Tecnodesign_Yaml as Yaml;
@@ -117,7 +117,7 @@ class Studio
      */
     public static function run()
     {
-        static $cfg=['web_interface', 'cli_interface', ];
+        static $cfg=[ 'web_interface', 'cli_interface' ];
 
         self::app();
         $req = App::request();
@@ -139,8 +139,8 @@ class Studio
             self::$staticCache  = false;
             chdir(S_APP_ROOT);
         } else if(static::$webInterface) {
-            App::$assets[] = '!Z.Studio';
-            App::$assets[] = '!Z.Api';
+            App::$assets[] = '!S.Studio';
+            App::$assets[] = '!S.Api';
             App::$assets[] = '!'.Form::$assets;
         }
 
@@ -260,7 +260,7 @@ class Studio
         if(strpos($url, '.')!==false && !strpos($url, '/', 1)) {
             if(substr($url, 0, 1)=='.') $url = '/studio'.$url;
             else if(substr($url, 0, 1)!='/') $url = '/'.$url;
-            if(!Asset::run($url, S_ROOT.'/src/Z', true) 
+            if(!Asset::run($url, S_ROOT.'/src/S', true) 
                 && (substr($url, -4) == '.css' || substr($url, -3) == '.js') 
                 && !Asset::run($url, S_VAR.'/cache/minify', true)) {
                 self::error(404);
@@ -279,9 +279,6 @@ class Studio
                 S::scriptName(self::$home);
                 S::$translator = 'Studio\\Studio::translate';
                 App::response('layout', 'layout');
-                //S::$variables['document-root'] = dirname(__FILE__).'/Resources/assets';
-                //App::response('script', array('/z.js','/studio.js','/interface.js'));
-                //App::response('style', array('/studio.less'));
                 return $In::run();
             } else if(isset($methods[$url])) {
                 $m = $methods[$url];
@@ -289,16 +286,12 @@ class Studio
             } else {
                 S::scriptName(self::$home);
                 S::$translator = 'Studio\\Studio::translate';
-                App::$assets[] = 'Z.Studio';
-                App::$assets[] = 'Z.Api';
-                App::$assets[] = 'Z.Form';
+                App::$assets[] = 'S.Studio';
+                App::$assets[] = 'S.Api';
+                App::$assets[] = 'S.Form';
                 App::response('layout', 'studio');
                 if(self::config('reset_interface_style')) App::response('style', []);
                 if(self::config('reset_interface_script')) App::response('script', []);
-                //S::$variables['document-root'] = dirname(__FILE__).'/Resources/assets';
-                //S::$assetsUrl = self::$home;
-                //App::response('script', array('/z.js','/studio.js','/interface.js'));
-                //App::response('style', array('/studio.less'));
                 return $In::run();
             }
         }
@@ -603,7 +596,7 @@ class Studio
                         'home'=>self::$home,
                         'options'=>[
                         ],
-                        'load'=>['z-studio','z-api'],
+                        'load'=>['s-studio','s-api','s-form'],
                     ),
                 );
                 if(static::$webButton!==false) $r['plugins']['studio']['options']['button'] = true;

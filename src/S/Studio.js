@@ -1,17 +1,17 @@
-/*! Studio v2.7 | (c) 2022 Capile Tecnodesign <ti@tecnodz.com> */
+/*! capile/studio Studio v1.0 | (c) 2022 Tecnodesign <ti@tecnodz.com> */
 (function() {
 
 "use strict";
 
-var _Z, _V, _L, _P, _Q, _Qt, _Qq, _ih={'z-action':'Interface'}, _Studio='/_studio', _title, _otherRoot;
+var Z, _Z, _V, _L, _P, _Q, _Qt, _Qq, _ih={'z-action':'Interface'}, _Studio='/_studio', _title, _otherRoot;
 
 // load authentication info
 function startup()
 {
-    if(!('Z' in window) || !('Z_Api' in window)) {
+    if(!('Studio' in window) || !('Studio_Api' in window)) {
         return setTimeout(startup, 500);
     }
-
+    Z=Studio;
     if(!('plugins' in Z)) Z.plugins={};
     if(!('studio' in Z.plugins)) {
         Z.plugins.studio={home:'/_studio', options:{}, load:[] };

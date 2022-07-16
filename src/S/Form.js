@@ -1,10 +1,19 @@
-/*! Tecnodesign Z.Form v2.7 | (c) 2022 Capile Tecnodesign <ti@tecnodz.com> */
+/*! capile/studio Form v1.0 | (c) 2022 Tecnodesign <ti@tecnodz.com> */
 (function()
 {
 
 "use strict";
 
-var _Tl,_L=[], _eids=0;
+var Z, _Tl,_L=[], _eids=0;
+
+function init()
+{
+    if(!('Studio' in window)) {
+        return setTimeout(init, 500);
+    }
+    if(!Z) Z=Studio;
+}
+
 function checkLabel(e)
 {
     /*jshint validthis: true */
@@ -100,7 +109,7 @@ function autoSubmit(e)
     /*jshint validthis: true */
     Z.stopEvent(e);
     if(!this.form || this.form.getAttribute('data-do-not-submit')) return false;
-    else if(this.form.className.search(/\bz-form-reload\b/)>-1) formReload.call(this, e);
+    else if(this.form.className.search(/\bs-form-reload\b/)>-1) formReload.call(this, e);
     else if(this.form) this.form.submit(e);
     else if(this.submit) this.submit(e);
     return false;
@@ -1540,7 +1549,7 @@ function toggleType(e)
 
 function initHtmlEditor()
 {
-    Z.debug('initHtmlEditor: ', this);
+    //Z.debug('initHtmlEditor: ', this);
     if(this.getAttribute('data-html-editor')) return;
     var a=(this.getAttribute('data-editor')), Editor, elcontainer;
     var limit = this.getAttribute('maxlength') ?? 0;
@@ -1692,11 +1701,11 @@ function initChoicesJs()
 function Form(o)
 {
     //Z.debug('Form', o);
-    var q='Z_Form';
+    var q='Studio_Form';
     if(!('initDatePicker' in Z)) Z.initDatepicker = initDatepicker;
     if(q in Z.modules) {
         delete(Z.modules[q]);
-        Z.load('z-form.css');
+        Z.load('s-form.css');
         Z.addPlugin('Datepicker', initDatepicker, 'input[data-type^=date],input[type^=date],.tdz-i-datepicker');
         Z.addPlugin('RequiredField', initRequiredField, '.field > .input > *[required]');
         Z.addPlugin('Datalist', initDatalist, '*[data-datalist-api],*[data-datalist]');
@@ -1721,15 +1730,17 @@ function Form(o)
 //window.ZModules['*[data-datalist-api],*[data-datalist]'] = Datalist;
 
 // default modules loaded into Z
-window.Z_Form = Form;
-window.Z_Form_CheckLabel = initCheckLabel;
-window.Z_Form_AutoSubmit = initAutoSubmit;
-window.Z_Form_Reload = formReload;
 
-if('Z.z-form' in window) {
-    var i=window['Z.z-form'].length;
-    while(i--) Form(window['Z.z-form'][i]);
-    delete(window['Z.z-form']);
+window.Studio_Form = Form;
+window.Studio_Form_CheckLabel = initCheckLabel;
+window.Studio_Form_AutoSubmit = initAutoSubmit;
+window.Studio_Form_Reload = formReload;
+init();
+
+if('Studio.s-form' in window) {
+    var i=window['Studio.s-form'].length;
+    while(i--) Form(window['Studio.s-form'][i]);
+    delete(window['Studio.s-form']);
 }
 
 })();

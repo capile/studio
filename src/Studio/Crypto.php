@@ -9,7 +9,7 @@
  * @version   1.0
  */
 namespace Studio;
-use tdz as S;
+use Studio as S;
 
 class Crypto
 {
