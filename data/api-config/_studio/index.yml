@@ -6,7 +6,7 @@ all:
   default-actions: [ update ]
   default-action: update
   attributes:
-    class: z-i-no-summary z-i-no-actions z-i-no-breadcrumb z-i-color-alt z-i-splash
+    class: z-i-no-summary z-i-no-actions z-i-no-breadcrumb s-i-color-alt s-i-splash s-api-standalone
   options:
     index: false
     navigation: true
@@ -22,12 +22,6 @@ all:
           choices: choicesLanguage
           default: [ "en", "pt" ]
           class: i-vlabel
-        "*Version": 
-          bind: studio.version
-          format: select
-          type: string
-          choices: choicesStudioVersion
-          default: "2.6"
         "*Set Admin Password":
           bind: _admin_password
           format: password

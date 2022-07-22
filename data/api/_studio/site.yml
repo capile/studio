@@ -3,7 +3,6 @@ all:
   title: '*Site Resources'
   model: Studio\Model\Entries
   options:
-    list-parent: ~
     priority: 1000
     index: true
     group-by: id

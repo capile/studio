@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y \
     libxshmfence-dev \
     libzip-dev \
     zlib1g-dev \
+    mariadb-client \
+    rsync \
     zip
 RUN docker-php-ext-configure gd \
     --enable-gd \

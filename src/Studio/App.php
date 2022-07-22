@@ -448,7 +448,7 @@ class App
         $result=self::$_response['data'];
         if(self::$_response['layout']) {
             self::$_response += S::$variables;
-            $result = $this->runTemplate(self::$_response['layout'], self::$_response);
+            $result = $this->runTemplate(self::$_response['layout']);
         }
         //@header('content-type: text/html; charset=utf-8');
         @header('content-length: '.strlen($result));
@@ -458,9 +458,10 @@ class App
         exit();
     }
 
-    public function runTemplate($tpl, $variables=null, $cache=false)
+    public function runTemplate($tpl, $vars=null, $cache=false)
     {
         if($tpl && is_string($tpl) && strpos($tpl, '<')!==false) return $tpl;
+        else if(!($scr=S::templateFile($tpl))) return false;
         if(static::$assets) {
             static::$assets = array_unique(static::$assets);
             foreach(static::$assets as $i=>$n) {
@@ -468,15 +469,18 @@ class App
                 unset(static::$assets[$i], $i, $n);
             }
         }
-        $result = false;
-        $exec = array(
-            'variables' => is_array($variables) ?S::mergeRecursive($variables, self::$_response) :self::$_response,
-            'script' => S::templateFile($tpl)
-        );
-        if($exec['script']) {
-            $result=S::exec($exec);
+        if(is_null($vars)) {
+            $vars = self::$_response;
+        } else {
+            if(is_array($vars)) $vars = S::mergeRecursive($vars, self::$_response);
+            else $vars = self::$_response;
         }
-        return $result;
+        $exec = array(
+            'variables' => $vars,
+            'script' => $scr
+        );
+
+        return S::exec($exec);
     }
 
     /**

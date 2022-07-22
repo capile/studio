@@ -15,7 +15,8 @@ var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl,
     Studio_Api_AutoRemove: '.s-auto-remove',
     Studio_Graph: '.s-graph',
     Recaptcha: '.s-recaptcha',
-    LoadUri: '.s-action[data-load-uri]'
+    LoadUri: '.s-action[data-load-uri]',
+    LanguageSelection: 'link[rel="alternate"][hreflang]'
   }, _sTimestamp='';
 
 // load authentication info
@@ -435,7 +436,7 @@ Z.langw=function(ctx,before,after)
 {
     var h=Z.get('link[rel="alternate"][hreflang],meta[name="language"]');
     if(h.length>1) {
-        var r={e:'span',a:{'class':'lang'},c:[]},l='';
+        var r={e:'span',a:{'class':'lang s-languages'},c:[]},l='';
         for(var hi=0;hi<h.length;hi++) {
             if(h[hi].nodeName.toLowerCase()=='meta') {
                 l=h[hi].getAttribute('content');
@@ -1199,6 +1200,11 @@ Z.initLoadUri=function()
     var t=this.getAttribute('data-target'), T=(t) ?document.querySelector(t) :this;
 
     Z.ajax(u, null, loadHtml, Z.error, 'html', T, {'z-action': 'load-uri'});
+}
+
+Z.initLanguageSelection=function()
+{
+    if(!document.querySelector('.s-languages')) Z.langw(document.body);
 }
 
 function loadHtml(html)

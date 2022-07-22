@@ -13,15 +13,16 @@
 
 namespace Studio\Model;
 
-use Studio\App as App;
-use Studio\Studio as Studio;
-use Studio\Model as Model;
-use Studio\User as User;
-use Studio\Crypto as Crypto;
+use Studio as S;
+use Studio\App;
+use Studio\Studio;
+use Studio\Model;
+use Studio\User;
+use Studio\Crypto;
+use Studio\Api;
 use Tecnodesign_Yaml as Yaml;
 use Tecnodesign_Query as Query;
 use Tecnodesign_Exception as Exception;
-use Studio as S;
 
 class Config extends Model
 {
@@ -31,7 +32,7 @@ class Config extends Model
 
     public function choicesStudioVersion()
     {
-        return ["2.5"=>"2.5","2.6"=>"2.6"];
+        return ["1.0"];
     }
 
     public function choicesLanguage()
@@ -54,7 +55,11 @@ class Config extends Model
 
     public function renderTitle()
     {
-        return $this->__uid;
+        $title = $this->__uid;
+        if(($tt = S::t('title', 'model-'.$title)) && $tt!=='title') $title = $tt;
+        unset($tt);
+
+        return $title;
     }
 
     public function checkConfiguration()
@@ -136,6 +141,10 @@ class Config extends Model
                 ]],
             ];
             S::exec(['shell'=>$cmd.' :import '.escapeshellarg(S::serialize($import, 'json'))]);
+        }
+
+        if($I=Api::current()) {
+            return $I->redirect(S::scriptName(true));
         }
         return true;
     }

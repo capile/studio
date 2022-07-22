@@ -81,7 +81,7 @@ class Studio
             'index'=>['Studio\\Model\\Index','reindex'],
             'import'=>['Tecnodesign_Database','import'],
         ];
-    const VERSION = 2.7;    // should match the development branch 
+    const VERSION = 1.0;    // should match the development branch 
 
     /**
      * This is a App, the constructor is loaded once and then cached (until configuration changes)
@@ -252,6 +252,28 @@ class Studio
             S::$lang = $lang;
         }
         return $lang;
+    }
+
+    public static function languageHeaders()
+    {
+        $meta = '<meta name="language" content="'.S::$lang.'" />';
+        if(!self::$languages) {
+            $app = S::getApp()->app;
+            if(isset($app['languages'])) {
+                self::$languages = $app['languages'];
+                ksort(self::$languages);
+            }
+            unset($app);
+        }
+        if(self::$languages) {
+            foreach(self::$languages as $lang) {
+                if($lang==S::$lang) continue;
+                $meta .= '<link rel="alternate" hreflang="'.$lang.'" href="'.S::scriptName(true).'?!'.$lang.'" />';
+                unset($lang);
+            }
+        }
+
+        return $meta;
     }
 
     private static function _runInterface($url=null)

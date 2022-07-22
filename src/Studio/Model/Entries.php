@@ -167,27 +167,6 @@ class Entries extends Model
             $slots = array_merge($add,$slots);
         }
         unset($add);
-        $contents = $this->getRelatedContent();
-        $langs = '<meta name="language" content="'.S::$lang.'" />';
-        if(isset(Studio::$app->tecnodesign['languages'])) {
-            if(!Studio::$languages) {
-                Studio::$languages=Studio::$app->tecnodesign['languages'];
-            }
-            ksort(Studio::$languages);
-            $la = Studio::$languages;
-            foreach($la as $lang) {
-                if($lang==S::$lang) continue;
-                $langs .= '<link rel="alternate" hreflang="'.$lang.'" href="'.$this->link.'?!'.$lang.'" />';
-                unset($lang);
-            }
-        }
-
-        array_unshift(
-            $slots['meta'], 
-            '<meta name="generator" content="Tecnodesign Studio - https://tecnodz.com" />'
-            . $langs
-        );
-
         foreach($slots as $slotname=>$slot) {
             if(is_null($slot)) {
                 $slots[$slotname] = array();

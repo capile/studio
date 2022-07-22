@@ -3,7 +3,7 @@ all:
   model: Studio\Model\Users
   options:
     list-parent: site
-    priority: 40
+    priority: 1040
     index: true
     scope:
       list:
