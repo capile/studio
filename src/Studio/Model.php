@@ -14,9 +14,9 @@
  */
 namespace Studio;
 
-use Studio\Studio as Studio;
-use Tecnodesign_Query as Query;
 use Studio as S;
+use Studio\Studio;
+use Tecnodesign_Query as Query;
 
 class Model extends \Tecnodesign_Model
 {

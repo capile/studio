@@ -10,9 +10,9 @@
  */
 namespace Studio\Model;
 
-use Studio\Model as Model;
-use Studio\Model\Schema as Schema;
 use Studio as S;
+use Studio\Model;
+use Studio\Model\Schema;
 
 class SchemaProperties extends Model
 {

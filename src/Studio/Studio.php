@@ -14,19 +14,19 @@
  */
 namespace Studio;
 
-use Studio\App as App;
+use Studio as S;
+use Studio\App;
 use Studio\Form;
-use Studio\Model\Entries as Entries;
-use Studio\Model\Contents as Contents;
-use Studio\Model\Permissions as Permissions;
-use Studio\Model\Relations as Relations;
-use Studio\Model\Index as Index;
+use Studio\Model\Entries;
+use Studio\Model\Contents;
+use Studio\Model\Permissions;
+use Studio\Model\Relations;
+use Studio\Model\Index;
+use Studio\Yaml;
 use Tecnodesign_Studio_Asset as Asset;
 use Tecnodesign_Collection as Collection;
 use Tecnodesign_Translate as Translate;
 use Tecnodesign_Query as Query;
-use Tecnodesign_Yaml as Yaml;
-use Studio as S;
 
 class Studio
 {

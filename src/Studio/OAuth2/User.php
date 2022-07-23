@@ -13,13 +13,13 @@
 
 namespace Studio\OAuth2;
 
+use Studio as S;
+use Studio\App;
+use Studio\Studio;
+use Studio\Cache;
+use Studio\OAuth2\Server;
 use OAuth2\Request;
 use OAuth2\Response;
-use Studio\OAuth2\Server;
-use Studio\App;
-use Tecnodesign_Studio as Studio;
-use Tecnodesign_Cache as Cache;
-use tdz as S;
 
 class User
 {

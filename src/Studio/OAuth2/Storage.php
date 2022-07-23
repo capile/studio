@@ -13,6 +13,7 @@
 
 namespace Studio\OAuth2;
 
+use Studio as S;
 use OAuth2\Storage\ClientCredentialsInterface;
 use OAuth2\Storage\UserCredentialsInterface;
 use OAuth2\Storage\ClientInterface;
@@ -24,7 +25,6 @@ use OAuth2\OpenID\Storage\UserClaimsInterface;
 use OAuth2\Storage\ScopeInterface;
 use OAuth2\Storage\PublicKeyInterface;
 use InvalidArgumentException;
-use tdz as S;
 
 class Storage implements ClientCredentialsInterface, UserCredentialsInterface, AuthorizationCodeInterface, AccessTokenInterface, RefreshTokenInterface, JwtBearerInterface, UserClaimsInterface, ScopeInterface, PublicKeyInterface
 {

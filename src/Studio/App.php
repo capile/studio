@@ -15,7 +15,7 @@
 namespace Studio;
 
 use Studio as S;
-use Tecnodesign_Cache as Cache;
+use Studio\Cache as Cache;
 use Studio\Exception\End as End;
 use Tecnodesign_Exception as Error;
 use Exception;

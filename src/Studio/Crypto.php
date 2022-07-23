@@ -9,6 +9,7 @@
  * @version   1.0
  */
 namespace Studio;
+
 use Studio as S;
 
 class Crypto

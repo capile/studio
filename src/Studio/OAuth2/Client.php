@@ -13,16 +13,16 @@
 
 namespace Studio\OAuth2;
 
+use Studio as S;
 use Studio\App;
 use Studio\OAuth2\Server;
 use Studio\OAuth2\Storage;
-use Studio\Studio as Studio;
+use Studio\Studio;
 use Studio\User;
-use Studio as S;
+use Studio\Cache;
 use OAuth2\Request;
 use OAuth2\Response;
 use Tecnodesign_Query_Api as QueryApi;
-use Tecnodesign_Cache as Cache;
 use Tecnodesign_PublicObject as PublicObject;
 use Tecnodesign_Exception as SException;
 

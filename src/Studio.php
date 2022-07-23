@@ -13,12 +13,12 @@
 use Studio\App as App;
 use Studio\Model;
 use Studio\Model\Entries;
-use Tecnodesign_Cache as Cache;
+use Studio\Cache;
+use Studio\Yaml;
 use Tecnodesign_Query as Query;
 use Tecnodesign_Exception as AppException;
 use Tecnodesign_Collection as Collection;
 use Tecnodesign_Image as Image;
-use Tecnodesign_Yaml as Yaml;
 use Tecnodesign_Mail as Mail;
 
 class Studio

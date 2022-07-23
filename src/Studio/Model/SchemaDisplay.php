@@ -10,8 +10,8 @@
  */
 namespace Studio\Model;
 
-use Studio\Model as Model;
 use Studio as S;
+use Studio\Model;
 
 class SchemaDisplay extends Model
 {

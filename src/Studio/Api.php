@@ -20,10 +20,10 @@ use Studio\Exception\End;
 use Studio\Model;
 use Studio\Model\Interfaces;
 use Studio\Studio;
-use Tecnodesign_Cache as Cache;
+use Studio\Cache;
+use Studio\Yaml;
 use Tecnodesign_Form as Form;
 use Tecnodesign_Exception as Exception;
-use Tecnodesign_Yaml as Yaml;
 use ArrayAccess;
 
 class Api implements ArrayAccess

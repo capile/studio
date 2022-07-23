@@ -11,7 +11,7 @@ all:
     enable_api_schema: true
     web-repos:
       studio-docs:
-        src: git@github.com:capile/tecnodesign.wiki.git
+        src: https://github.com/capile/studio.wiki.git
         map:
           - src: ~
             url: /docs

@@ -15,6 +15,8 @@ all:
       # ![Studio](/_/img/studio-neg.svg) {.z-i-logo}
     scope:
       update:
+        __default:
+          class: i1s4
         "*Languages": 
           bind: app.languages
           format: checkbox
@@ -25,6 +27,7 @@ all:
         "*Set Admin Password":
           bind: _admin_password
           format: password
+          class: i1s1
         "*Enable Management Interface":
           bind: studio.enable_interfaces
           format: bool

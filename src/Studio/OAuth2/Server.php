@@ -13,12 +13,12 @@
 
 namespace Studio\OAuth2;
 
+use Studio as S;
+use Studio\App;
+use Studio\Cache;
+use Studio\Studio;
 use OAuth2\Request;
 use OAuth2\Response;
-use Studio\App;
-use Tecnodesign_Studio as Studio;
-use Tecnodesign_Cache as Cache;
-use tdz as S;
 
 class Server extends \OAuth2\Server
 {

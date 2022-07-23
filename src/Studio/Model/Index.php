@@ -15,9 +15,9 @@ namespace Studio\Model;
 use Studio as S;
 use Studio\Api;
 use Studio\App;
+use Studio\Cache;
 use Studio\Model;
 use Studio\Studio;
-use Tecnodesign_Cache as Cache;
 use Tecnodesign_Database as Database;
 use Tecnodesign_Query as Query;
 

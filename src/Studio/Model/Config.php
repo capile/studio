@@ -20,7 +20,7 @@ use Studio\Model;
 use Studio\User;
 use Studio\Crypto;
 use Studio\Api;
-use Tecnodesign_Yaml as Yaml;
+use Studio\Yaml;
 use Tecnodesign_Query as Query;
 use Tecnodesign_Exception as Exception;
 

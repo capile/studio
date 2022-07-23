@@ -13,14 +13,14 @@ namespace Studio\Model;
 use Studio as S;
 use Studio\Api;
 use Studio\App;
+use Studio\Cache;
 use Studio\Model;
 use Studio\Model\Contents;
 use Studio\Model\Permissions;
 use Studio\Model\Tags;
 use Studio\Studio;
-use Tecnodesign_Cache as Cache;
+use Studio\Yaml;
 use Tecnodesign_Collection as Collection;
-use Tecnodesign_Yaml as Yaml;
 use Tecnodesign_Exception as Exception;
 
 class Entries extends Model
