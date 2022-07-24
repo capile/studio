@@ -15,3 +15,6 @@ cd studio && composer install
 ./studio :start
 ```
 
+## Docker images
+
+Different purpose Docker images are available at <data/docker>, compatible with latest PHP/nodejs version or to PHP7. Images prefixed with `dev-` enable root access and some additional command-line tools.
