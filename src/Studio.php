@@ -1759,7 +1759,7 @@ class Studio
         $logs = array();
         $d = (!is_array(self::$logDir))?(array(self::$logDir)):(self::$logDir);
         foreach($d as $l) {
-            if($l=='syslog' && openlog('tdz', LOG_PID|LOG_NDELAY, LOG_LOCAL5)) {
+            if($l=='syslog' && openlog('studio', LOG_PID|LOG_NDELAY, LOG_LOCAL5)) {
                 $logs['syslog'] = true;
             } else if($l=='error_log') {
                 $logs[0] = true;
@@ -1775,7 +1775,7 @@ class Studio
                     }
                 }
                 if(substr($l, 0, 1)!='/') $l = realpath(S_APP_ROOT.'/'.$l);
-                $logs[3] = $l . '/tdz.log';
+                $logs[3] = $l . '/app.log';
             }
             unset($l);
         }
