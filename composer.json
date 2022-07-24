@@ -21,7 +21,12 @@
     "extra": {
         "foxy": true
     },
-    "autoload" : {
+    "config": {
+        "allow-plugins": {
+            "foxy/foxy": true
+        }
+    },
+     "autoload" : {
         "psr-0": {
             "Studio" : "src/",
             "exclude-from-classmap": [ "src/" ]

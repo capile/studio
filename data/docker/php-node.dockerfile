@@ -1,14 +1,56 @@
-## tecnodesign/studio:v1.1
+## tecnodesign/php-node:v1.0
 #
-# docker build -f Dockerfile  . -t tecnodesign/studio:v1.1
-# docker push tecnodesign/studio:v1.1
+# docker build -f data/docker/php-node.dockerfile  . -t tecnodesign/php-node:v1.0
+# docker push tecnodesign/php-node:v1.0
 FROM php:fpm
 
-RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libwebp-dev libfreetype6-dev zlib1g-dev libzip-dev libonig-dev libxml2-dev zip git gnupg
-RUN docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg --with-webp
-RUN apt-get install libldap2-dev -y && \
-    docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/
-RUN docker-php-ext-install mbstring zip gd simplexml dom fileinfo ctype pdo pdo_mysql ldap soap
+RUN apt-get update && apt-get install -y \
+    git \
+    gnupg \
+    libasound-dev \
+    libatk-bridge2.0-dev \
+    libatk1.0-0 \
+    libcairo-dev \
+    libcups2 \
+    libdrm-dev \
+    libfreetype6-dev \
+    libgbm-dev \
+    libjpeg-dev \
+    libldap2-dev \
+    libnss3 \
+    libonig-dev \
+    libpango-1.0 \
+    libpng-dev \
+    libwebp-dev \
+    libxcomposite-dev \
+    libxdamage-dev \
+    libxkbcommon-dev \
+    libxml2-dev \
+    libxrandr-dev \
+    libxshmfence-dev \
+    libzip-dev \
+    zlib1g-dev \
+    zip \
+    && rm -rf /var/lib/apt/lists/*
+RUN docker-php-ext-configure gd \
+    --enable-gd \
+    --with-freetype \
+    --with-jpeg \
+    --with-webp
+RUN docker-php-ext-configure ldap \
+    --with-libdir=lib/x86_64-linux-gnu/
+RUN docker-php-ext-install \
+    ctype \
+    dom \
+    fileinfo \
+    gd \
+    ldap \
+    mbstring \
+    pdo \
+    pdo_mysql \
+    simplexml \
+    soap \
+    zip
 RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
 RUN sed -e 's/expose_php = On/expose_php = Off/' \
         -e 's/max_execution_time = 30/max_execution_time = 10/' \
@@ -16,6 +58,7 @@ RUN sed -e 's/expose_php = On/expose_php = Off/' \
         -e '/catch_workers_output/s/^;//'  \
         -e 's/^error_log.*/error_log = \/dev\/stderr/' \
         -e 's/^;error_log.*/error_log = \/dev\/stderr/' \
+        -e 's/^memory_limit.*/memory_limit = 16M/' \
         -e 's/post_max_size = 8M/post_max_size = 4M/' \
         -e 's/;default_charset = "UTF-8"/default_charset = "UTF-8"/' \
         -e 's/;max_input_vars = 1000/max_input_vars = 10000/' \
@@ -46,28 +89,18 @@ RUN ln -s ../lib/node_modules/asar/bin/asar.js         /usr/local/bin/asar      
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 ## foxy compatibility issues with composer 2.1 (open)
-RUN composer self-update 2.0.14
+#RUN composer self-update 2.0.14
 
 ## nodejs and puppeteer support
-RUN mkdir -p /app /var/www/.composer /var/www/.npm && \
-    chown www-data:www-data /app /var/www/.composer /var/www/.npm
-RUN apt-get install -y \
-    libnss3 \
-    libatk1.0-0 \
-    libatk-bridge2.0-dev \
-    libcups2 \
-    libdrm-dev \
-    libxkbcommon-dev \
-    libxcomposite-dev \
-    libxdamage-dev \
-    libxrandr-dev \
-    libgbm-dev \
-    libpango-1.0 \
-    libcairo-dev \
-    libasound-dev \
-    libxshmfence-dev
-USER www-data
-WORKDIR /app
-
-#COPY . /var/www/app
-#RUN composer install --no-dev
+RUN mkdir -p \
+      /var/www/app \
+      /var/www/.cache \
+      /var/www/.composer \
+      /var/www/.npm && \
+    chown www-data:www-data \
+      /var/www/app \
+      /var/www/.cache \
+      /var/www/.composer \
+      /var/www/.npm
+#USER www-data
+WORKDIR /var/www
