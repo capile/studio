@@ -1,22 +1,38 @@
 {
-    "ref": "Tecnodesign_Studio_User",
+    "title": "*Users",
+    "database": "studio",
     "className": "Studio\\Model\\Users",
     "tableName": "studio_users",
     "properties": {
         "id": { "type": "int", "min": 0, "increment": "auto", "primary": true, "required": true },
-        "username": { "type": "string", "size": 100, "required": true, "index": [ "studio_users__username_idx" ] },
+        "username": { "type": "string", "size": 100, "required": true, "index": [ "idx_s_users__username_idx" ] },
         "login": { "alias": "username" },
         "name": { "type": "string", "size": 200 },
         "password": { "type": "string", "size": 200 },
-        "email": { "type": "string", "format": "email", "size": 100, "index": [ "studio_email__email_idx" ] },
+        "email": { "type": "string", "format": "email", "size": 100, "index": [ "idx_s_users__email_idx" ] },
         "details": { "type": "string", "size": 10000 },
         "accessed": { "format": "datetime", "type": "string" },
         "created": { "format": "datetime", "type": "string", "required": true },
         "updated": { "format": "datetime", "type": "string", "required": true },
-        "expired": { "format": "datetime", "type": "string", "index": [ "studio_users__expired_idx" ] }
+        "expired": { "format": "datetime", "type": "string", "index": [ "idx_s_users__expired_idx" ] }
 
     },
     "relations": {
         "Credentials": { "local": "id", "foreign": "user", "type": "many", "className": "Studio\\Model\\Credentials" }
-    }
+    },
+    "scope": {
+        "string": [ "name" ]
+    },
+    "events": {
+        "before-insert": [ "actAs" ],
+        "before-update": [ "actAs" ],
+        "before-delete": [ "actAs" ],
+        "active-records": "`expired` is null"
+    },
+    "actAs": {
+        "before-insert": { "auto-increment": [ "id" ], "timestampable": [ "created", "updated" ] },
+        "before-update": { "timestampable": [ "updated" ] },
+        "before-delete": { "timestampable": [ "updated" ], "soft-delete": [ "expired" ] }
+    },
+    "overlay": []
 }

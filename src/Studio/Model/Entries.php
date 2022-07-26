@@ -49,7 +49,7 @@ class Entries extends Model
         $hostnames=[],                                 // list of hostnames that should be skipped in the link validation
         $s = 1;
 
-    protected $id, $title, $summary, $link, $source, $format, $published, $language, $type, $master, $version=false, $created, $updated=false, $expired, $Tag, $Contents, $Permission, $Child, $Parent, $Related, $Children;
+    protected $id, $title, $summary, $link, $source, $format, $published, $language, $type, $master, $version=false, $created, $updated=false, $expired, $Tag, $Contents, $Permission, $Child, $Parent, $Related, $Children, $ContentsDisplay;
     
     protected $dynamic=false, $wrapper, $modified, $credential;
 
@@ -83,7 +83,7 @@ class Entries extends Model
             if(!Studio::$staticCache) $cch .= ', no-cache';
             S::cacheControl($cch, Studio::$staticCache);
         } else if(Studio::$staticCache) {
-            App::$afterRun['staticCache']=array('callback'=>array('Tecnodesign_Studio','setStaticCache'));
+            App::$afterRun['staticCache']=array('callback'=>array('Studio\\Studio','setStaticCache'));
             S::cacheControl('public', Studio::$cacheTimeout);
         }
         Studio::$page = $this->id;
@@ -152,7 +152,8 @@ class Entries extends Model
             }
         }
         // layout file
-        S::$variables['route']['layout'] = $master = Studio::templateFile($master, S::$variables['route']['layout'], self::$layout, 'layout');
+        if(!isset(S::$variables['route'])) S::$variables = App::response();
+        S::$variables['route']['layout'] = $master = Studio::templateFile($master, (!isset(S::$variables['route']['layout']))?null :S::$variables['route']['layout'], self::$layout, 'layout');
 
         // find out which slots are available. These should be configured either in
         // app.yml or as a routing parameter
@@ -179,7 +180,7 @@ class Entries extends Model
         }
 
         self::$s=1;
-        if($contents && count($contents)>0) {
+        if(($contents=$this->getRelatedContent()) && count($contents)>0) {
             foreach($contents as $i=>$C) {
                 $dyn = false;
                 if($C->content_type=='php') {
@@ -613,7 +614,7 @@ class Entries extends Model
         $search['entry'] = $this->id;
         $L = Tags::find($search,null,$scope,true,$orderBy,$groupBy);
         if($L) $L->setQueryKey('slug');
-        else if($asCollection) $L = new Collection(null, 'Tecnodesign_Studio_Tags', null, 'slug');
+        else if($asCollection) $L = new Collection(null, 'Studio\\Model\\Tags', null, 'slug');
         else $L = [];
 
         return ($asCollection || !$L) ?$L :$L->getItems();
@@ -993,13 +994,13 @@ class Entries extends Model
             $published = !(Studio::$private);
             $f = array(
                 '|entry'=>$this->id,
-                '|ContentDisplay.link'=>array('*', $this->link),
+                '|ContentsDisplay.link'=>array('*', $this->link),
             );
-            if(substr($this->link, -1)!=='/') $f['|ContentDisplay.link'][] = $this->link.'/';
+            if(substr($this->link, -1)!=='/') $f['|ContentsDisplay.link'][] = $this->link.'/';
             if(strrpos($this->link, '/')>1) {
                 $l = substr($this->link, 0, strrpos($this->link, '/'));
                 while($l) {
-                    $f['|ContentDisplay.link'][] = $l.'/';
+                    $f['|ContentsDisplay.link'][] = $l.'/';
                     $l = substr($l, 0, strrpos($l, '/'));
                 }
             }
@@ -1008,7 +1009,7 @@ class Entries extends Model
                 $updated = false;
                 foreach($r as $i=>$o) {
                     if($o->entry!=$this->id) {
-                        // confirm matching ContentDisplay
+                        // confirm matching ContentsDisplay
                         if(!$o->showAt($this->link)) {
                             $updated = true;
                             unset($r[$i]);

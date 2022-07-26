@@ -10,8 +10,12 @@
  */
 namespace Studio\Model;
 
-class Groups extends \Tecnodesign_Studio_Group
+use Studio as S;
+use Studio\Model;
+use Studio\Studio;
+
+class Groups extends Model
 {
     public static $schema;
-    protected $id, $name, $priority, $created, $updated, $expired;
+    protected $id, $name, $priority, $created, $updated, $expired, $Credentials;
 }

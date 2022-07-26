@@ -10,7 +10,11 @@
  */
 namespace Studio\Model;
 
-class Credentials extends \Tecnodesign_Studio_Credential
+use Studio as S;
+use Studio\Model;
+use Studio\Studio;
+
+class Credentials extends Model
 {
     public static $schema;
     protected $userid, $groupid, $created, $updated, $expired, $Users, $Groups;

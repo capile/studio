@@ -295,7 +295,7 @@ class App
                     }
                 }
             }
-            if(!$valid || !self::$_response['found']) {
+            if(!$valid && (!isset(self::$_response['found']) || !self::$_response['found'])) {
                 $this->runError(404, $defaults['layout']);
             }
             if (isset(self::$_response['template']) && self::$_response['template']) {
@@ -845,7 +845,8 @@ class App
     {
         $removeExtensions=array('html', 'htm', 'php');
         if(is_null(self::$_request)) {
-            self::$_response=&S::$variables;
+            self::$_response=S::$variables;
+            S::$variables=&self::$_response;
             self::$_response+=array('headers'=>array(),'variables'=>array());
             if($r=S::getApp()->config('app', 'response')) {
                 self::$_response += $r;
@@ -1013,6 +1014,7 @@ class App
             self::$_response[$a[0]]=$a[1];
         } else if($an==1 && is_array($a[0])) {
             self::$_response = S::mergeRecursive($a[0], self::$_response);
+            if(S::$variables!==self::$_response) S::$variables =& self::$_response;
         } else if($an==1) {
             if(isset(self::$_response[$a[0]])) return self::$_response[$a[0]];
             else return;

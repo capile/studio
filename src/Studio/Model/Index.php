@@ -17,6 +17,7 @@ use Studio\Api;
 use Studio\App;
 use Studio\Cache;
 use Studio\Model;
+use Studio\Model\Migration;
 use Studio\Studio;
 use Tecnodesign_Database as Database;
 use Tecnodesign_Query as Query;
@@ -29,7 +30,7 @@ class Index extends Model
     protected $interface, $id, $summary, $indexed, $created, $updated, $IndexText, $IndexDate, $IndexBool, $IndexNumber, $IndexBlob, $IndexInterfaces;
 
     /**
-     * Verifies if the Tecnodesign_Model $M, from $interface is indexed and newer than the index
+     * Verifies if the Studio\\Model $M, from $interface is indexed and newer than the index
      * If not, schedule a reindex
      */
     public static function check($M, $interface, $updated='updated')
@@ -226,7 +227,7 @@ class Index extends Model
         if(!$cn || !$id) return;
         $t0 = microtime(true);
 
-        if(S::$log>0) S::log('[INFO] Indexing: '.$id.' (time: '.S::formatNumber($t0-TDZ_TIME, 5).', mem: '.S::formatBytes(memory_get_peak_usage(true)).')');
+        if(S::$log>0) S::log('[INFO] Indexing: '.$id.' (time: '.S::number($t0-TDZ_TIME, 5).', mem: '.S::bytes(memory_get_peak_usage(true)).')');
 
         if(!$II) $II = Interfaces::find(['id'=>$id],1);
         $lmod = null;
@@ -456,6 +457,13 @@ class Index extends Model
                 if(S::$log>0) S::log('[INFO] Creating table '.$dbn.'.'.$cn::$schema->tableName);
                 try {
                     $H[$dbn]->create($cn::$schema);
+                    if(isset(Migration::$tables[$cn::$schema->tableName])) {
+                        foreach(Migration::$tables[$cn::$schema->tableName] as $t=>$to) {
+                            if(isset($T[$dbn][$t]) && isset($to['sql'])) {
+                                $H[$dbn]->exec($to['sql']);
+                            }
+                        }
+                    }
                 } catch(\Exception $e) {
                     S::log('[WARNING] Error while creating table: '.$e->getMessage(), $H[$dbn]->lastQuery());
                 }
@@ -472,8 +480,17 @@ class Index extends Model
                     }
                     unset($fn, $fd);
                 }
+                $rel = $cn::$schema->relations;
+                $cn::$schema->relations = null;
                 try {
                     $H[$dbn]->create($cn::$schema);
+                    if(isset(Migration::$tables[$cn::$schema->tableName])) {
+                        foreach(Migration::$tables[$cn::$schema->tableName] as $t=>$to) {
+                            if(isset($T[$dbn][$t]) && isset($to['sql'])) {
+                                $H[$dbn]->exec($to['sql']);
+                            }
+                        }
+                    }
                 } catch(\Exception $e) {
                     S::log('[WARNING] Error while creating table: '.$e->getMessage(), $H[$dbn]->lastQuery());
                 }
@@ -483,6 +500,8 @@ class Index extends Model
                     $cn::$schema->properties[$fn]->index = $fd;
                     unset($idx[$fn], $fn, $fd);
                 }
+                $cn::$schema->relations = $rel;
+                unset($rel, $idx);
             }
         }
 

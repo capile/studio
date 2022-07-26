@@ -10,7 +10,12 @@
  */
 namespace Studio\Model;
 
-class Relations extends \Tecnodesign_Studio_Relation
+use Studio as S;
+use Studio\Model;
+use Studio\Studio;
+
+class Relations extends Model
 {
     public static $schema, $schemaClass='Studio\\Schema\\Model';
+    protected $id, $parent, $entry, $position, $version, $created, $updated, $expired, $Child, $Parent, $Perfil, $Turma;
 }

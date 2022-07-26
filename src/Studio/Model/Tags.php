@@ -10,7 +10,12 @@
  */
 namespace Studio\Model;
 
-class Tags extends \Tecnodesign_Studio_Tag
+use Studio as S;
+use Studio\Model;
+use Studio\Studio;
+
+class Tags extends Model
 {
     public static $schema, $schemaClass='Studio\\Schema\\Model';
+    protected $id, $entry, $tag, $slug, $version, $created, $updated, $expired, $Entry, $Perfil;
 }

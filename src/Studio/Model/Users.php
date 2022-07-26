@@ -12,12 +12,13 @@ namespace Studio\Model;
 
 use Studio as S;
 use Studio\User;
+use Studio\Model;
 use Studio\Crypto;
 
-class Users extends \Tecnodesign_Studio_User
+class Users extends Model
 {
     public static $schema;
-    protected $id, $username, $name, $password, $email, $details, $created, $updated, $expired;
+    protected $id, $username, $name, $password, $email, $details, $created, $updated, $expired, $Credentials, $lastAccess, $credentials;
 
     public function __toString()
     {
@@ -43,5 +44,27 @@ class Users extends \Tecnodesign_Studio_User
             }
         }
         return $this->credentials;
+    }
+
+
+    public function getLastAccess()
+    {
+        if(is_null($this->lastAccess)) {
+            if($this->accessed) {
+                $this->lastAccess = strtotime($this->accessed);
+            } else {
+                $this->lastAccess = false;
+            }
+        }
+        return $this->lastAccess;
+    }
+
+    public function setLastAccess($t)
+    {
+        if(is_numeric($t) && $t>$this->getLastAccess()+1) {
+            $this->accessed = date('Y-m-d\TH:i:s', $t);
+            if(!is_null($this->credentials)) $this->credentials=null;
+            $this->save();
+        }
     }
 }

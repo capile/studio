@@ -1050,13 +1050,7 @@ class Studio
 
     public static function enabledModels($model=null)
     {
-        static $models, $compatibility=[
-            'Tecnodesign_Studio_Entry'=>'Studio\\Model\\Entries',
-            'Tecnodesign_Studio_Content'=>'Studio\\Model\\Contents',
-            'Tecnodesign_Studio_ContentDisplay'=>'Studio\\Model\\ContentsDisplay',
-            'Tecnodesign_Studio_Relation'=>'Studio\\Model\\Relations',
-            'Tecnodesign_Studio_Tag'=>'Studio\\Model\\Tags',
-        ], $compatible=false;
+        static $models;
 
         if(is_null($models)) {
             $models = [];
@@ -1090,10 +1084,6 @@ class Studio
                     'Studio\\Model\\SchemaDisplay',
                 ],
             ];
-            if(($version=self::config('compatibility_level')) && $version < 2.5) {
-                $compatible = true;
-                $cfg['content'] = array_keys($compatibility);
-            }
             foreach($cfg as $n=>$cns) {
                 if(self::config('enable_interface_'.$n) || self::config('enable_api_'.$n)) {
                     $models = ($models) ?array_merge($models, $cns) :$cns;
@@ -1101,7 +1091,6 @@ class Studio
             }
         }
         if(!is_null($model)) {
-            if(isset($compatibility[$model]) && !$compatible) $model = $compatibility[$model];
             return (in_array($model, $models)) ?$model :null;
         }
 

@@ -26,13 +26,15 @@ class Model extends \Tecnodesign_Model
 
     public static function staticInitialize()
     {
+        static $Q=[];
         parent::staticInitialize();
         // check if database exists or needs to be overwriten by file
-        if(static::$schema && ($db = static::$schema->database) && !Query::database($db)) {
+        if(static::$schema && ($db = static::$schema->database) && !isset($Q[$db]) && !Query::database($db)) {
             $conn = Studio::config('connection');
             if($conn && $conn!=$db && isset(S::$database[$conn])) {
                 S::$database[$db] = S::$database[$conn];
             }
+            $Q[$db] = true;
         }
     }
 

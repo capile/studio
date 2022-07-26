@@ -1,5 +1,5 @@
 {
     "ref": "Studio\\Model\\ContentsDisplay",
-    "className": "Tecnodesign_Studio_ContentDisplay",
+    "className": "Studio\\Model\\ContentsDisplay",
     "tableName": "studio_contents_display"
 }

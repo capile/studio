@@ -42,7 +42,7 @@ class Contents extends Model
 
     protected static $content_types=null;
 
-    protected $id, $entry, $slot, $content_type, $source, $attributes, $content, $position, $published, $version=false, $created, $updated=false, $expired, $show_at, $hide_at, $ContentDisplay, $Entry;
+    protected $id, $entry, $slot, $content_type, $source, $attributes, $content, $position, $published, $version=false, $created, $updated=false, $expired, $show_at, $hide_at, $ContentsDisplay, $Entry;
 
     public function __toString()
     {
@@ -361,7 +361,7 @@ class Contents extends Model
             } else if(isset($a['options']['scope'][$s])) {
                 static::$schema->scope[$s] = $scope = $a['options']['scope'][$s];
             } else {
-                S::log('[ERROR] Please prepare the scope: Tecnodesign_Studio_Content::$schema->scope['.$s.']', $E->getContent());
+                S::log('[ERROR] Please prepare the scope: Studio\\Model\\Contents::$schema->scope['.$s.']', $E->getContent());
             }
             $a['options']['scope'][$s] = $a['options']['scope']['c'] = $scope;
         }
@@ -703,7 +703,7 @@ class Contents extends Model
     public function showAt($url)
     {
         $r = false;
-        if($C = $this->getRelation('ContentDisplay', null, ['link', 'display'], false)) {
+        if($C = $this->getRelation('ContentsDisplay', null, ['link', 'display'], false)) {
             foreach($C as $i=>$o) {
                 if($o->matchUrl($url)) {
                     if($o->display>0) {

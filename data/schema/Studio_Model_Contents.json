@@ -11,19 +11,19 @@
         "content_type": { "type": "string", "size": 100 },
         "source": { "type": "string", "size": 200 },
         "attributes": { "type": "string", "size": 2000, "serialize": "json" },
-        "content": { "type": "string", "serialize": "json" },
+        "content": { "type": "string", "serialize": "json", "size": 100000 },
         "position": { "type": "int" },
-        "published": { "format": "datetime", "type": "string", "index": [ "z_content__published_idx" ] },
+        "published": { "format": "datetime", "type": "string", "index": [ "s_content__published_idx" ] },
         "version": { "type": "int" },
         "created": { "format": "datetime", "type": "string", "required": true },
         "updated": { "format": "datetime", "type": "string", "required": true },
-        "expired": { "format": "datetime", "type": "string", "index": [ "z_content__expired_idx" ] },
+        "expired": { "format": "datetime", "type": "string", "index": [ "s_content__expired_idx" ] },
         "show_at": { "type": "string" },
         "hide_at": { "type": "string" }
     },
     "relations": {
-        "ContentDisplay": { "local": "id", "foreign": "content", "type": "many", "className": "Studio\\Model\\ContentsDisplay" },
-        "Entry": { "local": "entry", "foreign": "id", "type": "one", "className": "Studio\\Model\\Entries", "constraint": { "fk_z_content__entry": "cascade" } }
+        "ContentsDisplay": { "local": "id", "foreign": "content", "type": "many", "className": "Studio\\Model\\ContentsDisplay" },
+        "Entry": { "local": "entry", "foreign": "id", "type": "one", "className": "Studio\\Model\\Entries", "constraint": { "fk_s_content__entry": "cascade" } }
     },
     "scope": {
         "string": [ "id", "slot", "Entry.title _title" ],

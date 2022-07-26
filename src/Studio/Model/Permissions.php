@@ -10,7 +10,39 @@
  */
 namespace Studio\Model;
 
-class Permissions extends \Tecnodesign_Studio_Permission
+use Studio as S;
+use Studio\Model;
+use Studio\Studio;
+
+class Permissions extends Model
 {
     public static $schema, $schemaClass='Studio\\Schema\\Model';
+
+    public function choicesCredentials($check=null)
+    {
+        static $c;
+        if(is_null($c)) $c = S::getApp()->user['credentials'];
+        return $c;
+    }
+
+    /*
+    public function validateCredentials($v)
+    {
+        return $v;
+    }
+    */
+
+    public function choicesRole()
+    {
+        static $roles;
+        if(is_null($roles)) {
+            $roles = [
+                'edit'=>S::t('Edit', 'model-studio_permissions'),
+                'previewPublished'=>S::t('Preview', 'model-studio_permissions'),
+                'publish'=>S::t('Publish', 'model-studio_permissions'),
+            ];
+        }
+
+        return $roles;
+    }
 }

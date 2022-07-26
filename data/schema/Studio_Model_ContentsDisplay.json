@@ -10,10 +10,10 @@
         "display": { "type": "int", "max": 128, "required": true },
         "created": { "format": "datetime", "type": "string", "required": true },
         "updated": { "format": "datetime", "type": "string", "required": true },
-        "expired": { "format": "datetime", "type": "string", "index": [ "z_content_display__expired_idx" ] }
+        "expired": { "format": "datetime", "type": "string", "index": [ "s_content_display__expired_idx" ] }
     },
     "relations": {
-        "Content": { "local": "content", "foreign": "id", "type": "one", "className": "Studio\\Model\\Contents", "constraint": { "fk_z_content__entry": "cascade" } }
+        "Content": { "local": "content", "foreign": "id", "type": "one", "className": "Studio\\Model\\Contents", "constraint": { "fk_s_content_display__entry": "cascade" } }
     },
     "scope": [],
     "events": {
