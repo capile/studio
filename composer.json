@@ -24,6 +24,11 @@
     "config": {
         "allow-plugins": {
             "foxy/foxy": true
+        },
+        "foxy": {
+            "enable-packages": {
+                "capile/tecnodesign": false
+            }
         }
     },
      "autoload" : {
