@@ -1877,6 +1877,7 @@ class Studio
             if($hint=='yaml') return Yaml::dump($a);
             else if($hint=='json') return json_encode($a,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
             else if($hint=='php') return serialize($a);
+            else if($hint=='query') return http_build_query($a);
         }
         return (is_object($a))?(serialize($a)):(json_encode($a,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
     }
@@ -1886,7 +1887,7 @@ class Studio
         if(is_string($a)) {
             if(!is_null($hint)) {
                 if($hint=='yaml') return Yaml::load($a);
-                else if($hint=='json') return json_decode($a,true);
+                else if($hint=='json') return json_decode($a, true, 512, JSON_INVALID_UTF8_IGNORE|JSON_BIGINT_AS_STRING);
                 else if($hint=='php') return unserialize($a);
             }
             return (substr($a,1,1)==':' && strpos('aOidsN', substr($a,0,1))!==false)?(unserialize($a)):(json_decode($a,true));

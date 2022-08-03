@@ -22,11 +22,11 @@ use Studio\Model\Contents;
 use Studio\Model\Permissions;
 use Studio\Model\Relations;
 use Studio\Model\Index;
+use Studio\Query;
 use Studio\Yaml;
 use Tecnodesign_Studio_Asset as Asset;
 use Tecnodesign_Collection as Collection;
 use Tecnodesign_Translate as Translate;
-use Tecnodesign_Query as Query;
 
 class Studio
 {

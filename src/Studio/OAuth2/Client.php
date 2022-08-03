@@ -22,11 +22,11 @@ use Studio\User;
 use Studio\Cache;
 use OAuth2\Request;
 use OAuth2\Response;
-use Tecnodesign_Query_Api as QueryApi;
-use Tecnodesign_PublicObject as PublicObject;
-use Tecnodesign_Exception as SException;
+use Studio\Query\Api as QueryApi;
+use Studio\SchemaObject;
+use Tecnodesign_Exception as AppException;
 
-class Client extends PublicObject
+class Client extends SchemaObject
 {
     public static 
         $meta,
@@ -550,7 +550,7 @@ class Client extends PublicObject
                 if(!$R || isset($R['error'])) {
                     if(S::$log>0) S::log('[INFO] Failed OAuth2 authentication at '.$this->id, $R);
                     $msg = (isset($R['error_description'])) ?$R['error_description'] :'We could not authenticate your request';
-                    throw new SException(S::t($msg, 'exception'));
+                    throw new AppException(S::t($msg, 'exception'));
                 } else {
                     $o = $Client->options;
                     if(!is_array($o)) $o = S::unserialize($o, 'json');

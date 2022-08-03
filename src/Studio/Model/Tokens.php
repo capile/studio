@@ -21,7 +21,7 @@ use Studio\OAuth2\Client;
 use Studio\OAuth2\Storage;
 use Studio\Studio;
 use Studio\Cache as Cache;
-use Tecnodesign_Query_Api as QueryApi;
+use Studio\Query\Api as QueryApi;
 
 class Tokens extends Model
 {

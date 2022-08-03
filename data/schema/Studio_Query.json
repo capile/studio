@@ -1,0 +1,28 @@
+{
+    "title": "Query Schema",
+    "type": "object",
+    "className": "Studio\\Query",
+    "patternProperties": "/^_/",
+    "properties": {
+        "model": { "type": "mixed", "description": "Model to query upon" },
+        "className": { "type": "string", "description": "Query Protocol to Use" },
+        "database": { "type": "string", "description": "Overwrites $.model.database" },
+        "tableName": { "type": "string", "description": "Overwrites $.model.tableName" },
+        "method": { "type": "string", "description": "alternative method to fetch/query records" },
+        "queryObject": { "type": "object", "description": "resulting query object" },
+        "queryKey": { "type": "string", "description": "key from $.model to use while fetching items" },
+        "select": { "type": "object", "description": "properties to fetch from $.model" },
+        "scope": { "type": "string", "description": "scope defining properties to fetch from $.model" },
+        "where": { "type": "object", "description": "filter the fetch from $.model" },
+        "limit": { "type": "int", "description": "limits the number of items to fetch" },
+        "offset": { "type": "int", "description": "initial offset for the items to fetch" },
+        "orderBy": { "type": "object", "description": "orders the items fetched" },
+        "groupBy": { "type": "object", "description": "groups the items fetched" },
+        "count": { "alias": "limit" },
+        "order": { "alias": "orderBy" },
+        "order-by": { "alias": "orderBy" },
+        "group": { "alias": "groupBy" },
+        "group-by": { "alias": "groupBy" },
+        "class": { "alias": "className" }
+    }
+}

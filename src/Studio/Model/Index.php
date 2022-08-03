@@ -18,9 +18,9 @@ use Studio\App;
 use Studio\Cache;
 use Studio\Model;
 use Studio\Model\Migration;
+use Studio\Query;
 use Studio\Studio;
 use Tecnodesign_Database as Database;
-use Tecnodesign_Query as Query;
 
 class Index extends Model
 {

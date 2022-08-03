@@ -21,7 +21,7 @@ use Studio\User;
 use Studio\Crypto;
 use Studio\Api;
 use Studio\Yaml;
-use Tecnodesign_Query as Query;
+use Studio\Query;
 use Tecnodesign_Exception as Exception;
 
 class Config extends Model

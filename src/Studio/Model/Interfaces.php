@@ -21,8 +21,8 @@ use Studio\OAuth2\Storage;
 use Studio\OAuth2\Client;
 use Studio\Studio;
 use Studio\Yaml;
-use Tecnodesign_Query as Query;
-use Tecnodesign_Query_Api as QueryApi;
+use Studio\Query;
+use Studio\Query\Api as QueryApi;
 
 class Interfaces extends Model
 {

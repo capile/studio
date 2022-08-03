@@ -22,7 +22,7 @@ use Studio\Model\Interfaces;
 use Studio\Studio;
 use Studio\Cache;
 use Studio\Yaml;
-use Tecnodesign_Form as Form;
+use Studio\Form;
 use Tecnodesign_Exception as Exception;
 use ArrayAccess;
 

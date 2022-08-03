@@ -18,7 +18,7 @@ all:
         query: true
         additional-params: false
         renderer: renderUpdate
-        icon: z-i--config
+        icon: s-api--config
         label: "*Configuration"
         next: preview
       connect:
