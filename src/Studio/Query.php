@@ -21,6 +21,7 @@ use Studio\SchemaObject;
 use Studio\Yaml;
 use Exception;
 use Tecnodesign_Exception as AppException;
+use Tecnodesign_Collection as Collection;
 
 class Query extends SchemaObject
 {
@@ -50,7 +51,7 @@ class Query extends SchemaObject
         } else if($Q=$this->getHandler()) {
             $filter = [];
             foreach($qp as $n) {
-                if(isset($this->${$n})) {
+                if(property_exists($this, $n)) {
                     $filter[$n] = $this->${$n};
                 }
                 unset($n);

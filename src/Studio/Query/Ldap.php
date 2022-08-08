@@ -18,7 +18,7 @@ use Studio\Schema;
 use Tecnodesign_Exception as AppException;
 use Exception;
 
-class Ldap extends Api
+class Ldap
 {
     const TYPE='ldap', DRIVER='ldap';
     public static 

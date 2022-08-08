@@ -781,7 +781,7 @@ class Field extends SchemaObject
             if(is_array($value)) {
                 $size = count($value);
             } else if(function_exists('mb_strlen')) {
-                $size = mb_strlen($value, 'UTF-8');
+                $size = mb_strlen((string)$value, 'UTF-8');
             } else {
                 $size = strlen($value);
             }
@@ -1277,9 +1277,13 @@ class Field extends SchemaObject
             }
             unset($fd['increment']);
         }
-
-        if(!isset($fd['type'])) $fd['type']='text';
-
+        if(isset($fd['format'])) {
+            $fd['type'] = $fd['format'];
+            unset($fd['format']);
+        }
+        if(!isset($fd['type'])) {
+            $fd['type']='text';
+        }
         if(substr($fd['type'], -3)=='int' || $fd['type']=='float' || $fd['type']=='decimal') {
             $fd['type']='number';
         } else if($fd['type']=='string' && ((isset($fd['name']) && strpos($fd['name'], 'password')!==false)||(isset($fd['id']) && strpos($fd['id'], 'password')!==false))) {
@@ -1287,9 +1291,8 @@ class Field extends SchemaObject
             if(!$new) {
                 $fd['required']=false;
             }
-        } else if($fd['type']=='string') {
-            $fd['type']='text';
         }
+
         return $fd;
     }
 
@@ -1398,7 +1401,7 @@ class Field extends SchemaObject
             $this->choices = null;
             if(strpos($s, '::')) {
                 list($model, $method) = explode('::', $s, 2);
-                if($model instanceof Model) {
+                if(is_a($model, 'Studio\\Model', true)) {
                     if(strpos($method, '(')!==false) $method = substr($method, 0, strpos($method, '('));
                     $this->query = new Query([ 'model' => $model, 'method' => $method ]);
                 } else {
@@ -1406,7 +1409,7 @@ class Field extends SchemaObject
                 }
             } else if(strpos($s, ':')) {
                 $this->query = new Query([ 'source' => $s ]);
-            } else if($s instanceof Model) {
+            } else if(is_a($s, 'Studio\\Model', true)) {
                 $this->query = new Query(['model'=>$s]);
             } else if($this->bind && ($M=$this->getModel()) && method_exists($M, $s)) {
                 $this->query = new Query([ 'model' => $M, 'method' => $s ]);
@@ -1504,7 +1507,7 @@ class Field extends SchemaObject
                     }
                 }
                 $val = $v;
-                if(substr($val, 0, 1)=='*') {
+                if($val && substr($val, 0, 1)=='*') {
                     $val = S::t(substr($val, 1), $tlib);
                     if(is_array($v)) {
                         $this->choices[$k]['value']=$val;
