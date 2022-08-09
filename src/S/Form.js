@@ -12,6 +12,11 @@ function init()
         return setTimeout(init, 500);
     }
     if(!Z) Z=Studio;
+    Z.Form = {
+        fieldSelector: '.s-api-field,.field',
+        checkSelector: 'input[type="radio"],input[type="checkbox"]',
+        inputSelector: 'input,select,textarea'
+    };
 }
 
 function checkLabel(e)
@@ -24,7 +29,7 @@ function checkLabel(e)
             if(nn=='input') {
                 _L.push(this);
             } else {
-                E=this.querySelector('input[type="radio"],input[type="checkbox"]');
+                E=this.querySelector(Z.Form.checkSelector);
                 if(E) {
                     _L.push(E);
                 }
@@ -46,7 +51,7 @@ function checkLabel(e)
         _Tl=setTimeout(checkLabel, 50);
         return;
     }
-    var L=('Form.CheckLabel' in Z.modules) ?document.querySelectorAll(Z.modules['Form.CheckLabel']) :[], i=L.length, P, cn;
+    var L=('Studio_Form_CheckLabel' in Z.modules) ?document.querySelectorAll(Z.modules['Studio_Form_CheckLabel']) :[], i=L.length, P, cn;
     if(!i && _L.length>0) {
         L = _L;
         i=L.length;
@@ -91,7 +96,7 @@ function initAutoSubmit(e)
     /*jshint validthis: true */
     if(!this.getAttribute('data-auto-submit')) {
         this.setAttribute('data-auto-submit',1);
-        var L=this.querySelectorAll('input,select,textarea'), i=L.length,found=false,t, nn, a;
+        var L=this.querySelectorAll(Z.Form.inputSelector), i=L.length,found=false,t, nn, a;
         while(i--) {
             t=L[i].getAttribute('type');
             nn=L[i].nodeName.toLowerCase();
@@ -635,12 +640,12 @@ function preUpload(e)
 
 function errorMsg(o, m)
 {
-    return Z.element.call(o, {e:'div',p:{className:'z-i-msg z-i-error'},c:m});
+    return Z.element.call(o, {e:'div',p:{className:'s-msg s-error'},c:m});
 }
 
 function clearMsg(o)
 {
-    var L=o.querySelectorAll('.z-i-msg'), i=L.length;
+    var L=o.querySelectorAll('.s-msg'), i=L.length;
     while(i--) {
         L[i].parentNode.removeChild(L[i]);
     }
@@ -722,10 +727,10 @@ function uploadFile(file, U)
         if(retries && retryUpload.call(this, url)) return;
 
         // remove any error messages within this form field
-        var M=this.parentNode.querySelectorAll('.z-i-msg,.tdz-i-progress'), i=M.length, err=(d && ('message' in d)) ?d.message :'There was an error in the file upload.';
+        var M=this.parentNode.querySelectorAll('.s-msg,.tdz-i-progress'), i=M.length, err=(d && ('message' in d)) ?d.message :'There was an error in the file upload.';
         if(err) {
             while(i--) M[i].parentNode.removeChild(M[i]);
-            Z.element({e:'div',p:{className:'z-i-error z-i-msg'},c:err}, null, this);
+            Z.element({e:'div',p:{className:'s-msg s-error'},c:err}, null, this);
         }
 
         this.setAttribute('data-status', 'ready');
@@ -907,10 +912,10 @@ function displayField(on)
     var reset=(this.className.search(/\bz-a-filters\b/)<0);
     if(reset) this.className += ' z-a-filters';
 
-    var b0='.z-i-field,.field',b=this.getAttribute('data-query-filtered');
+    var b=this.getAttribute('data-query-filtered');
     var c = ':scope > '+b.replace(/,/g, ', :scope > ');
     var P=(b) ?Z.parentNode(this, b) :null;
-    if(!P) P=Z.parentNode(this, b0);
+    if(!P) P=Z.parentNode(this, Z.Form.fieldSelector);
     if(!P) {
         Z.log('[ERROR] Could not find parent filtering node');
         return;
@@ -1107,7 +1112,7 @@ function initSubform(o)
         L=o.querySelectorAll('#'+id+'>.item');
         i=L.length;
     }
-    Z.parentNode(o, '.z-i-field,.field').setAttribute('data-count', i);
+    Z.parentNode(o, Z.Form.fieldSelector).setAttribute('data-count', i);
 
     // buttons: add, add(contextual), remove(contextual)
     if(!fmax || fmax!=i || fmax!=fmin) {
@@ -1157,7 +1162,7 @@ function subformAdd(e)
         Z.stopEvent(e);
         Z.tg = this;
 
-        if(el = Z.parentNode(this, '.z-i-field,.field')) {
+        if(el = Z.parentNode(this, Z.Form.fieldSelector)) {
             o = el.querySelector('.items[data-template]');
             el = Z.parentNode(this, '.item');
             if(el && Z.parentNode(el, '.items[data-template]')!=o) el=null;
@@ -1223,7 +1228,7 @@ function subformDel(e)
     var el, o;
 
     /*
-    if(el = Z.parentNode(this, '.z-i-field,.field')) {
+    if(el = Z.parentNode(this, Z.Form.fieldSelector)) {
         o = el.querySelector('.items[data-template]');
         el = null;
     }
@@ -1242,7 +1247,7 @@ function subformDel(e)
         el.parentNode.removeChild(el);
         i--;
     }
-    Z.parentNode(o, '.z-i-field,.field').setAttribute('data-count', i);
+    Z.parentNode(o, Z.Form.fieldSelector).setAttribute('data-count', i);
 
 
     //Z.subform(o);
@@ -1525,10 +1530,10 @@ function initTypeToggler()
 {
     if(!this.getAttribute('data-toggler')) {
         this.setAttribute('data-toggler',1);
-        var T=Z.parentNode(this, '.z-i-field, .field');
+        var T=Z.parentNode(this, Z.Form.fieldSelector);
         if(T) T=T.querySelector('.label, dt, label');
         if(!T) T=this.parentNode;
-        Z.element.call(T, {e:'a',a:{'class':'z-type-toggler z-i--toggle','data-toggler-option':'0','data-toggler':'#'+this.id+'[data-alt-type]'},t:{click:toggleType},c:[{e:'i',p:{className:'z-i--'+this.getAttribute('type')+' i-toggler-0'}},{e:'i',p:{className:'z-i--'+this.getAttribute('data-alt-type')+' i-toggler-1'}}]});
+        Z.element.call(T, {e:'a',a:{'class':'z-type-toggler s-api--toggle','data-toggler-option':'0','data-toggler':'#'+this.id+'[data-alt-type]'},t:{click:toggleType},c:[{e:'i',p:{className:'z-i--'+this.getAttribute('type')+' i-toggler-0'}},{e:'i',p:{className:'z-i--'+this.getAttribute('data-alt-type')+' i-toggler-1'}}]});
     }
 }
 

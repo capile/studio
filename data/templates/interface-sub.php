@@ -1,6 +1,6 @@
 <?php
 /**
- * Tecnodesign_Interface generic template
+ * Studio sub-template
  * 
  * PHP version 7.3+
  *
@@ -12,7 +12,7 @@
  */
 
 if(isset($error)): 
-    ?><div class="tdz-error"><?php echo $error; ?></div><?php 
+    ?><div class="s-msg s-error"><?php echo $error; ?></div><?php 
 endif;
 
 if(isset($preview)) echo $preview;
@@ -20,5 +20,5 @@ if(isset($preview)) echo $preview;
 if(isset($list))
     echo 
         $listCounter,
-        ((isset($searchForm))?('<input type="checkbox" id="tdz-i-s-'.$id.'" class="tdz-i-switch tdz-i-search" /><label for="tdz-i-s-'.$id.'">'.$Interface::$labelFilter.'</label><div class="tdz-i-search tdz-i-switched">'.$searchForm.'</div>'):('')),
+        ((isset($searchForm))?('<input type="checkbox" id="s-api-s-'.$id.'" class="s-switch s-api-search" /><label for="s-api-s-'.$id.'">'.$Interface::t('labelFilter').'</label><div class="s-api-search s-switched">'.$searchForm.'</div>'):('')),
         $list; 

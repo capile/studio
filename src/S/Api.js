@@ -780,7 +780,7 @@
             if(I) {
 
                 if(pI) {
-                    S=pI.querySelectorAll('.s-api-summary .s-msg,.tdz-i-msg[data-message],.s-api-msg[data-message]');
+                    S=pI.querySelectorAll('.s-api-summary .s-msg,.s-msg[data-message],.s-api-msg[data-message]');
                     i=S.length;
                     while(i--) {
                         del = S[i];
@@ -1313,10 +1313,10 @@
         else c+=' ';
         c+='s-msg';
         if(s) {
-            c+=' tdz-m-active';
+            c+=' s-m-active';
         } else {
             s=null;
-            c+=' tdz-m-inactive';
+            c+=' s-m-inactive';
         }
         if(M.className!=c)M.className=c;
         if(arguments.length>2 && html) {

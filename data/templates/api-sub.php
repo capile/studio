@@ -1,6 +1,6 @@
 <?php
 /**
- * Tecnodesign_Interface generic template
+ * Studio sub-template
  * 
  * PHP version 7.3+
  *
@@ -12,7 +12,7 @@
  */
 
 if(isset($error)): 
-    ?><div class="tdz-error"><?php echo $error; ?></div><?php 
+    ?><div class="s-msg s-error"><?php echo $error; ?></div><?php 
 endif;
 
 if(isset($preview)) echo $preview;

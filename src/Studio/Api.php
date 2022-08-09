@@ -3597,7 +3597,7 @@ class Api implements ArrayAccess
         $ff=array();
         $dest = (isset($this->actions[$this->action]['query']) && $this->actions[$this->action]['query'])?($this->action):('list');
         $fo=array(
-            'class'=>$this->config('attrFormClass').' tdz-auto '.$this->config('attrSearchFormClass').' tdz-no-empty tdz-simple-serialize',
+            'class'=>$this->config('attrFormClass').' s-auto '.$this->config('attrSearchFormClass').' s-no-empty s-simple-serialize',
             'method'=>'get',
             'limits'=>false,
             'action'=>$this->link($dest, false),
@@ -3675,7 +3675,7 @@ class Api implements ArrayAccess
                         'id'=>$slug.'-0',
                         'placeholder'=>static::t('From'),
                         'fieldset'=>$fieldset,
-                        'class'=>'tdz-search-input tdz-date tdz-date-from tdz-'.$type.'-input',
+                        'class'=>'s-search-input s-date s-date-from s-'.$type.'-input',
                     );
                     $fo['fields'][$slug.'-1']=array(
                         'type'=>'string',
@@ -3684,7 +3684,7 @@ class Api implements ArrayAccess
                         'id'=>$slug.'-1',
                         'placeholder'=>static::t('To'),
                         'fieldset'=>$fieldset,
-                        'class'=>'tdz-search-input tdz-date tdz-date-to tdz-'.$type.'-input',
+                        'class'=>'s-search-input s-date s-date-to s-'.$type.'-input',
                     );
                     $ff[$slug]='date';
                     if(isset($post[$slug.'-0']) || isset($post[$slug.'-1'])) $active = true;
@@ -3725,7 +3725,7 @@ class Api implements ArrayAccess
                         'label'=>$label,
                         'placeholder'=>$label,
                         'fieldset'=>$fieldset,
-                        'class'=>'tdz-search-input tdz-'.$type.'-input',
+                        'class'=>'s-search-input s-'.$type.'-input',
                     );
                     if(isset($fd['attributes'])) $fo['fields'][$slug]['attributes'] = $fd['attributes'];
                     if(isset($post[$slug])) $active=true;
@@ -3738,7 +3738,7 @@ class Api implements ArrayAccess
                         'label'=>$label,
                         'multiple'=>true,
                         'fieldset'=>$fieldset,
-                        'class'=>'tdz-search-input tdz-check-input',
+                        'class'=>'s-search-input s-check-input',
                     );
                     $ff[$slug]='bool'.((isset($fdo) && $fdo['type']!='bool')?('-rel-'.$fd['className']):('bool'));
                     if(isset($post[$slug])) {
@@ -3754,7 +3754,7 @@ class Api implements ArrayAccess
                         'size'=>'200',
                         'label'=>$label,
                         'fieldset'=>$fieldset,
-                        'class'=>'tdz-search-input'
+                        'class'=>'s-search-input'
                     );
                     if(isset($fd['multiple']) && $fd['multiple']) $fo['fields'][$slug]['multiple']=true;
                     if(isset($post[$slug])) $active = true;
@@ -3770,7 +3770,7 @@ class Api implements ArrayAccess
                             'label'=>'',
                             'placeholder'=>static::t('Search for'),
                             'fieldset'=>$fieldset,
-                            'class'=>'tdz-search-input',
+                            'class'=>'s-search-input',
                             'attributes'=>['data-always-send'=>1],
                         );
                     } else {
@@ -3784,7 +3784,7 @@ class Api implements ArrayAccess
                                 'choices'=>$ff['q'],
                                 'label'=>static::t('Search at'),
                                 'multiple'=>true, 'fieldset'=>$fieldset,
-                                'class'=>'tdz-search-input tdz-check-input',
+                                'class'=>'s-search-input s-check-input',
                                 'attributes'=>['data-omnibar-alias'=>'in'],
                             );
                         } else {

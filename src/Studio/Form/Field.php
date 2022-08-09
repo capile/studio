@@ -2105,7 +2105,7 @@ class Field extends SchemaObject
         $this->attributes = [];
         if(strpos($arg['class'], 'app-file-preview')!==false) {
             if($arg['value']) {
-                $s .= '<span class="text tdz-f-file'.($this->multiple ?' z-multiple' :'').'">'.$this->filePreview($arg['name']).'</span>';
+                $s .= '<span class="text s-f-file'.($this->multiple ?' z-multiple' :'').'">'.$this->filePreview($arg['name']).'</span>';
                 $hi = false;
             } else {
                 $s .= '<span class="text"></span>';
@@ -2113,7 +2113,7 @@ class Field extends SchemaObject
         }
         if(strpos($arg['class'], 'app-image-preview')!==false) {
             if($arg['value']) {
-                $s .= '<span class="text tdz-f-file">'
+                $s .= '<span class="text s-f-file">'
                     . (($arg['value'])?($this->filePreview($arg['name'], true)):(''))
                     . '</span>';
                 $hi = false;

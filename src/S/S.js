@@ -632,15 +632,15 @@ Z.parentNode=function(p, q)
 
 Z.blur=function(o)
 {
-    if(o && o.className.search(/\btdz-blur\b/)<0) {
-        o.className += ' tdz-blur';
+    if(o && o.className.search(/\bs-blur\b/)<0) {
+        o.className += ' s-blur';
     }
 };
 
 Z.focus=function(o)
 {
-    if(o && o.className.search(/\btdz-blur\b/)>0) {
-        o.className = o.className.replace(/\s*\btdz-blur\b/, '');
+    if(o && o.className.search(/\bs-blur\b/)>0) {
+        o.className = o.className.replace(/\s*\bs-blur\b/, '');
     }
 };
 
