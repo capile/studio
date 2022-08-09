@@ -165,9 +165,9 @@ class Api implements ArrayAccess
         $actionsDefault     = [ 'list', 'preview' ],
         $share              = null,
         $boxTemplate        = '<div class="s-api-scope-block scope-$ID" data-action-scope="$ID">$INPUT</div>',
-        $breadcrumbTemplate = '<div class="z-breadcrumbs">$LABEL</div>',
-        $headingTemplate    = '<hr /><h3 class="z-title">$LABEL</h3>',
-        $previewTemplate    = '<dl class="if--$ID z-i-field $CLASS"><dt>$LABEL</dt><dd data-action-item="$ID">$INPUT$ERROR</dd></dl>',
+        $breadcrumbTemplate = '<div class="s-api-breadcrumbs">$LABEL</div>',
+        $headingTemplate    = '<hr /><h3 class="s-title">$LABEL</h3>',
+        $previewTemplate    = '<dl class="if--$ID s-api-field $CLASS"><dt>$LABEL</dt><dd data-action-item="$ID">$INPUT$ERROR</dd></dl>',
         $updateTemplate,
         $newTemplate,
         $renderer           = 'renderPreview',
@@ -490,9 +490,9 @@ class Api implements ArrayAccess
 
     public static function loadAssets()
     {
-        App::$assets[] = 'Z.Api';
+        App::$assets[] = 'S.Api';
         App::$assets[] = '!'.Form::$assets;
-        App::$assets[] = '!Z.Graph';
+        App::$assets[] = '!S.Graph';
     }
 
     public static function action()
@@ -2449,7 +2449,7 @@ class Api implements ArrayAccess
         $cn = $this->getModel();
         if(!$this->graph && $displayGraph==='auto') {
             // autobuild graph based on index values
-            $ckey = 'z-i-graph/'.$cn;
+            $ckey = 's-api-graph/'.$cn;
             $this->graph = Cache::get($ckey);
             if(is_array($this->graph)) {
                 $columns = $cn::columns('search');
@@ -2633,8 +2633,8 @@ class Api implements ArrayAccess
             //if($x) $G['data']['columns'][] = $x;
 
             $a = [
-                'id'=>'z-graph-'.S::slug($g['id']),
-                'class'=>'z-graph z-graph--'.$n,
+                'id'=>'s-graph-'.S::slug($g['id']),
+                'class'=>'s-graph s-graph--'.$n,
                 'data-type'=>(isset($g['type'])) ?$g['type'] :'line',
                 'data-label'=>$label,
             ];
@@ -3122,11 +3122,11 @@ class Api implements ArrayAccess
         }
         unset($l);
         $a = ucfirst($this->action);
-        $s = '<p class="z-i-labels">'
-           . ((isset($this->text['title'])) ?'<span class="z-i-label-model">'.S::xml($this->text['title']).'</span>' :'')
-           . '<span class="z-i-label-action">'.static::t('label'.$a, $a).'</span>'
-           . (($this->id) ?'<span class="z-i-label-uid"><span class="z-i-label-key">'.$cn::fieldLabel($this->key).'</span><span class="z-i-label-id">'.S::xml($this->id).'</span></span>' :'')
-           . '<span class="z-i-label-title">'.S::xml($title).'</span>'
+        $s = '<p class="s-api-labels">'
+           . ((isset($this->text['title'])) ?'<span class="s-api-label-model">'.S::xml($this->text['title']).'</span>' :'')
+           . '<span class="s-api-label-action">'.static::t('label'.$a, $a).'</span>'
+           . (($this->id) ?'<span class="s-api-label-uid"><span class="s-api-label-key">'.$cn::fieldLabel($this->key).'</span><span class="s-api-label-id">'.S::xml($this->id).'</span></span>' :'')
+           . '<span class="s-api-label-title">'.S::xml($title).'</span>'
            . '</p>';
 
         if(isset($this->options['summary-'.$this->action]) && $this->options['summary-'.$this->action]) $s .= S::markdown($this->options['summary-'.$this->action]);
@@ -3196,7 +3196,7 @@ class Api implements ArrayAccess
                 }
             }
 
-            $ac = (isset($action['icon'])) ?'z-i-a '.$action['icon'] :'z-i-a '.$cPrefix.'--'.$aa;
+            $ac = (isset($action['icon'])) ?'s-api-a '.$action['icon'] :'s-api-a '.$cPrefix.'--'.$aa;
             if(static::$standalone) {
                 if(preg_match('/^\{[a-z0-9\_\-]+\}$/i', $sid) || $an==$this->action) continue;
                 if(!S::isempty($this->id)) {// only show batch or identifiable buttons
@@ -3245,8 +3245,8 @@ class Api implements ArrayAccess
             }
 
             $ac .= $attrButtonClass
-                . (($bt)?(' z-i-a-many'):(''))
-                . (($id)?(' z-i-a-one'):(''))
+                . (($bt)?(' s-api-a-many'):(''))
+                . (($id)?(' s-api-a-one'):(''))
             ;
             $s .= '<a '.$href.' class="'.trim($ac).'">'
                 . '<span class="s-api-label">'

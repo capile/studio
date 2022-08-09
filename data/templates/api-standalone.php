@@ -154,7 +154,7 @@ if(!isset($action)) $action = $Interface['action'];
         ?></div><?php
     endif;
 
-    // .z-i-actions
+    // .s-api-actions
     if($buttons && $content && $Interface::$listPagesOnBottom): ?><div class="s-api-standalone-buttons"><?php
         echo $buttons; 
     ?></div><?php endif;

@@ -77,7 +77,7 @@
 
         var B=Z.parentNode(I, '.s-api-body');
 
-        if(B && (b=B.querySelector(':scope > .z-i-nav')) && !b.getAttribute('data-startup')) {
+        if(B && (b=B.querySelector(':scope > .s-api-nav')) && !b.getAttribute('data-startup')) {
             b.setAttribute('data-startup', '1');
             l=b.querySelectorAll('a[href]');
             i=l.length;
@@ -86,7 +86,7 @@
         }
 
         // bind links to Interface actions
-        l=I.querySelectorAll('a[href^="'+base+'"],.z-i-a,.z-i-link');
+        l=I.querySelectorAll('a[href^="'+base+'"],.s-api-a,.s-api-link');
         i=l.length;
         while(i-- > 0) if(!l[i].getAttribute('target') && !l[i].getAttribute('download')) Z.bind(l[i], 'click', (l[i].getAttribute('data-inline-action'))?loadAction :loadInterface);
         l=null;
@@ -499,7 +499,7 @@
             } else if ((I=Z.parentNode(this, '.s-api-title[data-url]'))) {
                 I = _root.querySelector('.s-api-app[data-url="'+I.getAttribute('data-url')+'"]');
                 if(!I) return true;
-            } else if(!Z.parentNode(this, '.z-i-nav')) return true;
+            } else if(!Z.parentNode(this, '.s-api-nav')) return true;
             if(this.className.search(/\bs-api--close\b/)>-1) {
                 if((u=this.getAttribute('href'))) {
                     activeInterface(u);
@@ -511,20 +511,20 @@
             if(_noH) _noH = false;
 
             var valid=true;
-            if(this.className.search(/\bz-i-a-(many|one)\b/)>-1) {
+            if(this.className.search(/\bs-api-a-(many|one)\b/)>-1) {
                 valid = false;
-                if(this.className.search(/\bz-i-a-many\b/)>-1) {
+                if(this.className.search(/\bs-api-a-many\b/)>-1) {
                     m=true;
-                    if(I.matchesSelector('.z-i-list-many')) valid = true;
+                    if(I.matchesSelector('.s-api-list-many')) valid = true;
                 }
-                if(this.className.search(/\bz-i-a-one\b/)>-1) {
-                    if(I.matchesSelector('.z-i-list-one')) valid = true;
+                if(this.className.search(/\bs-api-a-one\b/)>-1) {
+                    if(I.matchesSelector('.s-api-list-one')) valid = true;
                 }
                 if(!valid) {
                     if (m) {
-                        msg(Z.t('moreRecord'), 'z-i-error');
+                        msg(Z.t('moreRecord'), 's-error');
                     } else {
-                        msg(Z.t('noRecordSelected'), 'z-i-error');
+                        msg(Z.t('noRecordSelected'), 's-error');
                     }
                     return false;
                 }
@@ -780,7 +780,7 @@
             if(I) {
 
                 if(pI) {
-                    S=pI.querySelectorAll('.s-api-summary .s-msg,.tdz-i-msg[data-message],.z-i-msg[data-message]');
+                    S=pI.querySelectorAll('.s-api-summary .s-msg,.tdz-i-msg[data-message],.s-api-msg[data-message]');
                     i=S.length;
                     while(i--) {
                         del = S[i];
@@ -904,7 +904,7 @@
             if(txt && txt.trim()) document.title = txt;
         }
 
-        var N = Z.parentNode(I, '.s-api-body').querySelector(':scope > .z-i-nav'), nb;
+        var N = Z.parentNode(I, '.s-api-body').querySelector(':scope > .s-api-nav'), nb;
         if(N && (nb = N.getAttribute('data-base-url'))) {
             R=N.querySelectorAll('a.z-current[href]');
             i=R.length;
@@ -979,21 +979,21 @@
     {
         var S=(!I || !Z.isNode(I))?(_root.querySelector('.s-api-active .s-api-summary')):(I.querySelector('.s-api-summary'));
         if(!S) return;
-        var i=_msgs.length, now=(new Date()).getTime(), next=0, L=S.querySelectorAll(':scope > .z-i-msg[data-created],:scope > .z-i-msg'), timeout=5000, last=(L.length>0)?(L[L.length-1]):(null), el;
+        var i=_msgs.length, now=(new Date()).getTime(), next=0, L=S.querySelectorAll(':scope > .s-msg[data-created],:scope > .s-msg'), timeout=5000, last=(L.length>0)?(L[L.length-1]):(null), el;
         while(i--) {
             if(_msgs[i].e < now || !_msgs[i].n.parentNode) {
                 if(_msgs[i].n) {
                     el = _msgs[i].n;
-                    if(el.parentNode && el.parentNode.className=='z-i-msg') el=el.parentNode;
+                    if(el.parentNode && el.parentNode.className=='s-msg') el=el.parentNode;
                     Z.deleteNode(el);
                 }
                 _msgs[i].n=null;
                 _msgs.splice(i, 1);
             } else if(Z.parentNode(_msgs[i].n, '.s-api-summary')!=S) {
                 if(last) {
-                    last = Z.element({e:'div',p:{className:'z-i-msg'},c:[_msgs[i].n]}, null, last);
+                    last = Z.element({e:'div',p:{className:'s-msg'},c:[_msgs[i].n]}, null, last);
                 } else {
-                    last = Z.element.call(S, {e:'div',p:{className:'z-i-msg'},c:[_msgs[i].n]});
+                    last = Z.element.call(S, {e:'div',p:{className:'s-msg'},c:[_msgs[i].n]});
                 }
                 if(!next || next>_msgs[i].e) next=_msgs[i].e;
             }
@@ -1070,7 +1070,7 @@
                 Z.init(box);
                 Z.focus(mv);
                 return;
-            } else if(!box.querySelector('.s-api-body .z-i-nav') && (mv=f.querySelector('.s-api-body .z-i-nav'))) {
+            } else if(!box.querySelector('.s-api-body .s-api-nav') && (mv=f.querySelector('.s-api-body .s-api-nav'))) {
                 //add nav
                 var B=box.querySelector('.s-api-body');
                 if(B.children.length==0) B.appendChild(mv);
@@ -1165,7 +1165,7 @@
                     h=H.querySelector('.s-api-title[data-url="'+cu+'"]');
                     //Z.bind(Hs[i], 'click', activeInterface);
                     if(!Hs[i].querySelector('*[data-action="close"]')) {
-                        Z.element.call(Hs[i], {e:'span',a:{'class':'z-i-a s-api--close','data-action':'close'},t:{click:loadInterface}});
+                        Z.element.call(Hs[i], {e:'span',a:{'class':'s-api-a s-api--close','data-action':'close'},t:{click:loadInterface}});
                     }
                     if(h) H.replaceChild(Hs[i], h);
                     else if(cu==u) H.appendChild(Hs[i]);
@@ -1209,7 +1209,7 @@
                 _A[ra].call(this, r[i]);
             }
             if(r[i].parentNode) {
-                if(r[i].parentNode.className.search(/\bz-i-msg\b/)>-1 && r[i].parentNode.children.length==1) r[i].parentNode.parentNode.removeChild(r[i].parentNode);
+                if(r[i].parentNode.className.search(/\bs-msg\b/)>-1 && r[i].parentNode.children.length==1) r[i].parentNode.parentNode.removeChild(r[i].parentNode);
                 else r[i].parentNode.removeChild(r[i]);
             }
         }
@@ -1376,14 +1376,14 @@
         if(ref && (I.getAttribute('data-id')) && (id=I.getAttribute('data-url'))) {
             _ids[id] = [I.getAttribute('data-id')];
         } else {
-            L = _root.querySelectorAll('.s-api-active'+_sel+', .z-i-standalone');
+            L = _root.querySelectorAll('.s-api-active'+_sel+', .s-api-standalone');
             i=L.length;
             while(i--) {
                 id=L[i].getAttribute('data-url');
                 _ids[id] = [];
             }
 
-            L = _root.querySelectorAll('.s-api-active'+_sel+' '+isel+', .z-i-standalone '+isel);
+            L = _root.querySelectorAll('.s-api-active'+_sel+' '+isel+', .s-api-standalone '+isel);
             i=L.length;
             while(i--) {
                 if(!(tI=Z.parentNode(L[i], '.s-api-app'))) continue;
@@ -1398,12 +1398,12 @@
 
         for(id in _ids) {
             if((tI=_root.querySelector(_sel+'[data-url="'+id+'"]'))) {
-                cn=tI.className.replace(/\bz-i-list-(none|one|many)\b\s*/g, '').trim();
+                cn=tI.className.replace(/\bs-api-list-(none|one|many)\b\s*/g, '').trim();
                 i=_ids[id].length;
                 if(i==0 && tI.getAttribute('data-id')) i=1;
-                if(i==0) cn += ' z-i-list-none';
-                else if(i==1) cn += ' z-i-list-one';
-                else if(i>1) cn+= ' z-i-list-many';
+                if(i==0) cn += ' s-api-list-none';
+                else if(i==1) cn += ' s-api-list-one';
+                else if(i>1) cn+= ' s-api-list-many';
                 if(tI.className!=cn)tI.className=cn;
             } else {
                 delete(_ids[id]);
@@ -1439,9 +1439,9 @@
     function initAutoRemove()
     {
         if(!this.querySelector('.s-api--close')) {
-            var el=Z.element.call(this, {e:'i',p:{className:'s-api--close z-i-a z-round'},t:{click:autoRemove}});
+            var el=Z.element.call(this, {e:'i',p:{className:'s-api--close s-api-a z-round'},t:{click:autoRemove}});
             if(el.previousSibling.nodeName.toLowerCase()=='a' && !el.previousSibling.getAttribute('href')) Z.bind(el.previousSibling, 'click', autoRemove);
-            var P=Z.parentNode(this,'.z-i-field,.field');
+            var P=Z.parentNode(this,'.s-api-field,.field');
             if(P) P.className+=' has-auto-remove';
         }
     }
@@ -1476,11 +1476,11 @@
         Studio.loadInterface = loadInterface;
         Studio.setInterface = setInterface;
         Studio.setInterfaceRoot = setRoot;
+        window.Studio_Api = startup;
+        window.Studio_Api_AutoRemove = initAutoRemove;
         if(!Z || Z!==Studio) Z=Studio;
     }
 
-    window.Studio_Api = startup;
-    window.Studio_Api_AutoRemove = initAutoRemove;
     init();
 
 })();

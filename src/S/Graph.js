@@ -16,8 +16,8 @@ function init()
 function Graph(o)
 {
     var n=Z.node(o, this), d, D, id;
-    if(!n || n.className.search(/\bz-active\b/)>-1) return;
-    n.className += ' z-active';
+    if(!n || n.className.search(/\bs-active\b/)>-1) return;
+    n.className += ' s-active';
     if(!(id=n.id)) {
         id='_gid'+_gids++;
         n.id=id;
@@ -59,8 +59,8 @@ function checkGraph()
 {
     var n, el, I;
     for(n in _G) {
-        if(_G[n] && ('element' in _G[n]) && (el=_G[n].element) && (I=Z.parentNode(el, '.tdz-i'))) {
-            if(I.className.search(/\btdz-i-active\b/)>-1) {
+        if(_G[n] && ('element' in _G[n]) && (el=_G[n].element) && (I=Z.parentNode(el, '.s-api-app'))) {
+            if(I.className.search(/\bs-api-active\b/)>-1) {
                 _G[n].flush();
             }
         } else if(_G[n]) {
@@ -73,15 +73,14 @@ function checkGraph()
 
 function graphInteraction(d, el)
 {
-    if(Z.parentNode(el, '.tdz-i.tdz-i-active')) {
+    if(Z.parentNode(el, '.s-api-app.s-api-active')) {
         return graphInterface(d, el);
     }
-    //console.log('click!', arguments);
 }
 
 function graphInterface(d, el)
 {
-    var I=Z.parentNode(el, '.tdz-i.tdz-i-active'), O=I.querySelector('#omnibar'), G=Z.parentNode(el, '.z-graph[data-title]'), n=('name' in d) ?d.name :null;
+    var I=Z.parentNode(el, '.s-api-app.s-api-active'), O=I.querySelector('#omnibar'), G=Z.parentNode(el, '.s-graph[data-title]'), n=('name' in d) ?d.name :null;
     if(!O || !G || !n) return;
 
     var t=Z.slug(G.getAttribute('data-title')),m=null;
@@ -106,7 +105,7 @@ function graphInterface(d, el)
 }
 
 // default modules loaded into Z
-window.Z_Graph = Graph
+window.Studio_Graph = Graph
 init();
 
 })();

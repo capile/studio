@@ -16,12 +16,12 @@ namespace Studio;
 
 use Studio as S;
 use Studio\App;
+use Studio\Collection;
 use Studio\Model;
 use Studio\SchemaObject;
 use Studio\Yaml;
 use Exception;
 use Tecnodesign_Exception as AppException;
-use Tecnodesign_Collection as Collection;
 
 class Query extends SchemaObject
 {
@@ -74,7 +74,12 @@ class Query extends SchemaObject
         } else if(!$Q->count()) {
             return false;
         } else {
-            return new Collection(null, (isset($this->model)) ?$this->model :null, $Q, null);
+            $cn = $qk = null;
+            if(isset($this->model)) {
+                $cn = $this->model;
+                $qk = $cn::pk();
+            }
+            return new Collection(null, $cn, $Q, $qk);
         }
     }
 

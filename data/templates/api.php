@@ -79,16 +79,16 @@ if(isset($attributes) && is_array($attributes)) {
 ?><div class="s-api-body"><?php
 
     if($nav) {
-        $nclass = 'z-i-nav z-toggle-active';
-        echo '<div id="z-nav" data-draggable-style="width:{w0}" data-draggable-default=style="width:{w1}" class="', $nclass, '" data-base-url="', $Interface::base(), '" data-toggler-attribute-target=".s-api-header" data-toggler-drag-target=".s-api-body" data-toggler-drag=".z-nav,.z-i-nav,.s-api-app.s-api-active" data-toggler-options="child,sibling,storage,draggable" data-toggler-default="800">', $nav, '</div>'; 
+        $nclass = 's-api-nav s-toggle-active';
+        echo '<div id="z-nav" data-draggable-style="width:{w0}" data-draggable-default=style="width:{w1}" class="', $nclass, '" data-base-url="', $Interface::base(), '" data-toggler-attribute-target=".s-api-header" data-toggler-drag-target=".s-api-body" data-toggler-drag=".z-nav,.s-api-nav,.s-api-app.s-api-active" data-toggler-options="child,sibling,storage,draggable" data-toggler-default="800">', $nav, '</div>'; 
     }
 
     // .s-api-app
     ?><div<?php foreach($a as $k=>$v) echo ' '.S::slug($k, '-_').'="'.S::xml($v).'"'; ?>><?php
-        // .z-i-actions
+        // .s-api-actions
         if(!isset($buttons)) $buttons = null;
-        if($buttons): ?><div class="<?php echo trim('z-i-actions '.$Interface->config('attrButtonsClass')); ?>"><?php
-            ?><input type="checkbox" id="s-api-b-<?php echo $id; ?>" class="s-switch z-i-actions" /><label for="s-api-b-<?php echo $id; ?>"><?php
+        if($buttons): ?><div class="<?php echo trim('s-api-actions '.$Interface->config('attrButtonsClass')); ?>"><?php
+            ?><input type="checkbox" id="s-api-b-<?php echo $id; ?>" class="s-switch s-api-actions" /><label for="s-api-b-<?php echo $id; ?>"><?php
             echo $Interface::t('labelActions'); ?></label><div class="s-buttons s-switched"><?php
                 echo $buttons; 
         ?></div></div><?php endif; 
@@ -123,7 +123,7 @@ if(isset($attributes) && is_array($attributes)) {
             else if(isset($options['before'])) echo S::markdown($options['before']);
 
 
-            ?><div class="z-i-summary <?php echo $cPrefix, '--', $Interface['action']; ?>"><?php
+            ?><div class="s-api-summary <?php echo $cPrefix, '--', $Interface['action']; ?>"><?php
 
                 if(isset($summary)) {
                     echo $summary;
@@ -227,7 +227,7 @@ if(isset($attributes) && is_array($attributes)) {
             if(isset($options['after-'.$action])) echo S::markdown($options['after-'.$action]);
             else if(isset($options['after'])) echo S::markdown($options['after']);
 
-            // .z-i-actions
+            // .s-api-actions
             ?></div><div class="<?php echo $cPrefix, '-footer'; ?>"><div class="s-buttons"><?php
                 echo $buttons; 
             ?></div></div><?php 

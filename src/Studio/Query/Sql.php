@@ -434,7 +434,7 @@ class Sql
 
     public function addWhere($w)
     {
-        if(is_null($this->_where)) $this->_where = $this->getWhere($w);
+        if(S::isempty($this->_where)) $this->_where = $this->getWhere($w);
         else $this->_where .= " and ({$this->getWhere($w)})";
         return $this;
     }

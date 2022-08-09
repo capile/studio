@@ -17,6 +17,7 @@ namespace Studio\Form;
 use Studio as S;
 use Studio\App;
 use Studio\Cache;
+use Studio\Collection;
 use Studio\Model;
 use Studio\SchemaObject;
 use Studio\Form;
@@ -25,7 +26,6 @@ use Studio\Query\Api as QueryApi;
 use arrayObject;
 use Exception;
 use Tecnodesign_Exception as AppException;
-use Tecnodesign_Collection as Collection;
 use Tecnodesign_Image as Image;
 
 class Field extends SchemaObject
@@ -65,7 +65,7 @@ class Field extends SchemaObject
         $typesNotForValidation=['button','submit'],
         $uploadSuffix='--uploader',
         $labels = [ 'blank'=>'—' ],
-        $maxOptions=500
+        $maxOptions=100
         ;
 
     /**
@@ -77,6 +77,7 @@ class Field extends SchemaObject
         $form,
         $bind,
         $choices,
+        $value,
         $attributes=[];
 
     private $_choicesCollection=null;
@@ -334,8 +335,6 @@ class Field extends SchemaObject
             if(($this->value===false || is_null($this->value)) && !is_null($this->default)) {
                 $this->value = $this->default;
             }
-        } else if(!property_exists($this, 'value')) {
-            $this->value = null;
         }
 
         return $this->value;
@@ -1463,28 +1462,39 @@ class Field extends SchemaObject
             }
             unset($M, $m);
         }
-        if (!isset($this->choices)) {
-            $this->choices=[];
-            if(!isset($this->_choicesCollection) && isset($this->query)) {
-                $this->_choicesCollection = $this->query->find((isset($this->choicesFilter)) ?$this->choicesFilter :null);
-            }
+        if (!isset($this->choices) && !isset($this->_choicesCollection) && isset($this->query)) {
+            $this->choices = [];
+            $this->_choicesCollection = $this->query->find((isset($this->choicesFilter)) ?$this->choicesFilter :null);
             if(is_array($this->_choicesCollection)) {
                 $this->choices = $this->_choicesCollection;
                 $this->_choicesCollection = null;
-            } else if($this->_choicesCollection) {
-                if(!is_null($check) && !is_array($check) && $this->_choicesCollection->getQueryKey()) {
+            }
+        }
+        if(!$this->choices && $this->_choicesCollection) {
+            $c = $this->_choicesCollection->count();
+            if(!is_null($check)) {
+                if(!$c) {
+                    return false;
+                } else if(!is_array($check)) {
                     return $this->_choicesCollection[$check];
-                } else if($count) {
-                    return $this->_choicesCollection->count();
+                } else {
+                    $this->_choicesCollection->setQuery($check);
+                    $c = $this->_choicesCollection->count();
+                    if(!$c) return false;
+                    return $this->_choicesCollection->getItems();
                 }
-                if(!$this->_choicesCollection->getQueryKey()) {
-                    if($this->_choicesCollection->count()) {
-                        foreach($this->_choicesCollection->getItems() as $r) {
-                            $this->choices[$r->getPk()]=$r;
-                            unset($r);
-                        }
-                    }
+            } else if($count) {
+                return $c;
+            }
+            $k = $this->_choicesCollection->getQueryKey();
+            if($c && ($c < static::$maxOptions || !$k)) {
+                foreach($this->_choicesCollection->getItems() as $r) {
+                    $this->choices[($k) ?$r->$k :$r->getPk()]=$r;
+                    unset($r);
                 }
+            }
+            if(!$c) {
+                $this->_choicesCollection = null;
             }
         }
         if(!is_null($check) && !is_array($check)) {
@@ -2916,100 +2926,73 @@ class Field extends SchemaObject
 
     private function ajaxChoices($s)
     {
-        // search results
-        $filtered = false;
         $w = null;
-        if(is_string($this->choices) && class_exists($this->choices)) {
-            $this->_choicesCollection = null;
-            $cn = $this->choices;
-            $scope = $cn::columns((!$this->scope)?('choices'):($this->scope), (is_numeric($s))?(null):(array('string')));
-            $filtered = true;
-            $w=array();
-            foreach($scope as $fn) {
-                if(is_array($fn) && isset($fn['bind'])) $fn=$fn['bind'];
-                if(strpos($fn, ' ')) $fn = preg_replace('/\s+(as\s+)?[a-z0-9\_]+$/i', '', $fn);
-                if(preg_match('/\[([^\]]+)\]/', $fn, $m)) $fn = $m[1];
-                $w["|{$fn}%="]=$s;
-            }
-        } else {
-            if(!is_null($this->_choicesCollection)) {
-                $cn = $this->_choicesCollection->getClassName();
-            } else if($this->choices instanceof Collection) {
-                $this->_choicesCollection = $this->choices;
-                $cn = $this->choices = $this->_choicesCollection->getClassName();
-            } else {
-                return array();
-            }
-            $scope = $cn::columns((!$this->scope)?('choices'):($this->scope), (is_numeric($s))?(null):(array('string')));
-            $filtered = true;
-            $sql = $this->_choicesCollection->getQuery();
+        if(!$this->choices && isset($this->query) && ($cn=$this->query->model)) {
+            $scope = $cn::columns((!isset($this->scope)) ?'choices':$this->scope, (is_numeric($s)) ?null:['string']);
             if($s) {
-                if(!mb_detect_encoding($s, 'UTF-8', true)) $s = S::encodeUTF8($s);
-                $w=array();
+                $w = [];
                 foreach($scope as $fn) {
-                    $w["|{$fn}*="]="t.{$fn} like '%".S::sql($s, false)."%'";
+                    if(is_array($fn) && isset($fn['bind'])) $fn=$fn['bind'];
+                    if(strpos($fn, ' ')) $fn = preg_replace('/\s+(as\s+)?[a-z0-9\_]+$/i', '', $fn);
+                    if(preg_match('/\[([^\]]+)\]/', $fn, $m)) $fn = $m[1];
+                    $w["|{$fn}%="]=$s;
                 }
-                $osql = '';
-                if(preg_match('/ order by(.+)$/', $sql, $m)) {
-                    $osql = ' order by'.preg_replace('/ t[0-9]*\./', ' t.', $m[1]);
-                    $sql = substr($sql, 0, strlen($sql) - strlen($m[0]));
-                }
-                $sql = 'select t.* from ('.$sql.') as t where '.implode(' or ', $w).$osql;
+                $o = $this->getChoices(['where'=>$w]);
+            } else {
+                $o = $this->getChoices();
             }
-            $this->choices = $this->_choicesCollection = new Collection(null, $cn, $sql, $this->_choicesCollection->getQueryKey());
-            $w = null;
-        }
-        $o = $this->getChoices($w);
-        if(!$filtered) {
-            $term = S::slug($s);
-            foreach($o as $k=>$v) {
-                $value = $v;
-                if(is_array($v)) {
-                    $value = $v['label'];
-                }
-                $slug = S::slug((string)$value);
-                if(strpos($slug, $term)===false) {
-                    unset($o[$k]);
-                }
-                if(!is_string($v)) {
-                    $o[$k]=(string)$value;
+            if(!$o && isset($this->_choicesCollection)) {
+                $o = $this->_choicesCollection->getItems(0, static::$maxOptions);
+            }
+            $ro = [];
+            if($o) {
+                foreach($o as $k=>$v) {
+                    if(is_object($v) && $v instanceof Model) {
+                        if(isset($v::$schema->scope['choices']['value']) && isset($v::$schema->scope['choices']['label'])) {
+                            $ro[]=$v->asArray('choices');
+                        } else {
+                            $value=$v->pk;
+                            $group = $v->group;
+                            $label = $v->label;
+                            if(!$label) {
+                                $label = (string) $v;
+                            }
+                            if($group) {
+                                $ro[] = [ 'value'=>$value, 'label'=>$label, 'group'=>$group ];
+                            } else {
+                                $ro[] = [ 'value'=>$value, 'label'=>$label ];
+                            }
+                        }
+                    } else if(!is_string($v)) {
+                        if(is_array($v) && isset($v['label'])) {
+                            $v = $v['label'];
+                        }
+                        $ro[] = [ 'value'=>$v, 'label'=>$k ];
+                    } else {
+                        break;
+                    }
+                    unset($k, $v);
                 }
             }
-            $ro=$o;
             unset($o);
         } else {
-            if($o instanceof Collection && $o->getQuery()) {
-                $o = $o->getItems();
-            }
-            $ro=array();
-            foreach($o as $k=>$v) {
-                if(is_object($v) && $v instanceof Model) {
-                    if(isset($v::$schema['scope']['choices']['value']) && isset($v::$schema['scope']['choices']['label'])) {
-                        $ro[]=$v->asArray('choices');
-                    } else {
-                        $value=$v->pk;
-                        $group = $v->group;
-                        $label = $v->label;
-                        if(!$label) {
-                            $label = (string) $v;
-                        }
-                        if($group) {
-                            $ro[]=array('value'=>$value, 'label'=>$label, 'group'=>$group);
-                        } else {
-                            $ro[]=array('value'=>$value, 'label'=>$label);
-                        }
-                    }
-                } else if(!is_string($v)) {
+            $ro = $this->getChoices();
+            if($s) {
+                $term = S::slug($s);
+                foreach($ro as $k=>$v) {
+                    $value = $v;
                     if(is_array($v)) {
-                        $v = $v['label'];
+                        $value = $v['label'];
                     }
-                    $ro[]=array('value'=>$v, 'label'=>$k);
-                } else {
-                    break;
+                    $slug = S::slug((string)$value);
+                    if(strpos($slug, $term)===false) {
+                        unset($ro[$k]);
+                    }
+                    if(!is_string($v)) {
+                        $ro[$k]=(string)$value;
+                    }
                 }
-                unset($k, $v);
             }
-            unset($o);
         }
         return $ro;
     }
@@ -3043,7 +3026,7 @@ class Field extends SchemaObject
             if($m) {
                 unset($m, $tg);
                 S::cacheControl('no-cache',0);
-                S::output($this->ajaxChoices(urldecode(App::request('headers', 'z-term'))), 'json');
+                S::output($this->ajaxChoices(urldecode((string)App::request('headers', 'z-term'))), 'json');
             }
             unset($m, $tg);
         }

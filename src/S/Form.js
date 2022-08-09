@@ -100,7 +100,7 @@ function initAutoSubmit(e)
             found=true;
         }
         if(!found) return;
-        this.className+=' z-no-button';
+        this.className+=' s-no-button';
     }
 }
 
@@ -201,7 +201,7 @@ function initDatalist(o)
         Z.bind(t, 'blur', datalistBlurTimeout);
     }
     Z.bind(t, 'change', datalistQueryTimeout);
-    t.parentNode.className += ' tdz-input-search';
+    t.parentNode.className += ' s-input-search';
     if(t.getAttribute('data-datalist-visible')) {
         datalistQuery.call(t);
     }
@@ -233,24 +233,27 @@ function datalistKeypress(e)
     } else {
         return datalistQueryTimeout.call(o);
     }
-    var c=o.parentNode.querySelector('ul.tdz-datalist'), s=(c)?(c.querySelector('.tdz-selected')):(null);
+    var c=o.parentNode.querySelector('ul.s-datalist'), s=(c)?(c.querySelector('.s-selected')):(null);
     if(!s) {
         if(!c || c.children.length==0) return;
         s = c.children[0];
         m=0;
     } else {
-        s.className = s.className.replace(/\s*\btdz-selected\b/, '');
+        s.className = s.className.replace(/\s*\bs-selected\b/, '');
     }
     if(m>0) {
         while(m-- > 0) {
-            s=s.nextSibling;
+            if(s.nextSibling) s=s.nextSibling;
+            else break;
         }
     } else if(m<0) {
         while(m++ < 0) {
-            s=s.previousSibling;
+            if(s.previousSibling) s=s.previousSibling;
+            else break;
         }
     }
-    s.className += ' tdz-selected';
+    s.className += ' s-selected';
+    if('scrollIntoView' in s) s.scrollIntoView({block:'nearest',behavior:'smooth'});
     if(t) {
         datalistOption.apply(s);
     }
@@ -272,7 +275,7 @@ function datalistQuery(e)
     /*jshint validthis: true */
     var o=this, v=datalistVal(o), t=new Date().getTime(), focus=(e && ('type' in e) && e.type=='focus');
     if(_dq) clearTimeout(_dq);
-    if(o.getAttribute('data-datalist-visible') && !o.parentNode.querySelector('.tdz-datalist-container')) {
+    if(o.getAttribute('data-datalist-visible') && !o.parentNode.querySelector('.s-datalist-container')) {
     } else if(v==o.getAttribute('data-datalist-q') || o.getAttribute('data-datalist-t')>t) {
         if(!focus || o.getAttribute('data-datalist-visible')) {
             return;
@@ -366,7 +369,7 @@ function datalistBlur(e)
 function datalistClear()
 {
     /*jshint validthis: true */
-    var o=this, v=datalistVal(o), t=new Date().getTime()+500, c=o.parentNode.querySelector('.tdz-datalist-container');
+    var o=this, v=datalistVal(o), t=new Date().getTime()+500, c=o.parentNode.querySelector('.s-datalist-container');
     o.setAttribute('data-datalist-q', v);
     o.setAttribute('data-datalist-t', t);
     if(c) c.parentNode.removeChild(c);
@@ -381,14 +384,14 @@ function datalistRender(d)
         _D = Z[r].call(this, d, datalistOption);
         return _D;
     }
-    var o=this, c=o.parentNode.querySelector('ul.tdz-datalist'), n, p;
-    if(!c) c=Z.element.call(o.parentNode,{e:'span',p:{className:'tdz-datalist-container'},c:[{e:'ul',p:{className:'tdz-datalist'},a:{'data-target':o.getAttribute('id')}}]}).children[0];
+    var o=this, c=o.parentNode.querySelector('ul.s-datalist'), n, p;
+    if(!c) c=Z.element.call(o.parentNode,{e:'span',p:{className:'s-datalist-container'},c:[{e:'ul',p:{className:'s-datalist'},a:{'data-target':o.getAttribute('id')}}]}).children[0];
     else c.innerHTML=''; // remove child nodes
     var id=o.getAttribute('id'), prefix = o.getAttribute('data-prefix');
     _D[id]={};
     for(n in d) {
         if(d.hasOwnProperty(n)) {
-            p={e:'li',p:{className:'tdz-option'},a:{'data-value':n},t:{click:datalistOption}};
+            p={e:'li',p:{className:'s-option'},a:{'data-value':n},t:{click:datalistOption}};
             if(typeof(d[n])=='string') {
                 p.c=d[n];
             } else if('label' in d[n]) {
@@ -405,7 +408,7 @@ function datalistRender(d)
                 p.c=[];
                 for (var s in d[n]) {
                     if(d[n].hasOwnProperty(s) && d[n][s]) {
-                        p.c.push({e:'span', a:{'data-attr':s},p:{className:'tdz-attr-'+s}, c: d[n][s] });
+                        p.c.push({e:'span', a:{'data-attr':s},p:{className:'s-attr-'+s}, c: d[n][s] });
                     }
                 }
             }
@@ -419,7 +422,7 @@ function datalistRender(d)
         }
     }
     if(!p) {
-        p={e:'li',p:{className:'z-i-msg z-i-alert'},c:Z.t('Nothing')};
+        p={e:'li',p:{className:'s-msg s-alert'},c:Z.t('Nothing')};
         Z.element.call(c,p);
     }
     return _D;

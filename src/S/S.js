@@ -7,7 +7,7 @@ var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl,
     Callback:'*[data-callback]',
     Copy:'a.z-copy[data-target]',
     DisplaySwitch:'*[data-display-switch]',
-    ToggleActive:'.z-toggle-active',
+    ToggleActive:'.s-toggle-active,.z-toggle-active',
     Studio_Form: 'form.s-form',
     Studio_Form_AutoSubmit: 'form.s-auto-submit',
     Studio_Form_CheckLabel:'.i-check-label input[type=radio],.i-check-label input[type=checkbox]',
@@ -350,9 +350,15 @@ Z.cookie=function(name, value, expires, path, domain, secure) {
         var a = name + "=", i = 0;
         while (i < document.cookie.length) {
             var j = i + a.length;
-            if (document.cookie.substring(i, j) == a) return _cookieValue(j);
-            i = document.cookie.indexOf(" ", i) + 1;
-            if (i == 0) break;
+            if (document.cookie.substring(i, j) === a) {
+                var e = document.cookie.indexOf (';', j);
+                if (e === -1) e = document.cookie.length;
+
+                return unescape(document.cookie.substring(j, e));
+            } else {
+                i = document.cookie.indexOf(' ', i) + 1;
+                if (i <= 0) break;
+            }
         }
         return null;
 
@@ -393,12 +399,6 @@ Z.unique=function(array) {
     }
     return a;
 };
-
-function _cookieValue(offset) {
-    var endstr = document.cookie.indexOf (";", offset);
-    if (endstr == -1) { endstr = document.cookie.length; }
-    return unescape(document.cookie.substring(offset, endstr));
-}
 
 Z.lang=function(s)
 {
@@ -1599,7 +1599,6 @@ Z.enableForm=function(F)
     }
     if(F.className.search(/\bz-disabled\b/)>-1) F.className = F.className.replace(/\s*\bz-disabled\b/g, '');
 }
-
 
 Z.initRecaptcha = function()
 {
