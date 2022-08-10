@@ -48,19 +48,8 @@ all:
       # CMS UI credentials
       search: [ Administrator, Developer, Editor, Author ]
   app:
-    export:
-      Tecnodesign_Studio:
-        cliInterface: true
-        webInterface: true
-        connection: studio
-        index: studio
-      Studio:
-        log: 2
-        database:
-          studio:
-            dsn: sqlite:data/studio.db
     controller-options:
-      class: Tecnodesign_Studio
+      class: Studio\Studio
       static: true
       additional-params: true
       layout: layout

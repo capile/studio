@@ -10,8 +10,8 @@
  */
 namespace Studio\Test\Unit;
 
-use PHPUnit\Framework\TestCase;
 use Studio as S;
+use PHPUnit\Framework\TestCase;
 
 class StudioTest extends TestCase
 {

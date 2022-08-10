@@ -45,7 +45,7 @@
         "codeception/module-rest": "^1.3"
     },
     "scripts": {
-        "test": "./studio-server && vendor/bin/codecept run -v "
+        "test": "vendor/bin/codecept run -v "
     },
     "bin": [ "studio", "studio-server" ],
     "suggest" : {

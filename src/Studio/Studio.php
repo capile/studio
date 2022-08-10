@@ -16,6 +16,7 @@ namespace Studio;
 
 use Studio as S;
 use Studio\App;
+use Studio\Collection;
 use Studio\Form;
 use Studio\Model\Entries;
 use Studio\Model\Contents;
@@ -25,7 +26,6 @@ use Studio\Model\Index;
 use Studio\Query;
 use Studio\Yaml;
 use Tecnodesign_Studio_Asset as Asset;
-use Tecnodesign_Collection as Collection;
 use Tecnodesign_Translate as Translate;
 
 class Studio
@@ -79,7 +79,7 @@ class Studio
             'start'=>['Studio\\Model\\Config','standaloneConfig'],
             'check'=>['Studio\\Model\\Index', 'checkConnection'],
             'index'=>['Studio\\Model\\Index','reindex'],
-            'import'=>['Tecnodesign_Database','import'],
+            'import'=>['Studio\\Query','import'],
         ];
     const VERSION = 1.0;    // should match the development branch 
 

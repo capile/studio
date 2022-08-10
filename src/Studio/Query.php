@@ -83,6 +83,119 @@ class Query extends SchemaObject
         }
     }
 
+    public static function import($data=null)
+    {
+        if(!$data && S_CLI && ($data=App::request('argv'))) {
+            if(count($data)==1) $data = array_shift($data);
+            else {
+                foreach($data as $f) {
+                    if($f===':import') continue;
+                    self::import($f);
+                }
+                return;
+            }
+        }
+        if(!is_array($data)) {
+            $ext = 'json';
+            if(substr($data, 0, 1)!=='{') {
+                $ext = 'yaml';
+                if(strpos($data, "\n")===false && strpos($data, '"')===false && file_exists($data)) {
+                    if(substr($data, -5)==='.json') $ext = 'json';
+                    $data = file_get_contents($data);
+                }
+            }
+            $data = S::unserialize($data, $ext);
+        }
+        if(!is_array($data)) {
+            return false;
+        }
+        try {
+            $replace = array();
+            foreach($data as $cn=>$records) {
+                $create = null;
+                if(substr($cn, -1)=='!') {
+                    $cn = substr($cn, 0, strlen($cn)-1);
+                    $create = true;
+                }
+                if(!class_exists($cn)) continue;
+                $sc = $cn::$schema;
+
+                if($create) {
+                    $Q = $cn::queryHandler();
+                    $tns = $Q->getTables($sc->database);
+                    if(!$tns || !in_array($sc->tableName, $tns)) {
+                        $Q->create($sc);
+                    }
+                }
+                foreach($records as $k=>$r) {
+                    $L=null;
+                    $q=null;
+                    $set = null;
+                    $r = S::expandVariables($r);
+                    if(isset($r['__key'])) {
+                        $pks = $r['__key'];
+                        unset($r['__key']);
+                    } else {
+                        $pks = $cn::pk($sc, true);
+                    }
+                    if(isset($r['__set'])) {
+                        $set = $r['__set'];
+                        unset($r['__set']);
+                    }
+                    if($pks) {
+                        $q = array();
+                        if(!is_array($pks)) $pks = array($pks);
+                        foreach($pks as $pk) {
+                            if(isset($r[$pk])) $q[$pk] = $r[$pk];
+                        }
+                    }
+                    if($q) {
+                        if(isset($r['__multiple']) && $r['__multiple']) {
+                            $L = $cn::find($q, null, null, false);
+                        } else if($o=$cn::find($q,1)) {
+                            $L = [$o];
+                            unset($o);
+                        }
+                    }
+                    if(isset($r['__multiple'])) {
+                        unset($r['__multiple']);
+                    }
+                    if(!$L) {
+                        $L = (isset($r['_delete']) && $r['_delete']) ?[] :[ new $cn ];
+                    }
+                    foreach($L as $i=>$o) {
+                        $rel = array();
+                        foreach($r as $fn=>$fv) {
+                            if (isset($sc->properties[$fn]) || substr($fn, 0, 1)=='_') {
+                                if(!$fv) {
+                                    $fv = false;
+                                }
+                                $o->$fn = $fv;
+                            } else if(isset($sc['relations'][$fn])) {
+                                $o->setRelation($fn, $fv);
+                            }
+                            unset($fn, $fv);
+                        }
+
+                        if($d=$o->asArray()) {
+                            $o->save();
+                        }
+
+                        if($set) {
+                            foreach($set as $sk=>$sv) {
+                                if(!defined($sk)) define($sk, $o->$sv);
+                            }
+                        }
+                        unset($L[$i], $o, $i);
+                    }
+                }
+            }
+        } catch(Exception $e) {
+            S::log("[ERROR] Can't import data: {$e->getMessage()}", $r, (string)$e);
+            return false;
+        }
+    }
+
     public function getHandler()
     {
         if(isset($this->queryObject)) {

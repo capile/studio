@@ -624,7 +624,7 @@ class App
         }
     }
 
-    public function runRoute($url)
+    public function runRoute($url, $request=null)
     {
         if(is_array($url) && isset($url['url'])) {
             $options = $url;
@@ -651,12 +651,14 @@ class App
         } else {
             $pat = "@^{$purl}\$@";
         }
+        if(is_null($request)) $request = self::$_request;
         $purl = null;
-        if (!preg_match($pat, self::$_request['script-name'], $m)) {
+        if (!preg_match($pat, $request['script-name'], $m)) {
+            S::log(__METHOD__, $pat, $request['script-name']);
             return false;
         }
-        if(self::$_request['shell']) {
-            $m = array_merge($m, self::$_request['argv']);
+        if($request['shell']) {
+            $m = array_merge($m, $request['argv']);
         }
         $class=$options['class'];
         $method=$options['method'];

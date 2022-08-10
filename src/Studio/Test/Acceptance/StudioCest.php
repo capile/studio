@@ -10,10 +10,20 @@
  */
 namespace Studio\Test\Acceptance;
 
+use Studio as S;
+use Studio\Test\Helper;
+
 class StudioCest
 {
+    protected $configs=['studio'], $host='http://127.0.0.1:9999', $terminate;
+
     public function _before()
     {
+        if($this->configs) {
+            Helper::loadConfig($this->configs);
+            $this->host = Helper::startServer();
+            $this->configs = [];
+        }
     }
 
     public function homePageWorks(\AcceptanceTester $I)
@@ -24,12 +34,18 @@ class StudioCest
             unlink($css);
         }
 
-        $I->amOnPage('/');
+        $I->amOnPage($this->host.'/');
         $I->see('Welcome to Studio!');
         $I->seeElement('link[href^="/_/site.css?"]');
+
+        $this->terminate = true;
     }
 
     public function _after()
     {
+        if($this->terminate) {
+            Helper::unloadConfig();
+            Helper::stopServer();
+        }
     }
 }

@@ -1,5 +1,5 @@
 #!/bin/sh
-TAG='studio-server=1.0'
+TAG=${TAG:="studio-server=1.0"}
 PID=`pgrep -f "$TAG"`
 STUDIO_IP=${STUDIO_IP:="127.0.0.1"}
 STUDIO_PORT=${STUDIO_PORT:="9999"}

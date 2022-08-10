@@ -1,17 +1,20 @@
 ---
 all:
-  include: data/config/*.yml
+  include: 'data/config/*.yml'
   app:
     apps-dir: .
     data-dir: data
     config-dir: data/config
     cache-dir: data/cache
     log-dir: data/log
-    templates-dir: [ data/templates ]
-    api-dir: ~
-    schema-dir: [ data/schema ]
+    templates-dir:
+      - data/templates
+    api-dir: null
+    schema-dir:
+      - data/schema
     document-root: data/web
-    lib-dir: [ vendor ]
+    lib-dir:
+      - vendor
     controller-options:
       class: Studio\Studio
       static: true
@@ -19,10 +22,9 @@ all:
       layout: layout
       params:
         style:
-          site: [ /_/css/site.less ]
+          site:
+            - /_/css/site.less
     default-route: run
-    export:
-      tdz:
-        database:
-          studio:
-            dsn: sqlite:data/studio.db
+  database:
+    studio:
+      dsn: sqlite:data/studio.db

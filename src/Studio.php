@@ -466,7 +466,7 @@ class Studio
                 }
                 if(isset($s[$env]['include']) && !in_array($s[$env]['include'], $loaded)) {
                     $loaded[] = $s[$env]['include'];
-                    if($load = glob($s[$env]['include'])) {
+                    if($load = glob($s[$env]['include'], GLOB_BRACE)) {
                         foreach($load as $f) {
                             if(!in_array($f, $loaded)) {
                                 $a[] = $f;
@@ -478,7 +478,7 @@ class Studio
                 }
                 if(isset($s['all']['include']) && !in_array($s['all']['include'], $loaded)) {
                     $loaded[] = $s['all']['include'];
-                    if($load = glob($s['all']['include'])) {
+                    if($load = glob($s['all']['include'], GLOB_BRACE)) {
                         foreach($load as $f) {
                             if(!in_array($f, $loaded)) {
                                 $a[] = $f;

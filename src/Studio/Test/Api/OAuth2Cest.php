@@ -12,30 +12,23 @@ namespace Studio\Test\Api;
 
 use Studio\OAuth2\Server;
 use Studio\Cache;
+use Studio\Test\Helper;
 use Studio as S;
 use ApiTester;
 
 class OAuth2Cest
 {
-    protected $configFiles = [], $configs=['oauth2', 'studio'], $uri='http://127.0.0.1:9999/examples/oauth2', $metadata, $accessToken, $expiredAccessToken;
+    public static $baseUri = '/examples/oauth2';
+    protected $configFiles = [], $configs=['oauth2'], $host, $uri, $metadata, $accessToken, $expiredAccessToken, $terminate;
     public function _before()
     {
-        foreach($this->configs as $fn) {
-            if(!file_exists($f=S_ROOT . '/data/config/'.$fn.'.yml') && copy($f.'-example', $f)) {
-                $this->configFiles[] = $f;
-            }
+        if($this->configs) {
+            Helper::loadConfig($this->configs);
+            $this->host = Helper::startServer();
+            $this->uri = $this->host.self::$baseUri;
+            $this->metadata = Server::metadata(true, $this->uri);
+            $this->configs = [];
         }
-        if($this->configFiles) {
-            touch(S_ROOT.'/app.yml');
-        }
-        foreach($this->configs as $fn) {
-            if(file_exists($f=S_ROOT.'/data/tests/_data/'.$fn.'-before.yml')) {
-                exec(S_ROOT.'/studio :import "'.$f.'"');
-            }
-        }
-
-        Cache::delete('oauth2/metadata/'.$this->uri);
-        $this->metadata = Server::metadata(true, $this->uri);
     }
 
     public function metadata(ApiTester $I)
@@ -94,7 +87,6 @@ class OAuth2Cest
         list($this->accessToken) = $I->grabDataFromResponseByJsonPath('$.access_token');
 
         $url = $this->metadata['userinfo_endpoint'];
-        S::log(__METHOD__, $url, $this->accessToken);
         // fetch userinfo
         $I->haveHttpHeader('authorization', 'Bearer '.$this->accessToken);
         $I->sendGet($url);
@@ -103,7 +95,7 @@ class OAuth2Cest
         $I->seeResponseContainsJson(['username'=>'test-user']);
 
         $I->haveHttpHeader('authorization', 'Bearer '.$this->accessToken);
-        $I->sendGet('/_me');
+        $I->sendGet($this->host.'/_me');
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson(['username'=>'test-user']);
@@ -121,33 +113,27 @@ class OAuth2Cest
         $I->seeResponseContainsJson(['error'=>'invalid_request']);
 
         $I->haveHttpHeader('authorization', 'Bearer '.$this->expiredAccessToken);
-        $I->sendGet('/_me');
+        $I->sendGet($this->host.'/_me');
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->dontSeeResponseContainsJson(['username'=>'test-user']);
         $I->seeResponseContains('[]');
 
         // post is not supported on resources
-        $I->sendPost('/_me', ['access_token'=>$this->accessToken]);
+        $I->sendPost($this->host.'/_me', ['access_token'=>$this->accessToken]);
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContains('[]');
+
+        $this->terminate = true;
     }
 
     public function _after()
     {
-        foreach($this->configs as $fn) {
-            if(file_exists($f=S_ROOT.'/data/tests/_data/'.$fn.'-after.yml')) {
-                exec(S_ROOT.'/studio :import "'.$f.'"');
-            }
-        }
-
-        if($this->configFiles) {
-            foreach($this->configFiles as $i=>$f) {
-                unlink($f);
-                unset($this->configFiles[$i], $i, $f);
-            }
-            touch(S_ROOT.'/app.yml');
+        if($this->terminate) {
+            Helper::unloadConfig();
+            Cache::delete('oauth2/metadata/'.$this->uri);
+            Helper::stopServer();
         }
     }
 }

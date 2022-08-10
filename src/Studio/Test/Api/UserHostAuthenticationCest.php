@@ -10,21 +10,20 @@
  */
 namespace Studio\Test\Api;
 
+use Studio as S;
+use Studio\Test\Helper;
 use ApiTester;
 
 class UserHostAuthenticationCest
 {
+
+    protected $configs=['user-host-admin'], $uri='http://127.0.0.1:9999';
     // test if it's not authenticated first
     public function notAuthenticated(ApiTester $I)
     {
-        // change cache key to force a new app config
-        if(file_exists($f=S_ROOT . '/data/config/user-host-admin.yml')) {
-            unlink($f);
-        }
-        file_put_contents(S_ROOT . '/.appkey', 'app-noauth');
-        touch(S_ROOT . '/app.yml');
+        $this->uri = Helper::startServer();
 
-        $I->sendGET('/_me');
+        $I->sendGET($this->uri.'/_me');
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContains('[]');
@@ -33,17 +32,14 @@ class UserHostAuthenticationCest
     // test if it's authenticated now -- might need a cache reset
     public function hostAuthenticated(\ApiTester $I)
     {
-        copy(S_ROOT . '/data/config/user-host-admin.yml-example', S_ROOT . '/data/config/user-host-admin.yml');
-        file_put_contents(S_ROOT . '/.appkey', 'app-host-auth');
-        touch(S_ROOT . '/app.yml');
+        Helper::loadConfig($this->configs);
 
-        $I->sendGET('/_me');
+        $I->sendGET($this->uri.'/_me');
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson(['username'=>'test-user']);
 
-        unlink(S_ROOT . '/data/config/user-host-admin.yml');
-        unlink(S_ROOT . '/.appkey');
-        touch(S_ROOT . '/app.yml');
+        Helper::unloadConfig();
+        Helper::stopServer();
     }
 }

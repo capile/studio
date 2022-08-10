@@ -10,27 +10,22 @@
  */
 namespace Studio\Test\Api;
 
-use Studio\Cache;
 use Studio as S;
+use Studio\Cache;
+use Studio\Test\Helper;
 use ApiTester;
 
 class UserAuthenticationCest
 {
-    protected $configFiles = [], $configs=['user', 'studio'], $uri='http://127.0.0.1:9999', $cookie;
+    protected $configs=['user'], $uri='http://127.0.0.1:9999', $cookie, $terminate;
     public function _before()
     {
-        foreach($this->configs as $fn) {
-            if(!file_exists($f=S_ROOT . '/data/config/'.$fn.'.yml') && copy($f.'-example', $f)) {
-                $this->configFiles[] = $f;
+        if($this->configs) {
+            Helper::loadConfig($this->configs);
+            if($h = Helper::startServer()) {
+                $this->uri = $h;
             }
-        }
-        if($this->configFiles) {
-            touch(S_ROOT.'/app.yml');
-        }
-        foreach($this->configs as $fn) {
-            if(file_exists($f=S_ROOT.'/data/tests/_data/'.$fn.'-before.yml')) {
-                exec(S_ROOT.'/studio :import "'.$f.'"');
-            }
+            $this->configs = [];
         }
     }
 
@@ -74,22 +69,15 @@ class UserAuthenticationCest
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContains('test-user');
+
+        $this->terminate = true;
     }
 
     public function _after()
     {
-        foreach($this->configs as $fn) {
-            if(file_exists($f=S_ROOT.'/data/tests/_data/'.$fn.'-after.yml')) {
-                exec(S_ROOT.'/studio :import "'.$f.'"');
-            }
-        }
-
-        if($this->configFiles) {
-            foreach($this->configFiles as $i=>$f) {
-                unlink($f);
-                unset($this->configFiles[$i], $i, $f);
-            }
-            touch(S_ROOT.'/app.yml');
+        if($this->terminate) {
+            Helper::unloadConfig();
+            Helper::stopServer();
         }
     }
 }

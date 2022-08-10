@@ -8,9 +8,9 @@ all:
         method: app
         static: true
         additional-params: true
-    export:
-      Studio:
-        log: 2
+  studio:
+    enable_api_index: 1
+    enable_api_credential: 1
   user:
     model: Studio\Model\Users
     ns:
