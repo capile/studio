@@ -17,4 +17,3 @@ Studio\Model\Credentials!:
   - __key: [ userid, groupid ]
     userid: $USERID
     groupid: $GROUPID
-

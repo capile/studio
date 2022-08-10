@@ -62,7 +62,7 @@ class Helper
         }
 
         foreach($exampleFiles as $fn) {
-            if(file_exists($f=S_ROOT.'/data/tests/_data/'.$fn.'-before.yml')) {
+            if(file_exists($f=S_ROOT.'/data/tests/_data/'.$fn.'.yml')) {
                 exec(S_ROOT.'/studio :import "'.$f.'"');
             }
         }
@@ -77,6 +77,7 @@ class Helper
         if(!is_null(self::$config)) {
             Yaml::save(S_ROOT.'/app.yml', Yaml::loadString(self::$config));
             self::$config = null;
+            self::$configFiles = [];
         }
     }
 }
