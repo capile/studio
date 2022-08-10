@@ -25,7 +25,6 @@ all:
         cookie: studio-o
         class: Studio\OAuth2\Client
         static: true
-        test: testing
         export:
           username: username
           name: name

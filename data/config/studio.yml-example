@@ -54,7 +54,7 @@ all:
         webInterface: true
         connection: studio
         index: studio
-      tdz:
+      Studio:
         log: 2
         database:
           studio:

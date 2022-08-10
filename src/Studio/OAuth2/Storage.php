@@ -157,7 +157,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
                 }
 
                 foreach($L as $i=>$o) {
-                    if($o && $o->expires && S::strtotime($o->expires)<TDZ_TIMESTAMP) continue;
+                    if($o && $o->expires && S::strtotime($o->expires)<S_TIME) continue;
                     if($fn) $r[] = $o->$fn;
                     else $r[] = $o->asArray($scope);
                 }
@@ -184,7 +184,9 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
         $Q = $this->tokenFinder;
         $R = $Q::find(['id'=>$id, 'type'=>$type],1);
 
-        if($R && $R->expires && S::strtotime($R->expires)<TDZ_TIMESTAMP) $R=null;
+        if($R && $R->expires && S::strtotime($R->expires)<S_TIME) {
+            $R=null;
+        }
         if($R) {
             if(!$asArray) {
                 return $R;
@@ -297,7 +299,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
     public function getUserDetails($username)
     {
         if($U = S::user($username)) {
-            return $U->asArray();
+            return [ 'user_id' => $username, ] + $U->asArray();
         }
 
         return false;

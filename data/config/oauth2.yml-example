@@ -9,7 +9,7 @@ all:
         static: true
         additional-params: true
     export:
-      tdz:
+      Studio:
         log: 2
   user:
     model: Studio\Model\Users

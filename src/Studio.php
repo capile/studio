@@ -11,13 +11,13 @@
  * @version   1.0
  */
 use Studio\App as App;
+use Studio\Cache;
+use Studio\Collection;
 use Studio\Model;
 use Studio\Model\Entries;
-use Studio\Cache;
 use Studio\Yaml;
-use Tecnodesign_Query as Query;
+use Studio\Query;
 use Tecnodesign_Exception as AppException;
-use Tecnodesign_Collection as Collection;
 use Tecnodesign_Image as Image;
 use Tecnodesign_Mail as Mail;
 
@@ -960,7 +960,7 @@ class Studio
     public static function cleanCache($prefix='')
     {
         $cd = self::getApp()->config('app', 'cache-dir');
-        if(!$cd) $cd = TDZ_VAR.'/cache';
+        if(!$cd) $cd = S_VAR.'/cache';
         $cf = $cd . '/' . $prefix;
         $cf.='.*';
         foreach (glob($cf) as $f) {
@@ -1113,7 +1113,7 @@ class Studio
         }
         if (isset($arguments['pi']) && $arguments['pi']) {
             if(self::$noeval) {
-                $pi = tempnam(TDZ_VAR, 'tdzapp');
+                $pi = tempnam(S_VAR, 'studioapp');
                 file_put_contents($pi, '<?php '.$arguments['pi']);
                 include $pi;
                 unlink($pi);
@@ -1479,7 +1479,7 @@ class Studio
             $cacheControl = 'private, must-revalidate';
             self::set('cache-control', $cacheControl);
         }
-        if(!TDZ_CLI && !is_null($expires)) {
+        if(!S_CLI && !is_null($expires)) {
             $expires = (int)$expires;
             $cc = preg_replace('/\,.*/', '', $cacheControl);
 
@@ -1543,7 +1543,7 @@ class Studio
             @header("content-disposition: filename=\"$fname\"");
         }
         if ($gzip) {
-            $gzf=TDZ_VAR . '/cache/download/' . md5_file($file);
+            $gzf=S_VAR . '/cache/download/' . md5_file($file);
             if (!file_exists($gzf) || filemtime($gzf) > $lastmod) {
                 $s = file_get_contents($file);
                 $gz = gzencode($s, 9);
@@ -1654,7 +1654,7 @@ class Studio
             self::$variables['upload-dir'] = $d;
         }
         if(!isset(self::$variables['upload-dir'])) {
-            self::$variables['upload-dir'] = TDZ_VAR.'/upload';
+            self::$variables['upload-dir'] = S_VAR.'/upload';
             if($app=self::getApp()->config('app', 'upload-dir')) {
                 self::$variables['upload-dir'] = $app;
             }
@@ -2882,7 +2882,7 @@ class Studio
         return false;
     }
     /**
-     * Tecnodesign autoloader. Searches for classes under TDZ_ROOT
+     * Tecnodesign autoloader. Searches for classes under S_ROOT
      *
      * @param string $class class name to be loaded.
      *
@@ -3044,7 +3044,7 @@ class Studio
         if($t) {
             static $limit;
             if(is_null($limit)) $limit = ini_get('max_execution_time');
-            $run = (int) (time() - TDZ_TIME);
+            $run = (int) (time() - S_TIME);
             if($t===true) $t=$run;
             if($limit - $run < $t) {
                 $limit = $run + $t;
