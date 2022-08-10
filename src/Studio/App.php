@@ -654,7 +654,6 @@ class App
         if(is_null($request)) $request = self::$_request;
         $purl = null;
         if (!preg_match($pat, $request['script-name'], $m)) {
-            S::log(__METHOD__, $pat, $request['script-name']);
             return false;
         }
         if($request['shell']) {
