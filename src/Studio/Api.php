@@ -3607,7 +3607,7 @@ class Api implements ArrayAccess
                 '_omnibar' => [
                     'type' => 'search',
                     'template' => 'input',
-                    'attributes'=>['data-omnibar'=>'q', 'name'=>'','class' => 'z-omnibar',],
+                    'attributes'=>['data-omnibar'=>'q', 'name'=>'','class' => 's-omnibar',],
                 ],
             ],
         );
@@ -3820,7 +3820,7 @@ class Api implements ArrayAccess
                 'value'=> '<span class="i-label">'.static::t('Search options').'</span>',
                 'html_labels'=>true,
                 'class' => $cPrefix.'--filter',
-                'attributes'=>[ 'data-display-switch'=>'#q-'.$islug.' .z-omnibar|#q-'.$islug.' fieldset,#q-'.$islug.' button .i-label'],
+                'attributes'=>[ 'data-display-switch'=>'#q-'.$islug.' .s-omnibar|#q-'.$islug.' fieldset,#q-'.$islug.' button .i-label'],
             ],
         ];
         $F = new Form($fo);
@@ -4015,7 +4015,7 @@ class Api implements ArrayAccess
     protected static function _li($o)
     {
         if(isset($o[1])) {
-            $s = '<li id="z-nav-'.S::slug($o[2]).'" class="z-children z-toggle-active" data-toggler-options="child,storage">'.$o[0].'<ul>';
+            $s = '<li id="s-nav-'.S::slug($o[2]).'" class="s-children s-toggle-active" data-toggler-options="child,storage">'.$o[0].'<ul>';
             foreach ($o[1] as $k=>$v) {
                 $s .= self::_li($v);
                 unset($o[1][$k], $k, $v);

@@ -18,7 +18,7 @@ all:
       oauth2-client:
         name: OAuth2 Client
         enabled: true
-        cookie: z-studio
+        cookie: _studio
         class: Studio\OAuth2\Client
         static: true
         test: testing

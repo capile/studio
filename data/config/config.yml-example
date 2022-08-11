@@ -4,17 +4,16 @@ all:
   studio:
     version: 1.0
     connection: studio
-    enable_interfaces: true
-    enable_interface_content: true
-    enable_interface_credential: true
-    enable_interface_index: true
+    enable_apis: true
+    enable_api_content: true
+    enable_api_credential: true
+    enable_api_index: true
     enable_api_schema: true
     web-repos:
-      studio-docs:
+      - id: studio-docs
         src: https://github.com/capile/studio.wiki.git
-        map:
-          - src: ~
-            url: /docs
+        mount: /docs
+        mount-src: ~
   app:
     api-dir: [ data/api-config ]
     languages:

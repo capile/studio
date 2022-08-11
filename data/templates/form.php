@@ -53,7 +53,7 @@ if(isset($limits) && $limits) {
 }
 
 if($hasFieldset) {
-    $attributes['class'] .= ' z-fieldset';
+    $attributes['class'] .= ' s-fieldset';
 }
 
 ?><form<?php if($id): ?> id="<?php echo $id ?>"<?php endif; ?> action="<?php echo S::xml($action) ?>" method="<?php echo $method ?>"<?php
@@ -79,7 +79,7 @@ if(isset($limits['recaptcha']) && $limits['recaptcha']) {
     else if(isset(S::$variables['recaptcha-site-key'])) $rckey = S::$variables['recaptcha-site-key'];
     if($rckey) {
         if(!isset($rc['submit']) || !$rc['submit']) {
-            echo '<div class="z-recaptcha" data-sitekey="'.S::xml($rckey).'"></div>';
+            echo '<div class="s-recaptcha" data-sitekey="'.S::xml($rckey).'"></div>';
         } else if(isset($buttons['submit'])) {
             echo '<script src="https://www.google.com/recaptcha/api.js"></script>';
             if(!is_array($buttons['submit'])) $buttons['submit'] = ['label'=>$buttons['submit'], 'attributes'=>[]];

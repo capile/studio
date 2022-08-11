@@ -5,9 +5,9 @@ if(!('Studio' in window))window.Z=window.Studio={version:1.0, host:null,uid:'/_m
 var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl, _assets={},
   defaultModules={
     Callback:'*[data-callback]',
-    Copy:'a.z-copy[data-target]',
+    Copy:'a.s-copy[data-target]',
     DisplaySwitch:'*[data-display-switch]',
-    ToggleActive:'.s-toggle-active,.z-toggle-active',
+    ToggleActive:'.s-toggle-active,.s-toggle-active',
     Studio_Form: 'form.s-form',
     Studio_Form_AutoSubmit: 'form.s-auto-submit',
     Studio_Form_CheckLabel:'.i-check-label input[type=radio],.i-check-label input[type=checkbox]',
@@ -55,7 +55,7 @@ function initStudio(d)
     var store=true;
     if(!('user' in Z)) {
         Z.user=null;
-        d=Z.storage('z-auth');
+        d=Z.storage('s-auth');
         if(d && String(d)) {
             if(('token' in d) && d.token) {
                 if(!('headers' in Z)) Z.headers = {};
@@ -71,10 +71,10 @@ function initStudio(d)
             var ts, qs='', hp=window.location.hash.search(/#@[0-9]+$/);
             if(hp>-1) {
                 ts=window.location.hash.substr(hp).replace(/[^0-9]+/g, '');
-                Z.storage('z-ts', parseInt(ts));
+                Z.storage('s-ts', parseInt(ts));
                 window.location.hash=window.location.hash.substr(0, hp);
             } else {
-                ts=Z.storage('z-ts');
+                ts=Z.storage('s-ts');
             }
             if(ts) qs = '?'+ts;
             Z.ajax(Z.uid+qs, null, initStudio, null, 'json');
@@ -118,7 +118,7 @@ function initStudio(d)
         return;
     }
     if(!('timeout' in Z)) Z.timeout = 0;
-    if(store && Z.timeout) Z.storage('z-auth', d, Z.timeout);
+    if(store && Z.timeout) Z.storage('s-auth', d, Z.timeout);
 
     Z.ready(Z.init);
 }
@@ -1013,7 +1013,7 @@ function executeAction(e)
     Z.stopEvent(e);
     var a = this.getAttribute('data-action');
     if(!a) {
-        if(this.className.search(/\bz-copy\b/)>-1) a='copy';
+        if(this.className.search(/\bs-copy\b/)>-1) a='copy';
         else return;
     }
 
@@ -1366,20 +1366,20 @@ Z.initToggleActive=function(o)
     o=Z.node(this,o);
     var id=o.getAttribute('id'),
         control=o.getAttribute('data-toggler-options'),
-        el=((control && control.indexOf('self')>-1) || o.className.search(/\bz-toggler\b/)>-1) ?o :null,
+        el=((control && control.indexOf('self')>-1) || o.className.search(/\bs-toggler\b/)>-1) ?o :null,
         sibling=(control && control.indexOf('sibling')<0) ?false :true,
         child=(control && control.indexOf('child')<0) ?false :true,
         storage=(control && control.indexOf('storage')>-1) ?true :false,
         drag=(control && control.indexOf('draggable')>-1) ?true :false,
         load=false, a;
-    if((sibling && o.parentNode.querySelector(':scope > .z-toggler')) || (child && o.querySelector(':scope > .z-toggler'))) {
+    if((sibling && o.parentNode.querySelector(':scope > .s-toggler')) || (child && o.querySelector(':scope > .s-toggler'))) {
         return;
     }
     if(!id) {
         storage = false;
         id='_n'+(_got++);
         o.setAttribute('id', id);
-    } else if(Z.storage('z-toggler-'+id)) {
+    } else if(Z.storage('s-toggler-'+id)) {
         load = true;
     }
 
@@ -1389,10 +1389,10 @@ Z.initToggleActive=function(o)
     }
 
     if(!el) {
-        el={e:'a', a:{'data-target':'#'+id}, p:{className:'z-toggler'},t:{click:ToggleActive}};
+        el={e:'a', a:{'data-target':'#'+id}, p:{className:'s-toggler'},t:{click:ToggleActive}};
     } else {
         Z.bind(el, 'click', ToggleActive);
-        if(el.className.search(/\bz-toggler\b/)<0) el.className += ' z-toggler';
+        if(el.className.search(/\bs-toggler\b/)<0) el.className += ' s-toggler';
     }
 
 
@@ -1554,20 +1554,20 @@ function ToggleActive()
     var c=this.getAttribute('data-active-class'), o=t.getAttribute('data-toggler-options'),
         drag=(o && o.indexOf('draggable')>-1) ?true :false,
         storage=(o && o.indexOf('storage')>-1) ?t.getAttribute('id') :null;
-    if(!c)c='z-active';
+    if(!c)c='s-active';
     var re=new RegExp('\\s*\\b'+c+'\\b', 'g'), k, L, i, st='on';
     if(t.className.search(c)>-1) { // disable
         t.className = t.className.replace(re, '');
         if(k=t.getAttribute('data-toggler-cookie-disable')) Z.cookie(k, true, null, '/');
         if(k=t.getAttribute('data-toggler-cookie-enable'))  Z.cookie(k, null, new Date(2000, 1, 1), '/');
-        if(storage) Z.storage('z-toggler-'+storage, null);
+        if(storage) Z.storage('s-toggler-'+storage, null);
         if(drag) removeDrag();
         st='off';
     } else { // enable
         t.className += ' '+c;
         if(k=t.getAttribute('data-toggler-cookie-disable')) Z.cookie(k, null, new Date(2000, 1, 1),'/');
         if(k=t.getAttribute('data-toggler-cookie-enable'))  Z.cookie(k, true, null, '/');
-        if(storage) Z.storage('z-toggler-'+storage, 1);
+        if(storage) Z.storage('s-toggler-'+storage, 1);
         if(drag) enableAndApplyDrag();
         st='on';
     }
@@ -1580,29 +1580,29 @@ function ToggleActive()
 
 Z.disableForm=function(F)
 {
-    if(F.className.search(/\bz-disabled\b/)>-1) return;
-    F.className+=' z-disabled';
+    if(F.className.search(/\bs-disabled\b/)>-1) return;
+    F.className+=' s-disabled';
     var L=F.querySelectorAll('button,input[type="button"],input[type="submit"]'), i=L.length;
     while(i--) {
-        if(L[i].className.search(/\bz-no-disable\b/)>-1) continue;
+        if(L[i].className.search(/\bs-no-disable\b/)>-1) continue;
         L[i].setAttribute('disabled', 'disabled');
-        L[i].className += ' z-disabled-input';
+        L[i].className += ' s-disabled-input';
     }
 }
 
 Z.enableForm=function(F)
 {
-    var L=F.querySelectorAll('.z-disabled-input'), i=L.length;
+    var L=F.querySelectorAll('.s-disabled-input'), i=L.length;
     while(i--) {
         if(L[i].getAttribute('disabled')) L[i].removeAttribute('disabled');
-        if(L[i].className.search(/\bz-disabled-input\b/)>-1) L[i].className = L[i].className.replace(/\s*\bz-disabled-input\b/g, '');
+        if(L[i].className.search(/\bs-disabled-input\b/)>-1) L[i].className = L[i].className.replace(/\s*\bs-disabled-input\b/g, '');
     }
-    if(F.className.search(/\bz-disabled\b/)>-1) F.className = F.className.replace(/\s*\bz-disabled\b/g, '');
+    if(F.className.search(/\bs-disabled\b/)>-1) F.className = F.className.replace(/\s*\bs-disabled\b/g, '');
 }
 
 Z.initRecaptcha = function()
 {
-    if(this.className.search(/\bz-recaptcha\b/)>-1) this.className = this.className.replace(/\bz-recaptcha\b/g, 'g-recaptcha');
+    if(this.className.search(/\bs-recaptcha\b/)>-1) this.className = this.className.replace(/\bs-recaptcha\b/g, 'g-recaptcha');
     if(!('grecaptcha' in window)) Z.load('https://www.google.com/recaptcha/api.js?hl='+Z.lang());
     else grecaptcha.render(this);
 }

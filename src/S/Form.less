@@ -4,28 +4,28 @@
 @import (reference) "interface-vars-default.less";
 @import (optional) "interface-vars.less";
 
-.z-no-button {
+.s-no-button {
   input[type="button"],input[type="submit"],button {
     display:none;
   }
 }
-.z-inline {
+.s-inline {
   display:inline-block;
   width:auto;
   p, p.field, .input, .label {margin:0;padding:0;}
 }
 
-.z-indent {
+.s-indent {
   padding-left: 1em;
 }
-.z-disabled-input, .z-i-field.p-disabled {
+.s-disabled-input, .s-api-field.p-disabled {
   opacity: 0.4 !important;
   cursor: not-allowed !important;
 }
-.z-i-field.p-disable {
+.s-api-field.p-disable {
   opacity:0.5;
 }
-.z-i-field.p-required {
+.s-api-field.p-required {
   .input, dt:first-child {
     &:after {
       content: '*';
@@ -34,16 +34,16 @@
   }
 }
 
-.z-html-editor {
+.s-html-editor {
   & + textarea {display:none;}
   box-sizing: border-box;
 }
 
-.z-editor-actionbar {
+.s-editor-actionbar {
   line-height: 1em;
   background-color: transparent;
 }
-.z-editor-content {
+.s-editor-content {
   box-sizing: border-box;
   outline: 0;
   overflow-y: auto;
@@ -51,7 +51,7 @@
 }
 
 
-.z-editor-button {
+.s-editor-button {
   background-color: transparent;
   border: none;
   cursor: pointer;
@@ -66,22 +66,22 @@
   display: inline-block;
 }
 
-.z-editor-button-active {
+.s-editor-button-active {
   background-color: @colorActive;
 }
 
-.z-html-editor-counter {
+.s-html-editor-counter {
     color: #444;
     float: right;
     font-size: 0.9em;
 }
 
-.z-html-editor-length {
+.s-html-editor-length {
   color: #06c;
 }
-.z-html-editor-length.closing {
+.s-html-editor-length.closing {
   color: #fc9e08;
 }
-.z-html-editor-length.exceed {
+.s-html-editor-length.exceed {
   color: #fc0808;
 }

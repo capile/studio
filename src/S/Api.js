@@ -593,7 +593,7 @@
             if(loading(url)) continue;
 
             if (SA) {
-                h['Tdz-Interface-Mode'] = 'standalone';
+                h['z-interface-mode'] = 'standalone';
                 o=I;
                 B=I;
             } else {
@@ -784,7 +784,7 @@
                     i=S.length;
                     while(i--) {
                         del = S[i];
-                        if(del.parentNode.className.search(/\b(td)?z-msg\b/)>-1) del = del.parentNode;
+                        if(del.parentNode.className.search(/\b(td)?s-msg\b/)>-1) del = del.parentNode;
                         Z.deleteNode(del);
                     }
                 }
@@ -906,12 +906,12 @@
 
         var N = Z.parentNode(I, '.s-api-body').querySelector(':scope > .s-api-nav'), nb;
         if(N && (nb = N.getAttribute('data-base-url'))) {
-            R=N.querySelectorAll('a.z-current[href]');
+            R=N.querySelectorAll('a.s-current[href]');
             i=R.length;
-            while(i--) R[i].className = R[i].className.replace(/\s*\bz-current\b/g, '');
+            while(i--) R[i].className = R[i].className.replace(/\s*\bs-current\b/g, '');
             if(u && u.substr(0, nb.length+1)==nb+'/') {
                 if((i=u.indexOf('/', nb.length+1))) u = u.substr(0, i);
-                if((N=N.querySelector('a[href="'+u+'"]'))) N.className = String(N.className+' z-current').trim();
+                if((N=N.querySelector('a[href="'+u+'"]'))) N.className = String(N.className+' s-current').trim();
             }
         }
 
@@ -942,13 +942,13 @@
         if(H && i) {
             // remove all styles
             hw = He.clientWidth;
-            if(el=He.querySelector(':scope > .z-spacer')) hw -= el.clientWidth;
+            if(el=He.querySelector(':scope > .s-spacer')) hw -= el.clientWidth;
 
             wmax = hw * 0.5;
 
             while(i--) {
                 if(Hs[i].getAttribute('style')) Hs[i].setAttribute('style', '');
-                el = Hs[i].querySelector('.z-text');
+                el = Hs[i].querySelector('.s-text');
                 if(!el) el = Hs[i];
                 ew = el.clientWidth;
                 Hs[i].setAttribute('style', 'max-width: '+ew+'px');
@@ -960,15 +960,15 @@
             i=Hs.length;
             // check length
             if(i>1 && fw > hw) {
-                if(He.className.search(/\bz-overflow\b/)<0) He.className += ' z-overflow';
+                if(He.className.search(/\bs-overflow\b/)<0) He.className += ' s-overflow';
                 // flex:1 -- only the selected tab should be resized
-                el = H.querySelector('.z-text');
+                el = H.querySelector('.s-text');
                 if(!el) el = H;
                 ew = el.clientWidth;
                 if(ew > wmax) el= wmax;
                 H.setAttribute('style', 'flex: 2; width: '+ew+'px; max-width: '+ew+'px');
             } else {
-                if(He.className.search(/\bz-overflow\b/)>-1) He.className = He.className.replace(/\s*\bz-overflow\b/g, '');
+                if(He.className.search(/\bs-overflow\b/)>-1) He.className = He.className.replace(/\s*\bs-overflow\b/g, '');
             }
         }
 
@@ -1081,10 +1081,10 @@
                 while(i-- > 0) if(!L[i].getAttribute('target') && !L[i].getAttribute('download')) Z.bind(L[i], 'click', loadInterface);
                 L=null;
                 Z.initToggleActive(mv);
-                L=mv.querySelectorAll('.z-toggle-active');
+                L=mv.querySelectorAll('.s-toggle-active');
                 i=L.length;
                 while(i-- > 0) Z.initToggleActive(L[i]);
-                mv=f.querySelector('.s-api-header .z-spacer');
+                mv=f.querySelector('.s-api-header .s-spacer');
                 if(mv) {
                     B=box.querySelector('.s-api-header');
                     if(B.children.length==0) B.appendChild(mv);
@@ -1439,7 +1439,7 @@
     function initAutoRemove()
     {
         if(!this.querySelector('.s-api--close')) {
-            var el=Z.element.call(this, {e:'i',p:{className:'s-api--close s-api-a z-round'},t:{click:autoRemove}});
+            var el=Z.element.call(this, {e:'i',p:{className:'s-api--close s-api-a s-round'},t:{click:autoRemove}});
             if(el.previousSibling.nodeName.toLowerCase()=='a' && !el.previousSibling.getAttribute('href')) Z.bind(el.previousSibling, 'click', autoRemove);
             var P=Z.parentNode(this,'.s-api-field,.field');
             if(P) P.className+=' has-auto-remove';

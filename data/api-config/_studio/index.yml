@@ -6,13 +6,13 @@ all:
   default-actions: [ update ]
   default-action: update
   attributes:
-    class: z-i-no-summary z-i-no-actions z-i-no-breadcrumb s-i-color-alt s-i-splash s-api-standalone
+    class: s-api-no-summary s-api-no-actions s-api-no-breadcrumb s-api-color-alt s-api-splash s-api-standalone
   options:
     index: false
     navigation: true
     priority: 999
     before-update: |
-      # ![Studio](/_/img/studio-neg.svg) {.z-i-logo}
+      # ![Studio](/_/img/studio-neg.svg) {.s-api-logo}
     scope:
       update:
         __default:
@@ -29,19 +29,19 @@ all:
           format: password
           class: i1s1
         "*Enable Management Interface":
-          bind: studio.enable_interfaces
+          bind: studio.enable_apis
           format: bool
           default: 1
         "*Enable Content Management":
-          bind: studio.enable_interface_content
+          bind: studio.enable_api_content
           format: bool
           default: 1
         "*Enable User Management":
-          bind: studio.enable_interface_credential
+          bind: studio.enable_api_credential
           format: bool
           default: 1
         "*Enable API Management":
-          bind: studio.enable_interface_index
+          bind: studio.enable_api_index
           format: bool
           default: 1
         "*Enable Schema Management":

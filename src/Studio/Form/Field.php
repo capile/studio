@@ -1469,6 +1469,8 @@ class Field extends SchemaObject
                 $this->choices = $this->_choicesCollection;
                 $this->_choicesCollection = null;
             }
+        } else if(!isset($this->choices)) {
+            $this->choices = [];
         }
         if(!$this->choices && $this->_choicesCollection) {
             $c = $this->_choicesCollection->count();
@@ -1914,7 +1916,10 @@ class Field extends SchemaObject
                         break;
                     }
                 }
-                foreach($value as $i=>$o) {
+                $i=-1;
+                foreach($value as $k=>$o) {
+                    if(is_int($k)) $i = $k;
+                    else $i++;
                     $fo['id'] = $prefix.'['.$i.']';
                     $form = Form::instance($fo['id'], $fo);
                     $form->setLimits(false);
@@ -2105,7 +2110,7 @@ class Field extends SchemaObject
         $this->attributes = [];
         if(strpos($arg['class'], 'app-file-preview')!==false) {
             if($arg['value']) {
-                $s .= '<span class="text s-f-file'.($this->multiple ?' z-multiple' :'').'">'.$this->filePreview($arg['name']).'</span>';
+                $s .= '<span class="text s-f-file'.($this->multiple ?' s-multiple' :'').'">'.$this->filePreview($arg['name']).'</span>';
                 $hi = false;
             } else {
                 $s .= '<span class="text"></span>';
@@ -2158,7 +2163,7 @@ class Field extends SchemaObject
 
     public function filePreview($name='', $img = false)
     {
-        static $b='<span class="z-auto-remove z-file">', $a='</span>';
+        static $b='<span class="s-auto-remove s-file">', $a='</span>';
         $prefix = preg_replace('/_+$/', '', preg_replace('/[\[\]]+/', '_', $name));
         $s='';
         if($this->value){
@@ -2911,6 +2916,7 @@ class Field extends SchemaObject
                 $styleClasses = ' on';
             }
             $id = $arg['id'];
+            if(is_array($value)) $value = implode(',', $value);
             $options[] = "<span class=\"{$type}{$styleClasses}\">{$input} id=\"{$id}\" value=\"" . S::xml($value) . '"' . $attrs . ' /></span>';
         }
         $dl = '';

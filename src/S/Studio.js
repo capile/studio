@@ -35,11 +35,11 @@ function startup()
           {e:'div',p:{id:'studio-viewport',className:'s-api-box'},a:{'base-url':_Studio}},
           {e:'div',p:{className:'studio-logo'}}/*,
           {e:'div',p:{className:'studio-menu'},c:[
-            {e:'div',p:{className:'studio-box s-right z-i-actions'},c:[
-              {e:'a',p:{className:'z-i--search'}},
-              {e:'a',p:{className:'z-i--new'   }},
-              {e:'a',p:{className:'z-i--update'}},
-              {e:'a',p:{className:'z-i--delete'}}
+            {e:'div',p:{className:'studio-box s-right s-api-actions'},c:[
+              {e:'a',p:{className:'s-api--search'}},
+              {e:'a',p:{className:'s-api--new'   }},
+              {e:'a',p:{className:'s-api--update'}},
+              {e:'a',p:{className:'s-api--delete'}}
             ]},
           ]}*/
         ];

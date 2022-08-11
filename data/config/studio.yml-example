@@ -3,12 +3,12 @@ all:
   studio:
     version: 1.0
     connection: studio
-    enable_interfaces: true
-    enable_interface_content: true
-    enable_interface_credential: true
-    enable_interface_index: true
-    enable_interface_entry: true
-    enable_interface_content: true
+    enable_apis: true
+    enable_api_content: true
+    enable_api_credential: true
+    enable_api_index: true
+    enable_api_entry: true
+    enable_api_content: true
     credential:
       # basic privilege: is overriden by role/object-specific calls
       all: ~

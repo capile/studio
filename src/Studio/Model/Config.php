@@ -83,10 +83,10 @@ class Config extends Model
 
         $this->user = [];
         $cfgs = [];
-        if(isset($this->studio['enable_interface_credential']) && $this->studio['enable_interface_credential']) {
+        if(isset($this->studio['enable_api_credential']) && $this->studio['enable_api_credential']) {
             $cfgs = Yaml::load(S_ROOT.'/data/config/config-credential.yml-example');
         }
-        if(isset($this->studio['enable_interface_index']) && $this->studio['enable_interface_index']) {
+        if(isset($this->studio['enable_api_index']) && $this->studio['enable_api_index']) {
             $n = Yaml::load(S_ROOT.'/data/config/config-index.yml-example');
             if($cfgs) $cfgs = S::mergeRecursive($n, $cfgs);
             else $cfgs = $n;

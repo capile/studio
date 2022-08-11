@@ -2308,8 +2308,8 @@ class Model implements ArrayAccess, Iterator, Countable
                     ;
                 if($sort && isset($o['show-sort-icons']) && $o['show-sort-icons']) {
                     $s .= $label
-                        . (($sort)?('<a href="'.S::scriptName().$ext.S::xml($qsb.$soa).'" class="z-i--up icon asc"></a>'):(''))
-                        . (($sort)?('<a href="'.S::scriptName().$ext.S::xml($qsb.$sod).'" class="z-i--down icon desc"></a>'):(''))
+                        . (($sort)?('<a href="'.S::scriptName().$ext.S::xml($qsb.$soa).'" class="s-api--up icon asc"></a>'):(''))
+                        . (($sort)?('<a href="'.S::scriptName().$ext.S::xml($qsb.$sod).'" class="s-api--down icon desc"></a>'):(''))
                         ;
                 } else if($sort) {
                     $attrs = '';
@@ -2318,9 +2318,9 @@ class Model implements ArrayAccess, Iterator, Countable
                         $label = '<strong>'.$label.'</strong>';
                         if($sd=='asc') {
                             $asort = S::scriptName().$ext.S::xml($qsb.$sod);
-                            $attrs = ' class="z-i--up z-icon-right asc"';
+                            $attrs = ' class="s-api--up s-icon-right asc"';
                         } else {
-                            $attrs = ' class="z-i--down z-icon-right desc"';
+                            $attrs = ' class="s-api--down s-icon-right desc"';
                         }
                     }
                     $s .= '<a href="'.$asort.'"'.$attrs.'>'.$label.'</a>';

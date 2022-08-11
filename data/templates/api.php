@@ -25,7 +25,7 @@ if(!isset($action)) $action = $Interface['action'];
 
 $nav = null;
 if($Interface->config('navigation')) {
-    if(!App::request('ajax') || App::request('headers', 'z-navigation')) {
+    if(!App::request('ajax') || App::request('headers', 's-navigation')) {
         $nav = $Interface::listInterfaces();
     }
 }
@@ -50,7 +50,7 @@ if(isset($attributes) && is_array($attributes)) {
     if($nav) echo ' data-toggler="off"';
     if($Interface->config('headerOverflow')) echo ' data-overflow="1"';
     echo '>'; 
-    if($nav) echo '<a href="'.S::xml($Interface::base()).'" class="z-spacer z-left z-nav" data-draggable-style="width:{w0}"></a>';
+    if($nav) echo '<a href="'.S::xml($Interface::base()).'" class="s-spacer s-left s-nav" data-draggable-style="width:{w0}"></a>';
     $urls = $Interface::$urls;
     if(App::request('ajax')) {
         foreach(array_reverse($urls) as $iurl=>$t) {
@@ -68,7 +68,7 @@ if(isset($attributes) && is_array($attributes)) {
         $taction = (isset($t['action']) && $t['action']) ?$t['action'] :'text';
         $tclass .= ' '.$cPrefix.'--'.$taction;
         if($iurl!='/' && (!isset($t['interface']) || $t['interface'])):
-            ?><a href="<?php echo $iurl ?>" class="<?php echo $tclass; ?>" data-url="<?php echo $iurl ?>"<?php if($iqs) echo 'data-qs="', str_replace(',', '%2C', S::xml($iqs)), '"' ?>><span class="z-text"><?php echo S::xml($t['title']); ?></span></a><?php
+            ?><a href="<?php echo $iurl ?>" class="<?php echo $tclass; ?>" data-url="<?php echo $iurl ?>"<?php if($iqs) echo 'data-qs="', str_replace(',', '%2C', S::xml($iqs)), '"' ?>><span class="s-text"><?php echo S::xml($t['title']); ?></span></a><?php
         endif;
         unset($tclass, $taction);
     }
@@ -80,7 +80,7 @@ if(isset($attributes) && is_array($attributes)) {
 
     if($nav) {
         $nclass = 's-api-nav s-toggle-active';
-        echo '<div id="z-nav" data-draggable-style="width:{w0}" data-draggable-default=style="width:{w1}" class="', $nclass, '" data-base-url="', $Interface::base(), '" data-toggler-attribute-target=".s-api-header" data-toggler-drag-target=".s-api-body" data-toggler-drag=".z-nav,.s-api-nav,.s-api-app.s-api-active" data-toggler-options="child,sibling,storage,draggable" data-toggler-default="800">', $nav, '</div>'; 
+        echo '<div id="s-nav" data-draggable-style="width:{w0}" data-draggable-default=style="width:{w1}" class="', $nclass, '" data-base-url="', $Interface::base(), '" data-toggler-attribute-target=".s-api-header" data-toggler-drag-target=".s-api-body" data-toggler-drag=".s-nav,.s-api-nav,.s-api-app.s-api-active" data-toggler-options="child,sibling,storage,draggable" data-toggler-default="800">', $nav, '</div>'; 
     }
 
     // .s-api-app

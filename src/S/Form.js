@@ -599,8 +599,8 @@ function preUpload(e)
     var i=this.files.length, U={target:this,size:0,loaded:0,url:this.form.action,id:'upl'+((new Date()).getTime())};
     _Uploads[this.id] = U;
 
-    U.progress = this.parentNode.querySelector('.tdz-i-progress');
-    if(!U.progress) U.progress = Z.element({e:'div',p:{className:'tdz-i-progress'},c:[{e:'div',p:{className:'tdz-i-progress-bar'}}]}, null, this);
+    U.progress = this.parentNode.querySelector('.s-progress');
+    if(!U.progress) U.progress = Z.element({e:'div',p:{className:'s-progress'},c:[{e:'div',p:{className:'s-progress-bar'}}]}, null, this);
     var s=this.getAttribute('data-size'),a=this.getAttribute('accept'),ff, err=[], valid;
     if(a) a=','+a+',';
     clearMsg(this.parentNode);
@@ -687,7 +687,7 @@ function uploadFile(file, U)
         }
         var w=(U.loaded*100/U.size);
 
-        U.progress.querySelector('.tdz-i-progress-bar').setAttribute('style','width:'+w+'%');
+        U.progress.querySelector('.s-progress-bar').setAttribute('style','width:'+w+'%');
 
         var el = this;
         if('id' in d) {
@@ -697,21 +697,21 @@ function uploadFile(file, U)
             } else {
                 el.previousSibling.value = d.value;
             }
-            var t={e:'a',p:{className:'tdz-i-upload z-auto-remove'},t:{click:removeUpload},c:d.file+' '};
+            var t={e:'a',p:{className:'s-upload s-auto-remove'},t:{click:removeUpload},c:d.file+' '};
             if(!b) {
                 b=Z.element({e:'span',p:{className:'text'},c:[t]},el.previousSibling);
             } else {
-                Z.removeChildren(b, ':not(.tdz-i-upload)');
+                Z.removeChildren(b, ':not(.s-upload)');
                 Z.element.call(b, t);
             }
-            b.className += ' tdz-f-file';
+            b.className += ' s-f-file';
             Z.init(b);
             el.setAttribute('data-status', 'ready');
             el = clearFileInput(el);
             Z.deleteNode(U.progress);
             Z.enableForm(el.form);
             //var v=d.value;
-        } else if(el.form.className.search(/\bz-disabled\b/)<0) {
+        } else if(el.form.className.search(/\bs-disabled\b/)<0) {
             Z.disableForm(el.form);
         }
 
@@ -727,7 +727,7 @@ function uploadFile(file, U)
         if(retries && retryUpload.call(this, url)) return;
 
         // remove any error messages within this form field
-        var M=this.parentNode.querySelectorAll('.s-msg,.tdz-i-progress'), i=M.length, err=(d && ('message' in d)) ?d.message :'There was an error in the file upload.';
+        var M=this.parentNode.querySelectorAll('.s-msg,.s-progress'), i=M.length, err=(d && ('message' in d)) ?d.message :'There was an error in the file upload.';
         if(err) {
             while(i--) M[i].parentNode.removeChild(M[i]);
             Z.element({e:'div',p:{className:'s-msg s-error'},c:err}, null, this);
@@ -835,7 +835,7 @@ function removeUpload(e)
     var el = this.parentNode.parentNode.querySelector('input[type="hidden"]');
     el.value='';// remove only this upload
     el=null;
-    this.parentNode.className = this.parentNode.className.replace(/\s*\btdz-f-file\b/g, '');
+    this.parentNode.className = this.parentNode.className.replace(/\s*\bs-f-file\b/g, '');
     this.parentNode.removeChild(this);
 }
 
@@ -844,7 +844,7 @@ function initFilters()
 {
     /*jshint validthis: true */
     var t=this;
-    if(this.className.search(/\bz-a-filters\b/)>-1) return;
+    if(this.className.search(/\bs-a-filters\b/)>-1) return;
     //Z.bind(this, 'input', formFilters);
     var fn=(this.getAttribute('data-query-filter')) ?queryFilters :formFilters;
     Z.bind(this, 'change', fn);
@@ -859,14 +859,14 @@ function enableField(on)
     if(arguments.length==0) on=true;
     var cn = this.className,an='readonly', L, i;
     if(on) {
-        if(cn.search(/\btdz-f-disable\b/)>-1) cn=cn.replace(/\s*\btdz-f-disable\b/g, '');
-        if(cn.search(/\btdz-f-enable\b/)<0) cn+=' tdz-f-enable';
+        if(cn.search(/\bs-f-disable\b/)>-1) cn=cn.replace(/\s*\bs-f-disable\b/g, '');
+        if(cn.search(/\bs-f-enable\b/)<0) cn+=' s-f-enable';
         L=this.querySelectorAll('input['+an+'],select['+an+'],textarea['+an+']');
         i=L.length;
         while(i--) L[i].removeAttribute(an);
     } else {
-        if(cn.search(/\btdz-f-enable\b/)>-1) cn=cn.replace(/\s*\btdz-f-enable\b/g, '');
-        if(cn.search(/\btdz-f-disable\b/)<0) cn+=' tdz-f-disable';
+        if(cn.search(/\bs-f-enable\b/)>-1) cn=cn.replace(/\s*\bs-f-enable\b/g, '');
+        if(cn.search(/\bs-f-disable\b/)<0) cn+=' s-f-disable';
         L=this.querySelectorAll('input:not(['+an+']),select:not(['+an+']),textarea:not(['+an+'])');
         i=L.length;
         while(i--) L[i].setAttribute(an, an);
@@ -909,8 +909,8 @@ function displayField(on)
         Z.log('[INFO] Nothing to be queried...');
         return;
     }
-    var reset=(this.className.search(/\bz-a-filters\b/)<0);
-    if(reset) this.className += ' z-a-filters';
+    var reset=(this.className.search(/\bs-a-filters\b/)<0);
+    if(reset) this.className += ' s-a-filters';
 
     var b=this.getAttribute('data-query-filtered');
     var c = ':scope > '+b.replace(/,/g, ', :scope > ');
@@ -953,8 +953,8 @@ function formFilters(e)
     /*jshint validthis: true */
     var a=this.getAttribute('data-filters');
     if(!a) return;
-    var reset=(this.className.search(/\bz-a-filters\b/)<0);
-    if(reset) this.className += ' z-a-filters';
+    var reset=(this.className.search(/\bs-a-filters\b/)<0);
+    if(reset) this.className += ' s-a-filters';
 
     var t=(a.indexOf(',')>-1)?(a.split(',')):([a]), i=t.length, nn=this.getAttribute('name'), fa=this.getAttribute('data-filter-action'),
       tn, ltn, tp='', L, l, T, s, v=Z.val(this), tv, O,sel,A,fn,P, fid=(this.form.id)?(this.form.id + '.'):(''), fk, n;
@@ -1095,7 +1095,7 @@ function initSubform(o)
 {
     /*jshint validthis: true */
     if(!o || !Z.node(o)) o=this;
-    var btns=[{e:'a',a:{title:'-','class':'tdz-button-del'},t:{click:subformDel}},{e:'a',a:{title:'+','class':'tdz-button-add'},t:{click:subformAdd}}];
+    var btns=[{e:'a',a:{title:'-','class':'s-button-del'},t:{click:subformDel}},{e:'a',a:{title:'+','class':'s-button-add'},t:{click:subformAdd}}];
 
     // items
     var id=o.getAttribute('id');
@@ -1116,19 +1116,19 @@ function initSubform(o)
 
     // buttons: add, add(contextual), remove(contextual)
     if(!fmax || fmax!=i || fmax!=fmin) {
-        var b=o.parentNode.parentNode.querySelector('div.tdz-subform-buttons');
+        var b=o.parentNode.parentNode.querySelector('div.s-subform-buttons');
         if(!b) {
-            var t=Z.node(o.parentNode.parentNode.querySelector('dt')), bd={e:'div',p:{className:'tdz-subform-buttons tdz-buttons'},c:[btns[1]]};
+            var t=Z.node(o.parentNode.parentNode.querySelector('dt')), bd={e:'div',p:{className:'s-subform-buttons s-buttons'},c:[btns[1]]};
             if(t) b = Z.element.call(t, bd);
             else b = Z.element(bd, o.parentNode);
         }
         while(i-- > 0) {
             if(fmax && i > fmax) {
                 Z.deleteNode(L[i]);
-            } else if(!(cb=L[i].querySelector('.tdz-buttons')) || cb.parentNode!=L[i]) {
+            } else if(!(cb=L[i].querySelector('.s-buttons')) || cb.parentNode!=L[i]) {
                 if(cb) {
                     // might be sub-subforms, check if there's the button
-                    var cL=L[i].querySelectorAll('.tdz-buttons'), ci=cL.length;
+                    var cL=L[i].querySelectorAll('.s-buttons'), ci=cL.length;
                     cb=null;
                     while(ci--) {
                         if(cL[ci].parentNode==L[i]) {
@@ -1139,7 +1139,7 @@ function initSubform(o)
                     if(cb) continue;
                 }
 
-                var xx=Z.element.call(L[i], {e:'div',p:{className:'tdz-buttons'},c:btns});
+                var xx=Z.element.call(L[i], {e:'div',p:{className:'s-buttons'},c:btns});
             }
         }
     }
@@ -1533,7 +1533,7 @@ function initTypeToggler()
         var T=Z.parentNode(this, Z.Form.fieldSelector);
         if(T) T=T.querySelector('.label, dt, label');
         if(!T) T=this.parentNode;
-        Z.element.call(T, {e:'a',a:{'class':'z-type-toggler s-api--toggle','data-toggler-option':'0','data-toggler':'#'+this.id+'[data-alt-type]'},t:{click:toggleType},c:[{e:'i',p:{className:'z-i--'+this.getAttribute('type')+' i-toggler-0'}},{e:'i',p:{className:'z-i--'+this.getAttribute('data-alt-type')+' i-toggler-1'}}]});
+        Z.element.call(T, {e:'a',a:{'class':'s-type-toggler s-api--toggle','data-toggler-option':'0','data-toggler':'#'+this.id+'[data-alt-type]'},t:{click:toggleType},c:[{e:'i',p:{className:'s-api--'+this.getAttribute('type')+' i-toggler-0'}},{e:'i',p:{className:'s-api--'+this.getAttribute('data-alt-type')+' i-toggler-1'}}]});
     }
 }
 
@@ -1571,14 +1571,14 @@ function initHtmlEditor()
     this.setAttribute('data-html-editor', a);
 
     if (limit > 0) {
-        var elcounter = Z.element({e:'div',p:{id:'z-editor-counter-'+this.id, className:'z-html-editor-counter'}},null,this);
-        elcounter.innerHTML = '<p>'+Z.l[Z.language].EditorLimit.replace('[n]','<span id="z-editor-counter-length-'+this.id+'" class="z-html-editor-length">0</span>').replace('[t]',limit)+'</p>';
+        var elcounter = Z.element({e:'div',p:{id:'s-editor-counter-'+this.id, className:'s-html-editor-counter'}},null,this);
+        elcounter.innerHTML = '<p>'+Z.l[Z.language].EditorLimit.replace('[n]','<span id="s-editor-counter-length-'+this.id+'" class="s-html-editor-length">0</span>').replace('[t]',limit)+'</p>';
 
-        var elcounter_length = elcounter.querySelector('span#z-editor-counter-length-'+this.id);
+        var elcounter_length = elcounter.querySelector('span#s-editor-counter-length-'+this.id);
     }
 
     var selfel = this;
-    elcontainer = Z.element({e:'div',p:{id:'z-editor-'+this.id, className:'z-html-editor'}}, this);
+    elcontainer = Z.element({e:'div',p:{id:'s-editor-'+this.id, className:'s-html-editor'}}, this);
 
     if(a=='pell') {
         Editor = pell.init({
@@ -1589,10 +1589,10 @@ function initHtmlEditor()
           styleWithCSS: false,
           // Choose your custom class names
           classes: {
-            actionbar: 'z-editor-actionbar',
-            button: 'z-editor-button',
-            content: 'z-editor-content z-input z-textarea',
-            selected: 'z-editor-button-active'
+            actionbar: 's-editor-actionbar',
+            button: 's-editor-button',
+            content: 's-editor-content s-input s-textarea',
+            selected: 's-editor-button-active'
           }
         });
         Editor.content.innerHTML = this.value;
@@ -1686,7 +1686,7 @@ function initChoicesJs()
           listDropdown: 'choices__list--dropdown',
           item: 'choices__item',
           itemSelectable: 'choices__item--selectable',
-          itemDisabled: 'z-disabled-input',
+          itemDisabled: 's-disabled-input',
           itemChoice: 'choices__item--choice',
           placeholder: 'choices__placeholder',
           group: 'choices__group',
@@ -1714,7 +1714,7 @@ function Form(o)
     if(q in Z.modules) {
         delete(Z.modules[q]);
         Z.load('s-form.css');
-        Z.addPlugin('Datepicker', initDatepicker, 'input[data-type^=date],input[type^=date],.tdz-i-datepicker');
+        Z.addPlugin('Datepicker', initDatepicker, 'input[data-type^=date],input[type^=date],.s-datepicker');
         Z.addPlugin('RequiredField', initRequiredField, '.field > .input > *[required]');
         Z.addPlugin('Datalist', initDatalist, '*[data-datalist-api],*[data-datalist]');
         Z.addPlugin('Uploader', initUploader, 'input[data-uploader]');
@@ -1725,7 +1725,7 @@ function Form(o)
         Z.addPlugin('Cleanup', initCleanup, 'button.cleanup');
         Z.addPlugin('Omnibar', initOmnibar, 'input[data-omnibar]');
         Z.addPlugin('HtmlEditor', initHtmlEditor, 'textarea[data-format="html"]');
-        Z.addPlugin('choices.js', initChoicesJs, 'select.z-choices-js,.z-choices-js select');
+        Z.addPlugin('choices.js', initChoicesJs, 'select.s-choices-js,.s-choices-js select');
         Z.clearForm=clearForm;
     }
     var n=Z.node(o, this);
