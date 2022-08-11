@@ -17,43 +17,33 @@ use ApiTester;
 class UserHostAuthenticationCest
 {
 
-    protected $configs=['user-host-authentication'], $host='http://127.0.0.1:9999', $terminate;
-
-    public function _before()
-    {
-        if($this->configs) {
-            $this->host = Helper::startServer();
-            $this->configs = [];
-        }
-    }
+    protected $configs=['user-host-authentication'], $host='http://127.0.0.1:9999';
 
     // test if it's not authenticated first
     public function notAuthenticated(ApiTester $I)
     {
+        Helper::loadConfig([]);
+        $this->host = Helper::startServer();
+
         $I->sendGET($this->host.'/_me');
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContains('[]');
+
+        Helper::destroyServer();
     }
 
     // test if it's authenticated now -- might need a cache reset
     public function hostAuthenticated(\ApiTester $I)
     {
         Helper::loadConfig($this->configs);
+        $this->host = Helper::startServer();
 
         $I->sendGET($this->host.'/_me');
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson(['username'=>'test-user']);
 
-        Helper::unloadConfig();
-        $this->terminate = true;
-    }
-
-    public function _after()
-    {
-        if($this->terminate) {
-            Helper::destroyServer();
-        }
+        Helper::destroyServer();
     }
 }

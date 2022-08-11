@@ -32,7 +32,7 @@ class Helper
 
     public static function stopServer()
     {
-        if(self::$id) exec('pkill -f "studio-test-'.self::$id.'"');
+        if(self::$id) exec('pkill -f studio-test-'.self::$id);
     }
 
     public static function loadConfig($exampleFiles)
@@ -48,7 +48,7 @@ class Helper
                 }
             }
         }
-        if($update) {
+        if($update || !self::$config) {
             $cf = S_ROOT.'/app.yml';
             if(!self::$config) self::$config = file_get_contents($cf);
             $Y = Yaml::loadString(self::$config);
@@ -58,7 +58,7 @@ class Helper
             $Y['all']['database']['studio']['dsn'] = 'sqlite:'.self::$db;
             S::$database = $Y['all']['database'];
             Yaml::save($cf, $Y);
-            if(file_exists(S_ROOT.'/.appkey')) rename(S_ROOT.'/.appkey.old', S_ROOT.'/.appkey');
+            if(file_exists(S_ROOT.'/.appkey')) rename(S_ROOT.'/.appkey', S_ROOT.'/.appkey.old');
             S::save(S_ROOT.'/.appkey', self::$id);
             exec(S_ROOT.'/studio :check');
         }

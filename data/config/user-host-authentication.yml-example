@@ -1,5 +1,7 @@
 ---
 all:
+  studio:
+    enable_api_credential: 1
   user:
     super-admin: Administrator
     credentials:
@@ -14,5 +16,5 @@ all:
           hosts:
             127.0.0.1:
               username: test-user
-        export:
+        properties:
           username: username

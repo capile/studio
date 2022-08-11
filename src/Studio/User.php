@@ -1402,7 +1402,7 @@ class User
             }
             if($this->_me instanceof Model) {
                 return $this->_me->asArray($scope);
-            } else if($this->_me instanceof ArrayAccess) {
+            } else if(in_array('ArrayAccess', class_implements($this->_me))) {
                 $d = (array) $this->_me;
                 if(is_array($scope)) {
                     $r = array();
