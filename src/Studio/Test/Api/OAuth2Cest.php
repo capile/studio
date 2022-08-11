@@ -131,9 +131,8 @@ class OAuth2Cest
     public function _after()
     {
         if($this->terminate) {
-            Helper::unloadConfig();
             Cache::delete('oauth2/metadata/'.$this->uri);
-            Helper::stopServer();
+            Helper::destroyServer();
         }
     }
 }

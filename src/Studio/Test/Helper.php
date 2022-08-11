@@ -58,6 +58,8 @@ class Helper
             $Y['all']['database']['studio']['dsn'] = 'sqlite:'.self::$db;
             S::$database = $Y['all']['database'];
             Yaml::save($cf, $Y);
+            if(file_exists(S_ROOT.'/.appkey')) rename(S_ROOT.'/.appkey.old', S_ROOT.'/.appkey');
+            S::save(S_ROOT.'/.appkey', self::$id);
             exec(S_ROOT.'/studio :check');
         }
 
@@ -70,14 +72,25 @@ class Helper
 
     public static function unloadConfig()
     {
-        if(self::$db && file_exists(S_VAR.'/'.self::$db)) {
-            unlink(S_VAR.'/'.self::$db);
+        if(self::$db && file_exists(S_ROOT.'/'.self::$db)) {
+            unlink(S_ROOT.'/'.self::$db);
         }
 
         if(!is_null(self::$config)) {
             Yaml::save(S_ROOT.'/app.yml', Yaml::loadString(self::$config));
+            if(file_exists(S_ROOT.'/.appkey.old')) rename(S_ROOT.'/.appkey.old', S_ROOT.'/.appkey');
+            else if(file_exists(S_ROOT.'/.appkey')) unlink(S_ROOT.'/.appkey');
             self::$config = null;
             self::$configFiles = [];
+        }
+    }
+
+    public static function destroyServer()
+    {
+        self::unloadConfig();
+        if(self::$id) {
+            self::stopServer();
+            self::$id = null;
         }
     }
 }

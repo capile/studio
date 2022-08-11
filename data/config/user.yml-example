@@ -11,8 +11,6 @@ all:
         method: signOutWidget
         static: true
     export:
-      Studio:
-        userClass: Studio\User
       Studio\User:
         actions:
           signin: /signin

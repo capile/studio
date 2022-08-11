@@ -76,8 +76,7 @@ class UserAuthenticationCest
     public function _after()
     {
         if($this->terminate) {
-            Helper::unloadConfig();
-            Helper::stopServer();
+            Helper::destroyServer();
         }
     }
 }

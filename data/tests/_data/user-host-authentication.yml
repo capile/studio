@@ -1,0 +1,8 @@
+---
+Studio\Model\Users!:
+  - __key: [ username ]
+    __set:
+      USERID: id
+    username: test-user
+    name: Example User
+    email: test@capile.net

@@ -17,13 +17,20 @@ use ApiTester;
 class UserHostAuthenticationCest
 {
 
-    protected $configs=['user-host-admin'], $uri='http://127.0.0.1:9999';
+    protected $configs=['user-host-authentication'], $host='http://127.0.0.1:9999', $terminate;
+
+    public function _before()
+    {
+        if($this->configs) {
+            $this->host = Helper::startServer();
+            $this->configs = [];
+        }
+    }
+
     // test if it's not authenticated first
     public function notAuthenticated(ApiTester $I)
     {
-        $this->uri = Helper::startServer();
-
-        $I->sendGET($this->uri.'/_me');
+        $I->sendGET($this->host.'/_me');
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContains('[]');
@@ -34,12 +41,19 @@ class UserHostAuthenticationCest
     {
         Helper::loadConfig($this->configs);
 
-        $I->sendGET($this->uri.'/_me');
+        $I->sendGET($this->host.'/_me');
         $I->seeResponseCodeIs(200);
         $I->seeResponseIsJson();
         $I->seeResponseContainsJson(['username'=>'test-user']);
 
         Helper::unloadConfig();
-        Helper::stopServer();
+        $this->terminate = true;
+    }
+
+    public function _after()
+    {
+        if($this->terminate) {
+            Helper::destroyServer();
+        }
     }
 }

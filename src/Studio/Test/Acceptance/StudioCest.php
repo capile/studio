@@ -44,8 +44,7 @@ class StudioCest
     public function _after()
     {
         if($this->terminate) {
-            Helper::unloadConfig();
-            Helper::stopServer();
+            Helper::destroyServer();
         }
     }
 }
