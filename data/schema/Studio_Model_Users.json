@@ -21,7 +21,7 @@
         "Credentials": { "local": "id", "foreign": "user", "type": "many", "className": "Studio\\Model\\Credentials" }
     },
     "scope": {
-        "string": [ "name" ]
+        "string": [ "name", "username" ]
     },
     "events": {
         "before-insert": [ "actAs" ],

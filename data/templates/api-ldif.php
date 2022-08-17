@@ -100,7 +100,7 @@ if(isset($list) && is_array($list)) {
                     unset($k, $c, $vc);
                 }
 
-                $e = $Interface::ldif($e);
+                $e = $Api::ldif($e);
 
                 if(isset($key)) {
                     $r .= "\n# {$v[$key]}{$e}\n";
@@ -112,7 +112,7 @@ if(isset($list) && is_array($list)) {
             unset($d);
             if($o>=$l) break;
             if(!$flush) {
-                $Interface::headers();
+                $Api::headers();
                 header('content-type: '.$format.';charset=utf8');
                 $flush = true;
             }
@@ -142,19 +142,19 @@ if(isset($error) && $error) {
         $R .= "# message: ".str_replace("\n", "\n# ", $errorMessage)."\n";
     }
     $R .= $r;
-    $Interface::error(422, $R);
+    $Api::error(422, $R);
 } else if(isset($success)) {
     $R = "# ".str_replace("\n", "\n# ", $success)."\n";
     if(isset($status)) {
         $code = $status;
         $R .= $r;
-        $Interface::error($code, $R);
+        $Api::error($code, $R);
     }
     $R .= $r;
 } else {
     $R = $r;
 }
 
-$Interface::headers();
+$Api::headers();
 S::output($R, $format);
 

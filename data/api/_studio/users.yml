@@ -1,0 +1,22 @@
+---
+all:
+  title: "*Users"
+  model: Studio\Model\Users
+  options:
+    list-parent: site
+    priority: 1040
+    index: true
+    scope:
+      list:
+        - username
+        - name
+        - updated
+      preview:
+        - 'scope::userinfo'
+      userinfo:
+        __default:
+          fieldset: '*Profile'
+        '*Name': name
+        '*Username': username
+        '*E-mail': email
+        '*Password': password

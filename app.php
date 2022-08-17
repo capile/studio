@@ -21,3 +21,9 @@ if(!file_exists($configFile=S_PROJECT_ROOT.'/'.basename(S_PROJECT_ROOT).'.yml') 
     $configFile = __DIR__.'/app.yml';
 }
 Studio::app($configFile, $appMemoryNamespace, Studio::env())->run();
+if(Studio::$perfmon) {
+   $t = (isset($_SERVER['REQUEST_TIME_FLOAT'])) ?$_SERVER['REQUEST_TIME_FLOAT'] :S_TIME;
+   $s = date('Y-m-d H:i:s', floor($t)).substr(fmod($t,1), 1, 5)."\t".$appMemoryNamespace."\t".Studio::bytes(memory_get_peak_usage(true))."\t".Studio::number(microtime(true)-$t, 5)."s\t".Studio::requestUri();
+   if(isset(Studio::$variables['metrics'])) $s .= "\t".Studio::serialize(Studio::$variables['metrics'], 'json');
+   error_log($s."\n", 3, Studio::getApp()->app['log-dir'].'/perfmon.log');
+}

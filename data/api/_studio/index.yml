@@ -31,7 +31,7 @@ all:
         additional-params: true
   options:
     index: false
-    priority: 0
+    priority: 2
     scope:
       update:
         __default:

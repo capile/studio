@@ -15,28 +15,28 @@ use Studio as S;
 use Studio\App;
 
 $id = S::slug($url);
-$cPrefix = $Interface->config('attrClassPrefix');
+$cPrefix = $Api->config('attrClassPrefix');
 $link = $url;
 if(strpos($url, '?')!==false) list($url, $qs)=explode('?', $url, 2);
 else $qs='';
 
 if(isset($title)) App::response('title', $title);
-if(!isset($action)) $action = $Interface['action'];
+if(!isset($action)) $action = $Api['action'];
 
 $nav = null;
-if($Interface->config('navigation')) {
+if($Api->config('navigation')) {
     if(!App::request('ajax') || App::request('headers', 's-navigation')) {
-        $nav = $Interface::listInterfaces();
+        $nav = $Api::listInterfaces();
     }
 }
 
 $a = [
     'class' => $cPrefix.'-app'.((isset($active) && $active) ?' '.$cPrefix.'-active' :''),
-    'data-action'=>$Interface['action'],
+    'data-action'=>$Api['action'],
     'data-url'=>$url,
 ];
 if($qs) $a['data-qs'] = str_replace(',', '%2C', $qs);
-if($Interface['id']) $a['data-id'] = $Interface['id'];
+if($Api['id']) $a['data-id'] = $Api['id'];
 if(isset($ui)) $a['data-ui'] = base64_encode(S::serialize($ui, 'json'));
 
 if(isset($attributes) && is_array($attributes)) {
@@ -48,10 +48,10 @@ if(isset($attributes) && is_array($attributes)) {
 // .s-api-header
 ?><div class="s-api-header"<?php 
     if($nav) echo ' data-toggler="off"';
-    if($Interface->config('headerOverflow')) echo ' data-overflow="1"';
+    if($Api->config('headerOverflow')) echo ' data-overflow="1"';
     echo '>'; 
-    if($nav) echo '<a href="'.S::xml($Interface::base()).'" class="s-spacer s-left s-nav" data-draggable-style="width:{w0}"></a>';
-    $urls = $Interface::$urls;
+    if($nav) echo '<a href="'.S::xml($Api::base()).'" class="s-spacer s-left s-nav" data-draggable-style="width:{w0}"></a>';
+    $urls = $Api::$urls;
     if(App::request('ajax')) {
         foreach(array_reverse($urls) as $iurl=>$t) {
             if($iurl!='/' && (!isset($t['interface']) || $t['interface'])) {
@@ -80,29 +80,29 @@ if(isset($attributes) && is_array($attributes)) {
 
     if($nav) {
         $nclass = 's-api-nav s-toggle-active';
-        echo '<div id="s-nav" data-draggable-style="width:{w0}" data-draggable-default=style="width:{w1}" class="', $nclass, '" data-base-url="', $Interface::base(), '" data-toggler-attribute-target=".s-api-header" data-toggler-drag-target=".s-api-body" data-toggler-drag=".s-nav,.s-api-nav,.s-api-app.s-api-active" data-toggler-options="child,sibling,storage,draggable" data-toggler-default="800">', $nav, '</div>'; 
+        echo '<div id="s-nav" data-draggable-style="width:{w0}" data-draggable-default=style="width:{w1}" class="', $nclass, '" data-base-url="', $Api::base(), '" data-toggler-attribute-target=".s-api-header" data-toggler-drag-target=".s-api-body" data-toggler-drag=".s-nav,.s-api-nav,.s-api-app.s-api-active" data-toggler-options="child,sibling,storage,draggable" data-toggler-default="800">', $nav, '</div>'; 
     }
 
     // .s-api-app
     ?><div<?php foreach($a as $k=>$v) echo ' '.S::slug($k, '-_').'="'.S::xml($v).'"'; ?>><?php
         // .s-api-actions
         if(!isset($buttons)) $buttons = null;
-        if($buttons): ?><div class="<?php echo trim('s-api-actions '.$Interface->config('attrButtonsClass')); ?>"><?php
+        if($buttons): ?><div class="<?php echo trim('s-api-actions '.$Api->config('attrButtonsClass')); ?>"><?php
             ?><input type="checkbox" id="s-api-b-<?php echo $id; ?>" class="s-switch s-api-actions" /><label for="s-api-b-<?php echo $id; ?>"><?php
-            echo $Interface::t('labelActions'); ?></label><div class="s-buttons s-switched"><?php
+            echo $Api::t('labelActions'); ?></label><div class="s-buttons s-switched"><?php
                 echo $buttons; 
         ?></div></div><?php endif; 
 
         // .s-api-container
         ?><div class="s-api-container"><?php 
 
-            if($title && $Interface->config('breadcrumbs')) {
-                $urls = $Interface::$urls;
+            if($title && $Api->config('breadcrumbs')) {
+                $urls = $Api::$urls;
                 if(!$urls) {
                     $urls = array(array('title'=>$title));
                 }
                 $b = '';
-                $la = $Interface->config('actionAlias', 'list');
+                $la = $Api->config('actionAlias', 'list');
                 if(!$la) $la = 'list';
                 foreach($urls as $iurl=>$t) {
                     $ltitle = (isset($t['icon'])) ?'<img src="'.S::xml($t['icon']).'" title="'.S::xml($t['title']).'" />' :S::xml($t['title']);
@@ -115,7 +115,7 @@ if(isset($attributes) && is_array($attributes)) {
                 }
 
                 if($b) {
-                    echo str_replace('$LABEL', $b, $Interface->config('breadcrumbTemplate'));
+                    echo str_replace('$LABEL', $b, $Api->config('breadcrumbTemplate'));
                 }
             }
 
@@ -123,7 +123,7 @@ if(isset($attributes) && is_array($attributes)) {
             else if(isset($options['before'])) echo S::markdown($options['before']);
 
 
-            ?><div class="s-api-summary <?php echo $cPrefix, '--', $Interface['action']; ?>"><?php
+            ?><div class="s-api-summary <?php echo $cPrefix, '--', $Api['action']; ?>"><?php
 
                 if(isset($summary)) {
                     echo $summary;
@@ -132,8 +132,8 @@ if(isset($attributes) && is_array($attributes)) {
 
                 if(isset($app)) echo $app;
 
-                if(isset($list) && ($g=$Interface->renderGraph())):
-                    ?><div class="<?php echo $Interface->config('attrGraphClass'); ?>"><?php
+                if(isset($list) && ($g=$Api->renderGraph())):
+                    ?><div class="<?php echo $Api->config('attrGraphClass'); ?>"><?php
                         echo $g;
                     ?></div><?php
                 endif;
@@ -145,26 +145,26 @@ if(isset($attributes) && is_array($attributes)) {
                         echo '<div class="'.$cPrefix.'-search">'.$searchForm.'</div>';
                         if(isset($options['after-search-form'])) echo S::markdown($options['after-search-form']);
                     // list counter
-                    echo '<span class="'.$Interface->config('attrCounterClass').'">';
+                    echo '<span class="'.$Api->config('attrCounterClass').'">';
                     if(isset($searchCount)) {
                         if($searchCount<=0) {
-                            echo sprintf($Interface::t('listNoSearchResults'), S::number($count,0), $searchTerms);
+                            echo sprintf($Api::t('listNoSearchResults'), S::number($count,0), $searchTerms);
                         } else if($searchCount==1) {
-                            echo sprintf($Interface::t('listSearchResult'), S::number($count,0), $searchTerms);
+                            echo sprintf($Api::t('listSearchResult'), S::number($count,0), $searchTerms);
                         } else { 
-                            echo sprintf($Interface::t('listSearchResults'), S::number($searchCount,0), S::number($count,0), $searchTerms);
+                            echo sprintf($Api::t('listSearchResults'), S::number($searchCount,0), S::number($count,0), $searchTerms);
                         }
                         $count = $searchCount;
                     } else if($count) {
-                        echo sprintf($Interface::t(($count>1)?('listResults'):('listResult')), S::number($count,0));
+                        echo sprintf($Api::t(($count>1)?('listResults'):('listResult')), S::number($count,0));
                     } else {
-                        echo $Interface::t('listNoResults');
+                        echo $Api::t('listNoResults');
                     }
 
                     if($count>1) {
                         $end = $listOffset + $listLimit;
                         if($end>$count) $end = $count;
-                        echo ' ',sprintf($Interface::t('listCounter'), S::number($listOffset+1,0), S::number($end,0));
+                        echo ' ',sprintf($Api::t('listCounter'), S::number($listOffset+1,0), S::number($end,0));
                         unset($end);
                     }
                     echo '</span>';
@@ -180,11 +180,11 @@ if(isset($attributes) && is_array($attributes)) {
                     } else if($count>0) {
                         $listRenderer = (isset($options['list-renderer']) && $options['list-renderer']) ?$options['list-renderer'] :'renderUi';
                         $sn = S::scriptName(true);
-                        S::scriptName($Interface->link());
+                        S::scriptName($Api->link());
                         if(!is_object($list)) {
-                            $list = new Tecnodesign_Collection($list, $Interface->getModel());
+                            $list = new Tecnodesign_Collection($list, $Api->getModel());
                         }
-                        echo $list->paginate($listLimit, $listRenderer, array('options'=>$options), $Interface->config('listPagesOnTop'), $Interface->config('listPagesOnBottom'));
+                        echo $list->paginate($listLimit, $listRenderer, array('options'=>$options), $Api->config('listPagesOnTop'), $Api->config('listPagesOnBottom'));
                         S::scriptName($sn);
                         unset($sn);
                     }
@@ -195,24 +195,24 @@ if(isset($attributes) && is_array($attributes)) {
             if(isset($preview)): 
                 ?><div class="<?php echo $cPrefix, '-preview'; ?>"><?php
                     $next = null;
-                    if(in_array($Interface['action'], ['update', 'preview', 'new']) && !$Interface->config('standalone')) {
-                        $next = ($Interface['action']=='update')?('preview'):('update');
-                        if(!isset($Interface['actions'][$next]) || (isset($Interface['actions'][$next]['auth']) && !$Interface::checkAuth($Interface['actions'][$next]['auth']))) {
+                    if(in_array($Api['action'], ['update', 'preview', 'new']) && !$Api->config('standalone')) {
+                        $next = ($Api['action']=='update')?('preview'):('update');
+                        if(!isset($Api['actions'][$next]) || (isset($Api['actions'][$next]['auth']) && !$Api::checkAuth($Api['actions'][$next]['auth']))) {
                             $next = null;
                         }
                     }
                     if($next) {
-                        echo '<div data-action-schema="'.$next.'" data-action-url="'.$Interface->link($next).'" class="i--'.$interface.((isset($class))?(' '.$class):('')).'">';
+                        echo '<div data-action-schema="'.$next.'" data-action-url="'.$Api->link($next).'" class="i--'.$api.((isset($class))?(' '.$class):('')).'">';
                     } else {
-                        echo '<div class="i--'.$interface.((isset($class))?(' '.$class):('')).'">';
+                        echo '<div class="i--'.$api.((isset($class))?(' '.$class):('')).'">';
                     }
 
                     if(is_object($preview) && method_exists($preview, 'renderScope')) {
                         $box = $preview::$boxTemplate;
-                        $preview::$boxTemplate = $Interface->config('boxTemplate');
+                        $preview::$boxTemplate = $Api->config('boxTemplate');
                         $excludeEmpty=(isset($options['preview-empty'])) ?!$options['preview-empty'] :null;
                         $showOriginal=(isset($options['preview-original'])) ?$options['preview-original'] :null;
-                        echo $preview->renderScope($options['scope'], $xmlEscape, false, $Interface->config('previewTemplate'), $Interface->config('headingTemplate'), $excludeEmpty, $showOriginal);
+                        echo $preview->renderScope($options['scope'], $xmlEscape, false, $Api->config('previewTemplate'), $Api->config('headingTemplate'), $excludeEmpty, $showOriginal);
                         $preview::$boxTemplate = $box;
                         unset($preview);
                     } else {

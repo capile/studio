@@ -19,6 +19,7 @@ use Studio\App;
 use Studio\Exception\End;
 use Studio\Model;
 use Studio\Model\Interfaces;
+use Studio\Schema;
 use Studio\Studio;
 use Studio\Cache;
 use Studio\Yaml;
@@ -26,9 +27,8 @@ use Studio\Form;
 use Tecnodesign_Exception as Exception;
 use ArrayAccess;
 
-class Api implements ArrayAccess
+class Api extends SchemaObject
 {
-
     const MAX_LIMIT=10000;
     const REQ_LIMIT='limit';
     const REQ_OFFSET='offset';
@@ -48,6 +48,7 @@ class Api implements ArrayAccess
     const P_REAL_BASE=false;
 
     public static
+        $meta,
         $request,
         $envelope           = true,
         $pretty             = true,
@@ -176,7 +177,7 @@ class Api implements ArrayAccess
         $urls               = [ ],
         $indexFile          = 'index',
         $baseInterface = [
-            'interface'     => 'index',
+            'api'           => 'index',
             'run'           => 'listInterfaces',
         ],
         $authDefault        = false,
@@ -210,7 +211,32 @@ class Api implements ArrayAccess
         $removeQueryString  = [ 'ajax' => null, '_uid' => null ],
         $ui;
 
-    protected $uid, $model, $action, $id, $search, $searchError, $groupBy, $orderBy, $key, $url, $options, $parent, $relation, $scope, $auth, $actions, $text, $template, $run, $params, $source, $graph, $originalText, $config;
+    protected
+        $uid,
+        $api,
+        $model,
+        $action,
+        $id,
+        $search,
+        $searchError,
+        $groupBy,
+        $orderBy,
+        $key,
+        $url,
+        $options,
+        $parent,
+        $relation,
+        $scope,
+        $auth,
+        $actions,
+        $text,
+        $template,
+        $run,
+        $params,
+        $source,
+        $graph,
+        $originalText,
+        $config;
     protected static
         $instances=array(),
         $is=0,
@@ -238,18 +264,73 @@ class Api implements ArrayAccess
      *     (bool) batch:        if this action might be performed in batch actions
      *     (bool) identified:   if this action should be performed only when at least one record is identified
      *    (array) actions:      array of dependent actions: ( $url => $action ). For each action, if it's a string,
-     *                          then the interface is checked at TDZ_VAR/interfaces/{$action}.yml
+     *                          then the interface is checked at S_VAR/interfaces/{$action}.yml
      *   (string) actionsDefault: list of actions to be tried as default options
      */
-    public function __construct($d=null, $pI=null, $expand=1)
+    public function __construct($d=null)
     {
         $d = static::loadInterface($d);
+        $a = func_get_args();
+        $expand = (count($a)>2) ?(int)$a[2] :1; 
         if(self::$className!=get_called_class()) self::$className = get_called_class();
         if(isset($d['enable']) && !$d['enable']) {
             return static::error(404, static::t('errorNotFound'));
         }
         $this->register();
-        $this->setParent($pI);
+        $this->setParent((count($a)>1) ?$a[1] :null);
+        unset($a);
+
+        if(isset($d['formats']) && is_array($d['formats'])) {
+            if(!isset($d['config'])) $d['config'] = [];
+            $d['config']['formats'] = $d['formats'];
+            unset($d['formats']);
+        }
+        if(count($d)>0) {
+            $A = [];
+            $S = [];
+            foreach($d as $k=>$v) {
+                if(isset(static::$meta->properties[$k])) {
+                    if(method_exists($this, $m='set'.S::camelize($k, true))) {
+                        $A[$m] = $v;
+                    } else {
+                        $S[$k] = $v;
+                    }
+                    unset($d[$k]);
+                } else if (property_exists($this, $k) && isset($this::${$k}) && gettype($v)==gettype($this::${$k})) {
+                    $this::${$k} = $v;
+                    unset($d[$k]);
+                }
+                unset($v, $k);
+            }
+
+            if($S) {
+                Schema::apply($this, $S, static::$meta, false);
+            }
+            unset($S);
+            if($A) {
+                foreach($A as $m=>$v) {
+                    $this->$m($v);
+                }
+            }
+            unset($A);
+            if(is_null($this->text)) {
+                $this->text = ['api'=>$this->api];
+            } else if(!isset($this->text['api'])) {
+                $this->text = ['api'=>$this->api]+$this->text;
+            }
+            if(isset($this->text[0])) {
+                $this->text['preview'] = $this->text[0];
+                unset($this->text[0]);
+            }
+            if($d) {
+                $this->text += $d;
+            }
+            $notm=['api', 'title'];
+            foreach($this->text as $k=>$v) {
+                if(is_string($v) && !in_array($k, $notm)) $this->text[$k] = S::markdown($v);
+            }
+            unset($d);
+        }
         /*
         if(!is_null($this->parent) && isset($d['relation'])) {
             $pcn = $this->getParent()->getModel();
@@ -260,135 +341,62 @@ class Api implements ArrayAccess
             unset($d['relation']);
         }
         */
-        if(isset($d['run'])) {
-            if(is_string($d['run'])) {
-                if(method_exists($this, $d['run'])) {
-                    $this->run = array(array(self::$className, $d['run']));
-                }
-            } else if(is_array($d['run']) && count($d['run'])>0) {
-                $r = array_values($d['run']);
-                if(!is_array($r[0])) {
-                    $r[0] = array(self::$className, $r[0]);
-                }
-                $this->run = $r;
-                unset($r);
-            }
-            unset($d['run']);
-        }
-        if(isset($d['model']) && class_exists($d['model'])) {
-            $this->model = $d['model'];
+        if($this->model && class_exists($this->model)) {
             $cn = $this->model;
-            if(isset($d['key']) && $d['key']) {
-                $this->key = $d['key'];
-                unset($d['key']);
-            } else {
+            if(!$this->key) {
                 $this->key = $cn::pk();
                 if(is_array($this->key) && count($this->key)==1) {
                     $this->key = array_shift($this->key);
                     if($p=strrpos($this->key, ' ')) $this->key =substr($this->key, 0, $p);
+                    unset($p);
                 }
             }
-            if(isset($d['id']) && $d['id']) {
-                $this->id = $d['id'];
-            }
-        } else if(isset($d['text'])) {
-            $this->text = [];
-            if(!is_array($d['text'])) {
-                $d['text'] = ['preview'=>$d['text']];
-            }
-            foreach($d['text'] as $k=>$v) {
-                if(is_string($v)) $this->text[$k] = S::markdown($v);
-            }
+        } else if($this->text) {
             $this->originalText = true;
         } else if(!$this->run) {
             return static::error(404, static::t('errorNotFound'));
         }
-        if(isset($d['auth'])) {
-            $this->auth = $d['auth'];
-            unset($d['auth']);
-        } else {
+
+        if(!$this->auth) {
             $this->getAuth();
         }
-        if(isset($d['search']) && is_array($d['search'])) {
-            $this->search = $d['search'];
-            unset($d['search']);
-        }
-        if(isset($d['graph'])) {
-            $this->graph = $d['graph'];
-        }
-        if(isset($d['url'])) {
-            $this->url = $d['url'];
-        }
-        if(isset($d['relation'])) {
-            $this->relation = $d['relation'];
-        }
-        if((!isset($d['actions']) && $expand) || $d['actions']) {
-            $actions = (isset($d['actions']))?($d['actions']):(null);
-            unset($d['actions']);
-        } else {
-            $actions = false;
-        }
-
-        if(isset($d['template'])) {
-            $this->template = $d['template'];
-            unset($d['template']);
-        } else if(App::request('headers', 'z-api-mode')=='standalone') {
+        if(!$this->template && App::request('headers', 'z-api-mode')=='standalone') {
             $this->template = 'api-standalone';
         }
-        if(isset($d['config'])) {
-            if(is_array($d['config'])) {
-                $this->config = $d['config'];
-            }
-            unset($d['config']);
-        }
         if(is_null($this->config)) $this->config = [];
-
-        if(isset($d['formats']) && is_array($d['formats'])) {
-            $this->config['formats'] = $d['formats'];
-            unset($d['formats']);
-            if(static::$format && !in_array(static::$format, $this->config['formats'])) return static::error(400, static::t('errorNotSupported'));
+        if(isset($this->config['formats']) && is_array($this->config['formats']) && static::$format && !in_array(static::$format, $this->config['formats'])) {
+            return static::error(400, static::t('errorNotSupported'));
         }
-
-        if(count($d)>0) {
-            $cn = self::$className;
-            foreach($d as $k=>$v) {
-                if(property_exists($cn, $k) && isset($cn::$$k) && gettype($v)==gettype($cn::$$k)) {
-                    $cn::$$k = $v;
-                    unset($d[$k]);
-                }
-                unset($v, $k);
-            }
-
-            if(is_null($this->text)) $this->text = $d;
-            else $this->text += array_filter($d);
-        }
-        if($actions !== false) $this->setActions($actions, $expand);
-        unset($actions);
-
-        static $boolopt=array('envelope', 'pretty');
-
-        if(isset($d['options']) && is_array($d['options'])) {
-            $this->options = $d['options'];
+        if($this->options && is_array($this->options)) {
             if(isset($this->options['headers'])) static::$headers += $this->options['headers'];
-            if(isset($d['options']['scope'])) {
-                $this->checkScope($d['options']['scope']);
+            if(isset($this->options['scope'])) {
+                $this->checkScope($this->options['scope']);
             }
-            foreach($boolopt as $opt) {
+            foreach(['envelope', 'pretty'] as $opt) {
                 if(isset($this->options[$opt]) && $this->options[$opt]!=static::$$opt) {
                     $this->config[$opt] = (bool) $this->options[$opt];
-                    //static::$$opt = (bool) $this->options[$opt];
                 }
             }
-            unset($d['options']);
-            if(isset($this->options['group-by'])) {
-                $this->groupBy = $this->options['group-by'];
-            }
-            //if(isset($this->options['order-by'])) $this->orderBy = $this->options['order-by'];
         }
-
         if(static::$optionsDefault) {
             if(!$this->options) $this->options = static::$optionsDefault;
             else $this->options += static::$optionsDefault;
+        }
+    }
+
+    public function setRun($r)
+    {
+        if(is_string($r)) {
+            if(method_exists($this, $r)) {
+                $this->run = [[self::$className, $r ]];
+            }
+        } else if(is_array($r) && count($r)>0) {
+            $r = array_values($r);
+            if(!is_array($r[0])) {
+                $r[0] = [ self::$className, $r[0] ];
+            }
+            $this->run = $r;
+            unset($r);
         }
     }
 
@@ -585,7 +593,7 @@ class Api implements ArrayAccess
             $sn = S::scriptName();
             S::scriptName($I->url);
 
-            static::$ui = (!TDZ_CLI && static::$format==='html');
+            static::$ui = (!S_CLI && static::$format==='html');
             return $I->output($p);
 
         } catch(End $e) {
@@ -717,7 +725,7 @@ class Api implements ArrayAccess
             foreach($actions as $an=>$a) {
                 if(isset($a['relation']) || isset($a['interface'])) $a += $this->config('relationAction');
 
-                if(isset($a['expire']) && ($t=strtotime($a['expire'])) && $t<TDZ_TIME) {
+                if(isset($a['expire']) && ($t=strtotime($a['expire'])) && $t<S_TIME) {
                     continue;
                 }
 
@@ -948,13 +956,10 @@ class Api implements ArrayAccess
             $I->url = ($n)?(static::$base.'/'.$n):(static::$base);
             unset($cn);
         }
-
         //static::$urls[$I->link()] = array('title'=>$I->getTitle(),'action'=>$I->action);
-
         if($I->run) {
             return $I;
         }
-
         if(is_null($I->actions)) {
             $I->setActions(true, 1);
         }
@@ -970,7 +975,6 @@ class Api implements ArrayAccess
                 $n = null;
             }
         }
-
         if($a) {
             $A=$I->setAction($a, $p);
         } else {
@@ -1558,12 +1562,12 @@ class Api implements ArrayAccess
         } else if($alt) {
             $s = $alt;
         }
-        return (static::$translate || $alt===null)?(S::t($s, 'interface')):($s);
+        return (static::$translate || $alt===null)?(S::t($s, 'api')):($s);
     }
 
     public static function template()
     {
-        if(!in_array($d=TDZ_ROOT.'/data/templates', S::templateDir())) {
+        if(!in_array($d=S_ROOT.'/data/templates', S::templateDir())) {
             S::$tplDir[] = $d;
         }
         unset($d);
@@ -1585,7 +1589,7 @@ class Api implements ArrayAccess
     public function link($a=null, $id=null, $ext=true, $qs=null)
     {
         if(is_null($this->url)) {
-            $this->url = static::$base.'/'.$this->text['interface'];
+            $this->url = static::$base.'/'.$this->api;
         }
         $url = $this->url;
         // add action to URL
@@ -1991,7 +1995,7 @@ class Api implements ArrayAccess
 
         $f=static::template($this->template, 'api-'.static::$format, 'api-'.$this->action, 'api');
         $vars = $this->text;
-        $vars['Interface'] = $this;
+        $vars['Api'] = $this;
         $vars['title'] = $title;
         $vars['url'] = $this->link();//S::scriptName(true);
         $vars['response'] = $data;
@@ -2134,7 +2138,7 @@ class Api implements ArrayAccess
                 }
             } else {
                 $end = true;
-                $msg = '<a data-action="error" data-message="'.S::xml(S::t('There was an error while processing your request. Please try again or contact support.', 'interface')).'"></a>';
+                $msg = '<a data-action="error" data-message="'.S::xml(S::t('There was an error while processing your request. Please try again or contact support.', 'api')).'"></a>';
             }
             S::output($msg, 'text/html; charset=utf8', $end);
             return $r;
@@ -2152,7 +2156,7 @@ class Api implements ArrayAccess
         $arguments = $this->source ?: array();
 
         $newInterface = [
-            'base' => $this->text['interface'],
+            'base' => $this->api,
             'title' => $this->text['title'] . ' Shared',
             'owner' => (int)S::getUser()->id,
             'expires' => '',
@@ -2237,7 +2241,7 @@ class Api implements ArrayAccess
                 }
 
                 $fileName = $newInterface['base'] . date('-Y-m-d-') . S::salt(10);
-                Yaml::save(TDZ_VAR . '/api-shared/' . $fileName . '.yml', ['all' => $newInterface]);
+                Yaml::save(S_VAR . '/api-shared/' . $fileName . '.yml', ['all' => $newInterface]);
                 $this->message('<div class="s-msg s-msg-success"><p>Shared interface /a/' . $fileName . ' created.</p></div>');
                 $this->redirect("/a/$fileName");
             }
@@ -2253,7 +2257,7 @@ class Api implements ArrayAccess
 
     public function renderReport($o=null, $scope=null, $class=null, $translate=false, $xmlEscape=true)
     {
-        $pid = $this->backgroundWorker(S::t('Building report...','interface'), 'irs/', true, false, $this->link($this->action, null, true, false));
+        $pid = $this->backgroundWorker(S::t('Building report...','api'), 'irs/', true, false, $this->link($this->action, null, true, false));
 
         unset($this->text['searchForm']);
         $r=array();
@@ -2280,7 +2284,7 @@ class Api implements ArrayAccess
                 Cache::set('bgd/'.$uid, $f);
                 $msg = '<a data-action="download" data-download="'.S::xml($fn).'" data-url="'.S::xml($uri).'" data-message="'.S::xml($msg).'"></a>';
             } else {
-                $msg = '<a data-action="error" data-message="'.S::xml(S::t('There was an error while processing your request. Please try again or contact support.','interface')).'"></a>';
+                $msg = '<a data-action="error" data-message="'.S::xml(S::t('There was an error while processing your request. Please try again or contact support.','api')).'"></a>';
             }
 
             if($unload) {
@@ -2981,7 +2985,7 @@ class Api implements ArrayAccess
         }
         $fo = $o->getForm($d);
         if(preg_match('/\&ajax=[0-9]+\b/', $fo->action)) $fo->action = preg_replace('/\&ajax=[0-9]+\b/', '', $fo->action);
-        $fo->id = S::slug($this->text['interface']).'--'.(($o->isNew())?('n'):(S::slug(@implode('-',$o->getPk(true)))));
+        $fo->id = S::slug($this->api).'--'.(($o->isNew())?('n'):(S::slug(@implode('-',$o->getPk(true)))));
         $fo->attributes['class'] = $this->config('attrFormClass');
         if($this->action=='update' || $this->action=='new') {
             $fo->buttons['submit']=static::t('button'.ucwords($this->action), ucwords($this->action));
@@ -3806,7 +3810,7 @@ class Api implements ArrayAccess
                 }
             }
         }
-        $islug = S::slug($this->text['interface']);
+        $islug = S::slug($this->api);
         $cPrefix = $this->config('attrClassPrefix');
         $fo['fields'] += [
             '_submit' => [
@@ -3981,7 +3985,10 @@ class Api implements ArrayAccess
                 $pl[$p] = $I['options']['list-parent'];
             }
             $pp[$k] = $p;
-            $ul[$p][0]='<a href="'.static::$base.'/'.$I['interface'].'">'.S::xml($I['title']).'</a>';
+            if(isset($I['api'])) $api = $I['api'];
+            else if(isset($I['interface'])) $api = $I['interface'];
+            else $api = $k;
+            $ul[$p][0]='<a href="'.static::$base.'/'.$api.'">'.S::xml($I['title']).'</a>';
             if(isset($I['options']['list-parent'])) {
                 $pl[$p] = $I['options']['list-parent'];
             }
@@ -4138,11 +4145,15 @@ class Api implements ArrayAccess
     public static function loadInterface($a=array(), $prepare=true)
     {
         if(!is_array($a) && $a) {
-            $a = array('interface'=>$a);
+            $a = array('api'=>$a);
         }
-        if(isset($a['interface']) && $a['interface']) {
+        if(isset($a['interface'])) {
+            if(!isset($a['api'])) $a['api'] = $a['interface'];
+            unset($a['interface']);
+        }
+        if(isset($a['api']) && $a['api']) {
             $not = [];
-            if($f = static::configFile($a['interface'])) {
+            if($f = static::configFile($a['api'])) {
                 $not[] = $f;
                 $cfg = S::config($f, S::env());
                 if($cfg) $a += $cfg;
@@ -4187,11 +4198,16 @@ class Api implements ArrayAccess
                 $a['options']['priority'] = null;
             }
         } else {
-            $n = S::camelize($a['interface'], true);
+            $n = S::camelize($a['api'], true);
         }
 
         // overwrite credentials
-        if($prepare && !isset($a['credential'])) {
+        if(isset($a['credential'])) {
+            if(!isset($a['auth'])) $a['auth'] = ['credential'=>$a['credential']];
+            else if(is_array($a['auth']) && !isset($a['auth']['credential'])) $a['auth']['credential'] = $a['credential'];
+            unset($a['credential']);
+        }
+        if($prepare && !isset($a['auth'])) {
             $min = null;
             if(!isset($a['actions'])) $a['actions'] = [];
             $defaultActions = array_keys(static::$actionsAvailable);
@@ -4226,16 +4242,18 @@ class Api implements ArrayAccess
             }
             if(!is_null($min)) {
                 if(is_array($min)) $min = array_unique($min);
-                $a['credential'] = $min;
+                $a['auth'] = ['credential' => $min ];
             }
         }
 
-        if(!isset($a['credential'])) {
-            if(!is_null($c = Studio::credential('interface'.$n))
+        if(!isset($a['auth'])) {
+            if(!is_null($c = Studio::credential('api'.$n))
+                || !is_null($c = Studio::credential('interface'.$n))
+                || !is_null($c = Studio::credential('api'))
                 || !is_null($c = Studio::credential('interface'))
                 || !is_null($c = Studio::credential('edit'))
             ) {
-                $a['credential'] = $c;
+                $a['auth'] = ['credential' => $c ];
             }
         }
 

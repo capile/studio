@@ -1,0 +1,11 @@
+paths:
+    tests: src/Studio/Test
+    output: data/tests/_output
+    data: data/tests/_data
+    support: data/tests/_support
+    envs: data/tests/_envs
+actor_suffix: Tester
+extensions:
+    enabled:
+        - Codeception\Extension\RunFailed
+bootstrap: ../../../app-inc.php

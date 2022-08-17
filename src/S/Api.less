@@ -474,6 +474,7 @@
   a {
     text-decoration:none;
   }
+  &.s-api-no-title .s-api-label-title, &.s-api-no-title .s-api-summary:before {display:none;}
   &.s-api-no-summary .s-api-summary {display:none;}
   &.s-api-no-actions .s-api-actions, &.s-api-no-actions .s-api-footer .s-buttons {display:none;}
   &.s-api-no-breadcrumb .s-api-breadcrumbs {display:none;}
@@ -647,16 +648,27 @@
     .s-spacer {
       display:inline-block;
       width:25%;
-      background-color:@colorHeader;
+      background:@colorHeader;
       text-decoration:none !important;
       &:before {
         content:@labelNavigation;
         color: @colorHeaderBorder;
+        height: 1.5em;
         font-size: 1.25em;
         display:block;
         width:100%;
         text-indent: calc(0.5em / 1.25);
         line-height: calc(2em / 1.25);
+      }
+      &:after {
+        content:' ';
+        background: url(@imageNavigation) no-repeat;
+        height: 1em + @headerMargin;
+        display:block;
+        width:100%;
+        position:absolute;
+        bottom:0.5em;
+        left:0.5em;
       }
     }
   }
@@ -903,7 +915,6 @@ input.s-switch{
     &:empty {border:1px solid red;height:0;padding:0;}
     clear:both; 
     position:relative;
-    margin: 0 -1em 1em -1em;
     .s-api-scope-block {
       margin:0;
     }
@@ -984,7 +995,7 @@ input.s-switch{
     clear:both;
     border:0;
     height:0;
-    margin: 0 -0.5em 0 -0.5em;
+    margin: 0;
     padding:0;
     background:none;
     border-bottom: 0.1em solid @colorHeading;
@@ -2076,10 +2087,11 @@ th > input[type=checkbox], td > input[type=checkbox] {
   }
 }
 .s-api-label-uid {
-  float:right;
+  position:absolute;
+  right:1em;
+  top: 0;
   opacity: 0.6;
   font-size: 0.8em;
-  margin-right: calc(-2.25em / 0.8em);
 }
 .s-api-label-id{
   &:before{

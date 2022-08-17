@@ -14,11 +14,11 @@ use Studio as S;
 use Studio\Api;
 use Studio\App;
 use Studio\Cache;
+use Studio\Collection;
 use Studio\Model;
 use Studio\Model\Entries;
 use Studio\Studio;
 use Studio\Yaml;
-use Tecnodesign_Collection as Collection;
 use Tecnodesign_Exception as Exception;
 
 class Contents extends Model

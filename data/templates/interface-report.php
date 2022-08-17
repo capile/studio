@@ -14,13 +14,13 @@ $id = tdz::slug($url);
 if(strpos($url, '?')!==false) list($url, $qs)=explode('?', $url, 2);
 else $qs='';
 
-$st = $Interface::worker();
-$scope = (isset($options['scope']))?($options['scope']):($Interface->scope());
-if(!isset($action)) $action = $Interface['action'];
+$st = $Api::worker();
+$scope = (isset($options['scope']))?($options['scope']):($Api->scope());
+if(!isset($action)) $action = $Api['action'];
 if(isset($scope[$action]) && is_array($scope[$action])) $scope=$scope[$action];
 
 if(!isset($r)) $r=array(
-    '{interface}'=>$interface,
+    '{interface}'=>$api,
     '{title}'=>$title,
     '{action}'=>$action,
     '{model}'=>$model,
@@ -31,13 +31,13 @@ $r['{columns}'] = count($scope);
 
 $m = (isset($meta) && is_array($meta))?($meta):(array());
 
-$format = $Interface::format();
+$format = $Api::format();
 if($format=='html') {
     $format = 'xlsx';
-    $Interface::format($format);
+    $Api::format($format);
 }
 
-if(!isset($m['filename'])) $m['filename']=$interface.'-'.$action;
+if(!isset($m['filename'])) $m['filename']=$api.'-'.$action;
 $fname = $m['filename'];
 $filename = TDZ_VAR.'/cache/interface-report/'.date('YmdHis', floor(TDZ_TIME)).substr(fmod(TDZ_TIME,1), 1, 5).'-'.$fname;
 if(!is_dir(dirname($filename))) mkdir(dirname($filename), 0777, true);
@@ -96,20 +96,20 @@ if(!isset($worksheet)) $worksheet=false;
 $n=0;
 while($list || $worksheet) {
     $sheet=null;
-    if($st) $Interface::worker(tdz::t('Fetching records.', 'interface'));
+    if($st) $Api::worker(tdz::t('Fetching records.', 'interface'));
     if(isset($worksheet) && $worksheet) {
         foreach($worksheet as $sheet=>$so) {
             if(!is_array($so)) {
                 $newscope = $cn::columns($so);
             } else {
                 if(isset($so['relation'])) {
-                    $rs = (isset($so['scope']))?($so['scope']):($interface);
+                    $rs = (isset($so['scope']))?($so['scope']):($api);
                     $order = (isset($so['order']))?($so['order']):(null);
-                    $f = $Interface['search'];
+                    $f = $Api['search'];
                     $rcn = $cn::relate($so['relation'], $f);
                     $scope = $rcn::columns($rs);
                     $list = $rcn::find($f,0,$rs,true,$order);
-                    if($st) $Interface::worker(tdz::t('Fetching records.', 'interface'));
+                    if($st) $Api::worker(tdz::t('Fetching records.', 'interface'));
                     $cn = $rcn;
                 } else if(isset($so['scope'])) {
                     $newscope = $cn::columns($so['scope']);
@@ -121,8 +121,8 @@ while($list || $worksheet) {
             if(isset($newscope) && $newscope!=$scope) {
                 $scope = $newscope;
                 $order = (is_array($so) && isset($so['order']))?($so['order']):(null);
-                $list = $cn::find($Interface['search'],0,$scope,true, $order);
-                if($st) $Interface::worker(tdz::t('Fetching records.', 'interface'));
+                $list = $cn::find($Api['search'],0,$scope,true, $order);
+                if($st) $Api::worker(tdz::t('Fetching records.', 'interface'));
             }
             unset($worksheet[$sheet], $so, $newscope, $order);
             break;
@@ -153,7 +153,7 @@ while($list || $worksheet) {
             if(method_exists($cn, $m='preview'.tdz::camelize($fn, true))) $M[$fn]=$m;
             unset($label, $fn, $p, $m, $fd);
         }
-        if($st) $Interface::worker(tdz::t('Fetching records.', 'interface'));
+        if($st) $Api::worker(tdz::t('Fetching records.', 'interface'));
         $R->addContent(array(
             'content'=>array_keys($S),
             'use'=>'.header',
@@ -168,7 +168,7 @@ while($list || $worksheet) {
         $o = $listOffset;
         $l = $o + $listLimit;
         while($d && $o<$l) {
-            if($st) $Interface::worker(tdz::t('Adding content.', 'interface'));
+            if($st) $Api::worker(tdz::t('Adding content.', 'interface'));
             foreach($d as $i=>$v) {
                 $o++;
                 $e=array();
@@ -205,7 +205,7 @@ while($list || $worksheet) {
         break;
     }
 }
-if($st) $Interface::worker(tdz::t('Final touches.', 'interface'));
+if($st) $Api::worker(tdz::t('Final touches.', 'interface'));
 
 if(isset(${'after-report'}) && is_array(${'after-report'})) {
     tdz::tune(__FILE__.': '.__LINE__);
@@ -222,7 +222,7 @@ $mem = $sec = 20 + (10 * (ceil($total/1000)));
 tdz::tune(__FILE__.': '.__LINE__, $mem, $sec);
 
 if($st) {
-    $Interface::worker(tdz::t('Packaging...', 'interface'));
+    $Api::worker(tdz::t('Packaging...', 'interface'));
     $download = false;
     $keepFile = true;
     $fname = $filename.'.'.$format;
@@ -234,7 +234,7 @@ if($st) {
 $s = $R->render($format, $fname, $download, $keepFile);
 
 if($st) {
-    $Interface::worker(tdz::t('Download!', 'interface'), $s);
+    $Api::worker(tdz::t('Download!', 'interface'), $s);
 }
 
 return null;

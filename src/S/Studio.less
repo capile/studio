@@ -8,11 +8,18 @@ html.studio-api {
   .studio-type();
   font-size:15px;
   line-height:15px;
-  background: @colorBody;
+  background: @colorApiBackground;
+  min-height:100vh;
 
   &, body {
     margin: 0;
     padding: 0;
+  }
+
+  .s-languages {
+    a:link, a:visited {
+      color: #f9c133;
+    }
   }
 }
 
@@ -65,7 +72,7 @@ html.studio-api {
     bottom:1em;
     left:0em;
     display:inline-block;
-    width:6.4em;
+    width:7.5em;
     height:2em;
     text-align:center;
     color:@text;
@@ -73,10 +80,15 @@ html.studio-api {
     cursor:pointer;
     font-weight:normal;
     opacity: 0.5;
-    &:hover{color:@hover;opacity:1;}
-    &:active{color:@active;opacity:1;}
     background: url(@studio-logo) no-repeat 0 0;
     background-size: cover;
+    &:active{color:@active;opacity:1;}
+    &:hover{
+      color:@hover;opacity:1;
+      background-color: rgba(0,0,0,0.6);
+    }
+    border-radius: 0 1em 1em 0;
+    .transition(all 0.2s ease-in-out);
     /*
     &:before {
       font-size:1.25em;
@@ -85,6 +97,10 @@ html.studio-api {
       content:@icon;
     }
     */
+  }
+  &.s-active .studio-logo {
+    background-color: rgba(0,0,0,0.6);
+    opacity:1;
   }
 
   .s-section .s-title {

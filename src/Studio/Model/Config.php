@@ -182,17 +182,14 @@ class Config extends Model
         S::exec(['shell'=>$cmd.' '.escapeshellarg('http://127.0.0.1:9999/_studio')]);
     }
 
-    public static function executePreview($Interface, $args=[])
+    public static function executePreview($Api, $args=[])
     {
-        $Interface->getButtons();
-        $r = $Interface['text'];
-
-        $s = S::markdown($r['text']);
-        $s .= '<p>Version '.S::VERSION.'</p>';
-
-        $r['preview'] = $s;
-
-        $Interface['text'] = $r;
+        $Api->getButtons();
+        $r = $Api->text;
+        if(isset($r['text'])) {
+            $r['preview'] = S::markdown($r['text']).'<p>Version '.S::VERSION.'</p>';
+            $Api->text = $r;
+        }
     }
 
     public function validateStudioWebRepos($v)

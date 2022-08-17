@@ -131,9 +131,11 @@ class SchemaObject implements ArrayAccess
 
     public function batchSet($values, $skipValidation=false)
     {
-        foreach($values as $name=>$value) {
-            if($skipValidation) $this->$name = $value;
-            else $this->__set($name, $value);
+        if(is_array($values) || is_object($values)) {
+            foreach($values as $name=>$value) {
+                if($skipValidation) $this->$name = $value;
+                else $this->__set($name, $value);
+            }
         }
         return $this;
     }

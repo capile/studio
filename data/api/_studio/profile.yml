@@ -1,0 +1,59 @@
+---
+all:
+  title: '*Profile'
+  model: Studio\Model\Users
+  id: $UID
+  key: id
+  auth: true
+  search:
+   id: $UID
+  action: preview
+  config:
+    actionsDefault:
+      - preview
+    actionsAvailable:
+      preview:
+        position: ~
+        identified: true
+        batch: true
+        query: true
+        additional-params: false
+      update:
+        position: 30
+        identified: true
+        batch: false
+        query: true
+        additional-params: false
+        next: preview
+      connect:
+        action: executeMethod
+        position: 99
+        identified: false
+        batch: false
+        query: true
+        label: "*Studio Connect"
+        additional-params: true
+  options:
+    #preview-empty: false
+    index: false
+    priority: 1
+    scope:
+      preview:
+        - 'scope::userinfo'
+        - bind: created
+          label: '*Created'
+          type: none
+          class: i1s2
+        - bind: updated
+          label: '*Updated'
+          type: none
+          class: i1s2
+      userinfo:
+        __default:
+          fieldset: '*Profile'
+        '*Name': name
+        '*Username': username
+        '*E-mail': email
+        '*Password': password
+  attributes:
+    class: s-api-no-title
