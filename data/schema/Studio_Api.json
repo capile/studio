@@ -11,7 +11,7 @@
         "key": { "type": "mixed", "description": "Use this property of the model as the PK" },
         "search": { "type": "object", "description": "Filter the available model records" },
         "groupBy": { "type": "object", "description": "Groups the query results" },
-        "orderBy": { "type": "string", "description": "Orders the query results" },
+        "orderBy": { "type": "object", "description": "Orders the query results" },
         "options": { "type": "object", "description": "General options for this API" },
         "url": { "type": "string", "description": "Base URL for this API" },
         "parent": { "type": "int", "description": "Parent API in the current registration" },
