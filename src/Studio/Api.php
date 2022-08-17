@@ -73,7 +73,7 @@ class Api extends SchemaObject
         $attrClassPrefix    = 's-api',
         $attrErrorClass     = 's-msg s-msg-error',
         $attrSearchFormClass= 's-form-search',
-        $attrSearchClass    = 's-form-search', // deprecated, use attrSearchFormClass
+        $attrSearchClass    = 's-api-search', // deprecated, use attrSearchFormClass
         $attrCounterClass   = 's-counter',
         $attrGraphClass     = 's-i-graph',
         $attrFormClass      = 's-form',

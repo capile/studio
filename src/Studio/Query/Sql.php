@@ -938,11 +938,11 @@ class Sql
         $t0 = microtime(true);
         $stmt = self::connect($n)->query($q);
         if(!$stmt) {
-            throw new \Exception('Statement failed! '.$q);
+            throw new Exception('Statement failed! '.$q);
         }
         $t = microtime(true) - $t0;
         if(!isset(S::$variables['metrics']['query'])) {
-            if(!isset(S::$variables['metrics'])) S::$variables['metrics'] = array();
+            if(!isset(S::$variables['metrics'])) S::$variables['metrics'] = [];
             S::$variables['metrics']['query'] = array('time'=>(float) 0,'count'=>0);
         }
         S::$variables['metrics']['query']['time']+=$t;
