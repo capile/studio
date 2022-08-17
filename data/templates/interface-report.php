@@ -39,7 +39,7 @@ if($format=='html') {
 
 if(!isset($m['filename'])) $m['filename']=$api.'-'.$action;
 $fname = $m['filename'];
-$filename = TDZ_VAR.'/cache/interface-report/'.date('YmdHis', floor(TDZ_TIME)).substr(fmod(TDZ_TIME,1), 1, 5).'-'.$fname;
+$filename = S_VAR.'/cache/interface-report/'.date('YmdHis', floor(S_TIME)).substr(fmod(S_TIME,1), 1, 5).'-'.$fname;
 if(!is_dir(dirname($filename))) mkdir(dirname($filename), 0777, true);
 if(!isset($m['title'])) $m['title']=$title;
 $R = new Tecnodesign_Excel($m);

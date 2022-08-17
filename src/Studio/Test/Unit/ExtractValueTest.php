@@ -37,16 +37,16 @@ class ExtractValueTest extends TestCase
             [ 'subtest' => 5678 ],
             'a' => ['b'=> ['c'=>['d'=>9876]]],
         ];
-        $this->assertEquals(\tdz::extractValue($a, 'test'), 1234);
-        $this->assertEquals(\tdz::extractValue($a, '$.test|another-test'), 1234);
-        $this->assertEquals(\tdz::extractValue($a, 'teste|another-test'), 3456);
-        $this->assertEquals(\tdz::extractValue($a, 'teste.*'), null);
-        $this->assertEquals(\tdz::extractValue($a, '0.subtest'), 5678);
-        $this->assertEquals(\tdz::extractValue($a, '*.subtest'), [5678]);
-        $this->assertEquals(\tdz::extractValue($a, 'a.b.c.d'), 9876);
-        $this->assertEquals(\tdz::extractValue($a, 'a.*.*.d'), [9876]);
-        $this->assertEquals(\tdz::extractValue($a, '*.*.*.*'), ['d'=>9876]);
-        $this->assertEquals(\tdz::extractValue($a, '*.*'), ['subtest'=>5678, 'b'=>$a['a']['b']]);
-        $this->assertEquals(\tdz::extractValue($a, '*.nonexisting'), null);
+        $this->assertEquals(S::extractValue($a, 'test'), 1234);
+        $this->assertEquals(S::extractValue($a, '$.test|another-test'), 1234);
+        $this->assertEquals(S::extractValue($a, 'teste|another-test'), 3456);
+        $this->assertEquals(S::extractValue($a, 'teste.*'), null);
+        $this->assertEquals(S::extractValue($a, '0.subtest'), 5678);
+        $this->assertEquals(S::extractValue($a, '*.subtest'), [5678]);
+        $this->assertEquals(S::extractValue($a, 'a.b.c.d'), 9876);
+        $this->assertEquals(S::extractValue($a, 'a.*.*.d'), [9876]);
+        $this->assertEquals(S::extractValue($a, '*.*.*.*'), ['d'=>9876]);
+        $this->assertEquals(S::extractValue($a, '*.*'), ['subtest'=>5678, 'b'=>$a['a']['b']]);
+        $this->assertEquals(S::extractValue($a, '*.nonexisting'), null);
     }
 }

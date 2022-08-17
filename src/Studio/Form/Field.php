@@ -3230,7 +3230,7 @@ class Field extends SchemaObject
     public function renderCsrf(&$arg)
     {
         $ua = (isset($_SERVER['HTTP_USER_AGENT']))?($_SERVER['HTTP_USER_AGENT']):('unknown');
-        $arg['value'] = S::encrypt(md5($ua).":".TDZ_TIME);
+        $arg['value'] = S::encrypt(md5($ua).":".S_TIME);
         if(isset($this->placeholder)) {
             $this->choices=array($arg['value'] => $this->placeholder);
             $arg['value'] = '0';
@@ -3249,7 +3249,7 @@ class Field extends SchemaObject
         if($value && ($d=S::decrypt($value))) {
             @list($h, $t) = explode(':', $d, 2);
             $ua = (isset($_SERVER['HTTP_USER_AGENT']))?($_SERVER['HTTP_USER_AGENT']):('unknown');
-            if(md5($ua)==$h && $t && $t +3600 > TDZ_TIME) {
+            if(md5($ua)==$h && $t && $t +3600 > S_TIME) {
                 return $value;
             }
         }

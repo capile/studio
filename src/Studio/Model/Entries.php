@@ -42,7 +42,7 @@ class Entries extends Model
             'entry'=>'*Article',
             'file'=>'*Uploaded file',
         ),
-        $pageDir='web',                                // where pages are stored (relative to TDZ_VAR)
+        $pageDir='web',                                // where pages are stored (relative to S_VAR)
         $uploadDir,                                    // deprecated, use S::uploadDir
         $indexFile='index',                            // filename to use for directory reads
         $previewEntryType=array('feed','file','page'), // which entry types can be previewed
@@ -503,8 +503,8 @@ class Entries extends Model
             foreach($P as $i=>$o) {
                 if(!$r) $r = $o->choicesRole();
                 if(!$g) $g = $o->choicescredentials();
-                if(!$all) $all = S::t('Everyone', 'model-tdz_permissions');
-                if(!$none) $none = S::t('No one', 'model-tdz_permissions');
+                if(!$all) $all = S::t('Everyone', 'model-studio_permissions');
+                if(!$none) $none = S::t('No one', 'model-studio_permissions');
 
                 if($co=$o->credentials) {
                     if(!is_array($co)) {
@@ -577,7 +577,7 @@ class Entries extends Model
     {
         if(!$this->id) return null;
         if(!is_array($search)) $search = [];
-        $search['published<']=TDZ_TIMESTAMP;
+        $search['published<']=S_TIMESTAMP;
         $search['type'] = 'entry';
         if(!$orderBy) $orderBy = ['published'=>'desc', 'Related.updated'=>'desc'];
         return $this->getChildren($search, $scope, $asCollection, $orderBy, $groupBy, $limit);
@@ -587,7 +587,7 @@ class Entries extends Model
     {
         if(!$this->id) return null;
         if(!is_array($search)) $search = [];
-        $search['published<']=TDZ_TIMESTAMP;
+        $search['published<']=S_TIMESTAMP;
         $search['Related.parent'] = $this->id;
         if(!isset($search['type'])) {
             $search['type'] = ['page','entry'];
@@ -1162,7 +1162,7 @@ class Entries extends Model
             $s = ($html) ?null :[];
             if($link && is_null($url)) {
                 $url = S::scriptName(true);
-                $tag = S::slug(S::t('Tag', 'model-tdz_entries'));
+                $tag = S::slug(S::t('Tag', 'model-studio_entries'));
                 $qso = array_diff_key(App::request('get'), ['_uid'=>null, 'ajax'=>null, $tag=>null]);
                 $url .= (($qso) ?'?'.http_build_query($qso).'&' :'?').$tag.'=';
                 unset($qso);
@@ -1211,8 +1211,8 @@ class Entries extends Model
                         ?'<div class="z-t-center z-app-image"><span class="z-t-inline z-t-left">'.$o->previewContent().'</span></div>'
                         :$o->previewContent()
                       )
-                    .    '<dl class="z-i-field i1s2"><dt>'.S::t('Content Type', 'model-tdz_contents').'</dt><dd>'.$o->previewContentType().'</dd></dl>'
-                    .    '<dl class="z-i-field i1s2"><dt>'.S::t('Position', 'model-tdz_contents').'</dt><dd>'.S::xml($o->position).'</dd></dl>'
+                    .    '<dl class="z-i-field i1s2"><dt>'.S::t('Content Type', 'model-studio_contents').'</dt><dd>'.$o->previewContentType().'</dd></dl>'
+                    .    '<dl class="z-i-field i1s2"><dt>'.S::t('Position', 'model-studio_contents').'</dt><dd>'.S::xml($o->position).'</dd></dl>'
                     .   '</div>'
                     . '</div>'
                     . str_replace(['{position}', '{slot}'], [$o->position+1, $slot], $tpl);
@@ -1432,7 +1432,7 @@ class Entries extends Model
             $q['left(`link`,'.(strlen($url)).')']=$url;
         }
 
-        // $q['published<']=TDZ_TIMESTAMP;
+        // $q['published<']=S_TIMESTAMP;
         $link = 'substring_index(`link`, \'/\', '.(substr_count($url, '/')+1).')';
 
         $scope = static::$schema->scope['list'];

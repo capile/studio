@@ -12,6 +12,7 @@
  */
 namespace Studio\Query;
 
+use Studio as S;
 use Studio\Query\Sql;
 use PDO;
 
@@ -28,6 +29,6 @@ class Mysql extends Sql
     public function getTablesQuery($database=null, $enableViews=null)
     {
         if(is_null($database)) $database = $this->schema('database');
-        return 'select table_name, table_comment, create_time, update_time from information_schema.tables where table_schema='.tdz::sql($this->getDatabaseName($database));
+        return 'select table_name, table_comment, create_time, update_time from information_schema.tables where table_schema='.S::sql($this->getDatabaseName($database));
     }
 }

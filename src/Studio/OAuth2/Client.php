@@ -180,8 +180,8 @@ class Client extends SchemaObject
                     $t = (int)$d['expires_in'] + S::strtotime($this->updated);
                 }
                 if($t) {
-                   if($t<TDZ_TIME) $expired = true;
-                    $expires_in = TDZ_TIME - $t;
+                   if($t<S_TIME) $expired = true;
+                    $expires_in = S_TIME - $t;
                 }
 
                 $ttl = $this->config('ttl');

@@ -182,7 +182,7 @@ class Yaml
     /**
      * Appends YAML text to memory object and yml file
      *
-     * This is used with tdz::t(). It should be used with caution since it will not
+     * This is used with Studio::t(). It should be used with caution since it will not
      * merge correctly all files. Interfaces configurations for example
      *
      * @param string $yaml file name or YAML string to load

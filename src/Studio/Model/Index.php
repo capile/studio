@@ -18,9 +18,9 @@ use Studio\App;
 use Studio\Cache;
 use Studio\Model;
 use Studio\Model\Migration;
+use Studio\Model\Interfaces;
 use Studio\Query;
 use Studio\Studio;
-use Tecnodesign_Database as Database;
 
 class Index extends Model
 {
@@ -46,7 +46,7 @@ class Index extends Model
                 ));
             }
         } catch(Exception $e) {
-            \tdz::log('[ERROR] '.$e->getMessage()."\n$e");
+            S::log('[ERROR] '.$e->getMessage()."\n$e");
         }
     }
 
@@ -227,7 +227,7 @@ class Index extends Model
         if(!$cn || !$id) return;
         $t0 = microtime(true);
 
-        if(S::$log>0) S::log('[INFO] Indexing: '.$id.' (time: '.S::number($t0-TDZ_TIME, 5).', mem: '.S::bytes(memory_get_peak_usage(true)).')');
+        if(S::$log>0) S::log('[INFO] Indexing: '.$id.' (time: '.S::number($t0-S_TIME, 5).', mem: '.S::bytes(memory_get_peak_usage(true)).')');
 
         if(!$II) $II = Interfaces::find(['id'=>$id],1);
         $lmod = null;
@@ -237,13 +237,13 @@ class Index extends Model
                 'id'=>$id,
                 'title'=>(isset($a['label'])) ?$a['label'] :$cn::label(),
                 'model'=>$cn,
-                'credential'=>(isset($a['auth'])) ?tdz::serialize($a['auth'], 'json') :S::serialize(Api::$authDefault),
-                'indexed'=>TDZ_TIMESTAMP,
+                'credential'=>(isset($a['auth'])) ?S::serialize($a['auth'], 'json') :S::serialize(Api::$authDefault),
+                'indexed'=>S_TIMESTAMP,
             ], null, null, true);
             if(!$II) return;
         } else {
             $lmod = strtotime($II->indexed);
-            $II->indexed = TDZ_TIMESTAMP;
+            $II->indexed = S_TIMESTAMP;
             $II->save();
         }
 
@@ -315,7 +315,7 @@ class Index extends Model
                             }
                             if($cmod && $lmod && $cmod<$lmod && ($I=static::find($b,1))) {
                                 $I->__skip_timestamp_updated = true;
-                                $I['indexed'] = TDZ_TIMESTAMP;
+                                $I['indexed'] = S_TIMESTAMP;
                                 $I->save();
                                 unset($I);
                                 continue;
@@ -356,7 +356,7 @@ class Index extends Model
 
         $total = $offset;
 
-        if($total && $lmod && ($R=static::find(['interface'=>$id, 'indexed<'=>preg_replace('/\.[0-9]+$/', '', TDZ_TIMESTAMP)])) && $R->count()>0) {
+        if($total && $lmod && ($R=static::find(['interface'=>$id, 'indexed<'=>preg_replace('/\.[0-9]+$/', '', S_TIMESTAMP)])) && $R->count()>0) {
             $count = $R->count();
             $total += $count;
             if(!isset($limit)) $limit = $cn::$queryBatchLimit;
@@ -448,7 +448,7 @@ class Index extends Model
             if(!isset($H[$dbn])) $H[$dbn] = $cn::queryHandler();
             if(!isset($T[$dbn])) {
                 $T[$dbn] = [];
-                foreach(Database::getTables($dbn) as $t) {
+                foreach($H[$dbn]->getTables($dbn) as $t) {
                     if(is_array($t)) $t = $t['table_name'];
                     $T[$dbn][$t] = $t;
                 }
