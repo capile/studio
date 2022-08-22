@@ -11,6 +11,7 @@
  * @version   1.0
  */
 use Studio\App as App;
+use Studio\Asset;
 use Studio\Cache;
 use Studio\Collection;
 use Studio\Model;
@@ -685,7 +686,7 @@ class Studio
      */
     public static function minify($s, $root=false, $compress=true, $before=true, $raw=false, $output=false)
     {
-        return Tecnodesign_Studio_Asset::minify($s, $root, $compress, $before, $raw, $output);
+        return Asset::minify($s, $root, $compress, $before, $raw, $output);
     }
 
     /**

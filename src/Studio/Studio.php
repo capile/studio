@@ -16,6 +16,7 @@ namespace Studio;
 
 use Studio as S;
 use Studio\App;
+use Studio\Asset;
 use Studio\Collection;
 use Studio\Form;
 use Studio\Model\Entries;
@@ -25,7 +26,6 @@ use Studio\Model\Relations;
 use Studio\Model\Index;
 use Studio\Query;
 use Studio\Yaml;
-use Tecnodesign_Studio_Asset as Asset;
 use Tecnodesign_Translate as Translate;
 
 class Studio
