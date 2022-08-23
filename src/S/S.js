@@ -121,6 +121,7 @@ function initStudio(d)
     if(store && Z.timeout) Z.storage('s-auth', d, Z.timeout);
 
     Z.ready(Z.init);
+    setTimeout(Z.init, 500);
 }
 
 Z.storage=function(n, v, e)
@@ -583,8 +584,8 @@ Z.ready=function(fn)
         _onReady.push(fn);
     }
     if(_isReady) {
-        while(_onReady.length>0) {
-            (_onReady.shift())(Z);
+        for(var i=0;i<_onReady.length;i++) {
+            _onReady[i].call(Z);
         }
     }
 };

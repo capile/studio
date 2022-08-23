@@ -1,4 +1,4 @@
-/*! Tecnodesign Z.Interface v2.7 | (c) 2022 Capile Tecnodesign <ti@tecnodz.com> */
+/*! Studio Api v1.0 | (c) 2022 Capile Tecnodesign <ti@tecnodz.com> */
 @charset "utf8";
 @import "@{icon-font}";
 @import (reference) "interface-vars-default.less";
@@ -527,11 +527,11 @@
   }
 }
 
-.tdz-blur{
+.s-blur{
   opacity: 0.5;
   .iconFont();
 }
-.tdz-blur:before{
+.s-blur:before{
   position:absolute;
   left:50%;
   top:300px;
@@ -549,7 +549,7 @@
   color:@colorTab;
   opacity:0.4;
 }
-.tdz-blur:after{
+.s-blur:after{
   .icon(@iconSettings);
   position:absolute;
   left:50%;
@@ -715,7 +715,7 @@
   background: @colorBreadcrumbs;
   padding: 1em 3em 0.5em 1em;
   & ~ .s-api-summary {
-    padding-top:1em;
+    padding-top: 0.5em;
   }
   a, span {
     &:link, &:visited {
@@ -751,7 +751,7 @@
   border:none;
   background:transparent;
 }
-.tdz-counter {
+.s-counter {
   display:inline-block;
   ~ label {display:inline-block;vertical-align:top;}
 }
@@ -836,21 +836,19 @@ input.s-switch{
   strong{color:@colorSummaryText;}
 }
 
-.tdz-buttons {
+.s-buttons {
   a {
     display: inline-block;
     cursor:pointer;
-    font-size:1.25em;
-    width:1em;
-    height:1em;
-    line-height:1.25em;
+    width:1.25em;
+    height:1.25em;
     text-align:right;
     color:@colorButton;
     &:link, &:visited {color:@colorButtonSubmit;text-decoration:none;}
     &:hover, &:active {color:@colorButtonSubmitActive;text-decoration:none;}
     .iconFont();
-    &.tdz-button-add:before{content:@iconAdd;}
-    &.tdz-button-del:before{content:@iconRemove;}
+    &.s-button-add:before{content:@iconAdd;}
+    &.s-button-del:before{content:@iconRemove;}
   }
 }
 
@@ -858,7 +856,7 @@ input.s-switch{
   .item {
     position:relative;
     padding-right:1.5em;
-    > .tdz-buttons {
+    > .s-buttons {
       position:absolute;
       right:1em;
       bottom:0.5em;
@@ -880,7 +878,7 @@ input.s-switch{
   padding-right:0 !important;
   .item {
     padding-right:1.5em;
-    > .tdz-buttons {
+    > .s-buttons {
       right:0.5em;
       bottom:0;
     }
@@ -891,20 +889,20 @@ input.s-switch{
   margin:0 -0.5em 0 0;
   .item {
     border-top:1px solid @colorTab + #999;
-    > .tdz-buttons {
+    > .s-buttons {
       line-height:1.5em;
       width:1.5em;
     }
   }
 }
 
-.tdz-subform-buttons.tdz-buttons {
+.s-subform-buttons.s-buttons {
   display:inline-block;
   vertical-align:bottom;
   border:none;
   margin-top:0;
-  line-height:1em;
-  margin: 0 0 0.125em 0.25em;
+  line-height:1.25em;
+  margin-left: 0.25em;
 }
 
 .s-api-preview {
@@ -1094,7 +1092,7 @@ input.s-switch{
     display:block;
     width:auto;
     font-size:0.8em;
-    padding:0 0.625em;
+    padding:0 @fieldPaddingRight/0.8 0 @fieldPaddingLeft/0.8;
     /*color:@colorForeground;*/
     float:none;
     &:empty + dd:empty {
@@ -1105,7 +1103,7 @@ input.s-switch{
   dd {
     display:block;
     margin:0;
-    padding: 0.25em 0.5em;
+    padding: 0.25em @fieldPaddingRight 0.25em @fieldPaddingLeft;
     min-height:2em;
     line-height: 1.5em;
     position:relative;
@@ -1179,7 +1177,7 @@ button .i-label {
   form, #f__q {
     margin:0;padding:0;
   }
-  ~ .tdz-counter, ~ .s-api-counter {
+  ~ .s-counter, ~ .s-api-counter {
     padding-top: 0.5em;
     line-height:1em;
   }
@@ -1194,7 +1192,7 @@ button .i-label {
     border:none;
     legend{display:none}
   }
-  .tdz-date-from, .tdz-date-to {
+  .s-date-from, .s-date-to {
     display:inline-block;
     white-space:nowrap;
     width:50%;
@@ -1202,7 +1200,7 @@ button .i-label {
       width:50%;
     }
   }
-  .tdz-date-to {
+  .s-date-to {
     span.label {display:none;}
   }
 
@@ -1298,7 +1296,7 @@ img.s-app-image, .s-app-image img {
   max-height: 20em;
 }
 
-.app-file-preview .tdz-f-file, .app-image-preview .tdz-f-file {
+.app-file-preview .s-f-file, .app-image-preview .s-f-file {
   display:block;
   & ~ input, & ~ .s-type-toggler {
     display:none;
@@ -1365,7 +1363,7 @@ form .s-api-field a.s-input-upload {
   display:none;
 }
 
-.tdz-f-disable .input, .s-api-field.p-disable {
+.s-f-disable .input, .s-api-field.p-disable {
   opacity:0.5;
 }
 
@@ -1413,15 +1411,15 @@ select, input {
   padding:0.5em;
 }
 
-.s-msg.tdz-m-inactive{
+.s-msg.s-m-inactive{
   display:none !important;
 }
 
-.tdz-m-original {
+.s-m-original {
   color:#888;
   text-decoration: line-through;
 }
-.tdz-m-original ~ .tdz-m-value {
+.s-m-original ~ .s-m-value {
   color:#600;
   opacity: 0.5;
 }
@@ -1797,14 +1795,6 @@ form .i-mono dd {
   }
 }
 
-.s-buttons {
-  border-top: @borderSize solid @colorSummary - #111;
-  position:relative;
-
-  background:@colorButton;
-  color:@colorButtonText;
-}
-
 [class^="s-api--"], [class*=" s-api--"] {
   &:before {
     .icon(@iconDefault);
@@ -2169,7 +2159,7 @@ th > input[type=checkbox], td > input[type=checkbox] {
     line-height:1.5em;
   }
   a, .s-api-a {line-height: 1.5em;}
-  td.tdz-check, th.tdz-check {
+  td.s-check, th.s-check {
     text-indent:-1.625em;padding-left:1.625em;
     input {width:0.75em;position:relative;display:inline-block;left:0.25em;}
     & > * {text-indent:0;}
