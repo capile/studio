@@ -35,5 +35,10 @@ all:
               id: admin
               username: Administrator
               credentials: [ Administrators ]
+            # Docker local host
+            172.18.0.1:
+              id: admin
+              username: Administrator
+              credentials: [ Administrators ]
         export:
           username: username

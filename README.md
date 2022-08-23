@@ -18,3 +18,12 @@ cd studio && composer install
 ## Docker images
 
 Different purpose Docker images are available at <data/docker>, compatible with latest PHP/nodejs version or to PHP7. Images prefixed with `dev-` enable root access and some additional command-line tools.
+
+If you have docker installed and would like to use this image instead, type:
+```
+git clone https://github.com/capile/studio.git studio
+cd studio && chmod 777 data/{cache,log,web/_}
+docker-compose -f data/docker/docker-compose.yml up
+```
+
+Now access the demo studio on <http://127.0.0.1:9999/_studio>

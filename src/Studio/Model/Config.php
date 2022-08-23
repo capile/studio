@@ -156,8 +156,11 @@ class Config extends Model
         // load data/config/config.yml-example, reload configuration, remove the file and forward user to http://127.0.0.1:9999/_studio
         if(!file_exists($c=S_ROOT.'/data/config/config.yml')) copy($c.'-example', $c);
 
-        // (re)load server
-        S::exec(['shell'=>S_ROOT.'/studio-server']);
+        $docker = file_exists('/.dockerenv');
+        if(!$docker) {
+            // (re)load server
+            S::exec(['shell'=>S_ROOT.'/studio-server']);
+        }
 
         $C = new Config();
         $C->reloadConfiguration();
@@ -170,16 +173,22 @@ class Config extends Model
             }
         }
 
-        $os = strtolower(substr(PHP_OS, 0, 3));
-        if($os==='win') {
-            $cmd = 'explorer';
-        } else if($os==='dar') {
-            $cmd = 'open';
-        } else {
-            $cmd = 'xdg-open';
-        }
+        if(!$docker) {
+            $os = strtolower(substr(PHP_OS, 0, 3));
+            if($os==='win') {
+                $cmd = 'explorer';
+            } else if($os==='dar') {
+                $cmd = 'open';
+            } else {
+                $cmd = 'xdg-open';
+            }
 
-        S::exec(['shell'=>$cmd.' '.escapeshellarg('http://127.0.0.1:9999/_studio')]);
+            S::exec(['shell'=>$cmd.' '.escapeshellarg('http://127.0.0.1:9999/_studio')]);
+        } else if(exec('whoami')==='root') {
+            chmod(dirname($c), 0777);
+            chmod($c, 0666);
+            chmod(S_VAR.'/studio.db', 0666);
+        }
     }
 
     public static function executePreview($Api, $args=[])

@@ -10,13 +10,25 @@ services:
   #    - 80
   studio:
     hostname: studio
-    image: tecnodesign/studio:latest
+    image: tecnodesign/dev-studio:latest
     volumes:
-      - ../../:/var/www/app:Z
+      ## Use this if you already installed the composer dependencies and want the full folder loaded
+      #- ../../:/var/www/app:Z
+      - ../../data:/var/www/app/data:Z
+      - ../../src:/var/www/app/src:Z
     deploy:
       mode: replicated
-      replicas: 10
+      replicas: 5
       endpoint_mode: vip
+  studio-startup:
+    image: tecnodesign/dev-studio:latest
+    depends_on:
+      - studio
+    restart: "no"
+    volumes:
+      - ../../data:/var/www/app/data:Z
+      - ../../src:/var/www/app/src:Z
+    entrypoint: [ "/var/www/app/studio", ":start" ]
   web.studio:
     hostname: web.studio
     image: nginx:alpine
