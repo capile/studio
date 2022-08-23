@@ -140,7 +140,8 @@ class Config extends Model
                     'groupid' => '$GROUPID',
                 ]],
             ];
-            S::exec(['shell'=>$cmd.' :import '.escapeshellarg(S::serialize($import, 'json'))]);
+            Query::import($import);
+            //S::exec(['shell'=>$cmd.' :import '.escapeshellarg(S::serialize($import, 'json'))]);
         }
 
         if($I=Api::current()) {
@@ -185,9 +186,10 @@ class Config extends Model
 
             S::exec(['shell'=>$cmd.' '.escapeshellarg('http://127.0.0.1:9999/_studio')]);
         } else if(exec('whoami')==='root') {
-            chmod(dirname($c), 0777);
-            chmod($c, 0666);
-            chmod(S_VAR.'/studio.db', 0666);
+            chown(S_VAR, 'www-data');
+            chown(dirname($c), 'www-data');
+            chown($c, 'www-data');
+            chown(S_VAR.'/studio.db', 'www-data');
         }
     }
 
