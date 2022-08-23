@@ -199,10 +199,7 @@
       top: 0.25em;
       left: 0.75em;
       content: @iconNavigationToggler;
-      font-weight: normal;
-      font-style: normal;
-      font-family: @iconFont;
-      text-decoration: inherit;
+      .iconFont();
       position:absolute;
       font-size:1.4em;
       height:1em;
@@ -280,8 +277,7 @@
       padding-left: 2em;
 
       &:before {
-        font-family: @iconFont;
-        font-weight: normal;
+        .iconFont();
         content: @iconNavigationItem;
         color: @colorNavigationText;
         position: absolute;
@@ -383,10 +379,7 @@
       &:before {
         top: 0.5em;
         right: 0.5em;
-        font-family: @iconFont;
-        font-weight: normal;
-        font-style: normal;
-        text-decoration: inherit;
+        .iconFont();
         position:absolute;
         height:1em;
         line-height:1em;
@@ -529,7 +522,7 @@
 
 .s-blur{
   opacity: 0.5;
-  .iconFont();
+  .iconBefore();
 }
 .s-blur:before{
   position:absolute;
@@ -846,7 +839,7 @@ input.s-switch{
     color:@colorButton;
     &:link, &:visited {color:@colorButtonSubmit;text-decoration:none;}
     &:hover, &:active {color:@colorButtonSubmitActive;text-decoration:none;}
-    .iconFont();
+    &:before {.iconFont(); }
     &.s-button-add:before{content:@iconAdd;}
     &.s-button-del:before{content:@iconRemove;}
   }
@@ -1073,13 +1066,12 @@ input.s-switch{
     background:@colorButtonSubmit;
     color:@colorButtonSubmitText;
     border-color:@colorButtonSubmit;
-     &:hover, &:active {
-      background: @colorButtonSubmitActive;
-      color: @colorButtonSubmitActiveText;
-     }
-     &:before {
-       font-family: @iconFont;
-       content: @iconSubmit+' ';
+      &:hover, &:active {
+        background: @colorButtonSubmitActive;
+        color: @colorButtonSubmitActiveText;
+      }
+      &:before {
+        .icon(@iconSubmit+' ');
      }
   }
 }
@@ -1110,8 +1102,8 @@ input.s-switch{
   }
 
   .s-input-search {
-    .iconFont();
     &:before {
+      .iconFont();
       position:absolute;
       right:1em;
       top:0.25em;
@@ -1241,8 +1233,8 @@ button .i-label {
   #f__q span.input{display:block;width:auto;padding:0 1em 0 0;}
 
   .s-input-search {
-    .iconFont();
     &:before {
+      .iconFont();
       position:absolute;
       right:1em;
       top:0.25em;
@@ -1727,11 +1719,10 @@ form .i-mono dd {
     &:before{
       display:block;
       position:absolute;
-      font-family: @iconFont;
-      font-weight:normal;
+      .iconFont();
+      content: @iconActionsMenu;
       top: 0;
       right: 0;
-      content: @iconActionsMenu;
       color: @colorActionsMenu;
       height:1.25em;
       width:0.75em;
@@ -1775,6 +1766,7 @@ form .i-mono dd {
       text-align: left;
       width: 12em;
       padding: 0.25em 0.5em 0.25em 0;
+      min-height:2em;
       &, &:link, &:visited {
         background: @colorActionsMenuButtons;
         color: @colorActionsMenuButtonsText;
@@ -1997,6 +1989,7 @@ th > input[type=checkbox], td > input[type=checkbox] {
     position:relative;
     text-align:center;
     display:inline-block;
+    min-height:2.5em;
     &, &:link, &:visited {
       color: @colorFooterLink;
     }

@@ -14,23 +14,26 @@
   font-style: normal;
 }
 
-.iconFont(@icon: "") {
-  .fontAwesomeBase(@icon);
+.iconFont() {
+  font-family: @icon-font-name;
+  font-weight: normal;
+  font-style: normal;
+  text-decoration: inherit;
 }
-.fontAwesome(@icon: "") {
-  .fontAwesomeBase(@icon);
-}
-.fontAwesomeBase(@icon: "") {
+.iconBefore(@icon: "") {
   &:before {
     .icon(@icon);
   }
 }
 .icon(@icon: "") {
   content: @icon;
-  font-family: @icon-font-name;
-  font-weight: normal;
-  font-style: normal;
   display: inline-block;
-  text-decoration: inherit;
+  .iconFont();
+}
+.fontAwesome(@icon: "") {
+  .iconBefore(@icon);
+}
+.fontAwesomeBase(@icon: "") {
+  .iconBefore(@icon);
 }
 
