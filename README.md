@@ -22,7 +22,7 @@ Different purpose Docker images are available at <data/docker>, compatible with 
 If you have docker installed and would like to use this image instead, type:
 ```
 git clone https://github.com/capile/studio.git studio
-cd studio && chmod 777 data/{cache,log,web/_}
+cd studio
 docker-compose -f data/docker/docker-compose.yml up
 ```
 
