@@ -1,0 +1,35 @@
+{
+    "title": "*Tasks",
+    "database": "studio",
+    "tableName": "studio_tasks",
+    "className": "Studio\\Model\\Tasks",
+    "_indexId": "site",
+    "properties": {
+        "id": { "type": "string", "format": "binary", "size": 20, "required": true, "primary": true },
+        "title": { "type": "string", "size": 200 },
+        "code": { "type": "string", "serialize": "json", "size": 20000, "required": true },
+        "starts": { "type": "datetime" },
+        "ends": { "type": "datetime" },
+        "interval": { "type": "int" },
+        "schedule": { "type": "string", "serialize": "json", "size": 500 },
+        "executed": { "type": "datetime", "index": [ "s_task__executed_idx" ] },
+        "created": { "type": "datetime", "required": true },
+        "updated": { "type": "datetime", "required": true }
+    },
+    "scope": {
+        "string": [ "id" ]
+    },
+    "order": {
+        "executed": "desc"
+    },
+    "events": {
+        "before-insert": [ "actAs" ],
+        "before-update": [ "actAs" ],
+        "before-delete": [ "actAs" ]
+    },
+    "actAs": {
+        "before-insert": { "identity": [ "id" ], "timestampable": [ "created", "updated" ] },
+        "before-update": { "timestampable": [ "updated" ] },
+        "before-delete": { "timestampable": [ "updated" ] }
+    }
+}

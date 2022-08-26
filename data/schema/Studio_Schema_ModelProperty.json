@@ -192,7 +192,8 @@
                 "radio": "Radio buttons",
                 "checkbox": "Check boxes",
                 "select": "Select input",
-                "csrf": "Cross Site Request Forgery prevention"
+                "csrf": "Cross Site Request Forgery prevention",
+                "binary": "Case-sensitive, binary safe string"
             }
         },
         "choices": {

@@ -21,18 +21,27 @@ class Helper
     public static function startServer()
     {
         self::$port = 9998;
-        while(exec('pgrep -f 127.0.0.1:'.self::$port) && self::$port > 9990) self::$port--;
+        while(file_exists(S_VAR.'/.studio-test-'.self::$port.'.pid') && self::$port > 9990) self::$port--;
         if(!self::$id) self::$id = S::salt(10);
-        exec('TAG=studio-test-'.self::$id.' STUDIO_PORT='.self::$port.' '.S_ROOT.'/studio-server');
+        exec('TAG=studio-test-'.self::$port.' STUDIO_PORT='.self::$port.' '.S_ROOT.'/studio-server');
         $timeout = time()+3;
         $r = null;
         while(!$r && time()<=$timeout) $r=exec('curl --connect-timeout 10 -s http://127.0.0.1:'.self::$port.'/_me');
         return 'http://127.0.0.1:'.self::$port;
     }
 
-    public static function stopServer()
+    public static function stopServer($uriOrPort=null)
     {
-        if(self::$id) exec('pkill -f studio-test-'.self::$id);
+        if($uriOrPort && !is_numeric($uriOrPort)) {
+            $uriOrPort = preg_replace('/.*\:([0-9]+)$/', '$1', $uriOrPort);
+            if($uriOrPort && !is_numeric($uriOrPort)) $uriOrPort = null;
+        }
+        if(!$uriOrPort) $uriOrPort = self::$port;
+        if($uriOrPort) {
+            if(file_exists($f=S_VAR.'/.studio-test-'.$uriOrPort.'.pid')) {
+                exec('kill '.trim(file_get_contents($f)));   
+            }
+        }
     }
 
     public static function loadConfig($exampleFiles)

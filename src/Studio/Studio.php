@@ -77,9 +77,11 @@ class Studio
         ],
         $cliApps=[
             'start'=>['Studio\\Model\\Config','standaloneConfig'],
+            'reset'=>['Studio\\Model\\Config','resetStudio'],
             'check'=>['Studio\\Model\\Index', 'checkConnection'],
             'index'=>['Studio\\Model\\Index','reindex'],
             'import'=>['Studio\\Query','import'],
+            'task'=>['Studio\\Model\\Tasks', 'check'],
         ];
     const VERSION = 1.0;    // should match the development branch 
 
@@ -1077,6 +1079,7 @@ class Studio
                     'Studio\\Model\\IndexDate',
                     'Studio\\Model\\IndexNumber',
                     'Studio\\Model\\IndexText',
+                    'Studio\\Model\\Tasks',
                 ],
                 'schema'=>[
                     'Studio\\Model\\Schema',
@@ -1101,12 +1104,14 @@ class Studio
     {
         if($R=Entries::fromFile($file, $attr)) {
             if($R->type==='page' && ($C = Contents::fromFile($file, $attr))) {
-                return [$R, $C];
+                $C->entry = null;
+                $R->Contents = [ $C ];
+                return $R;
             }
-
             return $R;
-
         } else if($R=Contents::fromFile($file, $attr)) {
+            return $R;
+            /*
             $L = [];
             if($R->ContentDisplay) {
                 $L = $R->ContentDisplay;
@@ -1120,6 +1125,7 @@ class Studio
             } else {
                 return $R;
             }
+            */
         } else if($R=Relations::fromFile($file, $attr)) {
             return $R;
         }

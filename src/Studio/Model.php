@@ -796,6 +796,30 @@ class Model implements ArrayAccess, Iterator, Countable
         return true;
     }
 
+    public function identityTrigger($fields, $conn=null)
+    {
+        $cn = get_class($this);
+        $Q = static::queryHandler();
+        $schema = $cn::$schema;
+        $scope = $cn::pk();
+        foreach($fields as $fn) {
+            if(!$this->$fn) {
+                $size = (isset(static::$schema->$fn['size'])) ?static::$schema->$fn['size'] :10;
+                $r = null;
+                while(!$r) {
+                    $r = S::salt($size);
+                    if(!static::find([$fn=>$r],1,[$fn])) {
+                        $this[$fn] = $r;
+                        break;
+                    } else {
+                        $r = null;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
     /**
      * Versionable Behavior
      */

@@ -3161,6 +3161,9 @@ if(!defined('S_REPO_ROOT')) {
     }
     define('S_REPO_ROOT', realpath($d));
 }
+if(!defined('S_BACKGROUND')) {
+    define('S_BACKGROUND', (isset($_SERVER['S_BACKGROUND']) && $_SERVER['S_BACKGROUND']));
+}
 spl_autoload_register('Studio::autoload', true, true);
 if(is_null(Studio::$lib)) {
     Studio::$lib = [];

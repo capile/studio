@@ -119,8 +119,9 @@ class Config extends Model
         S::exec(['shell'=>$cmd.' :check']);
 
         // import admin password (if set)
+        $import = [];
         if(isset($this->_admin_password) && $this->_admin_password) {
-            $import = [
+            $import += [
                 'Studio\Model\Users!'=>[[
                     '__key' => [ 'username' ],
                     '__set' => [ 'USERID' => 'id' ],
@@ -140,8 +141,28 @@ class Config extends Model
                     'groupid' => '$GROUPID',
                 ]],
             ];
+        }
+
+        $task = false;
+        if(isset($this->studio['enable_api_index']) && $this->studio['enable_api_index'] && isset(Studio::$cliApps['index'])) {
+            $task = true;
+            $import += [
+                'Studio\Model\Tasks!'=>[[
+                    'id' => 'studio-api-index',
+                    'code' => S::serialize(['callback'=>Studio::$cliApps['index']], 'json'),
+                    'starts'=> S_TIMESTAMP,
+                    'interval' => ($t=Studio::config('index_timeout')) ?$t :600,
+                ]],
+            ];
+        }
+
+        if($import) {
             Query::import($import);
-            //S::exec(['shell'=>$cmd.' :import '.escapeshellarg(S::serialize($import, 'json'))]);
+            unset($import);
+        }
+
+        if($task) {
+            Tasks::backgroundExec();
         }
 
         if($I=Api::current()) {
@@ -191,6 +212,28 @@ class Config extends Model
             chown($c, 'www-data');
             chown(S_VAR.'/studio.db', 'www-data');
         }
+    }
+
+    public static function resetStudio()
+    {
+        if(S_ROOT!=S_APP_ROOT) S::debug('[ERROR] '.S::t('This action is only available on standalone installations.', 'exception'));
+        $r = ['data/cache/*','data/studio.db','data/config/*.yml'];
+        while($r) {
+            $f = array_shift($r);
+            $g = false;
+            if(strpos($f, '*')!==false) $g = true;
+            else if(is_dir($f)) {
+                $g = true;
+                $f .= '/*';
+            }
+            if($g) {
+                $G = glob($f);
+                if($G) $r = array_merge($r, $G);
+            } else {
+                @unlink($f);
+            }
+        }
+        @touch(S_ROOT.'/app.yml');
     }
 
     public static function executePreview($Api, $args=[])

@@ -1,14 +1,19 @@
 #!/bin/sh
-TAG=${TAG:="studio-server=1.0"}
-PID=`pgrep -f "$TAG"`
+TAG=${TAG:="studio-server"}
+PIDFILE="${0%/*}/data/.$TAG.pid"
+PID=${PID:=""}
+if [ -s "$PIDFILE" ]; then PID=$(cat "$PIDFILE"); fi
+
+[ ! -z "$PID" ] && kill "$PID"
+
 STUDIO_IP=${STUDIO_IP:="127.0.0.1"}
 STUDIO_PORT=${STUDIO_PORT:="9999"}
 STUDIO_DEBUG=${STUDIO_DEBUG:=""}
 
-[ ! -z "$PID" ] && pkill -f "$TAG"
-mkdir -p "${0%/*}/data/log"
-LOG_DIR=$(realpath "${0%/*}/data/log")
+LOG_DIR="${0%/*}/data/log"
+mkdir -p "$LOG_DIR"
 
+STUDIO_TAG=$TAG
 PHP="php -S $STUDIO_IP:$STUDIO_PORT \
   -d memory_limit=16M \
   -d display_errors=Off \
@@ -30,5 +35,5 @@ if [ "$STUDIO_DEBUG" != "" ]; then
       "
 fi
 
-$PHP "${0%/*}/app.php" -s $TAG >> "${0%/*}/data/log/app.log" 2>&1 &
-pgrep -f "$TAG"
+$PHP "${0%/*}/app.php" -s $TAG >> "$LOG_DIR/app.log" 2>&1 &
+echo $! > "$PIDFILE"

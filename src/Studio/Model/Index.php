@@ -120,7 +120,11 @@ class Index extends Model
             if(file_exists(S_REPO_ROOT) && ($repos=App::config('studio', 'web-repos'))) {
                 foreach($repos as $repo) {
                     $n = $repo['id'];
-                    if(is_dir($d=S_REPO_ROOT.'/'.$n)) {
+                    $d = S_REPO_ROOT.'/'.$n;
+                    if(!is_dir($d)) {
+                        
+                    }
+                    if(is_dir($d)) {
                         if(isset($repo['mount-src']) && $repo['mount-src']) {
                             $m = preg_replace('/^[^\:]+\:/', '', $repo['mount-src']);
                             if($m=='.' || $m=='/') $m = null;
@@ -138,9 +142,7 @@ class Index extends Model
             }
 
             if($ds) {
-                if(S::$log) {
-                    S::log('[INFO] Indexing folders for CMS content: '.implode(', ', $ds));
-                }
+                if(S::$log) S::log('[INFO] Indexing folders for CMS content: '.implode(', ', $ds));
                 unset($ds);
 
                 while($a=array_shift($files)) {
@@ -150,8 +152,10 @@ class Index extends Model
                         $h = opendir($a['file']);
                         while (($f = readdir($h)) !== false) {
                             if($f==='.' || $f==='..') continue;
-                            if($M=$cn::fromFile($a['file'].'/'.$f, $a)) {
-                                try {
+                            try {
+                                $file = $a['file'].'/'.$f;
+                                if(S::$log) S::log('[INFO] Indexing '.$file.' as '.$cn);
+                                if($M=$cn::fromFile($file, $a)) {
                                     if(!is_array($M)) $M = [$M];
                                     foreach($M as $i=>$o) {
                                         $o->save();
@@ -159,10 +163,10 @@ class Index extends Model
                                         unset($M[$i], $i, $o);
                                     }
                                     unset($M);
-                                } catch(Exception $e) {
-                                    S::log('[WARNING] Could not index '.$M.': '.$e->getMessage()."\nexiting...");
-                                    break;
                                 }
+                            } catch(Exception $e) {
+                                S::log('[WARNING] Could not index '.$file.': '.var_export($M, true).': '.$e->getMessage()."\nexiting...");
+                                break;
                             }
                         }
                     }

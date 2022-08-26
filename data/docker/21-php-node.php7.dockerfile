@@ -1,7 +1,4 @@
-## tecnodesign/php7-node:v1.0
-#
-# docker build -f data/docker/php7-node.dockerfile  . -t tecnodesign/php7-node:v1.0
-# docker push tecnodesign/php7-node:v1.0
+## tecnodesign/php-node:php7-v1.0
 FROM php:7-fpm
 RUN apt-get update && apt-get install -y \
     git \
