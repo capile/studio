@@ -39,7 +39,8 @@ class Helper
         if(!$uriOrPort) $uriOrPort = self::$port;
         if($uriOrPort) {
             if(file_exists($f=S_VAR.'/.studio-test-'.$uriOrPort.'.pid')) {
-                exec('kill '.trim(file_get_contents($f)));   
+                exec('kill '.trim(file_get_contents($f)));
+                @unlink($f);
             }
         }
     }
