@@ -184,7 +184,7 @@ class Config extends Model
             } else {
                 $hs = file('/etc/hosts');
                 $h = preg_replace('/\.[0-9]+\s.*/', '.1', trim(array_pop($hs)));
-                S::save($c.'-example', str_replace('127.0.0.1', $h, file_get_contents($c)));
+                S::save($c, str_replace('127.0.0.1', $h, file_get_contents($c.'-example')));
             }
         }
 
@@ -219,8 +219,12 @@ class Config extends Model
             S::exec(['shell'=>$cmd.' '.escapeshellarg('http://127.0.0.1:9999/_studio')]);
         } else if(exec('whoami')==='root') {
             $ds = [S_VAR, S_VAR.'/log', S_VAR.'/web/_', S_VAR.'/cache', S_VAR.'/studio.db', dirname($c), $c, ];
-            foreach($ds as $d) chown($d, 'www-data');
+            foreach($ds as $d) if(file_exists($d)) chown($d, 'www-data'); else echo "where's {$d}?";
             unset($d, $ds);
+        }
+
+        if($docker) {
+            echo "\n\nPlease visit:\n\n    http://127.0.0.1:9999/_studio\n\nto finish configuration.\n";
         }
     }
 
