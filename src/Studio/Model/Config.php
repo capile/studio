@@ -176,12 +176,23 @@ class Config extends Model
         if(S_ROOT!=S_APP_ROOT) S::debug('[ERROR] '.S::t('This action is only available on standalone installations.', 'exception'));
 
         // load data/config/config.yml-example, reload configuration, remove the file and forward user to http://127.0.0.1:9999/_studio
-        if(!file_exists($c=S_ROOT.'/data/config/config.yml')) copy($c.'-example', $c);
-
         $docker = file_exists('/.dockerenv');
+
+        if(!file_exists($c=S_ROOT.'/data/config/config.yml')) {
+            if(!$docker) {
+                copy($c.'-example', $c);
+            } else {
+                $hs = file('/etc/hosts');
+                $h = preg_replace('/\.[0-9]+\s.*/', '.1', trim(array_pop($hs)));
+                S::save($c.'-example', str_replace('127.0.0.1', $h, file_get_contents($c)));
+            }
+        }
+
         if(!$docker) {
             // (re)load server
             S::exec(['shell'=>S_ROOT.'/studio-server']);
+        } else {
+            touch(S_ROOT.'/app.yml');
         }
 
         $C = new Config();
@@ -207,10 +218,9 @@ class Config extends Model
 
             S::exec(['shell'=>$cmd.' '.escapeshellarg('http://127.0.0.1:9999/_studio')]);
         } else if(exec('whoami')==='root') {
-            chown(S_VAR, 'www-data');
-            chown(dirname($c), 'www-data');
-            chown($c, 'www-data');
-            chown(S_VAR.'/studio.db', 'www-data');
+            $ds = [S_VAR, S_VAR.'/log', S_VAR.'/web/_', S_VAR.'/cache', S_VAR.'/studio.db', dirname($c), $c, ];
+            foreach($ds as $d) chown($d, 'www-data');
+            unset($d, $ds);
         }
     }
 
