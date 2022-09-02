@@ -12,6 +12,7 @@
  */
 use Studio\App as App;
 use Studio\Asset;
+use Studio\Asset\Image;
 use Studio\Cache;
 use Studio\Collection;
 use Studio\Model;
@@ -19,7 +20,6 @@ use Studio\Model\Entries;
 use Studio\Yaml;
 use Studio\Query;
 use Tecnodesign_Exception as AppException;
-use Tecnodesign_Image as Image;
 use Tecnodesign_Mail as Mail;
 
 class Studio

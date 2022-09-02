@@ -21,12 +21,12 @@ use Studio\Collection;
 use Studio\Model;
 use Studio\SchemaObject;
 use Studio\Form;
+use Studio\Asset\Image;
 use Studio\Query;
 use Studio\Query\Api as QueryApi;
 use arrayObject;
 use Exception;
 use Tecnodesign_Exception as AppException;
-use Tecnodesign_Image as Image;
 
 class Field extends SchemaObject
 {
