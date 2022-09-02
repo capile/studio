@@ -25,7 +25,7 @@ if(!isset($action)) $action = $Api['action'];
 
 $nav = null;
 if($Api->config('navigation')) {
-    if(!App::request('ajax') || App::request('headers', 's-navigation')) {
+    if(!App::request('ajax') || App::request('headers', 'x-studio-navigation')) {
         $nav = $Api::listInterfaces();
     }
 }

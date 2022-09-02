@@ -3,7 +3,7 @@
 
 "use strict";
 
-var Z, _Z, _V, _L, _P, _Q, _Qt, _Qq, _ih={'z-action':'Interface'}, _Studio='/_studio', _title, _otherRoot;
+var Z, _Z, _V, _L, _P, _Q, _Qt, _Qq, _ih={'x-studio-action':'api'}, _Studio='/_studio', _title, _otherRoot;
 
 // load authentication info
 function startup()
@@ -75,7 +75,7 @@ function activateStudio(e)
     }
 
     if(L.length>0) {
-       Z.ajax(_Studio+'/s', JSON.stringify(L), setStudio, null, 'json', _Z, {'z-action':'Studio','Content-Type':'application/json'});
+       Z.ajax(_Studio+'/s', JSON.stringify(L), setStudio, null, 'json', _Z, {'x-studio-action':'studio','Content-Type':'application/json'});
     }
 }
 

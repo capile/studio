@@ -274,7 +274,7 @@ class Form implements ArrayAccess //, Iterator, Countable
                 $this->limits['fields'][$fn]->setValue($salt);
             }
             $valid = true;
-            $action = (isset($this->limits['skip-actions'])) ?App::request('headers', 'z-action') :null;
+            $action = (isset($this->limits['skip-actions'])) ?App::request('headers', 'x-studio-action') :null;
             foreach($this->limits['keys'] as $k=>$ks) {
                 $ks = Cache::get('f-limit/'.$k, $timeout) +$add;
                 if(isset($ks[$pk]) && $ks[$pk][1]==0 && $ks[$pk][0] + $time >= $now) {
@@ -607,7 +607,7 @@ class Form implements ArrayAccess //, Iterator, Countable
         if($this->getEnctype()==='multipart/form-data') {
             $values = S::postData($values);
         }
-        $req = ($allowReload && App::request('headers', 'z-action')==='Form.Validate');
+        $req = ($allowReload && App::request('headers', 'x-studio-action')==='Form.Validate');
         $values = S::fixEncoding($values);
         $valid = true;
         if(!$this->checkLimits($values)) {

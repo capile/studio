@@ -127,7 +127,7 @@ function formReload(e)
     Z.stopEvent(e);
     if(this.form && !this.form.getAttribute('data-do-not-submit')) {
         var data=Z.formData(this.form, true);
-        Z.ajax(this.form.getAttribute('action'), data, formReloadData, Z.error, 'html', this, {'z-action':'Form.Validate'});
+        Z.ajax(this.form.getAttribute('action'), data, formReloadData, Z.error, 'html', this, {'x-studio-action':'Form.Validate'});
     }
     return false;
 }
@@ -318,9 +318,9 @@ function datalistQuery(e)
         //if(('form' in o) && (o.form.getAttribute('method')+'').toLowerCase()=='get') u=o.form.action;
         if('form' in o) u=o.form.action;
         else u=window.location.href;
-        h['z-action']='choices';
-        h['z-target']=encodeURIComponent(x);
-        h['z-term']=encodeURIComponent(v);
+        h['x-studio-action']='choices';
+        h['x-studio-target']=encodeURIComponent(x);
+        h['x-studio-term']=encodeURIComponent(v);
     }
     if(u===false || u===true) u=window.location.href;
     if(u.search(/\#/)>-1) u=u.replace(/\#.+$/, '');
@@ -668,7 +668,7 @@ function uploadFile(file, U)
     var total = file.size;
     var i=0;
     var ajax = [];
-    var H = { 'z-action': 'Upload', 'Content-Type': 'application/json' };
+    var H = { 'x-studio-action': 'Upload', 'Content-Type': 'application/json' };
     var workers = 2;
     var retries = 5;
     U.size += total;

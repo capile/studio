@@ -360,7 +360,7 @@ class Api extends SchemaObject
         if(!$this->auth) {
             $this->getAuth();
         }
-        if(!$this->template && App::request('headers', 'z-api-mode')=='standalone') {
+        if(!$this->template && App::request('headers', 'x-studio-api-mode')=='standalone') {
             $this->template = 'api-standalone';
         }
         if(is_null($this->config)) $this->config = [];
@@ -473,7 +473,7 @@ class Api extends SchemaObject
             }
         }
 
-        $accept = (App::request('headers', 'z-action')==='choices') ?null :App::request('headers', 'accept');
+        $accept = (App::request('headers', 'x-studio-action')==='choices') ?null :App::request('headers', 'accept');
         if($accept && preg_match('#^application/([a-z]+)#', $accept, $m)) {
             if($m[1]=='yaml') $m[1]='yml';
             if(!in_array($m[1], $formats)) {
@@ -616,7 +616,7 @@ class Api extends SchemaObject
         }
         $s = '<div class="s-api-box" base-url="'.$this::$base.'">'.$s.'</div>';
 
-        if(App::request('headers', 'z-action')=='Interface') {
+        if(App::request('headers', 'x-studio-action')=='api') {
             App::end($s);
             //exit($s);
         }
@@ -775,7 +775,7 @@ class Api extends SchemaObject
     {
         if(is_null($url)) $url = $this->link();
         // ajax handlers
-        if($oldurl && App::request('headers', 'z-action')=='Interface') {
+        if($oldurl && App::request('headers', 'x-studio-action')=='api') {
             $this->message('<a data-action="unload" data-url="'.S::xml($this->link()).'"></a>');
         }
         S::redirect($url);
@@ -1576,7 +1576,7 @@ class Api extends SchemaObject
 
     public function referer()
     {
-        if(($url=App::request('headers', 'z-referer')) || ($url=App::request('headers', 'referer'))) {
+        if(($url=App::request('headers', 'x-studio-referer')) || ($url=App::request('headers', 'referer'))) {
             $ref = parse_url($url);
             if($ref && (!isset($ref['host']) || $ref['host']==App::request('hostname')) && substr($ref['path'], 0, strlen($this::$base)+1)==$this::$base.'/') {
                 return $url;
@@ -2093,10 +2093,10 @@ class Api extends SchemaObject
 
     public function backgroundWorker($m, $prefix='w/', $download=true, $redirect=null, $unload=null)
     {
-        if(App::request('headers', 'z-action')==='Interface') {
+        if(App::request('headers', 'x-studio-action')==='api') {
             $uri = ($redirect && is_string($redirect)) ?$redirect :$this->link();
             $msg = '<a data-action="redirect" data-url="'.S::xml($uri).'"></a>';
-            if(!($uid=App::request('headers', 'z-param'))) {
+            if(!($uid=App::request('headers', 'x-studio-param'))) {
                 $end = false;
                 // send a status check variable
                 $uid = S::compress64(uniqid(md5($uri)));
@@ -2275,7 +2275,7 @@ class Api extends SchemaObject
     public function download($f, $msg='Download...', $unload=null)
     {
         $fn = preg_replace('/^[0-9\.]+\-/', '', basename($f));
-        if(App::request('headers', 'z-action')=='Interface') {
+        if(App::request('headers', 'x-studio-action')=='api') {
             if($f && file_exists($f)) {
                 $uid = uniqid();
                 $uri = $this->link(null, true);
@@ -2680,7 +2680,7 @@ class Api extends SchemaObject
         //$fo['c_s_r_f'] = new FormField(array('id'=>'c_s_r_f', 'type'=>'hidden', 'value'=>1234));
         try {
             // prevent these actions from being marked as updates
-            $dontpost = (($za=App::request('headers', 'z-action')) && in_array($za, array('Upload','choices')));
+            $dontpost = (($za=App::request('headers', 'x-studio-action')) && in_array($za, array('Upload','choices')));
 
             if(($post=App::request('post')) || static::$format!='html') {
                 $msg = '';
@@ -2701,7 +2701,7 @@ class Api extends SchemaObject
                     $msg = '<div class="s-msg s-msg-success">'.$this->text['success'].'</div>';
 
                     $next = $url = null;
-                    if(!($url=App::request('headers', 'z-interface')) || substr($url, 0, strlen(static::$base)+1)!=static::$base.'/') {
+                    if(!($url=App::request('headers', 'x-studio-api')) || substr($url, 0, strlen(static::$base)+1)!=static::$base.'/') {
                         if(isset($this->options['next'])) {
                             if(is_array($this->options['next'])) {
                                 if(isset($this->options['next'][$this->action])) {
@@ -2779,14 +2779,14 @@ class Api extends SchemaObject
                     $next = $this->actions[$this->action]['next'];
                 }
                 if($next && !isset($this->actions[$next])) {
-                    if(App::request('headers', 'z-action')=='Interface') {
+                    if(App::request('headers', 'x-studio-action')=='api') {
                         // remove record preview, if  it exists
                         $this->message('<a data-action="unload" data-url="'.S::xml($this->link('preview', true)).'"></a>');
                     }
                     $this->message($msg);
                     $this->redirect($next, $oldurl);
                 } else if($next) {
-                    if(App::request('headers', 'z-action')=='Interface') {
+                    if(App::request('headers', 'x-studio-action')=='api') {
                         // remove record preview, if  it exists
                         $this->message('<a data-action="unload" data-url="'.S::xml($this->link('preview', true)).'"></a>');
                     }

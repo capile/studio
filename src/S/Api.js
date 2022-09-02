@@ -487,7 +487,7 @@
         /*jshint validthis: true */
         Z.debug('loadInterface', e, this);
         _init = true;
-        var I, m=false, t, q, urls=[], l, i,u,data,h={'z-action':'Interface'}, ft, method='get',nav=false;
+        var I, m=false, t, q, urls=[], l, i,u,data,h={'x-studio-action':'api'}, ft, method='get',nav=false;
         if(Object.prototype.toString.call(e)=='[object Array]') {
             urls = e;
         } else if(typeof(e)=='string') {
@@ -575,7 +575,7 @@
                     if(ib=Z.parentNode(this, '.s-api-app[data-url]')) {
                         iu = ib.getAttribute('data-url');
                         if(ib.getAttribute('data-qs')) iu += '?'+ib.getAttribute('data-qs');
-                        h['z-interface'] = iu;
+                        h['x-studio-api'] = iu;
                     }
                 } else {
                     t = t.replace(/\?(.*)$/, '')+'?'+Z.formData(this, false);
@@ -593,7 +593,7 @@
             if(loading(url)) continue;
 
             if (SA) {
-                h['z-interface-mode'] = 'standalone';
+                h['x-studio-api-mode'] = 'standalone';
                 o=I;
                 B=I;
             } else {
@@ -618,8 +618,8 @@
             Z.blur(B);
             //Z.trace('loadInterface: ajax request');
             if(I) {
-                h['z-referer'] = I.getAttribute('data-url');
-                if(I.getAttribute('data-qs')) h['z-referer'] += '?'+ I.getAttribute('data-qs');
+                h['x-studio-referer'] = I.getAttribute('data-url');
+                if(I.getAttribute('data-qs')) h['x-studio-referer'] += '?'+ I.getAttribute('data-qs');
             }
 
             if(ft && method==='post') {
@@ -628,8 +628,8 @@
             }
 
             var hn=h;
-            if(o.getAttribute('data-nav')) hn['z-navigation'] = o.getAttribute('data-nav');
-            else if('z-navigation' in hn) delete(hn['z-navigation']);
+            if(o.getAttribute('data-nav')) hn['x-studio-navigation'] = o.getAttribute('data-nav');
+            else if('x-studio-navigation' in hn) delete(hn['x-studio-navigation']);
 
             urlLoader((urls[i].search(/\?/)>-1)?(urls[i].replace(/\&+$/, '')+'&ajax='+t):(urls[i]+'?ajax='+t), data, setInterface, interfaceError, 'html', o, hn);
             o=null;
@@ -693,7 +693,7 @@
         var u,t;
         if(typeof(e)=='object' && ('stopPropagation' in e)) {
 
-            var nn=this.nodeName.toLowerCase(), data=null, method='get', h={'z-action': 'Interface'};
+            var nn=this.nodeName.toLowerCase(), data=null, method='get', h={'x-studio-action': 'api'};
             e.stopPropagation();
             e.preventDefault();
 
@@ -720,7 +720,7 @@
                     if(pI) {
                         pu=pI.getAttribute('data-url');
                         if(pI.getAttribute('data-qs')) pu+='?'+pI.getAttribute('data-qs');
-                        h['z-interface'] = pu;
+                        h['x-studio-api'] = pu;
                         pu=null;
                         pI=null;
                     }
@@ -752,8 +752,8 @@
             }
             var a=new Date().getTime(), I=Z.parentNode('.s-api-app[data-url].s-api-active');
             if(I) {
-                h['z-referer'] = I.getAttribute('data-url');
-                if(I.getAttribute('data-qs')) h['z-referer'] += '?'+ I.getAttribute('data-qs');
+                h['x-studio-referer'] = I.getAttribute('data-url');
+                if(I.getAttribute('data-qs')) h['x-studio-referer'] += '?'+ I.getAttribute('data-qs');
             }
 
             u=(u.search(/\?/)>-1)?(u.replace(/\&+$/, '')+'&ajax='+a):(u+'?ajax='+a);
@@ -1333,7 +1333,7 @@
     {
         var n;
         for(n in _bkg) {
-            Z.ajax(_bkg[n].u, null, setInterface, interfaceError, 'html', _root.querySelector('.s-api-app.s-api-active'), {'z-action':'Interface', 'z-param':n});
+            Z.ajax(_bkg[n].u, null, setInterface, interfaceError, 'html', _root.querySelector('.s-api-app.s-api-active'), {'x-studio-action':'api', 'x-studio-param':n});
             delete(_bkg[n]);
         }
 

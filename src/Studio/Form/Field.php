@@ -843,7 +843,7 @@ class Field extends SchemaObject
             $this->attributes['data-uploader-id'] = S::compress64($uid.':'.$this->_className.':'.$this->id);
         }
 
-        if(App::request('headers', 'z-action')==='Upload' && ($upload=App::request('post', '_upload')) && $upload['uploader']==$this->attributes['data-uploader-id']) {
+        if(App::request('headers', 'x-studio-action')==='Upload' && ($upload=App::request('post', '_upload')) && $upload['uploader']==$this->attributes['data-uploader-id']) {
             static $timeout = 60;
             // check id
 
@@ -3019,9 +3019,9 @@ class Field extends SchemaObject
         }
         $a += $this->attributes;
         $choices = $this->choices;
-        if(App::request('headers', 'z-action')=='choices') {
+        if(App::request('headers', 'x-studio-action')=='choices') {
             $m=false;
-            $tg = urldecode(App::request('headers', 'z-target'));
+            $tg = urldecode(App::request('headers', 'x-studio-target'));
             if(strpos($arg['id'], '§')!==false) {
                 $p = '/^'.str_replace('§', '[0-9]+', $arg['id']).'$/';
                 $m = preg_match($p, $tg);
@@ -3032,7 +3032,7 @@ class Field extends SchemaObject
             if($m) {
                 unset($m, $tg);
                 S::cacheControl('no-cache',0);
-                S::output($this->ajaxChoices(urldecode((string)App::request('headers', 'z-term'))), 'json');
+                S::output($this->ajaxChoices(urldecode((string)App::request('headers', 'x-studio-term'))), 'json');
             }
             unset($m, $tg);
         }

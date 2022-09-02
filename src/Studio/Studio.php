@@ -299,7 +299,7 @@ class Studio
             }
 
             $In=self::$interfaceClass;
-            if(App::request('headers', 'z-action')=='Interface') {
+            if(App::request('headers', 'x-studio-action')=='api') {
                 S::scriptName(self::$home);
                 S::$translator = 'Studio\\Studio::translate';
                 App::response('layout', 'layout');
