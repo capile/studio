@@ -46,6 +46,7 @@ all:
           label: ~
       preview:
         - 'scope::entry'
+        - 'scope::content'
         - 'scope::_meta'
       entry:
         __default:
@@ -64,13 +65,30 @@ all:
               label: ~
               bind: parent
               format: select
-              choices: Tecnodesign_Studio_Feed
+              choices: Studio\Model\Entries
+              choicesFilter:
+                type: feed
         '*Published':
           bind: published
           class: i1s2
         '*Tag': 
           bind: _tags
           class: i1s2
+      content:
+        __default:
+          fieldset: '*Content'
+        '*Media':
+          bind: Contents
+          format: form
+          scope:
+            '*Title': title
+            '*Link':
+              bind: link
+              format: search
+              choices: Studio\Model\Entries
+              choicesFilter:
+                type: file
+
       _meta:
         __default:
           class: i1s4

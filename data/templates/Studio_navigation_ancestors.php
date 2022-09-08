@@ -10,12 +10,12 @@
  * @link      https://tecnodz.com
  * @version   1.0
  */
-$e = Tecnodesign_Studio::$response['entry'];
+$e = Studio\Studio::$response['entry'];
 $s = '';
 while($e) {
     $title = $e['title'];
-    $s = ($s)?(Tecnodesign_Studio::$breadcrumbSeparator.$s):($s);
-    $s = '<a href="'.tdz::xmlEscape($e['link']).'">'.tdz::xmlEscape($title).'</a>'.$s;
+    $s = ($s)?(Studio\Studio::$breadcrumbSeparator.$s):($s);
+    $s = '<a href="'.Studio::xml($e['link']).'">'.Studio::xml($title).'</a>'.$s;
     $e = $e->getParent();
 }
 

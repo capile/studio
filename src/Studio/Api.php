@@ -521,7 +521,7 @@ class Api extends SchemaObject
         if(self::$className!=get_called_class()) {
             self::$className = get_called_class();
         }
-        if(S_VAR!=S_ROOT.'/data' && Studio::config('enable_interface_index')) {
+        if(S_VAR!=S_ROOT.'/data' && Studio::config('enable_api_index')) {
             static::$dir[] = S_ROOT.'/data/api';
         }
         try {
@@ -4082,7 +4082,7 @@ class Api extends SchemaObject
                 unset($I, $i, $a);
             }
         }
-        if(Studio::config('enable_interface_index')) {
+        if(Studio::config('enable_api_index')) {
             if($L = Interfaces::find($q,null,null,false)) {
                 foreach($L as $i=>$o) {
                     if($o->indexed) {
@@ -4110,7 +4110,7 @@ class Api extends SchemaObject
         if(is_null($dd)) $dd = App::config('app', 'data-dir');
         if(substr($s, 0, 7)==='studio:' && file_exists($f=S_ROOT.'/data/api/_studio/'.S::slug(substr($s,7), '/_').'.yml') && !in_array($f, $skip)) {
             return $f;
-        } else if(Studio::config('enable_interface_index') && ($r=Interfaces::findCacheFile($s)) && !in_array($r, $skip)) {
+        } else if(Studio::config('enable_api_index') && ($r=Interfaces::findCacheFile($s)) && !in_array($r, $skip)) {
             return $r;
         }
 

@@ -20,7 +20,7 @@ if($figures) {
     if(!is_array($figures)) $figures = [$figures];
     foreach($figures as $media) {
         if(is_string($media)) {
-            if(substr($media, 0, 5)!='<img ') $media = '<img src="'.tdz::buildUrl($media).'" />';
+            if(substr($media, 0, 5)!='<img ') $media = '<img src="'.Studio::buildUrl($media).'" />';
 
             $su .= '<figure>'
                  . $media
@@ -39,8 +39,8 @@ if($figures) {
                 else
                     $src.='.200x100';
             }
-            $su .= '<img alt="'.tdz::xml($fig['alt']).'" src="'.tdz::xml(tdz::buildUrl($src)).'" border="0" />';
-            if(isset($fig['title'])) $su .= '<legend>'.tdz::xml($fig['title']).'</legend>';
+            $su .= '<img alt="'.Studio::xml($fig['alt']).'" src="'.Studio::xml(Studio::buildUrl($src)).'" border="0" />';
+            if(isset($fig['title'])) $su .= '<legend>'.Studio::xml($fig['title']).'</legend>';
             $su .= '</figure>';
         }
     }
@@ -55,12 +55,12 @@ $mod = strtotime($updated);
 if(!$mod)$mod=time();
 
 $s = $i0.'<entry>'
-   . $i.'<title type="html">'.tdz::xmlEscape($title,false).'</title>'
-   . $i.'<link href="'.tdz::xmlEscape(tdz::buildUrl($link)).'" />'
+   . $i.'<title type="html">'.Studio::xml($title,false).'</title>'
+   . $i.'<link href="'.Studio::xml(Studio::buildUrl($link)).'" />'
    . $i.'<id>e-studio-e-'.$id.'</id>'
    . $i.'<published>'.date('c',$pub).'</published>'
    . $i.'<updated>'.date('c',$pub).'</updated>'
-   . $i.'<summary type="html">'.tdz::xml($su,false).'</summary>'
+   . $i.'<summary type="html">'.Studio::xml($su,false).'</summary>'
    . $i0.'</entry>';
 
 echo $s;

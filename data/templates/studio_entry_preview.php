@@ -26,8 +26,8 @@ if(is_array($figures) && count($figures)>0)
     }
     $sf .= '<figure id="fig'.$imgid.'">';
     $fig += array('alt'=>'');
-    $sf .= '<img alt="'.tdz::xmlEscape($fig['alt']).'" src="'.tdz::xmlEscape($src).'" border="0" />';
-    if(isset($fig['title'])) $sf .= '<legend>'.tdz::xmlEscape($fig['title']).'</legend>';
+    $sf .= '<img alt="'.Studio::xml($fig['alt']).'" src="'.Studio::xml($src).'" border="0" />';
+    if(isset($fig['title'])) $sf .= '<legend>'.Studio::xml($fig['title']).'</legend>';
     $sf .= '</figure>';
   }
   if($sf!='')
@@ -37,7 +37,7 @@ if(is_array($figures) && count($figures)>0)
   }
 }
 $s = '<div class="hentry tdze'.$class.'" id="e'.$id.'">';
-$s .= '<h2 class="entry-title">'.tdz::xmlEscape($title).'</h2>';
+$s .= '<h2 class="entry-title">'.Studio::xml($title).'</h2>';
 $s .= '<div class="entry-content">'.$sf.$summary.'</div>';
 if(is_array($contents) && count($contents)>0)
 {

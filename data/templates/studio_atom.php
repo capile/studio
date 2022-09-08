@@ -10,8 +10,6 @@
  * @link      https://tecnodz.com
  * @version   1.0
  */
-
-
 $mod = strtotime($updated);
 $limit=10;
 $i=1;
@@ -34,12 +32,12 @@ if($indent){$i0="\n";$i="\n ";}
 
 $s = '<'.'?xml version="1.0" encoding="utf-8"?'.'>'
    . $i0.'<feed xmlns="http://www.w3.org/2005/Atom">'
-   . $i.'<title type="html">'.tdz::xml($title).'</title>'
-   . ((isset($summary)) ?$i.'<subtitle type="html">'.tdz::xmlEscape($summary).'</subtitle>' :'')
-   . $i.'<link rel="self" type="application/atom+xml" href="'.tdz::xmlEscape(tdz::buildUrl($link)).'" />'
+   . $i.'<title type="html">'.Studio::xml($title).'</title>'
+   . ((isset($summary)) ?$i.'<subtitle type="html">'.Studio::xml($summary).'</subtitle>' :'')
+   . $i.'<link rel="self" type="application/atom+xml" href="'.Studio::xml(Studio::buildUrl($link)).'" />'
    . $i.'<updated>'.date('c',$mod).'</updated>'
    . $i."<id>studio-e-{$id}</id>"
    . $s
    . $i0.'</feed>';
-Tecnodesign_App::response('headers', ['content-type'=>'application/xml']);
+Studio\App::response('headers', ['content-type'=>'application/xml']);
 echo $s;

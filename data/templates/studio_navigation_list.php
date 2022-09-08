@@ -22,10 +22,10 @@ if(!isset($container) || $container==true) {
     $sub['container']=false;
 }
 
-if($entries instanceof Tecnodesign_Collection) $entries = $entries->getItems();
+if($entries instanceof Studio\Collection) $entries = $entries->getItems();
 if(in_array('linkhome', $options)) {
     if(!$entries) $entries = array();
     array_unshift($entries, $entry->asArray());
 }
 
-echo $s0.Tecnodesign_Studio::li($entries).$s1;
+echo $s0.Studio\Studio::li($entries).$s1;

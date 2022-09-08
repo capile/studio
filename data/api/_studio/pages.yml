@@ -83,7 +83,9 @@ all:
               label: ~
               bind: parent
               format: select
-              choices: Tecnodesign_Studio_Page
+              choices: Studio\Model\Entries
+              choicesFilter:
+                type: page
               attributes:
                 data-datalist-api: /_studio/page/sitemap?envelope=false
                 data-datalist-target: position

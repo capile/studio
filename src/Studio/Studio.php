@@ -178,7 +178,7 @@ class Studio
 
         // try the interface
         if(static::$webInterface && ($sn==self::$home || strncmp($sn, self::$home, strlen(self::$home))===0)) {
-            if($sn!=='/_studio' && self::config('enable_interface_index')) {
+            if($sn!=='/_studio' && self::config('enable_api_index')) {
                 $icn = self::$interfaceClass;
                 $icn::$baseMap[$sn] = ['/_studio'];
             }
@@ -897,7 +897,7 @@ class Studio
             if(!self::$credentials && self::$cacheTimeout) self::$credentials = Cache::get('studio/credentials', self::$cacheTimeout);
             if(!self::$credentials || !is_array(self::$credentials)) {
                 self::$credentials=array();
-                $connEnabled = (self::$connection && self::config('enable_interface_credential'));
+                $connEnabled = (self::$connection && self::config('enable_api_credential'));
                 if($connEnabled) {
                     $ps = Permissions::find(array('entry'=>''),0,array('role','credentials'),false,array('updated'=>'desc'));
                     if($ps) {
@@ -960,7 +960,7 @@ class Studio
 
     public static function connected($prop=null)
     {
-        return ($prop) ?(self::$connection && self::config('enable_interface_'.$prop)) :self::$connection;
+        return ($prop) ?(self::$connection && self::config('enable_api_'.$prop)) :self::$connection;
     }
 
     public static function templateFiles($type)
@@ -969,9 +969,10 @@ class Studio
 
         if(is_null($r)) {
             $r = [];
-            $shift = strlen('tdz_'.$type);
+            $tbase = 'studio_'.$type;
+            $shift = strlen($tbase);
             foreach(self::templateDir() as $d) {
-                $found = glob($d.'/tdz_'.$type.'*.php');
+                $found = glob($d.'/'.$tbase.'*.php');
                 foreach($found as $f) {
                     $k = basename($f, '.php');
                     $n = ucfirst(str_replace(['-', '_'], ' ', trim(substr($k, $shift), '-_')));

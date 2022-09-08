@@ -12,17 +12,17 @@
  */
 
 if(isset($href))
-    echo '<a href="'.tdz::xmlEscape($href).'">';
+    echo '<a href="'.Studio::xml($href).'">';
 
-echo "<img src=", tdz::xmlEscape($src), '"';
+echo "<img src=", Studio::xml($src), '"';
 if(isset($alt)) 
-    echo ' alt="', tdz::xmlEscape($alt), '"';
+    echo ' alt="', Studio::xml($alt), '"';
 
 if(isset($title))
-    echo ' title="', tdz::xmlEscape($title), '"';
+    echo ' title="', Studio::xml($title), '"';
 
 if(isset($id))
-    echo ' id="', tdz::xmlEscape($id), '"';
+    echo ' id="', Studio::xml($id), '"';
 
 
 echo ' />';

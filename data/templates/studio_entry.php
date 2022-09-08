@@ -26,8 +26,8 @@ if($figures && count($figures)>0) {
         }
         $sf .= '<figure id="fig'.$imgid.'">';
         $fig += array('alt'=>'');
-        $sf .= '<img alt="'.tdz::xmlEscape($fig['alt']).'" src="'.tdz::xmlEscape($src).'" border="0" />';
-        if(isset($fig['title'])) $sf .= '<legend>'.tdz::xmlEscape($fig['title']).'</legend>';
+        $sf .= '<img alt="'.Studio::xml($fig['alt']).'" src="'.Studio::xml($src).'" border="0" />';
+        if(isset($fig['title'])) $sf .= '<legend>'.Studio::xml($fig['title']).'</legend>';
         $sf .= '</figure>';
     }
     if($sf!='') {
@@ -37,7 +37,7 @@ if($figures && count($figures)>0) {
 }
  
 $s = '<article><div class="hentry tdze'.$class.'" id="e'.$id.'">';
-$s .= '<h3 class="entry-title">'.(($link)?('<a href="'.tdz::xmlEscape($link).'" rel="bookmark" title="'.tdz::xmlEscape($title).'">'.tdz::xmlEscape($title).'</a>'):(tdz::xmlEscape($title))).'</h3>';
+$s .= '<h3 class="entry-title">'.(($link)?('<a href="'.Studio::xml($link).'" rel="bookmark" title="'.Studio::xml($title).'">'.Studio::xml($title).'</a>'):(Studio::xml($title))).'</h3>';
 $s .= '<div class="entry-content">'.$sf.$summary.'</div>';
 $pub = strtotime($published);
 $s .= '<p class="date">';

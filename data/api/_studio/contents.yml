@@ -47,7 +47,9 @@ all:
           fieldset: '*Page information'
         '*Page':
             bind: entry
-            choices: Tecnodesign_Studio_Page
+            choices: Studio\Model\Entries
+            choicesFilter:
+              type: page
             format: select
             class: i1s2
             attributes:
