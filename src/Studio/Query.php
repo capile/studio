@@ -19,6 +19,9 @@ use Studio\App;
 use Studio\Collection;
 use Studio\Model;
 use Studio\SchemaObject;
+use Studio\OAuth2\Storage;
+use Studio\Studio;
+use Studio\Model\Tokens;
 use Studio\Yaml;
 use Exception;
 use Tecnodesign_Exception as AppException;
@@ -278,7 +281,29 @@ class Query extends SchemaObject
                     S::$database[$db]['options'] = $options;
                 }
                 $r = S::$database[$db];
+            } else {
+                if(class_exists($db) && defined($db.'::SCHEMA_PROPERTY')) {
+                    $sn = $db::SCHEMA_PROPERTY;
+                    if(isset($db::${$sn}->database)) {
+                        $db = $db::${$sn}->database;
+                        if(isset(S::$database[$db])) $r = S::$database[$db];
+                    } else {
+                        return;
+                    }
+                }
+                if($db==='studio' && ($dbo=Studio::config('database'))) {
+                    if(is_array($dbo)) {
+                        S::$database[$db] = $r = $dbo;
+                    } else if(isset(S::$database[$dbo])) {
+                        $r = S::$database[$dbo];
+                    }
+                } else if($db!=='studio' && Studio::config('enable_api_index')) {
+                    if(($T = Tokens::find(['type'=>'server', 'id'=>$db],1)) && ($dsn=$T['options.api_endpoint'])) {
+                        S::$database[$db] = $r = ['dsn'=>$dsn, 'options'=>$T->asArray(Storage::$scopes['server'])];
+                    }
+                }
             }
+
             if($r && !isset($r['className'])) {
                 if(isset($r['class'])) {
                     $r['className'] = $r['class'];
