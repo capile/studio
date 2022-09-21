@@ -1776,7 +1776,7 @@ class Model implements ArrayAccess, Iterator, Countable
                 throw new AppException(array(S::t('Could not save %s.', 'exception'), $cn::label()));
             }
         } catch(Exception $e) {
-            S::log('[WARNING] Error while saving '.get_class($this).': '.$e->getMessage());
+            S::log('[INFO] Error while saving '.get_class($this).': '.$e->getMessage());
 
             $msg = ($e instanceof AppException)?($e->getMessage()):('');
             if(!(substr($msg, 0, 1)=='<' && strpos(substr($msg, 0, 100), 's-i-msg'))) {

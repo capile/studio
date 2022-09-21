@@ -378,6 +378,9 @@ class Schema implements ArrayAccess
                 $value = mb_strimwidth($value, 0, (int)$def['size'], '', 'UTF-8');
             }
         } else if($def['type']=='int') {
+            if($value===true) {
+                $value = 1;
+            }
             if (!is_numeric($value) && $value!='') {
                 $label = (isset($def['label']))?($def['label']):(S::t(ucwords(str_replace('_', ' ', $name)), 'labels'));
                 throw new Exception(sprintf(S::t(static::$errorInvalid, 'exception'), $label).' '.S::t(static::$errorInteger, 'exception'));
