@@ -1355,9 +1355,10 @@ class Sql
                 $type = static::$typeMap[$type];
             }
             if(in_array($type, $formats)) {
-                if($type=='datetime') {
+
+                if(substr($type, 0, 4)=='date') {
                     $q .= $type;
-                    if(static::$datetimeSize) $q .= '('.static::$datetimeSize.')';
+                    if($type!=='date' && static::$datetimeSize) $q .= '('.static::$datetimeSize.')';
                 } else if($type=='decimal') {
                     $q .= $type;
                     $d = [10,2];
@@ -1426,7 +1427,8 @@ class Sql
                 }
             }
         }
-        $q = 'create table '.$q0.$tn.$q1.' ('.$q."\n)".static::$tableDefault.';';
+
+        $q = 'create table '.((strpos($tn, $q0)===false) ?$q0.$tn.$q1 :$tn).' ('.$q."\n)".static::$tableDefault.';';
         if($conn===false) {
             $r = $q."\n";
         } else {

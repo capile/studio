@@ -1557,7 +1557,7 @@ function toggleType(e)
 
 function initHtmlEditor()
 {
-    //Z.debug('initHtmlEditor: ', this);
+    console.log('initHtmlEditor: ', this);
     if(this.getAttribute('data-html-editor')) return;
     var a=(this.getAttribute('data-editor')), Editor, elcontainer;
     var limit = this.getAttribute('maxlength') ?? 0;
@@ -1579,6 +1579,7 @@ function initHtmlEditor()
 
     var selfel = this;
     elcontainer = Z.element({e:'div',p:{id:'s-editor-'+this.id, className:'s-html-editor'}}, this);
+    Z.debug(a);
 
     if(a=='pell') {
         Editor = pell.init({
@@ -1708,7 +1709,6 @@ function initChoicesJs()
 
 function Form(o)
 {
-    //Z.debug('Form', o);
     var q='Studio_Form';
     if(!('initDatePicker' in Z)) Z.initDatepicker = initDatepicker;
     if(q in Z.modules) {
@@ -1731,7 +1731,6 @@ function Form(o)
     var n=Z.node(o, this);
     if(n) Z.init(n);
 }
-
 
 // new modules
 //if(!('ZModules' in window))window.ZModules={};
