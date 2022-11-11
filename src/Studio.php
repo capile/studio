@@ -1134,6 +1134,7 @@ class Studio
             $output = [];
             $ret = 0;
             exec($arguments['shell'], $output, $ret);
+            self::$variables['execResult'] = $ret;
             if($ret===0) {
                 $execResult .= implode("\n", $output);
             } else if(self::$log) {
@@ -1857,6 +1858,7 @@ class Studio
             foreach ($o as $k => $v) {
                 $proc = true;
                 $s .= $id . $k . ": ";
+                if($v===$o) continue;
                 if (is_array($v) || is_object($v))
                     $s .= "\n" . self::toString($v, $i);
                 else

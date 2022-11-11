@@ -76,17 +76,19 @@ class Yaml
      *
      * @return array contents of the YAML text
      */
-    public static function load($string, $cacheTimeout = 1800)
+    public static function load($string, $cacheTimeout = 1800, $isFile = null)
     {
         // Initialize the default parser
         self::parser();
 
         $readTimeout = $cacheTimeout;
 
-        $isFile = ($string && strlen($string) < 255 && file_exists($string));
+        if(is_null($isFile)) {
+            $isFile = ($string && strlen($string) < 255 && file_exists($string));
+        }
 
         $cacheKey = 'yaml/' . md5($string);
-        $useCache = self::$cache && ($isFile || strlen($string) > 4000);
+        $useCache = (self::$cache && $cacheTimeout > 0 && ($isFile || strlen($string) > 4000));
         if ($useCache) {
             if ($isFile && ($lastModified = filemtime($string)) > time() - $readTimeout) {
                 $readTimeout = $lastModified;
@@ -120,6 +122,20 @@ class Yaml
 
         return $yamlArray;
     }
+
+    /**
+     * Loads YAML file and converts to a PHP array
+     *
+     * @param string $s YAML file to load
+     *
+     * @return array contents of the YAML text
+     */
+    public static function loadFile($s, $cacheTimeout = 1800)
+    {
+        if(!file_exists($s)) return false;
+        return self::load($s, $cacheTimeout, true);
+    }
+
 
     /**
      * Loads YAML text and converts to a PHP array

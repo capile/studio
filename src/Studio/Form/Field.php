@@ -3119,7 +3119,7 @@ class Field extends SchemaObject
             $blank = (isset($this->placeholder))?($this->placeholder):(self::$labels['blank']);
             $options[] = '<option class="placeholder" value="">'.$blank.'</option>';
         }
-        $values = (!is_array($this->value))?(preg_split('/\s*\,\s*/', $this->value, -1, PREG_SPLIT_NO_EMPTY)):($this->value);
+        $values = (!is_array($this->value))?(preg_split('/\s*\,\s*/', (string)$this->value, -1, PREG_SPLIT_NO_EMPTY)):($this->value);
 
         if($values) {
             $ref = null;

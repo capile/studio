@@ -145,17 +145,19 @@ class Interfaces extends Model
         static $d;
         static $i=1;
 
-        if(is_null($n)) $n = (isset(Studio::$interfaces['interfaces'])) ?Studio::$interfaces['interfaces'] :'interfaces';
-        if(is_null($d)) $d = S::getApp()->config('tecnodesign', 'cache-dir').'/interface';
+        if(is_null($n)) $n = (isset(Studio::$apiListParent['apis'])) ?Studio::$apiListParent['apis'] :'apis';
+        if(is_null($d)) $d = S::getApp()->config('app', 'cache-dir').'/apis';
 
         $id = S::slug($this->id, '_', true);
         $f =  $d.'/'.$id.'.yml';
         $f0 = Api::configFile($id, [$f]);
         if(!file_exists($f) || !$this->updated || !($t=strtotime($this->updated)) || $t>filemtime($f)) {
-            $a = ['all'=>['interface'=>$id]];
+            $a = ['all'=>['api'=>$id]];
+            $addParent = true;
             if($f0 && $f0!==$f) {
                 //$a['all']['base'] = $id;
-                if(($a0 = Yaml::load($f0)) && isset($a['all']['interface']) && $a['all']['interface']==$id) {
+                if(($a0 = Yaml::loadFile($f0)) && (!isset($a['all']['api']) || $a['all']['api']==$id)) {
+                    $addParent = false;
                     $a = $a0;
                 }
                 unset($a0);
@@ -171,7 +173,10 @@ class Interfaces extends Model
             }
 
             if(!isset($a['all']['options'])) $a['all']['options'] = [];
-            $a['all']['options'] += ['list-parent'=>$n, 'priority'=>$i++, 'index'=>($this->index_interval > 0)];
+            if($addParent) {
+                $a['all']['options'] += ['list-parent'=>$n, 'priority'=>$i++];
+            }
+            $a['all']['options'] += ['index'=>($this->index_interval > 0)];
 
             if(!S::save($f, S::serialize($a, 'yaml'), true)) {
                 $f = null;
@@ -183,7 +188,7 @@ class Interfaces extends Model
 
     public static function findCacheFile($file)
     {
-        $d = S::getApp()->config('tecnodesign', 'cache-dir').'/interface';
+        $d = S::getApp()->config('app', 'cache-dir').'/apis';
         $f =  $d.'/'.S::slug($file, '_', true).'.yml';
         if(file_exists($f)) return $f;
     }

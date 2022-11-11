@@ -8,7 +8,7 @@ var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl,
     Copy:'a.s-copy[data-target]',
     DisplaySwitch:'*[data-display-switch]',
     ToggleActive:'.s-toggle-active,.s-toggle-active',
-    Studio_Form: 'form.s-form',
+    Studio_Form: 'form.s-form,form.z-form',
     Studio_Form_AutoSubmit: 'form.s-auto-submit',
     Studio_Form_CheckLabel:'.i-check-label input[type=radio],.i-check-label input[type=checkbox]',
     Studio_Api: '.s-api-app[data-url]',
@@ -168,13 +168,14 @@ Z.init=function(o)
     }
     for(var i in Z.modules) {
         var ifn='init'+i;
+
         if(!Z.modules[i]) continue;
         var L=c.querySelectorAll(Z.modules[i]), j=L.length;
 
         if(!(ifn in Z) && j && i.search(/_/)>-1) {
             // must load component, then initialize the object
             var a=i.replace(/^S(tudio)?_/, '').split(/_/);
-            //Z.debug('initializing module: '+i);
+            //Z.debug('initializing module: '+i, a);
             if(i.substr(0,7)==='Studio_' && (i in window)) {
                 if(typeof(window[i])=='function') {
                     //Z.debug('adding plugin: '+i, window[i], Z.modules[i]);

@@ -71,9 +71,9 @@ class Studio
         $userMessage,
         $cli='studio',      // configurable, where to load Studio command-line interface
         $cliSkipScriptName=[],
-        $interfaceClass='Studio\\Api',
-        $interfaces = [
-            'interfaces'=>'interfaces',
+        $apiClass='Studio\\Api',
+        $apiListParent = [
+            'apis'=>'interfaces',
         ],
         $cliApps=[
             'start'=>['Studio\\Model\\Config','standaloneConfig'],
@@ -179,7 +179,7 @@ class Studio
         // try the interface
         if(static::$webInterface && ($sn==self::$home || strncmp($sn, self::$home, strlen(self::$home))===0)) {
             if($sn!=='/_studio' && self::config('enable_api_index')) {
-                $icn = self::$interfaceClass;
+                $icn = self::$apiClass;
                 $icn::$baseMap[$sn] = ['/_studio'];
             }
             static::$internal = true;
@@ -298,7 +298,7 @@ class Studio
                 return self::error(403);
             }
 
-            $In=self::$interfaceClass;
+            $In=self::$apiClass;
             if(App::request('headers', 'x-studio-action')=='api') {
                 S::scriptName(self::$home);
                 S::$translator = 'Studio\\Studio::translate';
@@ -335,7 +335,7 @@ class Studio
             }
         }
 
-        $In=self::$interfaceClass;
+        $In=self::$apiClass;
         $In::headers();
         App::end($In::toJson($R));
     }
@@ -997,7 +997,7 @@ class Studio
 
     public static function translate($s, $table=null, $to=null, $from=null)
     {
-        $In=self::$interfaceClass;
+        $In=self::$apiClass;
         if($to && !$In::$translate && $to==$from)  {
             return $s;
         } else {

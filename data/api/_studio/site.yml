@@ -2,7 +2,69 @@
 all:
   title: '*Site Resources'
   model: Studio\Model\Entries
+  graph:
+    entry-type-bar:
+      style:
+        legend:
+          show: false
+        color:
+          pattern: [ '#aaaaaa', '#339933', '#ff8000', '#336699' ]
+        bar:
+          title: '*Types'
+      type: bar
+      class: i1s3
+      pivot: true
+      #where:
+      #  status: 2
+      axis:
+        '*Total':
+          bind: count(distinct `id`) _total
+          type: number
+      group-by:
+        '*Type': type
+      order-by: type
+    entry-type-pie:
+      style:
+        legend:
+          show: false
+        color:
+          pattern: [ '#aaaaaa', '#339933', '#ff8000', '#336699' ]
+        pie:
+          title: '*Types'
+      type: pie
+      class: i1s3
+      pivot: true
+      #where:
+      #  status: 2
+      axis:
+        '*Total':
+          bind: count(distinct `id`) _total
+          type: number
+      group-by:
+        '*Type': type
+      order-by: type
+    entry-type-donut:
+      style:
+        legend:
+          show: false
+        color:
+          pattern: [ '#aaaaaa', '#339933', '#ff8000', '#336699' ]
+        donut:
+          title: '*Types'
+      type: donut
+      class: i1s3
+      pivot: true
+      #where:
+      #  status: 2
+      axis:
+        '*Total': 
+          bind: count(distinct `id`) _total
+          type: number
+      group-by:
+        '*Type': type
+      order-by: type
   options:
+    list-parent: false
     priority: 1000
     index: true
     group-by: id
@@ -15,13 +77,13 @@ all:
         entry: entry
         file: file
         page: page
-
     scope:
       review:
-        '*Type': type
         '*Title': title _title_tags
+        '*Type': type
         URL: link
         '*Last Modified': '${greatest}(`updated`,`Contents.updated`) updated'
+        '*Published': published
       search:
         q:
           '*Title': title
@@ -30,10 +92,11 @@ all:
           '*Tag': Tag.slug
         URL: link
         '*Tag': Tag.slug
-        '*Last modified': 
+        '*Last Modified': 
           bind: '${greatest}(`updated`,`Contents.updated`)'
           format: datetime
-        '*Type': "substring_index(`type`,'/',1)"
+        '*Published': published
+        '*Type': type
       new:
         '*Type':
           bind: type

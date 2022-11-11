@@ -16,6 +16,7 @@ use Studio as S;
 use Studio\Api;
 use Studio\App;
 use Studio\Cache;
+use Studio\Git;
 use Studio\Model;
 use Studio\Model\Migration;
 use Studio\Model\Interfaces;
@@ -123,9 +124,18 @@ class Index extends Model
                     $n = $repo['id'];
                     $d = S_REPO_ROOT.'/'.$n;
                     if(!is_dir($d)) {
-                        
+                        S::log('[INFO] Creating content repository for '.$n.' at '.$d);
+                        @mkdir($d, 0777, true);
                     }
                     if(is_dir($d)) {
+                        if(isset($repo['src']) && $repo['src'] && isset($repo['sync']) && $repo['sync']) {
+                            $G = new Git();
+                            if(!is_dir($d.'/.git')) {
+                                $G->clone($repo['src'], $d);
+                            } else {
+                                // $G->pull/push/commit
+                            }
+                        }
                         if(isset($repo['mount-src']) && $repo['mount-src']) {
                             $m = preg_replace('/^[^\:]+\:/', '', $repo['mount-src']);
                             if($m=='.' || $m=='/') $m = null;

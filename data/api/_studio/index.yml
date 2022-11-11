@@ -31,6 +31,7 @@ all:
         additional-params: true
   options:
     index: false
+    navigation: false
     priority: 2
     scope:
       update:
@@ -116,6 +117,11 @@ all:
               bind: secret
               format: text
               placeholder: "*Additional credentials to access the repository"
+              class: i1s2
+            "*Synchronize":
+              bind: sync
+              format: bool
+              default: 1
               class: i1s2
   text: |
     # ![Studio](/_/img/studio.svg) {.s-api-logo}

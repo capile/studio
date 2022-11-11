@@ -22,7 +22,7 @@
     },
     "scope": {
         "string": [ "title" ],
-        "interface": { "interface": "id", "title": "title", "model": "model", "credential": "credential" }
+        "interface": { "api": "id", "title": "title", "model": "model", "credential": "credential" }
     },
     "order": {
     },

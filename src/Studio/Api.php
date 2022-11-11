@@ -3968,7 +3968,7 @@ class Api extends SchemaObject
         $pp=array();
         $pl=array();
         foreach($Is as $k=>$I) {
-            if(isset($I['options']['navigation']) && !$I['options']['navigation']) continue;
+            if(isset($I['options']) && array_key_exists('navigation', $I['options']) && !$I['options']['navigation']) continue;
             if(!isset($I['title']) || !$I['title']) {
                 $m = $I['model'];
                 $I['title'] = $m::label();
@@ -3977,17 +3977,14 @@ class Api extends SchemaObject
                 $I['title'] = static::t(substr($I['title'], 1));
             }
             $p = str_pad((isset($I['options']['priority']))?($I['options']['priority']):(''), 5, '0', STR_PAD_LEFT).S::slug($I['title']);
-            if(array_key_exists('list-parent', $I['options'])) {
-                if(!$I['options']['list-parent']) {
-                    unset($Is[$k], $I, $k, $p, $m);
-                    continue;
-                }
-                $pl[$p] = $I['options']['list-parent'];
-            }
-            $pp[$k] = $p;
             if(isset($I['api'])) $api = $I['api'];
             else if(isset($I['interface'])) $api = $I['interface'];
             else $api = $k;
+            if($api=='index') S::debug($I['options'], var_export($I['options']['navigation'], true));
+            if(array_key_exists('list-parent', $I['options']) && $I['options']['list-parent']) {
+                $pl[$p] = $I['options']['list-parent'];
+            }
+            $pp[$k] = $p;
             $ul[$p][0]='<a href="'.static::$base.'/'.$api.'">'.S::xml($I['title']).'</a>';
             if(isset($I['options']['list-parent'])) {
                 $pl[$p] = $I['options']['list-parent'];
@@ -4005,7 +4002,7 @@ class Api extends SchemaObject
         }
         $s = '';
         foreach($ul as $k=>$v) {
-            if(!isset($pl[$k])) {
+            if(!isset($pl[$k]) || $pl[$k]==false) {
                 $s .= self::_li($v);
             }
             unset($ul[$k], $v, $k);

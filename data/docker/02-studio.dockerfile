@@ -1,6 +1,6 @@
 ## tecnodesign/studio:v1.2
 #
-# docker build -f data/docker/studio.dockerfile  . -t tecnodesign/studio:v1.2 -t tecnodesign/studio:latest
+# docker build -f data/docker/02-studio.dockerfile  data/docker -t tecnodesign/studio:v1.2 -t tecnodesign/studio:latest
 # docker push tecnodesign/studio:v1.2
 # docker push tecnodesign/studio:latest
 FROM tecnodesign/php-node:v1.0
