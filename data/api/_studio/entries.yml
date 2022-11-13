@@ -84,7 +84,7 @@ all:
             '*Title': title
             '*Link':
               bind: link
-              format: search
+              format: select
               choices: Studio\Model\Entries
               choicesFilter:
                 type: file

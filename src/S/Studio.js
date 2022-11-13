@@ -3,7 +3,7 @@
 
 "use strict";
 
-var Z, _Z, _V, _L, _P, _Q, _Qt, _Qq, _ih={'x-studio-action':'api'}, _Studio='/_studio', _title, _otherRoot;
+var _S, _V, _L, _P, _Q, _Qt, _Qq, _ih={'x-studio-action':'api'}, _Studio='/_studio', _title, _otherRoot;
 
 // load authentication info
 function startup()
@@ -11,26 +11,25 @@ function startup()
     if(!('Studio' in window) || !('Studio_Api' in window)) {
         return setTimeout(startup, 500);
     }
-    Z=Studio;
-    if(!('plugins' in Z)) Z.plugins={};
-    if(!('studio' in Z.plugins)) {
-        Z.plugins.studio={home:'/_studio', options:{}, load:[] };
+    if(!('plugins' in Studio)) Studio.plugins={};
+    if(!('studio' in Studio.plugins)) {
+        Studio.plugins.studio={home:'/_studio', options:{}, load:[] };
     }
-    if(!('events' in Z)) Z.events={};
-    Z.events.unloadInterface = [checkInterfaces];
+    if(!('events' in Z)) Studio.events={};
+    Studio.events.unloadInterface = [checkInterfaces];
 
-    if(!('modules' in Z)) Z.modules = {};
-    if(('home' in Z.plugins.studio) && Z.plugins.studio.home!=_Studio) {
-        _Studio = Z.plugins.studio.home;
+    if(!('modules' in Z)) Studio.modules = {};
+    if(('home' in Studio.plugins.studio) && Studio.plugins.studio.home!=_Studio) {
+        _Studio = Studio.plugins.studio.home;
     }
     _P = {c:[],s:[]};
 
-    if(('options' in Z.plugins.studio) && ('interactive' in Z.plugins.studio.options) && Z.plugins.studio.options.interactive) {
+    if(('options' in Studio.plugins.studio) && ('interactive' in Studio.plugins.studio.options) && Studio.plugins.studio.options.interactive) {
         //
-        Z.bind(window, 'click', activateStudio);
+        Studio.bind(window, 'click', activateStudio);
     }
 
-    if(('options' in Z.plugins.studio) && ('button' in Z.plugins.studio.options) && Z.plugins.studio.options.button) {
+    if(('options' in Studio.plugins.studio) && ('button' in Studio.plugins.studio.options) && Studio.plugins.studio.options.button) {
         var ui = [
           {e:'div',p:{id:'studio-viewport',className:'s-api-box'},a:{'base-url':_Studio}},
           {e:'div',p:{className:'studio-logo'}}/*,
@@ -43,21 +42,21 @@ function startup()
             ]},
           ]}*/
         ];
-        _Z = document.getElementById('studio');
-        if(!_Z) {
-            _Z = Z.element.call(document.body, {e:'div',p:{id:'studio',className:'studio-interface'},c:ui});
-        } else if(_Z.className.search(/\bs-active\b/)<0) {
-            var b=_Z.querySelector('.s-api-box');
+        _S = document.getElementById('studio');
+        if(!_S) {
+            _S = Studio.element.call(document.body, {e:'div',p:{id:'studio',className:'studio-interface'},c:ui});
+        } else if(_S.className.search(/\bs-active\b/)<0) {
+            var b=_S.querySelector('.s-api-box');
             if(b) {
                 ui.shift();
                 b.id='studio-viewport';
                 b=null;
             }
-            Z.element.call(_Z, ui);
+            Studio.element.call(_S, ui);
             trigger(null, true);
         }
-        Z.bind(_Z, 'click', trigger);
-        Z.studioInterface = getInterface;
+        Studio.bind(_S, 'click', trigger);
+        Studio.studioInterface = getInterface;
     }
 }
 
@@ -66,27 +65,27 @@ function activateStudio(e)
     if(!e || e.detail !== 3) {
         return;
     }
-    Z.stopEvent(e);
+    Studio.stopEvent(e);
 
     var L=[], i, T=e.target;
     if(T.getAttribute('data-studio')) L.push(T.getAttribute('data-studio'));
-    while(T.parentNode && (T=Z.parentNode(T.parentNode,'*[data-studio]'))) {
+    while(T.parentNode && (T=Studio.parentNode(T.parentNode,'*[data-studio]'))) {
         L.push(T.getAttribute('data-studio'));
     }
 
     if(L.length>0) {
-       Z.ajax(_Studio+'/s', JSON.stringify(L), setStudio, null, 'json', _Z, {'x-studio-action':'studio','Content-Type':'application/json'});
+       Studio.ajax(_Studio+'/s', JSON.stringify(L), setStudio, null, 'json', _S, {'x-studio-action':'studio','Content-Type':'application/json'});
     }
 }
 
 function getViewport()
 {
     if(!_V) _V = document.getElementById('studio-viewport');
-    if(_V && !_otherRoot) _otherRoot = Z.setInterfaceRoot(_V);
+    if(_V && !_otherRoot) _otherRoot = Studio.setInterfaceRoot(_V);
     var b=_V.querySelector('.s-api-header');
     if(!b) {
-        Z.element.call(_V,{e:'div',a:{'class':'s-api-header','data-overflow':1}});
-        b=Z.element.call(_V,{e:'div',a:{'class':'s-api-body','data-nav':1}});
+        Studio.element.call(_V,{e:'div',a:{'class':'s-api-header','data-overflow':1}});
+        b=Studio.element.call(_V,{e:'div',a:{'class':'s-api-body','data-nav':1}});
         _title = document.title;
     }
 
@@ -98,9 +97,9 @@ function getInterface(u)
 {
     if(!_V) getViewport();
 
-    //Z.loadInterface.call(t, u);
+    //Studio.loadInterface.call(t, u);
     trigger(null, true);
-    Z.loadInterface.call(_V, u);
+    Studio.loadInterface.call(_V, u);
 }
 
 function addInterface(u)
@@ -115,11 +114,11 @@ function addInterface(u)
         P, I,el={e:'div',a:{'class':'s-api-app', 'data-url':p, 'data-qs':qs, 'data-nav':'1'}};
 
     for(n in add) {
-        I=_Z.querySelector('.s-api-box '+n+' .'+add[n]+'[data-url="'+encodeURIComponent(p)+'"]');
+        I=_S.querySelector('.s-api-box '+n+' .'+add[n]+'[data-url="'+encodeURIComponent(p)+'"]');
         if(!I) {
-            P=_Z.querySelector('.s-api-box '+n);
+            P=_S.querySelector('.s-api-box '+n);
             el.a.class = add[n];
-            I=Z.element.call(P, el);
+            I=Studio.element.call(P, el);
         }
     }
     return I;
@@ -129,7 +128,7 @@ function loadInterface(u)
 {
     if(!_V) getViewport();
     if(u) addInterface(u);
-    Z.loadInterface.call(_V, u);
+    Studio.loadInterface.call(_V, u);
 }
 
 function setStudio(d)
@@ -148,7 +147,7 @@ function setStudio(d)
         }
         if(c) {
             window.location.hash='!'+c;
-            Z.loadInterface.call(_V, L);
+            Studio.loadInterface.call(_V, L);
             setTimeout(initStudio, 100);
         }
     }
@@ -156,11 +155,11 @@ function setStudio(d)
 
 function initStudio()
 {
-    toggle.call(_Z, null, true);
+    toggle.call(_S, null, true);
     /*
     var T=_V.querySelector('.s-api-header .s-api-title[data-url]'), h = (T) ?T.getAttribute('data-url') :null, qs = (T) ?T.getAttribute('data-qs') :null;
     if(qs) h+= '?'+qs;
-    Z.loadInterface.call(_V, h);
+    Studio.loadInterface.call(_V, h);
     */
 }
 
@@ -171,10 +170,10 @@ function trigger(e, active)
             return false;
         }
     }
-    if(arguments.length>1) toggle.call(_Z, e, active);
-    else toggle.call(_Z, e);
-    var on=(_Z.className.search(/\bs-active\b/)>-1);
-    if(!_Z.querySelector('.s-api-app')) {
+    if(arguments.length>1) toggle.call(_S, e, active);
+    else toggle.call(_S, e);
+    var on=(_S.className.search(/\bs-active\b/)>-1);
+    if(!_S.querySelector('.s-api-app')) {
         // no interface, preview current page, if found
         searchInterface({e:{link:window.location.pathname}});
     }
@@ -228,7 +227,7 @@ function toggle(e, active)
 function checkInterfaces()
 {
     if(!document.querySelector('.s-api-body .s-api-app')) {
-        toggle.call(_Z, null, false);
+        toggle.call(_S, null, false);
     }
 }
 

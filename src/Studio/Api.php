@@ -614,7 +614,7 @@ class Api extends SchemaObject
             App::response(array('headers'=>array('Content-Type'=>'application/'.static::$format.'; charset=utf-8')));
             App::end($s);
         }
-        $s = '<div class="s-api-box" base-url="'.$this::$base.'">'.$s.'</div>';
+        $s = '<div'.((isset(S::$variables['apiId'])) ?' id="'.S::slug(S::$variables['apiId']).'"' :'').' class="s-api-box" base-url="'.$this::$base.'">'.$s.'</div>';
 
         if(App::request('headers', 'x-studio-action')=='api') {
             App::end($s);

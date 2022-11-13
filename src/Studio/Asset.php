@@ -318,7 +318,6 @@ class Asset
         }
 
         $parser = null;
-
     }
 
     public function parseScss($fs, $outputFile)
@@ -363,11 +362,33 @@ class Asset
         $parser = null;
     }
 
+    public static function html($src)
+    {
+        $s = null;
+        if(!is_array($src)) $src=[$src];
+        foreach($src as $i=>$url) {
+            if(is_array($url)) {
+                $s .= static::html($url);
+            } else if(strpos($url, '<')!==false) {
+                $s .= $url;
+            } else if (preg_match('/\.([a-z0-9]+)(\?|\#|$)/i', $url, $m)) {
+                if (isset(static::$optimizeExtensions[$m[1]])) $ext = static::$optimizeExtensions[$m[1]];
+                else if (isset(static::$optimizeTemplates[$m[1]])) $ext = $m[1];
+                else continue;
+
+                $s .= sprintf(static::$optimizeTemplates[$ext], S::xml($url));
+                unset($ext, $m);
+            }
+            unset($i, $url);
+        }
+
+        return $s;
+    }
 
     /**
      * Compress Javascript & CSS
      */
-    public static function minify($src, $root=false, $compress=true, $before=true, $raw=false, $output=false)
+    public static function minify($src, $root=false, $compress=true, $before=true, $raw=false, $output=false, $force=null)
     {
         if($root===false) {
             $root = S_DOCUMENT_ROOT;
@@ -380,7 +401,7 @@ class Asset
 
         foreach($f as $i=>$url) {
             if(is_array($url)) {
-                $r .= static::minify($url, $root, $compress, $before, $raw, (!is_numeric($i)) ?$i :false);
+                $r .= static::minify($url, $root, $compress, $before, $raw, (!is_numeric($i)) ?$i :false, $force);
             } else if(strpos($url, '<')!==false) {
                 // html code, must match a pattern
                 foreach(static::$optimizePatterns as $re=>$ext) {
@@ -434,7 +455,7 @@ class Asset
                 $outputFile = $root.'/'.$outputUrl;
             }
 
-            if(!file_exists($outputFile) || filemtime($outputFile)<max($fs)) {
+            if($force || !file_exists($outputFile) || filemtime($outputFile)<max($fs)) {
                 $A = new Asset(array(
                     'source'=>array_keys($fs),
                     'output'=>$outputFile,
@@ -580,4 +601,44 @@ class Asset
         Studio::$app->end();
     }
 
+    public static function check()
+    {
+        $a = [];
+        $force = null;
+        if(App::request('shell') && ($a = App::request('argv'))) {
+            $p = $m = null;
+            foreach($a as $i=>$o) {
+                if(substr($o, 0, 1)==='-') {
+                    if(preg_match('/^-(v+)$/', $o, $m)) {
+                        S::$log = strlen($m[1]);
+                    } else  if(substr($o, 1, 1)==='q') {
+                        S::$log = 0;
+                    } else  if(substr($o, 1, 1)==='f') {
+                        $force = true;
+                    }
+                } else {
+                    $a[] = $o;
+                }
+                unset($a[$i], $i, $o, $m);
+            }
+            if(S::$log>0) S::$logDir[] = 'cli';
+        }
+        if(!$a) {
+            $a = S::getApp()->config('app', 'assets');
+            if(!$a || !is_array($a)) $a = [];
+            if(App::$assets) {
+                if(Studio::config('enable_apis')) {
+                    Api::loadAssets();
+                    App::$assets[] = 'S.Studio';
+                }
+                $a = ($a) ?array_merge($a, App::$assets) :App::$assets;
+            }
+        }
+        $a = array_unique($a);
+        foreach($a as $component) {
+            if(substr($component, 0, 1)=='!') $component = substr($component, 1);
+            if(S::$log) S::log('[INFO] Building component: '.$component);
+            App::asset('!'.$component, $force);
+        }
+    }
 }

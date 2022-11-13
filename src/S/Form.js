@@ -1557,7 +1557,6 @@ function toggleType(e)
 
 function initHtmlEditor()
 {
-    console.log('initHtmlEditor: ', this);
     if(this.getAttribute('data-html-editor')) return;
     var a=(this.getAttribute('data-editor')), Editor, elcontainer;
     var limit = this.getAttribute('maxlength') ?? 0;

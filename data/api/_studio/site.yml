@@ -2,67 +2,67 @@
 all:
   title: '*Site Resources'
   model: Studio\Model\Entries
-  graph:
-    entry-type-bar:
-      style:
-        legend:
-          show: false
-        color:
-          pattern: [ '#aaaaaa', '#339933', '#ff8000', '#336699' ]
-        bar:
-          title: '*Types'
-      type: bar
-      class: i1s3
-      pivot: true
-      #where:
-      #  status: 2
-      axis:
-        '*Total':
-          bind: count(distinct `id`) _total
-          type: number
-      group-by:
-        '*Type': type
-      order-by: type
-    entry-type-pie:
-      style:
-        legend:
-          show: false
-        color:
-          pattern: [ '#aaaaaa', '#339933', '#ff8000', '#336699' ]
-        pie:
-          title: '*Types'
-      type: pie
-      class: i1s3
-      pivot: true
-      #where:
-      #  status: 2
-      axis:
-        '*Total':
-          bind: count(distinct `id`) _total
-          type: number
-      group-by:
-        '*Type': type
-      order-by: type
-    entry-type-donut:
-      style:
-        legend:
-          show: false
-        color:
-          pattern: [ '#aaaaaa', '#339933', '#ff8000', '#336699' ]
-        donut:
-          title: '*Types'
-      type: donut
-      class: i1s3
-      pivot: true
-      #where:
-      #  status: 2
-      axis:
-        '*Total': 
-          bind: count(distinct `id`) _total
-          type: number
-      group-by:
-        '*Type': type
-      order-by: type
+  #graph:
+  #  entry-type-bar:
+  #    style:
+  #      legend:
+  #        show: false
+  #      color:
+  #        pattern: [ '#aaaaaa', '#339933', '#ff8000', '#336699' ]
+  #      bar:
+  #        title: '*Types'
+  #    type: bar
+  #    class: i1s3
+  #    pivot: true
+  #    #where:
+  #    #  status: 2
+  #    axis:
+  #      '*Total':
+  #        bind: count(distinct `id`) _total
+  #        type: number
+  #    group-by:
+  #      - type
+  #    order-by: type
+  #  entry-type-pie:
+  #    style:
+  #      legend:
+  #        show: false
+  #      color:
+  #        pattern: [ '#aaaaaa', '#339933', '#ff8000', '#336699' ]
+  #      pie:
+  #        title: '*Types'
+  #    type: pie
+  #    class: i1s3
+  #    pivot: true
+  #    #where:
+  #    #  status: 2
+  #    axis:
+  #      '*Total':
+  #        bind: count(distinct `id`) _total
+  #        type: number
+  #    group-by:
+  #      - type
+  #    order-by: type
+  #  entry-type-donut:
+  #    style:
+  #      legend:
+  #        show: false
+  #      color:
+  #        pattern: [ '#aaaaaa', '#339933', '#ff8000', '#336699' ]
+  #      donut:
+  #        title: '*Types'
+  #    type: donut
+  #    class: i1s3
+  #    pivot: true
+  #    #where:
+  #    #  status: 2
+  #    axis:
+  #      '*Total': 
+  #        bind: count(distinct `id`) _total
+  #        type: number
+  #    group-by:
+  #      - type
+  #    order-by: type
   options:
     list-parent: false
     priority: 1000
@@ -79,9 +79,10 @@ all:
         page: page
     scope:
       review:
-        '*Title': title _title_tags
+        '*Title': title
         '*Type': type
         URL: link
+        '*Tags': _tags
         '*Last Modified': '${greatest}(`updated`,`Contents.updated`) updated'
         '*Published': published
       search:
@@ -105,8 +106,8 @@ all:
         - 'scope::meta'
       preview:
         - 'scope::meta'
-        - 'scope::_meta'
         - 'scope::_content'
+        - 'scope::_meta'
       choices:
         label: title
         value: id

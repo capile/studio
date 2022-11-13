@@ -46,6 +46,7 @@ class App
             'layout'=>false,
             'credentials'=>false,
         ),
+        $assetsBuildStrategy='manual',
         $assets = [ 'S' ],
         $assetRequirements=[
             'S.Form'=>'moment,pikaday-time/pikaday,pikaday-time/css/pikaday,pell/dist/pell.min',
@@ -462,10 +463,24 @@ class App
     {
         if($tpl && is_string($tpl) && strpos($tpl, '<')!==false) return $tpl;
         else if(!($scr=S::templateFile($tpl))) return false;
+        $build = $this->config('app', 'asset-build-strategy');
+        if(!$build) $build = self::$assetsBuildStrategy;
         if(static::$assets) {
             static::$assets = array_unique(static::$assets);
+            $tos = ['js'=>'script','css'=>'style'];
             foreach(static::$assets as $i=>$n) {
-                static::asset($n);
+                if($build==='auto') {
+                    static::asset($n);
+                } else if(substr($n, 0, 1)!='!') {
+                    foreach($tos as $from=>$to) {
+                        $url = S::$assetsUrl.'/'.S::slug($n).'.'.$from;
+                        if(file_exists(S_DOCUMENT_ROOT.$url)) {
+                            if(!isset(self::$_response[$to])) self::$_response[$to] = [];
+                            self::$_response[$to][] = $url;
+                        }
+                        unset($from, $to);
+                    }
+                }
                 unset(static::$assets[$i], $i, $n);
             }
         }
@@ -489,7 +504,7 @@ class App
      * Currently they are loaded from S_ROOT/src/Tecnodesign/Resources/assets but this should be evolved to a modular structure directly under src
      * and external components should also be loaded (example: font-awesome, d3 etc)
      */
-    public static function asset($component)
+    public static function asset($component, $force=null)
     {
         static $loaded=array();
         if(is_null(S::$assetsUrl) || isset($loaded[$component])) return;
@@ -565,7 +580,7 @@ class App
                     if($t===null) {
                         $t =  S::$assetsUrl.'/'.S::slug($n).'.'.$to;
                         $tf =  S_DOCUMENT_ROOT.$t;
-                        if(in_array($t, self::$_response[$destination[$to]])) {
+                        if(!$force && in_array($t, self::$_response[$destination[$to]])) {
                             $t = null;
                             break;
                         }
@@ -579,13 +594,13 @@ class App
                 unset($f);
             }
             if($t) { // check and build
-                if(file_exists($tf) && filemtime($tf)>$fmod) {
+                if(!$force && file_exists($tf) && filemtime($tf)>$fmod) {
                     $src = null;
                 } else {
                     $build = true;
                 }
                 if($src) {
-                    Asset::minify($src, S_DOCUMENT_ROOT, true, true, false, $t);
+                    Asset::minify($src, S_DOCUMENT_ROOT, true, true, false, $t, $force);
                     if(!file_exists($tf)) {// && !copy($f, $tf)
                         S::log('[ERROR] Could not build component '.$component.': '.$tf.' from ', $src);
                     }
@@ -608,7 +623,7 @@ class App
             $p = strlen(S_ROOT.'/src/');
             foreach($files as $source) {
                 $dest = S_DOCUMENT_ROOT.S::$assetsUrl.'/'.S::slug(substr($source, $p),'.');
-                if(!file_exists($dest) || filemtime($dest)<filemtime($source)) {
+                if($force || !file_exists($dest) || filemtime($dest)<filemtime($source)) {
                     copy($source, $dest);
                 }
             }
@@ -617,7 +632,7 @@ class App
         if($build && isset(static::$copyNodeAssets[$c0]) && ($files = glob($projectRoot.'/node_modules/'.static::$copyNodeAssets[$c0], GLOB_BRACE))) {
             foreach($files as $source) {
                 $dest = S_DOCUMENT_ROOT.S::$assetsUrl.'/'.basename($source);
-                if(!file_exists($dest) || filemtime($dest)<filemtime($source)) {
+                if($force || !file_exists($dest) || filemtime($dest)<filemtime($source)) {
                     copy($source, $dest);
                 }
             }

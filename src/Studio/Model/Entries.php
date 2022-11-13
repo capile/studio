@@ -1159,17 +1159,22 @@ class Entries extends Model
         static $url;
         if($T = $this->getRelation('Tag', null, 'link', false)) {
             $html = (Api::format()=='html');
+            if(is_null($link)) $link = $html;
             $s = ($html) ?null :[];
             if($link && is_null($url)) {
-                $url = S::scriptName(true);
+                $url = Studio::$home.'/site';
                 $tag = S::slug(S::t('Tag', 'model-studio_entries'));
-                $qso = array_diff_key(App::request('get'), ['_uid'=>null, 'ajax'=>null, $tag=>null]);
-                $url .= (($qso) ?'?'.http_build_query($qso).'&' :'?').$tag.'=';
+                if(in_array(S::scriptName(true), [$url, $url.'/list'])) {
+                    $qso = array_diff_key(App::request('get'), ['_uid'=>null, 'ajax'=>null, $tag=>null]);
+                    $url .= (($qso) ?'?'.http_build_query($qso).'&' :'?').$tag.'=';
+                } else {
+                    $url .= '?'.$tag.'=';
+                }
                 unset($qso);
             }
             foreach($T as $i=>$o) {
                 if($html) {
-                    $s.= ($link) ?'<a class="z-i-a z-tag" href="'.S::xml($url.$o->slug).'">'.S::xml($o->tag).'</a>' :'<span class="z-tag">'.S::xml($o->tag).'</span>';
+                    $s.= ($link) ?'<a class="s-i-a s-tag" href="'.S::xml($url.$o->slug).'">'.S::xml($o->tag).'</a>' :'<span class="s-tag">'.S::xml($o->tag).'</span>';
                 } else {
                     $s[$o->slug] = $o->tag;
                 }

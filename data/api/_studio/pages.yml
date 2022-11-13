@@ -39,9 +39,9 @@ all:
         '*Tag': Tag.slug
       preview:
         - scope::page
-        - scope::_meta
         - scope::_content
         - scope::credentials
+        - scope::_meta
       new:
         - scope::page
         - scope::credentials

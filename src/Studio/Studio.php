@@ -82,6 +82,7 @@ class Studio
             'index'=>['Studio\\Model\\Index','reindex'],
             'import'=>['Studio\\Query','import'],
             'task'=>['Studio\\Model\\Tasks', 'check'],
+            'assets'=>['Studio\\Asset','check'],
         ];
     const VERSION = 1.0;    // should match the development branch 
 
@@ -178,9 +179,9 @@ class Studio
 
         // try the interface
         if(static::$webInterface && ($sn==self::$home || strncmp($sn, self::$home, strlen(self::$home))===0)) {
-            if($sn!=='/_studio' && self::config('enable_api_index')) {
+            if($sn!==self::$home && self::config('enable_api_index')) {
                 $icn = self::$apiClass;
-                $icn::$baseMap[$sn] = ['/_studio'];
+                $icn::$baseMap[$sn] = [self::$home];
             }
             static::$internal = true;
             S::scriptName($sn);
@@ -299,6 +300,7 @@ class Studio
             }
 
             $In=self::$apiClass;
+            S::$variables['apiId'] = 'studio';
             if(App::request('headers', 'x-studio-action')=='api') {
                 S::scriptName(self::$home);
                 S::$translator = 'Studio\\Studio::translate';

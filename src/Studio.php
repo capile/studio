@@ -166,8 +166,8 @@ class Studio
         $variables = array(),
         $minifier = array(
             'js'=>'node_modules/.bin/uglifyjs --compress --mangle -- %s > %s',
-            'less'=>'node_modules/.bin/lessc --clean-css --sass2less %s %s',
-            'scss'=>'node_modules/.bin/lessc --clean-css --sass2less %s %s',
+            'less'=>'node_modules/.bin/lessc --sass2less %s %s',
+            'scss'=>'node_modules/.bin/lessc --sass2less %s %s',
         ),
         $paths=array(
             'cat'=>'/bin/cat',
@@ -686,7 +686,14 @@ class Studio
      */
     public static function minify($s, $root=false, $compress=true, $before=true, $raw=false, $output=false)
     {
-        return Asset::minify($s, $root, $compress, $before, $raw, $output);
+        $build = self::getApp()->config('app', 'asset-build-strategy');
+        if(!$build) $build = App::$assetsBuildStrategy;
+        if($build==='auto') {
+            return Asset::minify($s, $root, $compress, $before, $raw, $output);
+        } else {
+            return Asset::html((is_string($output)) ?$output :$s);
+        }
+
     }
 
     /**
@@ -1743,6 +1750,8 @@ class Studio
             print_r(self::toString($v));
             echo "\n";
         }
+
+        if(S_CLI) exit(1);
         exit();
     }
 
@@ -2057,7 +2066,7 @@ class Studio
     public static function buildUrl($url, $parts=[], $params=[])
     {
         if (!is_array($url)) {
-            $url = parse_url($url);
+            $url = parse_url((string)$url);
         }
         if(!isset($_SERVER['SERVER_PORT'])) {
             $_SERVER += array('SERVER_PORT'=>'80', 'HTTP_HOST'=>'localhost');
