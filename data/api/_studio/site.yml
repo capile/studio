@@ -67,6 +67,11 @@ all:
     list-parent: false
     priority: 1000
     index: true
+    list-filter:
+      '*Type':
+        - page
+        - feed
+        - file
     group-by: id
     order:
       '${greatest}(`updated`,`Contents.updated`)': desc
@@ -93,11 +98,14 @@ all:
           '*Tag': Tag.slug
         URL: link
         '*Tag': Tag.slug
+        '*Type':
+          bind: type
+          format: checkbox
+          multiple: true
         '*Last Modified': 
           bind: '${greatest}(`updated`,`Contents.updated`)'
           format: datetime
         '*Published': published
-        '*Type': type
       new:
         '*Type':
           bind: type

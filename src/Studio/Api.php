@@ -1676,11 +1676,20 @@ class Api extends SchemaObject
                 if(isset($req[$k])) unset($req[$k]);
             }
         }
+        $cn = $this->getModel();
         if(!$req) {
+            $rs = null;
             if(isset($this->options[$this->action.'-filter'])) {
-                $req = $this->options[$this->action.'-filter'];
+                $rs = $this->options[$this->action.'-filter'];
             } else if(!$this->search && isset($this->options['default-filter'])) {
-                $req = $this->options['default-filter'];
+                $rs = $this->options['default-filter'];
+            }
+            if($rs && is_array($rs)) {
+                $req = [];
+                foreach($rs as $rk=>$rv) {
+                    if(substr($rk, 0, 1)==='*') $req[S::slug(S::t(substr($rk, 1), 'model-'.$cn::$schema->tableName))] = $rv;
+                    unset($rs[$rk], $rk, $rv);
+                }
             }
         }
 
@@ -1694,7 +1703,6 @@ class Api extends SchemaObject
         }
         unset($p);
 
-        $cn = $this->getModel();
         if(isset($this->options['scope']) && is_array($this->options['scope'])) {
             $cn::$schema['scope'] = $this->options['scope'] + $cn::$schema['scope'];
         }

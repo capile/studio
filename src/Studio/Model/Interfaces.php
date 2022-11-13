@@ -34,7 +34,7 @@ class Interfaces extends Model
         $S = $this->loadSchema(false);
         if(!$this->model) {
             $cn = 'Studio_Interfaces_'.S::camelize($this->id, true);
-            $d = S::getApp()->config('tecnodesign', 'cache-dir').'/interface';
+            $d = S::getApp()->config('app', 'cache-dir').'/apis';
             if($d) {
                 $f = $d.'/'.$cn.'.php';
                 if(!file_exists($f)) {
@@ -151,7 +151,10 @@ class Interfaces extends Model
         $id = S::slug($this->id, '_', true);
         $f =  $d.'/'.$id.'.yml';
         $f0 = Api::configFile($id, [$f]);
-        if(!file_exists($f) || !$this->updated || !($t=strtotime($this->updated)) || $t>filemtime($f)) {
+        $lmod = false;
+        if($this->updated) $lmod = strtotime($this->updated);
+        if(file_exists($f0) && ($t=filemtime($f0)) && $t>$lmod) $lmod = $t;
+        if(!file_exists($f) || $lmod>filemtime($f)) {
             $a = ['all'=>['api'=>$id]];
             $addParent = true;
             if($f0 && $f0!==$f) {
@@ -188,9 +191,13 @@ class Interfaces extends Model
 
     public static function findCacheFile($file)
     {
-        $d = S::getApp()->config('app', 'cache-dir').'/apis';
-        $f =  $d.'/'.S::slug($file, '_', true).'.yml';
-        if(file_exists($f)) return $f;
+        static $avoidRecursive;
+        if(!$avoidRecursive && ($A = self::find(['id'=>$file],1))) {
+            $avoidRecursive = true;
+            $r = $A->cacheFile();
+            $avoidRecursive = false;
+            return $r;
+        }
     }
 
     public static function executeImport($Interface=null)
