@@ -10,16 +10,17 @@ services:
   #    - 80
   studio:
     hostname: studio
+    container_name: studio
     image: tecnodesign/dev-studio:latest
     volumes:
       ## Use this if you already installed the composer dependencies and want the full folder loaded
       #- ../../:/var/www/app:Z
       - ../../data:/var/www/app/data:Z
       - ../../src:/var/www/app/src:Z
-    deploy:
-      mode: replicated
-      replicas: 5
-      endpoint_mode: vip
+    #deploy:
+    #  mode: replicated
+    #  replicas: 5
+    #  endpoint_mode: vip
   studio-startup:
     image: tecnodesign/dev-studio:latest
     depends_on:
