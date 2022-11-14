@@ -108,7 +108,7 @@ class Config extends Model
         return true;
     }
 
-    public function reloadConfiguration()
+    public function reloadConfiguration($run=['check'])
     {
         // reload config
         @touch(S_ROOT.'/app.yml');
@@ -116,7 +116,9 @@ class Config extends Model
         $cmd = S_ROOT.'/studio';
 
         // check database tables
-        S::exec(['shell'=>$cmd.' :check']);
+        foreach($run as $a) {
+            S::exec(['shell'=>$cmd.' :'.$a]);
+        }
 
         // import admin password (if set)
         $import = [];
@@ -176,35 +178,45 @@ class Config extends Model
         if(S_ROOT!=S_APP_ROOT) S::debug('[ERROR] '.S::t('This action is only available on standalone installations.', 'exception'));
 
         // load data/config/config.yml-example, reload configuration, remove the file and forward user to http://127.0.0.1:9999/_studio
-        $docker = file_exists('/.dockerenv');
+        $docker  = file_exists('/.dockerenv');
+        $appmode = (getenv('STUDIO_MODE')=='app');
+        $c0 = S_ROOT.'/data/config/config.yml-example';
+        $c = S_ROOT.'/data/config/config.yml';
+        $d = S_ROOT.'/data/config/defaults.yml';
+        $add = null;
 
-        if(!file_exists($c=S_ROOT.'/data/config/config.yml')) {
+        if($appmode) {
+            $rdata = $data = (isset($_ENV['STUDIO_DATA']) && $_ENV['STUDIO_DATA']) ?$_ENV['STUDIO_DATA'] :'/data';
+            $cf = $data.'/studio.yml';
+            if(!file_exists($c)) symlink($cf, $c);
+            $c = $cf;
+            if($data!=='data/') {
+                S::save(S_ROOT.'/data/config/00-overwrite.yml', str_replace('sqlite:data/', 'sqlite:'.$data.'/', file_get_contents($d)));
+            }
+        } else {
+            $data = S_VAR;
+            $rdata = 'data/';
+        }
+
+        if(!file_exists($c)) {
             if(!$docker) {
-                copy($c.'-example', $c);
+                copy($c0, $c);
             } else {
                 $hs = file('/etc/hosts');
                 $h = preg_replace('/\.[0-9]+\s.*/', '.1', trim(array_pop($hs)));
-                S::save($c, str_replace('127.0.0.1', $h, file_get_contents($c.'-example')));
+                S::save($c, str_replace('127.0.0.1', $h, file_get_contents($c0)).$add);
             }
         }
 
-        if(!$docker) {
+        if(!$docker && !$appmode) {
             // (re)load server
             S::exec(['shell'=>S_ROOT.'/studio-server']);
         } else {
-            touch(S_ROOT.'/app.yml');
+            @touch(S_ROOT.'/app.yml');
         }
 
         $C = new Config();
-        $C->reloadConfiguration();
-
-        if(Studio::config('connection')==='studio') {
-            $db = Query::database('studio');
-            if(isset($db['dsn']) && $db['dsn']==='sqlite:data/studio.db' && !file_exists(S_VAR.'/studio.db')) {
-                S::exec(['shell'=>S_ROOT.'/studio :check']);
-                S::exec(['shell'=>S_ROOT.'/studio :index']);
-            }
-        }
+        $C->reloadConfiguration(['check', 'index', 'assets']);
 
         if(!$docker) {
             $os = strtolower(substr(PHP_OS, 0, 3));

@@ -25,6 +25,3 @@ all:
           site:
             - /_/css/site.less
     default-route: run
-  database:
-    studio:
-      dsn: sqlite:data/studio.db

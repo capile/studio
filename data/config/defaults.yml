@@ -1,0 +1,5 @@
+---
+all:
+  database:
+    studio:
+      dsn: sqlite:data/studio.db

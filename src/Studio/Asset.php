@@ -641,4 +641,10 @@ class Asset
             App::asset('!'.$component, $force);
         }
     }
+
+    public static function buildCheck()
+    {
+        S::log('[INFO] Building static files...');
+        Asset::check();
+    }
 }

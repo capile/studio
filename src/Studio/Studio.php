@@ -21,6 +21,7 @@ use Studio\Collection;
 use Studio\Form;
 use Studio\Model\Entries;
 use Studio\Model\Contents;
+use Studio\Model\Config;
 use Studio\Model\Permissions;
 use Studio\Model\Relations;
 use Studio\Model\Index;
@@ -83,7 +84,8 @@ class Studio
             'import'=>['Studio\\Query','import'],
             'task'=>['Studio\\Model\\Tasks', 'check'],
             'assets'=>['Studio\\Asset','check'],
-            'build'=>['Studio\\Studio','build'],
+            'build'=>['Studio\\Asset','buildCheck'],
+            'app'=>['Studio\\Studio','standaloneApp'],
         ];
     const VERSION = 1.0;    // should match the development branch 
 
@@ -1163,9 +1165,9 @@ class Studio
         return $f;
     }
 
-    public static function build()
+    public static function standaloneApp()
     {
-        S::log('[INFO] Building static files...');
-        Asset::check();
+        putenv('STUDIO_MODE=app');
+        Config::standaloneConfig();
     }
 }

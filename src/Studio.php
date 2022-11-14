@@ -1772,7 +1772,7 @@ class Studio
         foreach($d as $l) {
             if($l=='syslog' && openlog('studio', LOG_PID|LOG_NDELAY, LOG_LOCAL5)) {
                 $logs['syslog'] = true;
-            } else if($l=='error_log') {
+            } else if($l=='error_log' || !$l) {
                 $logs[0] = true;
             } else if($l=='cli') {
                 if(S_CLI) $logs[2] = true;
@@ -1814,7 +1814,7 @@ class Studio
                     error_log($v, 3, $logs[3]);
                 }
                 if(isset($logs[0])) {
-                    error_log($v, 0);
+                    error_log(rtrim($v, "\n"), 0);
                 }
                 if(isset($logs[2])) {
                     echo $v;

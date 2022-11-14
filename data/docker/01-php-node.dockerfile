@@ -36,6 +36,8 @@ RUN docker-php-ext-configure gd \
     --with-freetype \
     --with-jpeg \
     --with-webp && \
+    docker-php-ext-configure pcntl \
+    --enable-pcntl && \
     docker-php-ext-configure ldap \
     --with-libdir=lib/x86_64-linux-gnu/ && \
     docker-php-ext-install \
@@ -47,6 +49,7 @@ RUN docker-php-ext-configure gd \
     mbstring \
     pdo \
     pdo_mysql \
+    pcntl \
     simplexml \
     soap \
     zip
@@ -81,12 +84,14 @@ RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini && \
       /var/www/app \
       /var/www/.cache \
       /var/www/.composer \
-      /var/www/.npm && \
+      /var/www/.npm \
+      /data && \
     chown www-data:www-data \
       /var/www/app \
       /var/www/.cache \
       /var/www/.composer \
-      /var/www/.npm && \
+      /var/www/.npm \
+      /data && \
     ln -s ../lib/node_modules/asar/bin/asar.js         /usr/local/bin/asar      && \
     ln -s ../lib/node_modules/node-gyp/bin/node-gyp.js /usr/local/bin/node-gyp  && \
     ln -s ../lib/node_modules/nopt/bin/nopt.js         /usr/local/bin/nopt      && \

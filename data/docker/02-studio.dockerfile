@@ -10,8 +10,8 @@ RUN curl -sL https://github.com/capile/studio/archive/refs/tags/latest.tar.gz|ta
     cd /var/www/app && \
     composer install --no-dev && \
     composer clear-cache && \
-    rm -rf ~/.composer/cache \
-    ln -s /var/www/app/studio /usr/local/bin/studio
+    rm -rf ~/.composer/cache
 WORKDIR /var/www/app
-VOLUME /studio
-ENV STUDIO_DATA=/studio
+VOLUME /data
+ENV PATH="${PATH}:/var/www/app"
+ENV STUDIO_DATA=/data
