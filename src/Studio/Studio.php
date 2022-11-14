@@ -83,6 +83,7 @@ class Studio
             'import'=>['Studio\\Query','import'],
             'task'=>['Studio\\Model\\Tasks', 'check'],
             'assets'=>['Studio\\Asset','check'],
+            'build'=>['Studio\\Studio','build'],
         ];
     const VERSION = 1.0;    // should match the development branch 
 
@@ -1160,5 +1161,11 @@ class Studio
         }
 
         return $f;
+    }
+
+    public static function build()
+    {
+        S::log('[INFO] Building static files...');
+        Asset::check();
     }
 }
