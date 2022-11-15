@@ -21,7 +21,7 @@ Different purpose Docker images are available at <data/docker>, compatible with 
 
 You can start using it directly with:
 ```
-docker run -v studio-data:/data -p 9999:9999 tecnodesign/studio-app:latest
+docker run --rm -v studio-data:/data -p 9999:9999 tecnodesign/studio-app:latest
 ```
 
 ### Running Docker with source code
@@ -30,7 +30,7 @@ If you'd like to work with studio code and repository, you can mount the source 
 ```
 git clone https://github.com/capile/studio.git studio
 cd studio
-docker run -v studio-data:/data -v $PWD:/var/www/app -p 9999:9999 tecnodesign/studio-app:latest
+docker run --rm -v studio-data:/data -v $PWD:/var/www/app -p 9999:9999 tecnodesign/studio-app:latest
 ```
 
 Or using docker-compose:
@@ -42,8 +42,8 @@ docker-compose -f data/docker/docker-compose.yml up
 
 Running with local source code might require a filesystem check for the writable condition of the container user, so you should either run docker with the `-u $UID` option (might lead to some errors), or adjust the local permissions on the `data/` folder:
 ```
-find data -type f -uid $UID -print0 | xargs -0 chmod 666
-find data -type d -uid $UID -print0 | xargs -0 chmod 777
+find data/{cache,web*,config} -type f -uid $UID -print0 | xargs -0 chmod 666
+find data/{cache,web*,config} -type d -uid $UID -print0 | xargs -0 chmod 777
 ```
 
 Now access the demo studio on <http://127.0.0.1:9999/_studio>

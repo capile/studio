@@ -3148,30 +3148,6 @@ if (!defined('S_VAR')) {
 if(!defined('S_PROJECT_ROOT')) {
     define('S_PROJECT_ROOT', file_exists(S_APP_ROOT.'/composer.json') ?S_APP_ROOT :dirname(S_APP_ROOT));
 }
-if (!defined('S_DOCUMENT_ROOT')) {
-    if(defined('TDZ_DOCUMENT_ROOT')) define('S_DOCUMENT_ROOT', TDZ_DOCUMENT_ROOT);
-    else if(is_dir($d=S_PROJECT_ROOT.'/htdocs')
-        || is_dir($d=S_PROJECT_ROOT.'/www')
-        || is_dir($d=S_PROJECT_ROOT.'/web')
-        || is_dir($d=S_APP_ROOT.'/web')
-        || is_dir($d=S_VAR.'/web')
-        ) {
-        define('S_DOCUMENT_ROOT', realpath($d));
-    } else {
-        define('S_DOCUMENT_ROOT', $d);
-    }
-    unset($d);
-}
-if(!defined('S_REPO_ROOT')) {
-    if(is_dir($d=S_PROJECT_ROOT.'/www-contrib')
-        || is_dir($d=S_PROJECT_ROOT.'/web-repos')
-        || is_dir($d=S_APP_ROOT.'/www-contrib')
-        || is_dir($d=S_APP_ROOT.'/web-repos')
-        || is_dir($d=S_VAR.'/web-repos')
-    ) {
-    }
-    define('S_REPO_ROOT', realpath($d));
-}
 if(!defined('S_BACKGROUND')) {
     define('S_BACKGROUND', (isset($_SERVER['S_BACKGROUND']) && $_SERVER['S_BACKGROUND']));
 }

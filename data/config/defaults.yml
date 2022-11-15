@@ -1,5 +1,7 @@
 ---
 all:
+  app:
+    repo-dir: data/web-repos
   database:
     studio:
       dsn: sqlite:data/studio.db

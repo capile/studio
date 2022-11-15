@@ -28,6 +28,7 @@ class File
             'create'=>true,
             'recursive'=>false,
             'index'=>false,
+            'followLinks'=>true,
         ),
         $microseconds=6,
         $enableOffset=true,
@@ -205,8 +206,8 @@ class File
             $r = glob($pattern, GLOB_BRACE);
         }
 
-        $recursive = (isset($src['options']['recursive']) && $src['options']['recursive']);
-        $create = (isset($src['options']['create']) && $src['options']['create']);
+        $recursive = (isset($src['options']['recursive'])) ?$src['options']['recursive'] :self::$options['recursive'];
+        $create = (isset($src['options']['create'])) ?$src['options']['create'] :self::$options['create'];
         $this->_last = null;
         if($r) {
             $this->_last = [];
@@ -461,7 +462,13 @@ class File
         // serialize and save
         $r = null;
         if(isset($M->__src) && $M->__src) {
-            if(!($r=S::save($M->__src, S::serialize($data, $M->__serialize)))) {
+            $t = $M->__src;
+            $followLinks = (isset($src['options']['followLinks'])) ?$src['options']['followLinks'] :self::$options['followLinks'];
+            if($followLinks) {
+                $t = realpath($t);
+                if(!$t) $t = $M->__src;
+            }
+            if(!($r=S::save($t, S::serialize($data, $M->__serialize)))) {
                 throw new AppException(array(S::t('Could not save %s.', 'exception'), $M::label()));
             }
         }

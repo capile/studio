@@ -208,9 +208,36 @@ class App
         if(isset($this->_vars['app']['language'])) {
             S::$lang = $this->_vars['app']['language'];
         }
-        if(isset($this->_vars['app']['document-root'])) {
-            $_SERVER['DOCUMENT_ROOT'] = $this->_vars['app']['document-root'];
+        if (!defined('S_DOCUMENT_ROOT')) {
+            if(defined('TDZ_DOCUMENT_ROOT')) define('S_DOCUMENT_ROOT', TDZ_DOCUMENT_ROOT);
+            else if((isset($this->_vars['app']['document-root']) && is_dir($d=$this->_vars['app']['document-root']))
+                || is_dir($d=S_PROJECT_ROOT.'/htdocs')
+                || is_dir($d=S_PROJECT_ROOT.'/www')
+                || is_dir($d=S_PROJECT_ROOT.'/web')
+                || is_dir($d=S_APP_ROOT.'/web')
+                || is_dir($d=S_VAR.'/web')
+                ) {
+                define('S_DOCUMENT_ROOT', realpath($d));
+            } else {
+                define('S_DOCUMENT_ROOT', $d);
+            }
+            unset($d);
         }
+        if(!isset($_SERVER['DOCUMENT_ROOT']) || S_DOCUMENT_ROOT!==$_SERVER['DOCUMENT_ROOT']) {
+            $_SERVER['DOCUMENT_ROOT'] = S_DOCUMENT_ROOT;
+        }
+        if(!defined('S_REPO_ROOT')) {
+            if((isset($this->_vars['app']['repo-dir']) && is_dir($d=$this->_vars['app']['repo-dir']))
+                || is_dir($d=S_PROJECT_ROOT.'/www-contrib')
+                || is_dir($d=S_PROJECT_ROOT.'/web-repos')
+                || is_dir($d=S_APP_ROOT.'/www-contrib')
+                || is_dir($d=S_APP_ROOT.'/web-repos')
+                || is_dir($d=S_VAR.'/web-repos')
+            ) {
+            }
+            define('S_REPO_ROOT', realpath($d));
+        }
+
         /*
         if(isset($this->_vars['database']) && !S::$database) {
             S::$database = $this->_vars['database'];

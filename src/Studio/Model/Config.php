@@ -191,7 +191,7 @@ class Config extends Model
             if(!file_exists($c)) symlink($cf, $c);
             $c = $cf;
             if($data!=='data/') {
-                S::save(S_ROOT.'/data/config/00-overwrite.yml', str_replace('sqlite:data/', 'sqlite:'.$data.'/', file_get_contents($d)));
+                S::save(S_ROOT.'/data/config/00-overwrite.yml', str_replace(['sqlite:data/', ' data/'], ['sqlite:'.$data.'/', " {$data}/"], file_get_contents($d)));
             }
         } else {
             $data = S_VAR;
@@ -290,8 +290,7 @@ class Config extends Model
     {
         if(!isset($repo['id']) || !$repo['id'] || !isset($repo['src']) || !$repo['src']) return false;
 
-        $rr = S::config('repo-dir');
-        if(!$rr) $rr = S_VAR.'/web-repos';
+        $rr = S_REPO_ROOT;
 
         if(!isset($repo['client']) || !$repo['client']) $repo['client'] = null;
         if(!isset($repo['secret']) || !$repo['secret']) $repo['secret'] = null;
