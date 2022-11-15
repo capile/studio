@@ -30,6 +30,9 @@ If you'd like to work with studio code and repository, you can mount the source 
 ```
 git clone https://github.com/capile/studio.git studio
 cd studio
+docker run --rm -u $UID -e HOME=/tmp -v $PWD:/var/www/app tecnodesign/studio-app:latest composer install
+find app.yml data/{cache,web*,config} -type f -uid $UID -print0 | xargs -0 chmod 666
+find data/{cache,web*,config} -type d -uid $UID -print0 | xargs -0 chmod 777
 docker run --rm -v studio-data:/data -v $PWD:/var/www/app -p 9999:9999 tecnodesign/studio-app:latest
 ```
 
