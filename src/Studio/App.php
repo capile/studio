@@ -646,7 +646,7 @@ class App
             unset($t, $tf, $from, $to);
         }
 
-        if($build && ($files = glob(S_ROOT.'/src/{'.str_replace('.', '/', $component).'}{-*,}.'.$copyExt, GLOB_BRACE))) {
+        if($build && ($files = S::glob(S_ROOT.'/src/{'.str_replace('.', '/', $component).'}{-*,}.'.$copyExt))) {
             $p = strlen(S_ROOT.'/src/');
             foreach($files as $source) {
                 $dest = S_DOCUMENT_ROOT.S::$assetsUrl.'/'.S::slug(substr($source, $p),'.');
@@ -656,7 +656,7 @@ class App
             }
             unset($files);
         }
-        if($build && isset(static::$copyNodeAssets[$c0]) && ($files = glob($projectRoot.'/node_modules/'.static::$copyNodeAssets[$c0], GLOB_BRACE))) {
+        if($build && isset(static::$copyNodeAssets[$c0]) && ($files = S::glob($projectRoot.'/node_modules/'.static::$copyNodeAssets[$c0]))) {
             foreach($files as $source) {
                 $dest = S_DOCUMENT_ROOT.S::$assetsUrl.'/'.basename($source);
                 if($force || !file_exists($dest) || filemtime($dest)<filemtime($source)) {

@@ -203,7 +203,7 @@ class File
         }
 
         if(!$r) {
-            $r = glob($pattern, GLOB_BRACE);
+            $r = S::glob($pattern);
         }
 
         $recursive = (isset($src['options']['recursive'])) ?$src['options']['recursive'] :self::$options['recursive'];

@@ -712,7 +712,7 @@ class Entries extends Model
             $glob = $f;
         }
 
-        return self::glob($glob.$pat);
+        return S::glob($glob.$pat);
     }
 
     public static function meta(&$p)
@@ -757,46 +757,6 @@ class Entries extends Model
         }
 
         return $P;
-    }
-
-    public static function glob($pat)
-    {
-        if(defined('GLOB_BRACE')) {
-            return glob($pat, GLOB_BRACE);
-        } else if (strpos($pat, '{')===false) {
-            return glob($pat);
-        }
-        $pat0 = $pat;
-        $p = array();
-        while(preg_match('/\{([^\}]+)\}/', $pat, $m)) {
-            $dosub = ($p);
-            $n = explode(',', $m[1]);
-            $p0 = $p;
-            $p = array();
-            foreach($n as $v) {
-                if(!$dosub) {
-                    $p[] = $pat;
-                    $p = str_replace($m[0], $v, $p);
-                } else {
-                    foreach($p0 as $np) {
-                        $p[] = str_replace($m[0], $v, $np);
-                        unset($np);
-                    }
-                }
-                unset($v);
-            }
-            $pat = $p[count($p)-1];
-            unset($p0, $n, $dosub);
-        }
-        $r = array();
-        foreach($p as $i=>$o) {
-            $r = array_merge($r, glob($o));
-        }
-        if($r) {
-            asort($r);
-            $r = array_unique($r);
-        }
-        return $r;
     }
 
     protected static function _checkPage($page, $url, $multiview=false, $extAttr=null)
@@ -1051,7 +1011,7 @@ class Entries extends Model
                 if($pt) $pages = array_merge($pages, $pt);
                 unset($pt);
                 if(Studio::$templateRoot) {
-                    $pt = self::glob(Studio::$templateRoot.$tup.'*');
+                    $pt = S::glob(Studio::$templateRoot.$tup.'*');
                     if($pt) $pages = array_merge($pages, $pt);
                     unset($pt);
                 }

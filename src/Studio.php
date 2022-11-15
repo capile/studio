@@ -467,7 +467,7 @@ class Studio
                 }
                 if(isset($s[$env]['include']) && !in_array($s[$env]['include'], $loaded)) {
                     $loaded[] = $s[$env]['include'];
-                    if($load = glob($s[$env]['include'], GLOB_BRACE)) {
+                    if($load = self::glob($s[$env]['include'])) {
                         foreach($load as $f) {
                             if(!in_array($f, $loaded)) {
                                 $a[] = $f;
@@ -479,7 +479,7 @@ class Studio
                 }
                 if(isset($s['all']['include']) && !in_array($s['all']['include'], $loaded)) {
                     $loaded[] = $s['all']['include'];
-                    if($load = glob($s['all']['include'], GLOB_BRACE)) {
+                    if($load = self::glob($s['all']['include'])) {
                         foreach($load as $f) {
                             if(!in_array($f, $loaded)) {
                                 $a[] = $f;
@@ -3033,6 +3033,46 @@ class Studio
                 return false;
             }
         }
+    }
+
+    public static function glob($pat)
+    {
+        if(defined('GLOB_BRACE')) {
+            return glob($pat, GLOB_BRACE);
+        } else if (strpos($pat, '{')===false) {
+            return glob($pat);
+        }
+        $pat0 = $pat;
+        $p = array();
+        while(preg_match('/\{([^\}]+)\}/', $pat, $m)) {
+            $dosub = ($p);
+            $n = explode(',', $m[1]);
+            $p0 = $p;
+            $p = array();
+            foreach($n as $v) {
+                if(!$dosub) {
+                    $p[] = $pat;
+                    $p = str_replace($m[0], $v, $p);
+                } else {
+                    foreach($p0 as $np) {
+                        $p[] = str_replace($m[0], $v, $np);
+                        unset($np);
+                    }
+                }
+                unset($v);
+            }
+            $pat = $p[count($p)-1];
+            unset($p0, $n, $dosub);
+        }
+        $r = array();
+        foreach($p as $i=>$o) {
+            $r = array_merge($r, glob($o));
+        }
+        if($r) {
+            asort($r);
+            $r = array_unique($r);
+        }
+        return $r;
     }
 
     public static function tune($s=null,$m=20, $t=20)
