@@ -14,6 +14,6 @@ namespace Studio\Query;
 
 use Studio\Query\Api;
 
-class Http extends Api
+class Https extends Api
 {
 }

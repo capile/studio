@@ -153,7 +153,7 @@ class Interfaces extends Model
         $f0 = Api::configFile($id, [$f]);
         $lmod = false;
         if($this->updated) $lmod = strtotime($this->updated);
-        if(file_exists($f0) && ($t=filemtime($f0)) && $t>$lmod) $lmod = $t;
+        if($f0 && file_exists($f0) && ($t=filemtime($f0)) && $t>$lmod) $lmod = $t;
         if(!file_exists($f) || $lmod>filemtime($f)) {
             $a = ['all'=>['api'=>$id]];
             $addParent = true;

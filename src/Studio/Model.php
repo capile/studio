@@ -288,7 +288,7 @@ class Model implements ArrayAccess, Iterator, Countable
         if($array) return $pk;
         else if(count($pk)==1) $pk = $pk[0];
 
-        if($update) static::$schema->scope['uid']=$pk;
+        if($update) static::$schema['scope']['uid']=$pk;
         return $pk;
     }
 

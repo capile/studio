@@ -288,6 +288,7 @@ class Index extends Model
         if($R) {
             $countable = (method_exists($R, 'config')) ?$R->config('countable') :true;
             $count = ($countable) ?$R->count() :10000;
+            if(!$count) $count = 10000;
             $limit = $cn::$queryBatchLimit;
             $offset = 0;
             $fn_created = $fn_updated = null;
@@ -297,7 +298,7 @@ class Index extends Model
                 $fn_created = ($fn_updated) ?array_diff($cn::$schema->actAs['before-insert']['timestampable'], $fn_updated) :$cn::$schema->actAs['before-insert']['timestampable'];
             }
 
-            if(!$limit) $limit = 100;
+            if(!$limit) $limit = 1000;
             $pkid = $cn::pk();
             $ppk = ['id', 'uid', 'uuid'];
             while($count > $offset) {
