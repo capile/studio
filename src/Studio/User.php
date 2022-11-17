@@ -1272,7 +1272,7 @@ class User
             'method'=>'post',
             'action'=>$action,
             'buttons'=>$buttons,
-            'class'=>'z-form z-signin',
+            'class'=>'s-form s-signin',
             'fields'=>array(
                 static::FORM_USER=>(isset($o['email-username']) && $o['email-username'])
                     ?(array('type'=>'email', 'required'=>true, 'label'=>S::t('E-mail', 'ui'), 'placeholder'=>S::t('E-mail', 'ui')))

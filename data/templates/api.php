@@ -130,6 +130,8 @@ if(isset($attributes) && is_array($attributes)) {
                     App::response('summary', $summary);
                 }
 
+                echo $Api->message();
+
                 if(isset($app)) echo $app;
 
                 if(isset($list) && ($g=$Api->renderGraph())):

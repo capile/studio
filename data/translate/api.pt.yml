@@ -7,10 +7,10 @@ listCounter: Exibindo de %s até %s.
 listNoResults: Não há registros disponíveis.
 listNoSearchResults: Não há registros disponíveis para esta consulta. Experimente outros parâmetros.
 previewNoResult: Esse registro não está disponível.
-newSuccess: Registro criado com sucesso.
-updateSuccess: Atualização bem-sucedida!
-createSuccess: Registro criado com sucesso.
-deleteSuccess: Eliminado.
+newSuccess: %s ― %s ― criado com sucesso.
+updateSuccess: Atualização bem-sucedida! %s ― %s
+createSuccess: %s ― %s ― criado com sucesso.
+deleteSuccess: %s ― %s ― eliminado.
 updateError: Não foi possível atualizar. Verifique as mensagens de erro e tente novamente.
 createError: Houve um erro e o registro não foi criado. Corrija se necessário e tente novamente.
 deleteError: "Problemas ao remover o registro, ele não foi removido."

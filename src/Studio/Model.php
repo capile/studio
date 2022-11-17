@@ -1870,11 +1870,10 @@ class Model implements ArrayAccess, Iterator, Countable
      */
     public static function label($translate='ui-labels')
     {
-        $cn = get_called_class();
-        if($cn::$schema->label) {
-            $label = ucwords(str_replace('_', ' ', $cn::$schema->tableName));
+        if(!static::$schema->label) {
+            $label = ucwords(str_replace('_', ' ', static::$schema->tableName));
         } else {
-            $label = $cn::$schema->label;
+            $label = static::$schema->label;
             if(substr($label, 0, 1)=='*') {
                 $label = substr($label,1);
             } else {
@@ -1882,11 +1881,12 @@ class Model implements ArrayAccess, Iterator, Countable
             }
         }
         if ($translate) {
-            $label = S::t($label, $translate);
+            if($tlabel = S::t($label, $translate)) $label = $tlabel;
+            unset($tlabel);
         }
-        $cn::$schema->label = $label;
+        static::$schema->label = $label;
 
-        return $cn::$schema->label;
+        return $label;
     }
 
     /**

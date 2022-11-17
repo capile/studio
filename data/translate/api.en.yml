@@ -2,9 +2,9 @@
 buttonNew           : Create
 buttonUpdate        : Update
 createError         : It wasn't possible to create the record. Please verify the error messages and try again.
-createSuccess       : Record ―%s― successfully created.
+createSuccess       : %s ―%s― successfully created.
 deleteError         : It wasn't possible to remove the record. Please verify the error messages and try again.
-deleteSuccess       : Record ―%s― successfully removed.
+deleteSuccess       : %s ―%s― successfully removed.
 errorConflictFormat : The format requested as the filename extension conflicts with the header information.
 errorForbidden      : You don't have the credentials required to access this interface.
 errorNoInput        : No input was provided.
@@ -28,8 +28,9 @@ listResults         : %s records available.
 listSearchResult    : 1 record found in %s available.
 listSearchResults   : %s records found in %s available.
 newError            : It wasn't possible to create the record. Please verify the error messages and try again.
-newSuccess          : Record ―%s― successfully created.
+newSuccess          : %s ―%s― successfully created.
 previewNoResult     : This record is not available.
 Schema              : Data Structures
 updateError         : It wasn't possible to update the record. Please verify the error messages and try again.
-updateSuccess       : Record ―%s― successfully updated.
+updateSuccess       : %s ―%s― successfully updated.
+Record              : Record

@@ -1428,7 +1428,7 @@ class Api extends SchemaObject
     }
 
 
-    public function getTitle()
+    public function getTitle($displayAction=true)
     {
         $cn = $this->getModel();
         $s = null;
@@ -1459,7 +1459,7 @@ class Api extends SchemaObject
                         unset($r[$i], $i, $o);
                     }
                     $xml = true;
-                } else if($this->action && !in_array($this->action, $this->config('actionsDefault'))) {
+                } else if($displayAction && $this->action && !in_array($this->action, $this->config('actionsDefault'))) {
                     $l = $this->action;
                     if(isset($this->actions[$l]['label']) && ($label = $this->actions[$l]['label'])) {
                         if(substr($label, 0, 1)==='*') $label = static::t(substr($label, 1));
@@ -1471,7 +1471,7 @@ class Api extends SchemaObject
                     $s = implode(', ', $r);
                 }
             }
-        } else if($this->action && !in_array($this->action, $this->config('actionsDefault'))) {
+        } else if($displayAction && $this->action && !in_array($this->action, $this->config('actionsDefault'))) {
             $l = $this->action;
             if(isset($this->actions[$l]['label']) && ($s = $this->actions[$l]['label'])) {
                 if(substr($s, 0, 1)==='*') $s = static::t(substr($s, 1));
@@ -2432,7 +2432,9 @@ class Api extends SchemaObject
                     if(!$next && ($next=App::request('get','next'))) {
                         if(!isset($this->actions[$next])) $next = null;
                     }
-                    $this->text['success'] = sprintf(static::t('newSuccess'), $o::label(), $this->getTitle());
+                    $label = $o::label();
+                    if(!$label) $label = static::t('Record');
+                    $this->text['success'] = sprintf(static::t('newSuccess'), $label, $this->getTitle(false));
                     $msg = '<div class="s-msg s-msg-success">'.$this->text['success'].'</div>';
                     if($next) {
                         $this->action = $next;
@@ -2706,7 +2708,9 @@ class Api extends SchemaObject
                     $o->save();
                     $newpk = implode('-', $o->getPk(true));
                     // success message
-                    $this->text['success'] = sprintf(static::t('updateSuccess'), $o::label(), $this->getTitle());
+                    $label = $o::label();
+                    if(!$label) $label = static::t('Record');
+                    $this->text['success'] = sprintf(static::t('updateSuccess'), $label, $this->getTitle(false));
                     $msg = '<div class="s-msg s-msg-success">'.$this->text['success'].'</div>';
 
                     $next = $url = null;
@@ -2766,9 +2770,11 @@ class Api extends SchemaObject
         try {
             if(($M = $this->model([], 1, false, true))) {
                 $oldurl = $this->link();
-                $s = $this->getTitle();
+                $s = $this->getTitle(false);
                 $M->delete(true);
-                $this->text['success'] = sprintf(static::t('deleteSuccess'), $M::label(), $s);
+                $label = $M::label();
+                if(!$label) $label = static::t('Record');
+                $this->text['success'] = sprintf(static::t('deleteSuccess'), $label, $s);
                 $msg = '<div class="s-msg s-msg-success"><p>'.$this->text['success'].'</p></div>';
 
                 $next = null;
