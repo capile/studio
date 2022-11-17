@@ -977,7 +977,7 @@ class Api
             if(is_array($msg)) {
                 $msg = S::xmlImplode($msg);
             }
-            $msg = '<div class="tdz-i-msg tdz-i-error">'
+            $msg = '<div class="s-msg s-msg-error">'
                  . $msg
                  . '</div>';
             if(isset($this->response['message'])) {
@@ -1413,7 +1413,7 @@ class Api
             return $R;
         } catch(Exception $e) {
             $msg = $e->getMessage();
-            if(!(substr($msg, 0, 1)=='<' && strpos(substr($msg, 0, 100), 'tdz-i-msg'))) {
+            if(!(substr($msg, 0, 1)=='<' && strpos(substr($msg, 0, 100), 's-msg'))) {
                 $msg = array(S::t('Could not save %s.', 'exception'), $M::label());
             }
             throw new AppException($msg);
@@ -1436,7 +1436,7 @@ class Api
             return $R;
         } catch(Exception $e) {
             $msg = $e->getMessage();
-            if(!(substr($msg, 0, 1)=='<' && strpos(substr($msg, 0, 100), 'tdz-i-msg'))) {
+            if(!(substr($msg, 0, 1)=='<' && strpos(substr($msg, 0, 100), 's-msg'))) {
                 $msg = array(S::t('Could not fetch %s.', 'exception'), $M::label());
             }
             throw new AppException($msg);
@@ -1468,7 +1468,7 @@ class Api
             return $R;
         } catch(Exception $e) {
             $msg = $e->getMessage();
-            if(!(substr($msg, 0, 1)=='<' && strpos(substr($msg, 0, 100), 'tdz-i-msg'))) {
+            if(!(substr($msg, 0, 1)=='<' && strpos(substr($msg, 0, 100), 's-msg'))) {
                 $msg = array(S::t('Could not save %s.', 'exception'), $M::label());
             }
             throw new AppException($msg);
@@ -1500,7 +1500,7 @@ class Api
             return $R;
         } catch(Exception $e) {
             $msg = $e->getMessage();
-            if(!(substr($msg, 0, 1)=='<' && strpos(substr($msg, 0, 100), 'tdz-i-msg'))) {
+            if(!(substr($msg, 0, 1)=='<' && strpos(substr($msg, 0, 100), 's-msg'))) {
                 $msg = array(S::t('Could not save %s.', 'exception'), $M::label());
             }
             throw new AppException($msg);

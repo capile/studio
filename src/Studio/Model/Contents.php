@@ -300,8 +300,8 @@ class Contents extends Model
         if(($e=$this['content.entry']) && ($E=Entries::find(['id'=>$e],1,'string'))) {
             if(Api::format()=='html') {
                 return S::xml((string)$E)
-                        . ' <a class="z-i-a z-i-link z-i--list" href="'.Studio::$home.'/entry/q?'.S::slug(S::t('Newsfeed', 'model-tdz_entries')).'='.$E->id.'"></a>'
-                        . ' <a class="z-i-a z-i-link z-i--new" href="'.Studio::$home.'/entry/n?'.S::slug(S::t('Newsfeed', 'model-tdz_entries')).'='.$E->id.'"></a>'
+                        . ' <a class="s-api-a s-api-link s-api--list" href="'.Studio::$home.'/entry/q?'.S::slug(S::t('Newsfeed', 'model-studio_entries')).'='.$E->id.'"></a>'
+                        . ' <a class="s-api-a s-api-link s-api--new" href="'.Studio::$home.'/entry/n?'.S::slug(S::t('Newsfeed', 'model-studio_entries')).'='.$E->id.'"></a>'
                         ;
             } else {
                 return (string) $E;

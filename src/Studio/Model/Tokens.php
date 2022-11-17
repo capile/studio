@@ -106,7 +106,7 @@ class Tokens extends Model
                 $ref = preg_replace('#/connect$#', '', S::scriptName());
             }
 
-            $U->setMessage('<div class="z-i-msg z-i-success">'.sprintf(S::t('Successfully connected to <em>%s</em>.', 'interface'), S::xml($this->id)).'</div>');
+            $U->setMessage('<div class="s-msg s-msg-success">'.sprintf(S::t('Successfully connected to <em>%s</em>.', 'interface'), S::xml($this->id)).'</div>');
             S::redirect($ref);
         } else if($ref) {
             $U = S::getUser();
@@ -122,7 +122,7 @@ class Tokens extends Model
     {
         if($url=$this['options.api_endpoint']) {
             if(Api::format()=='html' && ($I=Api::current())) {
-                return S::xml($url).' <a class="z-i-a z-i-button z-i--run-api" href="'.S::xml($I->link('run-api', null, false, false)).'">'.S::xml($I::t('Run API')).'</a>';
+                return S::xml($url).' <a class="s-api-a s-api-button s-api--run-api" href="'.S::xml($I->link('run-api', null, false, false)).'">'.S::xml($I::t('Run API')).'</a>';
             }
             return $url;
         }

@@ -226,7 +226,7 @@ class Interfaces extends Model
                 }
             } catch(\Exception $e) {
                 S::log('[ERROR] Could not import '.S::serialize($d, 'json').': '.$e->getMessage()."\n{$e}");
-                $msg = '<div class="z-i-msg z-i-error">'.S::t(Api::$importError).'<br />'.S::xml($e->getMessage()).'</div>';
+                $msg = '<div class="s-msg s-msg-error">'.S::t(Api::$importError).'<br />'.S::xml($e->getMessage()).'</div>';
             }
         }
 
@@ -281,7 +281,7 @@ class Interfaces extends Model
 
                 $T->options = $options;
                 $T->save();
-                $msg .= '<div class="z-i-msg z-i-success">'.sprintf(S::t(Api::$importSuccess), $T::label(), (string)$T).'</div>';
+                $msg .= '<div class="s-msg s-msg-success">'.sprintf(S::t(Api::$importSuccess), $T::label(), (string)$T).'</div>';
             }
         }
         // loop through paths and import APIs
@@ -308,7 +308,7 @@ class Interfaces extends Model
                     $a['schema_data'] = S::serialize($sc, 'json');
 
                     $A = self::replace($a);
-                    $msg .= '<div class="z-i-msg z-i-success">'.sprintf(S::t(Api::$importSuccess), $A::label(), (string)$A).'</div>';
+                    $msg .= '<div class="s-msg s-msg-success">'.sprintf(S::t(Api::$importSuccess), $A::label(), (string)$A).'</div>';
                 }
             }
         }

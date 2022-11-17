@@ -562,10 +562,10 @@ class User
         if($t && !is_int($t)) {
             $t = (int) $t;
         }
-        if(preg_match('#<div class="z-i-msg([^"]+)?"( data-created="[^"]+")?>(.*)</div>#', $s, $m)) {
-            $msg = ($m[3]) ?'<div class="z-i-msg'.$m[1].'" data-created="'.date('c', $t).'">'.$m[3].'</div>' :null;
+        if(preg_match('#<div class="s-msg([^"]+)?"( data-created="[^"]+")?>(.*)</div>#', $s, $m)) {
+            $msg = ($m[3]) ?'<div class="s-msg'.$m[1].'" data-created="'.date('c', $t).'">'.$m[3].'</div>' :null;
         } else if($s) {
-            $msg = '<div class="z-i-msg" data-created="'.date('c', $t).'">'.$s.'</div>';
+            $msg = '<div class="s-msg" data-created="'.date('c', $t).'">'.$s.'</div>';
         }
         return $msg;
     }
@@ -1324,7 +1324,7 @@ class User
                         }
                     }
                 } else {
-                    $o['form']->before = '<div class="z-i-msg z-i-error">'
+                    $o['form']->before = '<div class="s-msg s-msg-error">'
                         . ((isset($o['message-failure']))?($o['message-failure']):('<h3>'.S::t('Authentication failed', 'ui').'</h3><p>'.S::t('Either the account or the password provided is incorrect. Please try again.', 'ui').'</p>'))
                         . '</div>';
                 }
@@ -1384,7 +1384,7 @@ class User
                         S::redirect($url);
                     }
                 } else {
-                    $s .= '<div class="z-i-msg z-i-error"><h3>'.S::t('Authentication failed', 'ui').'</h3><p>'.S::t('Either the account or the password provided is incorrect. Please try again.', 'ui').'</p></div>';
+                    $s .= '<div class="s-msg s-msg-error"><h3>'.S::t('Authentication failed', 'ui').'</h3><p>'.S::t('Either the account or the password provided is incorrect. Please try again.', 'ui').'</p></div>';
                 }
             }
             unset($p);

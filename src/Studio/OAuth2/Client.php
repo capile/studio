@@ -343,7 +343,7 @@ class Client extends SchemaObject
             }
 
             if(!isset($U)) $U = S::getUser();
-            $U->setMessage('<div class="z-i-msg z-i-error">'.S::xml($err).'</div>');
+            $U->setMessage('<div class="s-msg s-msg-error">'.S::xml($err).'</div>');
             if($ref=$U->getAttribute('authorize-source')) {
                 $U->setAttribute('authorize-source', null);
             } else if(isset($nso) && isset($nso['redirect-error'])) {

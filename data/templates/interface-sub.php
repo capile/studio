@@ -12,7 +12,7 @@
  */
 
 if(isset($error)): 
-    ?><div class="s-msg s-error"><?php echo $error; ?></div><?php 
+    ?><div class="s-msg s-msg-error"><?php echo $error; ?></div><?php 
 endif;
 
 if(isset($preview)) echo $preview;
