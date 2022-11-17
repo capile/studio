@@ -58,19 +58,20 @@ class Cache
 
     public static function storage($method=null, $className=false)
     {
-        if(!is_null($method) && is_string($method)) {
-            if(in_array($method, array('file', 'apc', 'memcache', 'memcached'))) return $method;
+        $r = null;
+        if(!is_null($method) && is_string($method) && in_array($method, array('file', 'apc', 'memcache', 'memcached'))) {
+            $r = $method;
+        } else if(!is_null(self::$storage)) {
+            $r = self::$storage;
+        } else {
+            if(self::$memcachedServers && ini_get('memcached.serializer') && Memcached::memcached()) $r='memcached';
+            else if(self::$memcachedServers && function_exists('memcache_debug') && Memcache::memcache()) $r='memcache';
+            else if(function_exists('apc_fetch') || function_exists('apcu_fetch')) $r='apc';
+            else $r='file';
+            self::$storage = $r;
         }
-        if(is_null(self::$storage)) {
-            if(self::$memcachedServers && ini_get('memcached.serializer') && Memcached::memcached()) self::$storage='memcached';
-            else if(self::$memcachedServers && function_exists('memcache_debug') && Memcache::memcache()) self::$storage='memcache';
-            else if(function_exists('apc_fetch') || function_exists('apcu_fetch')) self::$storage='apc';
-            else self::$storage='file';
-        }
-        if($className) {
-            return 'Studio\\Cache\\'.ucfirst(self::$storage);
-        }
-        return self::$storage;
+        
+        return ($className) ?'Studio\\Cache\\'.ucfirst($r) :self::$storage;
     }
 
     /**

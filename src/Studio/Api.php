@@ -1688,6 +1688,7 @@ class Api extends SchemaObject
                 $req = [];
                 foreach($rs as $rk=>$rv) {
                     if(substr($rk, 0, 1)==='*') $req[S::slug(S::t(substr($rk, 1), 'model-'.$cn::$schema->tableName))] = $rv;
+                    else $req[S::slug($rk)] = $rv;
                     unset($rs[$rk], $rk, $rv);
                 }
             }
