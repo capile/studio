@@ -1768,6 +1768,9 @@ class Studio
     {
         static $trace;
         $logs = array();
+        if(!self::$logDir && self::$_app && self::$_env) {
+            self::$logDir = self::getApp()->config('app', 'log-dir');
+        }
         $d = (!is_array(self::$logDir))?(array(self::$logDir)):(self::$logDir);
         foreach($d as $l) {
             if($l=='syslog' && openlog('studio', LOG_PID|LOG_NDELAY, LOG_LOCAL5)) {
@@ -1778,15 +1781,11 @@ class Studio
                 if(S_CLI) $logs[2] = true;
             } else {
                 if(!$l) {
-                    if(self::$_app && self::$_env) {
-                        $l = self::getApp()->config('app', 'log-dir');
-                    }
-                    if(!$l) {
-                        $l = S_VAR . '/log';
-                    }
+                    $l = S_VAR . '/log';
                 }
                 if(substr($l, 0, 1)!='/') $l = realpath(S_APP_ROOT.'/'.$l);
-                $logs[3] = $l . '/app.log';
+                if(file_exists($l) && is_dir($l)) $l .= '/app.log';
+                $logs[3] = $l;
             }
             unset($l);
         }

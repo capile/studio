@@ -38,6 +38,16 @@ class Client extends SchemaObject
 
     protected $id, $issuer, $client_id, $client_secret, $grant_type, $scope, $sign_in, $user_create, $user_update, $user_key, $user_map, $authorization_endpoint, $authorization_params, $token_endpoint, $token_params, $userinfo_endpoint, $api_endpoint, $api_options;
 
+    public function __construct($o=null)
+    {
+        if($this->metadata) {
+            $d = self::metadata($this->metadata);
+            if($d && is_array($d)) $o += $d;
+            //unset($d);
+        }
+        parent::__construct($o);
+    }
+
     public static function config($prop=null)
     {
         if(is_null(static::$cfg)) {
@@ -81,12 +91,9 @@ class Client extends SchemaObject
                         $o['metadata'] = $o['issuer'].'/.well-known/openid-configuration';
                     }
                     if(isset($o['metadata']) && preg_match('#^https?://#', $o['metadata'])) {
-                        if(!($d=Cache::get($ckey='oauth2-meta/'.md5($o['metadata'])))) {
-                            $d = S::unserialize(file_get_contents($o['metadata']));
-                            if(!$d) $d = ['metadata'=>$o['metadata']];
-                            Cache::set($ckey, $d);
+                        if($d = self::metadata($o['metadata'])) {
+                            $o += $d;
                         }
-                        $o += $d;
                         unset($d);
                     }
                     static::$cfg['servers'][$n] = $o;
@@ -99,6 +106,22 @@ class Client extends SchemaObject
         }
 
         return static::$cfg;
+    }
+
+    public static function metadata($uri, $useCache=true)
+    {
+        $ckey='oauth2-meta/'.md5($uri);
+        if($useCache && ($d=Cache::get($ckey))) {
+            return $d;
+        }
+        $d = S::unserialize(file_get_contents($uri), 'json');
+        if(!$d) {
+            $d = ['metadata'=>$uri];
+            if($useCache) $useCache = false;
+        }
+        if($useCache) Cache::set($ckey, $d);
+
+        return $d;
     }
 
     public static function authenticate($options=[])

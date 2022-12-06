@@ -37,6 +37,7 @@ all:
         redirect-success: /
         filter:
           role:
+            - admin
             - mailinglist
         export:
           email: email
