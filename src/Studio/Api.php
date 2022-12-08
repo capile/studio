@@ -4196,8 +4196,10 @@ class Api extends SchemaObject
         }
         if($prepare && isset($a['model']) && isset($a['prepare'])) {
             list($c,$m) = (is_array($a['prepare']))?($a['prepare']):(array($a['model'],$a['prepare']));
-            if(is_string($c)) $a = $c::$m($a);
-            else $a = $c->$m($a);
+            if(method_exists($c, $m)) {
+                if(is_string($c)) $a = $c::$m($a);
+                else $a = $c->$m($a);
+            }
             unset($c, $m);
         }
 

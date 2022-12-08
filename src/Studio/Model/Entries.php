@@ -696,13 +696,10 @@ class Entries extends Model
                 unset($f, $d, $murl, $mu);
             }
         }
-
-        $f = Studio::documentRoot() . ((substr($url, 0, 1)!='/') ?'/' :'').$url;
-
+        $f = S_DOCUMENT_ROOT . ((substr($url, 0, 1)!='/') ?'/' :'').$url;
         if($check) {
             return (file_exists($f)) ?$f :null;
         }
-
         if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
 
         if($src) {
@@ -742,7 +739,6 @@ class Entries extends Model
                     }
                 }
             }
-
             // redirect rules: if it's a folder, S::scriptName() must end with / otherwise, can't end with /
             if($P && $redirect) {
                 if(substr($url, -1)!=='/' && S::scriptName()===$url && ((substr($P->link, -1)==='/' && $P->link===$url.'/') || ($P->source && preg_replace('/\..*$/', '', basename($P->source))===static::$indexFile))) {
@@ -814,7 +810,7 @@ class Entries extends Model
         } else if(strpos($page, S_REPO_ROOT.'/')===0) {
             $source = preg_replace('#^/?([^/]+)/(.+)$#', '$1:/$2', substr($page, strlen(S_REPO_ROOT)+1));
         } else {
-            $source = substr($page, strlen(Studio::documentRoot()));
+            $source = substr($page, strlen(S_DOCUMENT_ROOT));
         }
         if(Studio::connected('content') && ($E=self::find(['source'=>$source],1,['id']))) {
             $id = $E->id;

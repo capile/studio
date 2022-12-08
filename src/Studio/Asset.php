@@ -633,6 +633,14 @@ class Asset
                 }
                 $a = ($a) ?array_merge($a, App::$assets) :App::$assets;
             }
+            if($a && ($b=S::getApp()->config('app', 'asset-requirements'))) {
+                foreach($b as $i=>$o) {
+                    if(in_array($i, $a)) {
+                        App::$assetRequirements[$i] = $o;
+                    }
+                    unset($i, $o);
+                }
+            }
         }
         $a = array_unique($a);
         foreach($a as $component) {

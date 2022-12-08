@@ -100,11 +100,7 @@ class Studio
 
     public static function documentRoot()
     {
-        static $root;
-        if(is_null($root)) {
-            $root = preg_replace('#/+$#', '', S_VAR.'/'.Entries::$pageDir);
-        }
-        return $root;
+        return S_DOCUMENT_ROOT;
     }
 
     public static function app()
