@@ -461,7 +461,7 @@ class Studio
             if (!is_array($s)) {
                 if(in_array($s, $loaded)) continue;
                 $loaded[] = $s;
-                $s = Yaml::load($s);
+                $s = Yaml::loadFile($s);
                 if (!is_array($s)) {
                     continue;
                 }

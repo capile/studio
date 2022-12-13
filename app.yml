@@ -1,27 +1,3 @@
 ---
 all:
-  include: '{data,/opt/studio}/config/*.yml'
-  app:
-    apps-dir: .
-    data-dir: data
-    config-dir: data/config
-    cache-dir: data/cache
-    log-dir: data/log
-    templates-dir:
-      - data/templates
-    api-dir: null
-    schema-dir:
-      - data/schema
-    document-root: data/web
-    lib-dir:
-      - vendor
-    controller-options:
-      class: Studio\Studio
-      static: true
-      additional-params: true
-      layout: layout
-      params:
-        style:
-          site:
-            - /_/css/site.less
-    default-route: run
+  include: '{/opt/studio,data}/config/*.yml'

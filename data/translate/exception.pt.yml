@@ -3,7 +3,7 @@ Not enough privileges: "Acesso restrito"
 Looks like you don't have enough credentials to access this page. Please try logging in or accessing it with a different username.: "Parece que você não possui as credenciais para acessar esta página. Por favor experimente se conectar ou acessar com uma credencial diferente."
 Looks like you don't have enough credentials to access this page. Please try signing in or accessing it with a different username.: "Parece que você não possui as credenciais para acessar esta página. Por favor experimente se conectar ou acessar com uma credencial diferente."
 Oops, where is this page?: "Ôpa, onde foi parar esta página?"
-We haven't found the page you requested. Are you sure the address is correct?: "Não encontramos a página que você requisitou. Você tem certeza de que o endereço está correto?"
+"We haven't found the page you requested. Are you sure the address is correct?": "Não encontramos a página que você requisitou. Você tem certeza de que o endereço está correto?"
 "Could not connect to database. Reasons are: %s": "Não foi possível se conectar ao banco de dados. Os possíveis motivos são: %s"
 This is not a valid value.: Este valor não é válido.
 'This is not a valid value for "%s".': Este não é um valor válido para "%s".
@@ -26,7 +26,7 @@ The supplied code is expired or doesn't exist.: O código informado expirou ou n
 "Issues are": Erros
 "Could not insert new record at %s.": 'Não foi possível inserir novo registro no %s.'
 "%s should not be null.": '%s não deve ser nulo.'
-"You're sending a lot of requests to this page and risks reaching the rate limit for it.":"Você está enviando muitas solicitações para esta página e pode vir a atingir o limite de envios para ela."
+"You're sending a lot of requests to this page and risks reaching the rate limit for it.": "Você está enviando muitas solicitações para esta página e pode vir a atingir o limite de envios para ela."
 "You've sent more requests than allowed in a short period of time. Please wait some time before retrying to send this request.": "Você enviou mais solicitações do que o permitido para esta página em um curto período de tempo. Por favor aguarde uns instantes antes de enviar uma nova solicitação."
 "This request is expired or invalid. Please try sending this request again.": "Esta solicitação expirou ou não é válida. Por favor tente encaminhá-la novamente."
 "You need to confirm you're not a robot to continue.": "Você precisa confirmar que não é um robô para continuar."
