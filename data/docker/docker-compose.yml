@@ -1,13 +1,5 @@
 ---
-version: "3.3"
 services:
-  #mail:
-  #  container_name: maildev
-  #  hostname: maildev
-  #  image: djfarrelly/maildev
-  #  ports:
-  #    - 25
-  #    - 80
   studio:
     hostname: studio
     container_name: studio

@@ -1,6 +1,6 @@
 ---
 all:
-  include: 'data/config/*.yml'
+  include: '{data,/opt/studio}/config/*.yml'
   app:
     apps-dir: .
     data-dir: data
