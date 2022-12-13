@@ -956,7 +956,7 @@ class Studio
                     $label = self::t(ucwords(str_replace(array('_', '-'), ' ', $label)));
                 }
                 if($xmlEscape) {
-                    $v = str_replace(array('  ', "\n"), array('&#160; ', '<br />'), self::xmlEscape($v));
+                    $v = str_replace(array('  ', "\n"), array('&#160; ', '<br />'), self::xml($v));
                 }
             }
             $s .= '<tr><th scope="row">'.$label.'</th><td>'.$v.'</td></tr>';
@@ -1065,7 +1065,7 @@ class Studio
                 if (in_array($k, $urls) && substr($m, 0, 4)!='http') {
                     $m = self::buildUrl($m);
                 }
-                $m = self::xmlEscape($m);
+                $m = self::xml($m);
                 $s .= "\n<meta property=\"{$tag}\" content=\"{$m}\" />";
                 if($k=='image' && isset($og['image:width'])) {
                     $s .= "\n<meta property=\"{$tag}:url\" content=\"{$m}\" />";

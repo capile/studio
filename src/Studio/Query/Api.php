@@ -256,7 +256,7 @@ class Api
             // try to fetch a new access_token based on the refresh token
             $d = [
                 'grant_type' => ($c=$this->config('grant_type')) ?$c :'client_credentials',
-                'scope' => ($c=$this->config('scope')) ?$c :'openid',
+                'scope' => ($c=$this->config('auth_scope')) ?$c :'openid',
             ];
             if(($ct = (string)$this->config('contentType')) && substr($c, -4)==='json') {
                 $data = S::serialize($d, 'json');
@@ -284,7 +284,7 @@ class Api
                 $R['expires'] = time()+$expires;
                 Cache::set($ckey, $R, 0);
             } else {
-                S::log('[WARNING] Could not retrieve '.$n.' tokens!');
+                S::log('[WARNING] Could not retrieve '.$n.' tokens!', $R, $d);
                 return false;
             }
         }
