@@ -7,7 +7,7 @@ services:
     volumes:
       ## Use this if you already installed the composer dependencies and want the full folder loaded
       #- ../../:/var/www/app:Z
-      - ../../data:/var/www/app/data:Z
+      - ../../data:/var/www/studio/data:Z
     #deploy:
     #  mode: replicated
     #  replicas: 5
@@ -18,9 +18,9 @@ services:
       - studio
     restart: "no"
     volumes:
-      - ../../data:/var/www/app/data:Z
-      - ../../src:/var/www/app/src:Z
-    entrypoint: [ "/var/www/app/studio", ":start" ]
+      - ../../data:/var/www/studio/data:Z
+      - ../../src:/var/www/studio/src:Z
+    entrypoint: [ "/var/www/studio/studio", ":start" ]
   web.studio:
     hostname: web.studio
     image: nginx:alpine

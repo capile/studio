@@ -68,19 +68,18 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
     sed -e 's/^error_log.*/error_log = \/dev\/stderr/' \
         -i /usr/local/etc/php-fpm.conf && \
     mkdir -p \
-      /var/www/app \
+      /var/www/studio \
       /var/www/.cache \
       /var/www/.composer \
       /var/www/.npm \
       /data && \
     chown 1000:www-data \
-      /var/www/app \
+      /var/www/studio \
       /var/www/.cache \
       /var/www/.composer \
       /var/www/.npm \
       /data && \
     chmod 775 \
-      /var/www/app \
       /var/www/.cache \
       /var/www/.composer \
       /var/www/.npm \

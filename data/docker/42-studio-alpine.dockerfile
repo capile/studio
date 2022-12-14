@@ -5,13 +5,14 @@
 # docker push tecnodesign/studio:alpine-latest
 FROM tecnodesign/php-node:alpine-v1.0
 RUN curl -sL https://github.com/capile/studio/archive/refs/tags/latest.tar.gz|tar -xzC /tmp && \
-    mv /tmp/studio-latest/* /var/www/app && \
+    mv /tmp/studio-latest/* /var/www/studio && \
     rm -rf /tmp/studio-latest && \
-    cd /var/www/app && \
+    cd /var/www/studio && \
     composer install --no-dev && \
     composer clear-cache && \
     rm -rf ~/.composer/cache
-WORKDIR /var/www/app
-VOLUME /data
-ENV PATH="${PATH}:/var/www/app"
-ENV STUDIO_DATA=/data
+WORKDIR /var/www/studio
+VOLUME /opt/studio/data
+VOLUME /opt/studio/config
+ENV PATH="${PATH}:/var/www/studio"
+ENV STUDIO_DATA=/opt/studio/data

@@ -81,13 +81,13 @@ RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini && \
     sed -e 's/^error_log.*/error_log = \/dev\/stderr/' \
         -i /usr/local/etc/php-fpm.conf && \
     mkdir -p \
-      /var/www/app \
+      /var/www/studio \
       /var/www/.cache \
       /var/www/.composer \
       /var/www/.npm \
       /data && \
     chown www-data:www-data \
-      /var/www/app \
+      /var/www/studio \
       /var/www/.cache \
       /var/www/.composer \
       /var/www/.npm \
