@@ -100,5 +100,6 @@ RUN cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini && \
     ln -s ../lib/node_modules/semver/bin/semver.js     /usr/local/bin/semver    && \
     ln -s ../lib/node_modules/yarn/bin/yarn.js         /usr/local/bin/yarn      && \
     ln -s ../lib/node_modules/yarn/bin/yarn.js         /usr/local/bin/yarnpkg
+RUN usermod -u 1000 www-data
 USER www-data
 WORKDIR /var/www
