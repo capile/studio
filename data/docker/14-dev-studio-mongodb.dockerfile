@@ -1,9 +1,9 @@
-## tecnodesign/dev-studio:v1.2
+## tecnodesign/dev-studio-mongodb:v1.0
 #
-# docker build -f data/docker/12-dev-studio.dockerfile data/docker -t tecnodesign/dev-studio:v1.2 -t tecnodesign/dev-studio:latest
-# docker push tecnodesign/dev-studio:v1.2
-# docker push tecnodesign/dev-studio:latest
-FROM tecnodesign/dev-php-node:v1.0
+# docker build -f data/docker/14-dev-studio-mongodb.dockerfile  . -t tecnodesign/dev-studio-mongodb:v1.0 -t tecnodesign/dev-studio-mongodb:latest
+# docker push tecnodesign/dev-studio-mongodb:v1.0
+# docker push tecnodesign/dev-studio-mongodb:latest
+FROM tecnodesign/dev-php-mongodb:v1.0
 USER www-data
 RUN curl -sL https://github.com/capile/studio/archive/refs/tags/latest.tar.gz|tar -xzC /tmp && \
     mv /tmp/studio-latest/* /var/www/studio && \

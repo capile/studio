@@ -5,6 +5,6 @@ services:
     image: tecnodesign/dev-studio:latest
     restart: "no"
     volumes:
-      - ../../data:/var/www/app/data:Z
-      - ../../src:/var/www/app/src:Z
+      - ../../data:/var/www/studio/data:Z
+      - ../../src:/var/www/studio/src:Z
     entrypoint: [ "composer", "test" ]

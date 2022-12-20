@@ -47,6 +47,8 @@
     "scripts": {
         "test": "vendor/bin/codecept run -v ",
         "docker": "docker-compose -f data/docker/docker-compose.yml up",
+        "docker-dev": "docker-compose -f data/docker/docker-compose-dev.yml up",
+        "docker-mongo": "docker-compose -f data/docker/docker-compose-dev-mongo.yml up",
         "docker-test": "docker-compose -f data/docker/docker-compose-test.yml run studio-test",
         "docker-pull": "docker-compose -f data/docker/docker-compose-test.yml pull",
         "docker-build": "data/docker/build.php"
