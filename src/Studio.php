@@ -517,18 +517,19 @@ class Studio
         return array();
     }
 
-    public static function expandVariables($a)
+    public static function expandVariables($a, $vars=null)
     {
         if(!is_array($a) && !is_object($a)) {
             if(preg_match_all('/\$(([A-Za-z0-9\_]+\:\:)?[A-Za-z0-9\_]+)/', $a, $m)) {
                 foreach($m[1] as $i=>$o) {
                     $r = null;
-                    if(defined($o)) $r = constant($o);
+                    if($vars && isset($vars[$o])) $r = $vars[$o];
+                    else if(defined($o)) $r = constant($o);
                     else if($o==='SCRIPT_NAME' || $o==='URL') $r = self::scriptName();
                     else if($o==='PATH_INFO') $r = self::scriptName(true);
                     else if($o==='REQUEST_URI') $r = self::requestUri();
                     if(!is_null($r)) {
-                        $a = str_replace($m[0][$i], $r, $a);
+                        $a = str_replace([ '{'.$m[0][$i].'}', $m[0][$i] ], $r, $a);
                     }
                     unset($m[1][$i], $m[0][$i], $i, $o);
                 }
@@ -536,7 +537,7 @@ class Studio
             }
         } else {
             foreach($a as $i=>$o) {
-                $a[$i] = self::expandVariables($o);
+                $a[$i] = self::expandVariables($o, $vars);
                 unset($i, $o);
             }
         }

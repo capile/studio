@@ -209,6 +209,7 @@ class Api extends SchemaObject
         $errorModule,
         $className          = 'Studio\\Api',
         $removeQueryString  = [ 'ajax' => null, '_uid' => null ],
+        $checkEnabledActions = [ 'share' ],
         $ui;
 
     protected
@@ -748,6 +749,15 @@ class Api extends SchemaObject
                 unset($la[$ap], $ap, $a);
             }
             unset($b, $cn, $actions, $la);
+            if($L=$this->config('checkEnabledActions')) {
+                foreach($L as $a) {
+                    if(isset($this->actions[$a]) && !$this->config('enable'.S::camelize($a, true).'Action')) {
+                        unset($this->actions[$a]);
+                    }
+                    unset($a);
+                }
+                unset($L);
+            }
         }
 
         // should relations be expanded? why?
@@ -834,11 +844,13 @@ class Api extends SchemaObject
         return $this->auth;
     }
 
+    /*
     public function hasCredential($action=null)
     {
         $c = $this->getCredential($action);
         return (!$c || S::getUser()->hasCredential($c, false));
     }
+    */
 
     public function auth($action=null, $setStatus=null)
     {
@@ -856,6 +868,9 @@ class Api extends SchemaObject
         static $H, $U;
         if(is_null($U)) {
             $U = S::getUser();
+        }
+        if(isset($c['callback']) && ($m=$c['callback']) && ($Api=static::current()) && ($M=$Api->model())) {
+            $c = $M->$m($Api);
         }
         if(!is_array($c)) {
             if(!$c) return true;

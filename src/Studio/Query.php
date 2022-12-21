@@ -37,7 +37,7 @@ class Query extends SchemaObject
 
     public function find($options=null, $collection=true, $asArray=false)
     {
-        static $qp = ['select','scope','where','limit','offset','orderBy','groupBy','count','order',];
+        static $qp = ['select','scope','where','limit','offset','orderBy','groupBy','count',];
         $Q = null;
         if(isset($this->model) && isset($this->method)) {
             $m = $this->method;
@@ -55,7 +55,7 @@ class Query extends SchemaObject
             $filter = [];
             foreach($qp as $n) {
                 if(property_exists($this, $n)) {
-                    $filter[$n] = $this->${$n};
+                    $filter[$n] = $this->$n;
                 }
                 unset($n);
             }

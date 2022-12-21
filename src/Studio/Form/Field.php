@@ -1393,8 +1393,11 @@ class Field extends SchemaObject
 
     public function setChoices($s)
     {
+        static $schemaProp = ['orderBy'=>'order', 'order'=>'order' ];
+
+        $Q = false;
         if(S::isempty($s)) {
-            $this->query = null;
+            $Q = null;
             $this->choices = null;
         } else if(is_string($s)) {
             $this->choices = null;
@@ -1404,49 +1407,60 @@ class Field extends SchemaObject
                     return $this->setChoices($model::${$p});
                 } else if(is_a($model, 'Studio\\Model', true)) {
                     if(strpos($method, '(')!==false) $method = substr($method, 0, strpos($method, '('));
-                    $this->query = new Query([ 'model' => $model, 'method' => $method ]);
+                    $Q = [ 'model' => $model, 'method' => $method ];
                 } else {
-                    $this->query = new Query([ 'method' => $s ]);
+                    $Q = [ 'method' => $s ];
                 }
             } else if(strpos($s, ':')) {
-                $this->query = new Query([ 'source' => $s ]);
+                $Q = [ 'source' => $s ];
             } else if(is_a($s, 'Studio\\Model', true)) {
-                $this->query = new Query(['model'=>$s]);
+                $Q = ['model'=>$s];
             } else if($this->bind && ($M=$this->getModel()) && method_exists($M, $s)) {
-                $this->query = new Query([ 'model' => $M, 'method' => $s ]);
+                $Q = [ 'model' => $M, 'method' => $s ];
             } else if(strpos($s, ',')!==false) {
                 $this->choices = preg_split('/\s*\,\s*/', $s, -1, PREG_SPLIT_NO_EMPTY);
-                $this->query = null;
+                $Q = null;
             } else {
-                $this->query = new Query([ 'method' => $s ]);
+                $Q = [ 'method' => $s ];
             }
         } else if(is_object($s)) {
             if($s instanceof Query) {
-                $this->query = $s;
+                $Q = $s;
                 $this->choices = null;
             } else if($s instanceof Collection) {
                 if($q = $s->getQuery()) {
-                    $a = [ 'queryObject' => $q ];
+                    $Q = [ 'queryObject' => $q ];
                     $q = null;
                     if($q = $s->getClassName()) {
-                        $a['model'] = $q;
+                        $Q['model'] = $q;
                     }
                     $q = null;
                     if($q = $s->getQueryKey()) {
-                        $a['queryKey'] = $q;
+                        $Q['queryKey'] = $q;
                     }
                     $q = null;
-                    $this->query = new Query($a);
                     $this->choices = null;
                 } else {
                     $this->choices = $s->getItems();
                 }
             } else if($s instanceof Model) {
-                $this->query = new Query([ 'model' => get_class($s) ]);
+                $Q = [ 'model' => get_class($s) ];
                 $this->choices = null;
             }
         } else if(is_array($s)) {
             $this->choices = $s;
+        }
+
+        if($Q!==false) {
+            if(isset($Q['model']) && !isset($Q['method']) && property_exists($Q['model'], 'schema')) {
+                $cn = $Q['model'];
+                foreach($schemaProp as $n=>$t) {
+                    if(isset($cn::$schema[$n])) $Q[$t] = $cn::$schema[$n];
+                    unset($n, $t);
+                }
+            }
+            $this->query = new Query($Q);
+            unset($Q);
         }
     }
 
