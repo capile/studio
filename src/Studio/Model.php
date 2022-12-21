@@ -2522,10 +2522,18 @@ class Model implements ArrayAccess, Iterator, Countable
                         return $this->renderRelation($choices::find($v,$multiple,'choices',false), $choices, $fd, $xmlEscape);
                     } else if(method_exists($this, $choices)) {
                         $choices = $this->$choices();
+                    } else if(strpos($choices, '::')) {
+                        list($model, $method) = explode('::', $choices, 2);
+                        if(substr($method, 0, 1)==='$' && property_exists($model, $p=substr($method, 1))) {
+                            $choices = $model::${$p};
+                        } else {
+                            if(strpos($method, '(')!==false) $method = substr($method, 0, strpos($method, '('));
+                            $choices = $model::$method();
+                        }
                     } else if(S::$enableEval) {
                         $choices = @eval('return '.$choices.';');
                     } else {
-                        S::log('[DEPRECATED] eval funcions are no longer supported. Please review the choices for '.$cn.'->'.$fn.': '.$choices);
+                        S::log('[DEPRECATED] eval functions are no longer supported. Please review the choices for '.$cn.'->'.$fn.': '.$choices);
                         $choices = [];
                     }
                 }

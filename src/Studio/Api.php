@@ -230,6 +230,7 @@ class Api extends SchemaObject
         $auth,
         $actions,
         $text,
+        $t,
         $template,
         $run,
         $params,
@@ -1083,9 +1084,11 @@ class Api extends SchemaObject
             if(!isset(static::$urls[$link])) {
                 static::$urls[$link] = [ 'title' => $this->getTitle(), 'action' => $a ];
             }
-
             if(!$this->auth($a, true)) {
                 return false;
+            }
+            if(isset($this->actions[$a]['relation']) || isset($this->actions[$a]['interface'])) {
+                return $this->relation($a);
             }
             if((!isset($this->actions[$a]['additional-params']) || !$this->actions[$a]['additional-params']) && $p) {
                 $n = array_shift($p);
@@ -1559,6 +1562,8 @@ class Api extends SchemaObject
         $self = self::$className;
         if(property_exists($self, $s)) {
             $s = static::$$s;
+        } else if(($I=self::current()) && isset($I->t[$s])) {
+            return $I->t[$s];
         } else if($alt) {
             $s = $alt;
         }
@@ -3793,7 +3798,7 @@ class Api extends SchemaObject
                             'attributes'=>['data-always-send'=>1],
                         );
                     } else {
-                        if(!isset($fo['fields']['w'])) {
+                        if(!isset($fo['fields']['w']['type'])) {
                             if(count($fo['fields'])>2) {
                                 $fo['fields'] = ['_omnibar'=>$fo['fields']['_omnibar'], 'q'=>$fo['fields']['q'],'w'=>[]] + $fo['fields'];
                             }
@@ -3995,7 +4000,6 @@ class Api extends SchemaObject
             if(isset($I['api'])) $api = $I['api'];
             else if(isset($I['interface'])) $api = $I['interface'];
             else $api = $k;
-            if($api=='index') S::debug($I['options'], var_export($I['options']['navigation'], true));
             if(array_key_exists('list-parent', $I['options']) && $I['options']['list-parent']) {
                 $pl[$p] = $I['options']['list-parent'];
             }

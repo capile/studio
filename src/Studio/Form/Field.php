@@ -1400,7 +1400,9 @@ class Field extends SchemaObject
             $this->choices = null;
             if(strpos($s, '::')) {
                 list($model, $method) = explode('::', $s, 2);
-                if(is_a($model, 'Studio\\Model', true)) {
+                if(substr($method, 0, 1)==='$' && property_exists($model, $p=substr($method, 1))) {
+                    return $this->setChoices($model::${$p});
+                } else if(is_a($model, 'Studio\\Model', true)) {
                     if(strpos($method, '(')!==false) $method = substr($method, 0, strpos($method, '('));
                     $this->query = new Query([ 'model' => $model, 'method' => $method ]);
                 } else {

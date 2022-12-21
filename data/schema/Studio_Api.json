@@ -20,6 +20,7 @@
         "auth": { "type": "mixed", "description": "Authentication and credentials required for accessing this API" },
         "actions": { "type": "object", "description": "Available actions" },
         "text": { "type": "object", "description": "Texts to be used at the API preview" },
+        "t": { "type": "object", "description": "Embedded translation for API items" },
         "template": { "type": "string", "description": "Use this custom template" },
         "run": { "type": "mixed", "description": "Executable setup to use instead of the API/Model interactions" },
         "graph": { "type": "mixed", "description": "Load dynamic graphs at the HTML view, may define which graphics to display" },
