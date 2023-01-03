@@ -2934,6 +2934,8 @@ class Studio
                 if(is_null($vendor)) {
                     if(is_dir($d=S_PROJECT_ROOT.'/vendor/capile/tecnodesign')) {
                         $vendor = $d;
+                    } else if(is_dir($d=S_ROOT.'/vendor/capile/tecnodesign')) {
+                        $vendor = $d;
                     } else if(is_dir($d=S_ROOT.'/../../capile/tecnodesign')) {
                         $vendor = realpath($d);
                     } else {
