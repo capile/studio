@@ -2933,7 +2933,7 @@ class Api extends SchemaObject
         App::end();
     }
 
-    protected function getForm($o=null, $scope=null)
+    public function getForm($o=null, $scope=null)
     {
         if(!$o || !($o instanceof Model)) {
             $o = $this->model();

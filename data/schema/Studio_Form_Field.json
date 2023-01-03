@@ -47,7 +47,7 @@
         "before": { "type": "string", "description": "content to be displayed before the field" },
         "after": { "type": "string", "description": "content to be displayed after the field" },
         "next": { "type": "string", "description": "tab order (use field name)" },
-        "default": { "type": "object", "description": "default field value" },
+        "default": { "type": "string", "description": "default field value" },
         "format": { "alias": "type" },
         "null": { "alias": "!required" },
         "primary": { "alias": "required" },
