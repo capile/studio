@@ -21,6 +21,7 @@ use ArrayAccess;
 use Tecnodesign_Exception as AppException;
 use Exception;
 
+#[AllowDynamicProperties]
 class SchemaObject implements ArrayAccess
 {
     const SCHEMA_PROPERTY='meta';

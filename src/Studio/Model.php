@@ -34,6 +34,7 @@ use Countable;
 use Exception;
 use PDO;
 
+#[AllowDynamicProperties]
 class Model implements ArrayAccess, Iterator, Countable
 {
     const SCHEMA_PROPERTY='schema';

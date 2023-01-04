@@ -20,7 +20,8 @@ use arrayObject;
 use ArrayAccess;
 use Exception;
 
-class Object implements ArrayAccess
+#[AllowDynamicProperties]
+class SchemaObject implements ArrayAccess
 {
     const SCHEMA_PROPERTY='meta';
     const SCHEMA_CLASS='Studio\\Schema';

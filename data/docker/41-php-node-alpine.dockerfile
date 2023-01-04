@@ -1,8 +1,8 @@
 ## tecnodesign/php-node:alpine-v1.0
 #
 # docker build -f data/docker/41-php-node-alpine.dockerfile  data/docker -t tecnodesign/php-node:alpine-v1.0
-# docker push tecnodesign/php-node:v1.0
-FROM php:fpm-alpine
+# docker push tecnodesign/php-node:alpine-v1.0
+FROM php:8.1-fpm-alpine
 RUN apk --no-cache add \
     git \
     gnupg \
@@ -59,11 +59,15 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
     echo 'max_input_vars = 10000' > $PHP_INI_DIR/conf.d/x-config.ini && \
     sed -e 's/^listen = .*/listen = 9000/' \
         -e 's/^listen\.allowed_clients/;listen.allowed_clients/' \
-        -e 's/^user = apache/user = www-data/' \
+        -e 's/^user = .*/;user = www-data/' \
+        -e 's/^group = .*/;group = www-data/' \
         -e 's/;catch_workers_output.*/catch_workers_output = yes/' \
-        -e 's/^group = apache/group = www-data/' \
+        -e 's/^pm.max_children = .*/pm.max_children = 100/' \
+        -e 's/^pm.start_servers = .*/pm.start_servers = 5/' \
+        -e 's/^pm.max_spare_servers .*/pm.max_spare_servers = 10/' \
+        -e 's/^;?pm.max_requests = .*/pm.max_requests = 500/' \
         -e 's/^php_admin_value\[error_log\]/;php_admin_value[error_log]/' \
-        -e 's/^;?php_admin_value[memory_limit] = .*/php_admin_value[memory_limit] = 32M/' \
+        -e 's/^php_admin_value\[memory_limit\] = .*/;php_admin_value[memory_limit] = 32M/' \
         -i /usr/local/etc/php-fpm.d/www.conf && \
     sed -e 's/^error_log.*/error_log = \/dev\/stderr/' \
         -i /usr/local/etc/php-fpm.conf && \
