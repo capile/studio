@@ -287,6 +287,7 @@ class Ldap
         if(!$this->_schema) return false;
         if(!$this->_last) {
             $this->buildQuery();
+            if(!$this->_last) return 0;
         }
 
         $i = ldap_count_entries(self::connect($this->schema('database')), $this->_last);
