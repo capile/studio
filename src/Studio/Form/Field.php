@@ -172,7 +172,6 @@ class Field extends SchemaObject
         return false;
     }
 
-
     public function setMessages($msgs=array())
     {
         if(is_array($msgs)) {
@@ -184,7 +183,6 @@ class Field extends SchemaObject
             }
         }
     }
-
 
     /**
      * Binds field to $form->model column or relation
@@ -233,6 +231,11 @@ class Field extends SchemaObject
         }
     }
 
+    public function setScope($s)
+    {
+        // accept string and object scopes
+        if($s) $this->scope = $s;
+    }
 
     public function setUpdate($update)
     {
@@ -254,7 +257,6 @@ class Field extends SchemaObject
         }
     }
 
-
     public function setPlaceholder($str) {
         if(is_string($str) && substr($str, 0, 1)=='*') {
             $tlib = ($this->bind && ($schema=$this->getSchema()))?('model-'.$schema->tableName):('form');
@@ -264,7 +266,6 @@ class Field extends SchemaObject
         if(S::isempty($str)) $str = null; 
         $this->placeholder = $str;
     }
-
 
     public function setType($type)
     {
@@ -1796,7 +1797,7 @@ class Field extends SchemaObject
             $this->bind = $bind;
             $this->choices=null;
         }
-        if($bind && isset($schema['relations'][$bind])) {
+        if($bind && isset($schema->relations[$bind])) {
             $M = $this->getModel();
             $cn = get_class($M);
             if(!isset($arg['value'])) $arg['value'] = $M->getRelation($bind, null, null, false);
@@ -1804,7 +1805,7 @@ class Field extends SchemaObject
                 if($arg['value']) $arg['value'] = array($arg['value']);
                 else $arg['value']=array();
             }
-            $rc = (isset($schema['relations'][$bind]['className']))?($schema['relations'][$bind]['className']):($bind);
+            $rc = (isset($schema->relations[$bind]['className']))?($schema->relations[$bind]['className']):($bind);
             if($arg['value'] instanceof Collection) {
                 $arg['value'] = $arg['value']->getItems();
             }

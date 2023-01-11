@@ -23,7 +23,7 @@ class User
         $timeout=0,             // session timeout in seconds
         $cfg, 
         $hashType='crypt:$6$rounds=5000$', // hashing method
-        $hashTypes=['sha256' ], // alternative hash methods
+        $hashTypes=[ 'ssha512', 'ssha256' ], // alternative hash methods
         $usePhpSession=false,   // load/destroy user based on PHP session
         $enableNegCredential=true,   // enables the negative checking of credentials (!credential)
         $setLastAccess,         // property to use when setting last access, set to false to disable
