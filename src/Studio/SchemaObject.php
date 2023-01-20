@@ -111,10 +111,15 @@ class SchemaObject implements ArrayAccess
     public function offsetGet($name)
     {
         $name = $this->resolveAlias($name);
+        $neg = false;
+        if(substr($name, 0, 1)==='!') {
+            $name = substr($name, 1);
+            $neg = true;
+        }
         if (method_exists($this, $m='get'.ucfirst(S::camelize($name)))) {
-            return $this->$m();
+            return ($neg) ?!$this->$m() :$this->$m();
         } else if (isset($this->$name)) {
-            return $this->$name;
+            return ($neg) ?!$this->$name :$this->$name;
         }
         $n = null;
         return $n;
@@ -152,6 +157,10 @@ class SchemaObject implements ArrayAccess
     public function offsetSet($name, $value): void
     {
         $name = $this->resolveAlias($name);
+        if(substr($name, 0, 1)==='!') {
+            $name = substr($name, 1);
+            $value = !$value;
+        }
         if (method_exists($this, $m='set'.S::camelize($name))) {
             $this->$m($value);
         } else if(property_exists(get_called_class(), $schema = static::SCHEMA_PROPERTY)) {
@@ -183,6 +192,9 @@ class SchemaObject implements ArrayAccess
     public function offsetExists($name): bool
     {
         $name = $this->resolveAlias($name);
+        if(substr($name, 0, 1)==='!') {
+            $name = substr($name, 1);
+        }
         return isset($this->$name);
     }
 
@@ -194,8 +206,6 @@ class SchemaObject implements ArrayAccess
      */
     public function offsetUnset($name): void
     {
-        $schema = static::SCHEMA_PROPERTY;
-        if(isset(static::${$schema}[$name]['alias'])) $name = static::${$schema}[$name]['alias'];
         $this->offsetSet($name, null);
     }
 }

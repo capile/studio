@@ -75,7 +75,7 @@ class Api extends SchemaObject
         $attrSearchFormClass= 's-form-search',
         $attrSearchClass    = 's-api-search', // deprecated, use attrSearchFormClass
         $attrCounterClass   = 's-counter',
-        $attrGraphClass     = 's-i-graph',
+        $attrGraphClass     = 's-api-graph',
         $attrFormClass      = 's-form',
         $attrButtonsClass   = '',
         $attrButtonClass    = '',

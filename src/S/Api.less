@@ -2161,22 +2161,21 @@ th > input[type=checkbox], td > input[type=checkbox] {
     input {width:0.75em;position:relative;display:inline-block;left:0.25em;}
     & > * {text-indent:0;}
   }
-
-  &.s-scrollable-table table, .s-scrollable-table table {
-    tbody {
-      display:block;
-      max-height:24em;
-      overflow-y:auto;
-      overflow-x:none;
-    }
-    thead tr, tbody tr {
-      display:table;
-      width:100%;
-      table-layout:fixed;/* even columns width , fix width of table too*/
-    }
-    thead tr {
-      width: calc(~"100% - 1em");/* scrollbar is average 1em/16px width, remove it from thead width */
-    }
+}
+.s-scrollable-table table {
+  tbody {
+    display:block;
+    max-height:24em;
+    overflow-y:auto;
+    overflow-x:none;
+  }
+  thead tr, tbody tr {
+    display:table;
+    width:100%;
+    table-layout:fixed;/* even columns width , fix width of table too*/
+  }
+  thead tr {
+    width: calc(~"100% - 1em");/* scrollbar is average 1em/16px width, remove it from thead width */
   }
 }
 
