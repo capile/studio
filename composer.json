@@ -16,7 +16,8 @@
         "bshaffer/oauth2-server-php": "^1.11",
         "mustangostang/spyc": "^0.6.2",
         "ext-mbstring": "*",
-        "jumbojett/openid-connect-php": "^0.9.2"
+        "jumbojett/openid-connect-php": "^0.9.2",
+        "mongodb/mongodb": "^1.13"
     },
     "extra": {
         "foxy": true
@@ -46,7 +47,10 @@
     },
     "scripts": {
         "test": "vendor/bin/codecept run -v ",
+        "test-debug": "vendor/bin/codecept run -v --debug ",
         "docker": "docker-compose -f data/docker/docker-compose.yml up",
+        "docker-mongo-up": "docker-compose -f data/docker/docker-compose-dev-mongo.yml up -d",
+        "docker-mongo-down": "docker-compose -f data/docker/docker-compose-dev-mongo.yml down --remove-orphans",
         "docker-test": "docker-compose -f data/docker/docker-compose-test.yml run studio-test",
         "docker-pull": "docker-compose -f data/docker/docker-compose-test.yml pull",
         "docker-build": "data/docker/build.php"

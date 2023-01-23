@@ -1,0 +1,10 @@
+---
+all:
+  database:
+    mongotest01:
+      dsn: mongodb://root:admin@mongo:27017/
+    mongotest02:
+      dsn: mongodb://mongo:27017
+      options:
+        username: root
+        password: admin

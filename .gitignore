@@ -13,6 +13,7 @@ data/web/_/z-*
 data/web/_/fa-solid-900.*
 data/web/_/quill.min.js.map
 data/.studio*
+data/mongodb
 *.lock
 package-lock.json
 yarn-error.log
