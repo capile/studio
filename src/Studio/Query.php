@@ -225,7 +225,7 @@ class Query extends SchemaObject
         return $this->queryObject;
     }
 
-    public static function database($db=null)
+    public static function database($db=null, $key=false)
     {
         if(is_null(S::$database)) {
             $app = S::getApp();
@@ -287,6 +287,7 @@ class Query extends SchemaObject
                     if(isset($db::${$sn}->database)) {
                         $db = $db::${$sn}->database;
                         if(isset(S::$database[$db])) $r = S::$database[$db];
+                        else $db = null;
                     } else {
                         return;
                     }
@@ -296,6 +297,9 @@ class Query extends SchemaObject
                         S::$database[$db] = $r = $dbo;
                     } else if(isset(S::$database[$dbo])) {
                         $r = S::$database[$dbo];
+                        $db = $dbo;
+                    } else {
+                        $db = null;
                     }
                 } else if($db!=='studio' && Studio::config('enable_api_index')) {
                     if(($T = Tokens::find(['type'=>'server', 'id'=>$db],1)) && ($dsn=$T['options.api_endpoint'])) {
@@ -303,6 +307,8 @@ class Query extends SchemaObject
                     }
                 }
             }
+
+            if($key) return $db;
 
             if($r && !isset($r['className'])) {
                 if(isset($r['class'])) {
@@ -316,15 +322,18 @@ class Query extends SchemaObject
             return $r;
         }
 
-        return S::$database;
+        return ($key) ?array_keys(S::$database) :S::$database;
     }
 
     public static function handler($s=null)
     {
         static $H = [];
+
+        // $n should be the connection name,
+        // $s can be the className, an instance of Model, the connection name or a connection string
         $n = '';
-        if(is_string($s) && static::database($s)) {
-            $n = $s;
+        if(is_string($s) && ($kdb=static::database($s, true))) {
+            $n = $kdb;
         } else if((is_string($s) && $s && property_exists($s, 'schema')) || $s instanceof Model) {
             $n = $s::$schema->database;
             if(is_object($s)) {
