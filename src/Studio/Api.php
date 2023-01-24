@@ -2139,13 +2139,13 @@ class Api extends SchemaObject
                     if($redirect) {
                         $curl = $this->link();
                         if($uri!=$curl) {
-                            $msg = '<a data-action="unload" data-url="'.\S::xml(preg_replace('/\?.*/', '', $curl)).'"></a>'.$msg;
+                            $msg = '<a data-action="unload" data-url="'.S::xml(preg_replace('/\?.*/', '', $curl)).'"></a>'.$msg;
                         } else if(!$unload) {
-                            $msg = '<a data-action="load" data-url="'.\S::xml($uri).'"></a>'.$msg;
+                            $msg = '<a data-action="load" data-url="'.S::xml($uri).'"></a>'.$msg;
                         }
                     } else if($unload) {
                         $curl = (is_string($unload)) ?$unload :$this->link();
-                        $msg .= '<a data-action="unload" data-url="'.\S::xml(preg_replace('/\?.*/', '', $curl)).'"></a>';
+                        $msg .= '<a data-action="unload" data-url="'.S::xml(preg_replace('/\?.*/', '', $curl)).'"></a>';
                     }
                 }
             } else if(($st=Cache::get($prefix.$uid))) {

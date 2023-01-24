@@ -3161,7 +3161,7 @@ if(!defined('S_CLI')) {
     else define('S_CLI', (!isset($_SERVER['HTTP_HOST']) && isset($_SERVER['SHELL'])));
 }
 define('S_TIME', microtime(true));
-list($u, $t) = explode('.', (string) S_TIME);
+@list($u, $t) = explode('.', (string) S_TIME);
 define('S_TIMESTAMP', date('Y-m-d\TH:i:s.', (int)$u).substr($t.'000000',0,6));
 unset($u, $t);
 if (!defined('S_ROOT')) {
