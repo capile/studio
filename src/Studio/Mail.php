@@ -199,7 +199,7 @@ class Mail
     }
 
 
-    public function setEmailHeader($email, $name=false, $hint, $replace=false)
+    public function setEmailHeader($email, $name=false, $hint='To', $replace=false)
     {
         if($replace) {
             if(isset($this->headers[$hint])) {
