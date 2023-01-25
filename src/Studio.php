@@ -24,7 +24,7 @@ use Tecnodesign_Mail as Mail;
 
 class Studio
 {
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.2';
     const VER = 1.0;
 
     protected static
@@ -3145,6 +3145,25 @@ class Studio
             }
         }
         return $s;
+    }
+
+    protected static $defangR=[
+        'http'=>'hXXp',
+        'ftp'=>'fXp',
+        '@'=>'[@]',
+        '.'=>'[.]',
+        '//'=>'/​/',
+    ];
+    public static function defang($s, $r=[])
+    {
+        $r += self::$defangR;
+        return strtr($s, $r);
+    }
+
+    public static function refang($s, $r=[])
+    {
+        $r += self::$defangR;
+        return strtr($s, array_flip($r));
     }
 }
 
