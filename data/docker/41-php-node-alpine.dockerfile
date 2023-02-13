@@ -84,6 +84,7 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
       /var/www/.npm \
       /data && \
     chmod 775 \
+      /var/www/studio \
       /var/www/.cache \
       /var/www/.composer \
       /var/www/.npm \
