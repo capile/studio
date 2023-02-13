@@ -2397,7 +2397,7 @@ class Api extends SchemaObject
     {
         $cn = $this->getModel();
         if(!$scope) {
-            if(isset($cn::$schema['scope']['new'])) $scope = 'new';
+            if(isset($cn::$schema['scope'][$this->action])) $scope = $this->action;
             else $scope = 'preview';
         }
         //$scope = $this->scope($scope);
@@ -3022,9 +3022,12 @@ class Api extends SchemaObject
         if(preg_match('/\&ajax=[0-9]+\b/', $fo->action)) $fo->action = preg_replace('/\&ajax=[0-9]+\b/', '', $fo->action);
         $fo->id = S::slug($this->api).'--'.(($o->isNew())?('n'):(S::slug(@implode('-',$o->getPk(true)))));
         $fo->attributes['class'] = $this->config('attrFormClass');
-        if($this->action=='update' || $this->action=='new') {
-            $fo->buttons['submit']=static::t('button'.ucwords($this->action), ucwords($this->action));
+        if(isset($this->t[$btn='button'.ucwords($this->action)])) {
+            $btnLabel = $this->t[$btn='button'.ucwords($this->action)];
+        } else if($this->action=='update' || $this->action=='new') {
+            $btnLabel = static::t($btn, ucwords($this->action));
         }
+        if($btnLabel) $fo->buttons['submit'] = $btnLabel;
         if(!static::$standalone && isset($ss)) {
             $fo->buttons['button']=array(
                 'label'=>static::t('buttonClose', 'Close'),
