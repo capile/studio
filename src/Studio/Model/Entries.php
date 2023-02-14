@@ -669,9 +669,29 @@ class Entries extends Model
                 if(isset($repo['id'])) $rn = $repo['id'];
                 if(!is_dir($d=S_REPO_ROOT.'/'.$rn)) continue;
                 $mu = (isset($repo['mount'])) ?$repo['mount'] :'';
+                if($mu===false) continue;
                 $murl = $url;
                 if($mu) {
-                    if($mu===$url) {
+                    if(is_array($mu) && $mu) {
+                        foreach($mu as $mud) {
+                            $mum = null;
+                            if(strpos($mud, ':')) list($mud, $mum) = explode(':', $mud);
+                            if($mud===$url) {
+                                $murl = '';
+                            } else if(substr($url, 0, strlen($mud)+1)===$mud.'/') {
+                                $murl = substr($url, strlen($mud));
+                            } else {
+                                unset($mud);
+                                continue;
+                            }
+                            if($mum && $mum!=='.' && $mum!=='/') {
+                                $d .= '/'.$mum;
+                            }
+                            if(isset($repo['mount-src'])) unset($repo['mount-src']);
+                            break;
+                        }
+                        if(!isset($mud)) continue;
+                    } else if($mu===$url) {
                         $murl = '';
                     } else if(substr($url, 0, strlen($mu)+1)===$mu.'/') {
                         $murl = substr($url, strlen($mu));

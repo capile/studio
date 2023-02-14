@@ -75,7 +75,7 @@ class Api extends SchemaObject
         $attrSearchFormClass= 's-form-search',
         $attrSearchClass    = 's-api-search', // deprecated, use attrSearchFormClass
         $attrCounterClass   = 's-counter',
-        $attrGraphClass     = 's-i-graph',
+        $attrGraphClass     = 's-api-graph',
         $attrFormClass      = 's-form',
         $attrButtonsClass   = '',
         $attrButtonClass    = '',
@@ -209,6 +209,7 @@ class Api extends SchemaObject
         $errorModule,
         $className          = 'Studio\\Api',
         $removeQueryString  = [ 'ajax' => null, '_uid' => null ],
+        $checkEnabledActions = [ 'share' ],
         $ui;
 
     protected
@@ -230,6 +231,7 @@ class Api extends SchemaObject
         $auth,
         $actions,
         $text,
+        $t,
         $template,
         $run,
         $params,
@@ -747,6 +749,15 @@ class Api extends SchemaObject
                 unset($la[$ap], $ap, $a);
             }
             unset($b, $cn, $actions, $la);
+            if($L=$this->config('checkEnabledActions')) {
+                foreach($L as $a) {
+                    if(isset($this->actions[$a]) && !$this->config('enable'.S::camelize($a, true).'Action')) {
+                        unset($this->actions[$a]);
+                    }
+                    unset($a);
+                }
+                unset($L);
+            }
         }
 
         // should relations be expanded? why?
@@ -833,11 +844,13 @@ class Api extends SchemaObject
         return $this->auth;
     }
 
+    /*
     public function hasCredential($action=null)
     {
         $c = $this->getCredential($action);
         return (!$c || S::getUser()->hasCredential($c, false));
     }
+    */
 
     public function auth($action=null, $setStatus=null)
     {
@@ -855,6 +868,9 @@ class Api extends SchemaObject
         static $H, $U;
         if(is_null($U)) {
             $U = S::getUser();
+        }
+        if(isset($c['callback']) && ($m=$c['callback']) && ($Api=static::current()) && ($M=$Api->model())) {
+            $c = $M->$m($Api);
         }
         if(!is_array($c)) {
             if(!$c) return true;
@@ -1083,9 +1099,11 @@ class Api extends SchemaObject
             if(!isset(static::$urls[$link])) {
                 static::$urls[$link] = [ 'title' => $this->getTitle(), 'action' => $a ];
             }
-
             if(!$this->auth($a, true)) {
                 return false;
+            }
+            if(isset($this->actions[$a]['relation']) || isset($this->actions[$a]['interface'])) {
+                return $this->relation($a);
             }
             if((!isset($this->actions[$a]['additional-params']) || !$this->actions[$a]['additional-params']) && $p) {
                 $n = array_shift($p);
@@ -1559,6 +1577,8 @@ class Api extends SchemaObject
         $self = self::$className;
         if(property_exists($self, $s)) {
             $s = static::$$s;
+        } else if(($I=self::current()) && isset($I->t[$s])) {
+            return $I->t[$s];
         } else if($alt) {
             $s = $alt;
         }
@@ -2119,13 +2139,13 @@ class Api extends SchemaObject
                     if($redirect) {
                         $curl = $this->link();
                         if($uri!=$curl) {
-                            $msg = '<a data-action="unload" data-url="'.\S::xml(preg_replace('/\?.*/', '', $curl)).'"></a>'.$msg;
+                            $msg = '<a data-action="unload" data-url="'.S::xml(preg_replace('/\?.*/', '', $curl)).'"></a>'.$msg;
                         } else if(!$unload) {
-                            $msg = '<a data-action="load" data-url="'.\S::xml($uri).'"></a>'.$msg;
+                            $msg = '<a data-action="load" data-url="'.S::xml($uri).'"></a>'.$msg;
                         }
                     } else if($unload) {
                         $curl = (is_string($unload)) ?$unload :$this->link();
-                        $msg .= '<a data-action="unload" data-url="'.\S::xml(preg_replace('/\?.*/', '', $curl)).'"></a>';
+                        $msg .= '<a data-action="unload" data-url="'.S::xml(preg_replace('/\?.*/', '', $curl)).'"></a>';
                     }
                 }
             } else if(($st=Cache::get($prefix.$uid))) {
@@ -2377,7 +2397,7 @@ class Api extends SchemaObject
     {
         $cn = $this->getModel();
         if(!$scope) {
-            if(isset($cn::$schema['scope']['new'])) $scope = 'new';
+            if(isset($cn::$schema['scope'][$this->action])) $scope = $this->action;
             else $scope = 'preview';
         }
         //$scope = $this->scope($scope);
@@ -2913,7 +2933,7 @@ class Api extends SchemaObject
         App::end();
     }
 
-    protected function getForm($o=null, $scope=null)
+    public function getForm($o=null, $scope=null)
     {
         if(!$o || !($o instanceof Model)) {
             $o = $this->model();
@@ -3002,9 +3022,12 @@ class Api extends SchemaObject
         if(preg_match('/\&ajax=[0-9]+\b/', $fo->action)) $fo->action = preg_replace('/\&ajax=[0-9]+\b/', '', $fo->action);
         $fo->id = S::slug($this->api).'--'.(($o->isNew())?('n'):(S::slug(@implode('-',$o->getPk(true)))));
         $fo->attributes['class'] = $this->config('attrFormClass');
-        if($this->action=='update' || $this->action=='new') {
-            $fo->buttons['submit']=static::t('button'.ucwords($this->action), ucwords($this->action));
+        if(isset($this->t[$btn='button'.ucwords($this->action)])) {
+            $btnLabel = $this->t[$btn='button'.ucwords($this->action)];
+        } else if($this->action=='update' || $this->action=='new') {
+            $btnLabel = static::t($btn, ucwords($this->action));
         }
+        if($btnLabel) $fo->buttons['submit'] = $btnLabel;
         if(!static::$standalone && isset($ss)) {
             $fo->buttons['button']=array(
                 'label'=>static::t('buttonClose', 'Close'),
@@ -3793,7 +3816,7 @@ class Api extends SchemaObject
                             'attributes'=>['data-always-send'=>1],
                         );
                     } else {
-                        if(!isset($fo['fields']['w'])) {
+                        if(!isset($fo['fields']['w']['type'])) {
                             if(count($fo['fields'])>2) {
                                 $fo['fields'] = ['_omnibar'=>$fo['fields']['_omnibar'], 'q'=>$fo['fields']['q'],'w'=>[]] + $fo['fields'];
                             }
@@ -3995,7 +4018,6 @@ class Api extends SchemaObject
             if(isset($I['api'])) $api = $I['api'];
             else if(isset($I['interface'])) $api = $I['interface'];
             else $api = $k;
-            if($api=='index') S::debug($I['options'], var_export($I['options']['navigation'], true));
             if(array_key_exists('list-parent', $I['options']) && $I['options']['list-parent']) {
                 $pl[$p] = $I['options']['list-parent'];
             }

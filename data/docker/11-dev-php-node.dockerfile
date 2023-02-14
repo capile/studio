@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     mariadb-client \
     rsync \
     vim \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN usermod -u 1000 www-data
+    && rm -rf /var/lib/apt/lists/* && \
+    sed -e 's/^;user = .*/user = www-data/' \
+        -e 's/^;group = .*/group = www-data/' \
+        -i /usr/local/etc/php-fpm.d/www.conf

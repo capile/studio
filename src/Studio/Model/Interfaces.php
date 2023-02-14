@@ -41,7 +41,7 @@ class Interfaces extends Model
                     $fns = ($S->properties) ?array_keys($S->properties) :[];
                     if($S->relations) $fns = array_merge($fns, array_keys($S->relations));
                     $pf = ($fns) ?'protected $'.implode(', $', $fns).';' :'';
-                    S::save($f, '<?'.'php class '.$cn.' extends Studio\\Model { public static $schema, $allowNewProperties=true; };');
+                    S::save($f, '<?'.'php class '.$cn.' extends Studio\\Model { public static $schema, $allowNewProperties=true; };', true);
                 }
                 require_once $f;
             }
@@ -146,7 +146,7 @@ class Interfaces extends Model
         static $i=1;
 
         if(is_null($n)) $n = (isset(Studio::$apiListParent['apis'])) ?Studio::$apiListParent['apis'] :'apis';
-        if(is_null($d)) $d = S::getApp()->config('app', 'cache-dir').'/apis';
+        if(is_null($d) || $d==='/apis') $d = S::getApp()->config('app', 'cache-dir').'/apis';
 
         $id = S::slug($this->id, '_', true);
         $f =  $d.'/'.$id.'.yml';

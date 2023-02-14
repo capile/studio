@@ -1201,7 +1201,7 @@ Z.initLoadUri=function()
 
     var t=this.getAttribute('data-target'), T=(t) ?document.querySelector(t) :this;
 
-    Z.ajax(u, null, loadHtml, Z.error, 'html', T, {'z-action': 'load-uri'});
+    Z.ajax(u, null, loadHtml, Z.error, 'html', T, {'x-studio-action': 'load-uri'});
 }
 
 Z.initLanguageSelection=function()

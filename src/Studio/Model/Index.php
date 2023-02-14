@@ -407,7 +407,7 @@ class Index extends Model
                 }
             }
         }
-        if(S::$log>0) S::log('[INFO] Indexed '.$total.' '.$cn.' in '.S::formatNumber(microtime(true)-$t0, 5).'s (mem: '.S::formatBytes(memory_get_peak_usage(true)).')');
+        if(S::$log>0) S::log('[INFO] Indexed '.$total.' '.$cn.' in '.S::number(microtime(true)-$t0, 5).'s (mem: '.S::bytes(memory_get_peak_usage(true)).')');
     }
 
     public function getSource($format='array', $sort=null)

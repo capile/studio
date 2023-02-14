@@ -7,7 +7,7 @@ FROM tecnodesign/dev-php-node:v1.0
 USER www-data
 RUN curl -sL https://github.com/capile/studio/archive/refs/tags/latest.tar.gz|tar -xzC /tmp && \
     mv /tmp/studio-latest/* /var/www/studio && rm -rf /tmp/studio-latest && cd /var/www/studio && \
-    composer install --no-dev && \
+    composer install --no-dev -n && \
     composer clear-cache && \
     rm -rf ~/.composer/cache
 USER root

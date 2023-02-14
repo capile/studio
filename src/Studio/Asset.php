@@ -142,12 +142,14 @@ class Asset
                 if($ret>0) @unlink($tempnam);
             } else {
                 $Min = null;
+                if(!class_exists($cmd='MatthiasMullie\\Minify\\'.strtoupper($this->format))) {
+                    $Min = false;
+                }
                 $add = '';
                 foreach($files as $f) {
-                    if(strpos($f, '.min.'.strtolower($this->format))) {
+                    if($Min===false || strpos($f, '.min.'.strtolower($this->format))) {
                         $add .= "\n".file_get_contents($f);
                     } else if($Min===null) {
-                        $cmd = 'MatthiasMullie\\Minify\\'.strtoupper($this->format);
                         $Min = new $cmd($f);
                     } else {
                         $Min->add($f);

@@ -67,7 +67,7 @@ class Crypto
             if(substr($t, 0, 4)=='SSHA' || substr(strtolower($t), 0, 4)=='SMD5') {
                 if(is_null($salt)) $salt = self::salt(20, false);
                 else if(substr($salt, 0, strlen($type)+2)=="{{$t}}") {
-                    $salt = substr(base64_decode(substr($salt, strlen($type)+2)), strlen(hash(strtolower(substr($t,1)), null, true)));
+                    $salt = substr(base64_decode(substr($salt, strlen($type)+2)), strlen(hash(strtolower(substr($t,1)), '', true)));
                 }
                 $h = "{{$t}}" . base64_encode(hash(strtolower(substr($t,1)), $str . $salt, true) . $salt);
             } else {

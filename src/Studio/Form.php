@@ -661,6 +661,9 @@ class Form implements ArrayAccess //, Iterator, Countable
         foreach($this->fields as $fn=>$fv) {
             $e = $fv->resetError();
         }
+        if(isset($this->limits['error'])) {
+            $this->limits['error'] = false;
+        }
     }
 
     public function getError($array=false)

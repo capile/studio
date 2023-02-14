@@ -21,6 +21,7 @@ use Studio\Yaml;
 use ArrayAccess;
 use Tecnodesign_Exception as Exception;
 
+#[AllowDynamicProperties]
 class Schema implements ArrayAccess
 {
     const SCHEMA_PROPERTY='meta';

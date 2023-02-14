@@ -24,7 +24,7 @@ use Tecnodesign_Mail as Mail;
 
 class Studio
 {
-    const VERSION = '1.0.0';
+    const VERSION = '1.0.2';
     const VER = 1.0;
 
     protected static
@@ -517,18 +517,19 @@ class Studio
         return array();
     }
 
-    public static function expandVariables($a)
+    public static function expandVariables($a, $vars=null)
     {
         if(!is_array($a) && !is_object($a)) {
             if(preg_match_all('/\$(([A-Za-z0-9\_]+\:\:)?[A-Za-z0-9\_]+)/', $a, $m)) {
                 foreach($m[1] as $i=>$o) {
                     $r = null;
-                    if(defined($o)) $r = constant($o);
+                    if($vars && isset($vars[$o])) $r = $vars[$o];
+                    else if(defined($o)) $r = constant($o);
                     else if($o==='SCRIPT_NAME' || $o==='URL') $r = self::scriptName();
                     else if($o==='PATH_INFO') $r = self::scriptName(true);
                     else if($o==='REQUEST_URI') $r = self::requestUri();
                     if(!is_null($r)) {
-                        $a = str_replace($m[0][$i], $r, $a);
+                        $a = str_replace([ '{'.$m[0][$i].'}', $m[0][$i] ], $r, $a);
                     }
                     unset($m[1][$i], $m[0][$i], $i, $o);
                 }
@@ -536,7 +537,7 @@ class Studio
             }
         } else {
             foreach($a as $i=>$o) {
-                $a[$i] = self::expandVariables($o);
+                $a[$i] = self::expandVariables($o, $vars);
                 unset($i, $o);
             }
         }
@@ -2933,6 +2934,8 @@ class Studio
                 if(is_null($vendor)) {
                     if(is_dir($d=S_PROJECT_ROOT.'/vendor/capile/tecnodesign')) {
                         $vendor = $d;
+                    } else if(is_dir($d=S_ROOT.'/vendor/capile/tecnodesign')) {
+                        $vendor = $d;
                     } else if(is_dir($d=S_ROOT.'/../../capile/tecnodesign')) {
                         $vendor = realpath($d);
                     } else {
@@ -3143,6 +3146,25 @@ class Studio
         }
         return $s;
     }
+
+    protected static $defangR=[
+        'http'=>'hXXp',
+        'ftp'=>'fXp',
+        '@'=>'[@]',
+        '.'=>'[.]',
+        '//'=>'/​/',
+    ];
+    public static function defang($s, $r=[])
+    {
+        $r += self::$defangR;
+        return strtr($s, $r);
+    }
+
+    public static function refang($s, $r=[])
+    {
+        $r += self::$defangR;
+        return strtr($s, array_flip($r));
+    }
 }
 
 $locale = setlocale(LC_ALL, '0');
@@ -3158,7 +3180,7 @@ if(!defined('S_CLI')) {
     else define('S_CLI', (!isset($_SERVER['HTTP_HOST']) && isset($_SERVER['SHELL'])));
 }
 define('S_TIME', microtime(true));
-list($u, $t) = explode('.', (string) S_TIME);
+@list($u, $t) = explode('.', (string) S_TIME);
 define('S_TIMESTAMP', date('Y-m-d\TH:i:s.', (int)$u).substr($t.'000000',0,6));
 unset($u, $t);
 if (!defined('S_ROOT')) {

@@ -1357,7 +1357,7 @@ class Api
         if(!is_array($H)) $H = array();
         if($data && !is_string($data)) {
             if($this->config('postFormat')==='json') {
-                $data = S::seriallize($data, 'json');
+                $data = S::serialize($data, 'json');
                 $H[] = 'content-type: application/json'.(($c=$this->config('postCharset')) ?';charset='.$c :'');
             } else {
                 $data = S::serialize($data, 'query');
