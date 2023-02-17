@@ -22,7 +22,6 @@ use ArrayAccess;
 use Countable;
 use Iterator;
 use Tecnodesign_Excel as Excel;
-use Tecnodesign_Exception as Exception;
 
 class Collection implements ArrayAccess, Countable, Iterator
 {

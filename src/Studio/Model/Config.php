@@ -14,15 +14,15 @@
 namespace Studio\Model;
 
 use Studio as S;
-use Studio\App;
-use Studio\Studio;
-use Studio\Model;
-use Studio\User;
-use Studio\Crypto;
 use Studio\Api;
-use Studio\Yaml;
+use Studio\App;
+use Studio\Crypto;
+use Studio\Exception\AppException;
+use Studio\Model;
 use Studio\Query;
-use Tecnodesign_Exception as Exception;
+use Studio\Studio;
+use Studio\User;
+use Studio\Yaml;
 
 class Config extends Model
 {
@@ -278,7 +278,7 @@ class Config extends Model
             foreach($v as $i=>$o) {
                 if(!$this->syncRepo($v[$i])) {
                     $n = (isset($o['id'])) ?$o['id'] :$i+1;
-                    throw new Exception(sprintf(S::t('The repository %s could not be synchronized.', 'exception'), $n));
+                    throw new AppException(sprintf(S::t('The repository %s could not be synchronized.', 'exception'), $n));
                 }
             }
         }

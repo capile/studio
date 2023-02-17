@@ -17,14 +17,14 @@ namespace Studio;
 use Studio as S;
 use Studio\App;
 use Studio\Collection;
+use Studio\Exception\AppException;
 use Studio\Model;
-use Studio\SchemaObject;
-use Studio\OAuth2\Storage;
-use Studio\Studio;
 use Studio\Model\Tokens;
+use Studio\OAuth2\Storage;
+use Studio\SchemaObject;
+use Studio\Studio;
 use Studio\Yaml;
 use Exception;
-use Tecnodesign_Exception as AppException;
 
 class Query extends SchemaObject
 {

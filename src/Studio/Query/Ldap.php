@@ -13,9 +13,9 @@
 namespace Studio\Query;
 
 use Studio as S;
+use Studio\Exception\AppException;
 use Studio\Query;
 use Studio\Schema;
-use Tecnodesign_Exception as AppException;
 use Exception;
 
 class Ldap

@@ -17,9 +17,10 @@ namespace Studio;
 
 use Studio as S;
 use Studio\Cache;
+use Studio\Exception\AppException;
 use Studio\Yaml;
 use ArrayAccess;
-use Tecnodesign_Exception as Exception;
+use Exception;
 
 #[AllowDynamicProperties]
 class Schema implements ArrayAccess
@@ -172,12 +173,12 @@ class Schema implements ArrayAccess
                 if(isset($Schema->properties[$name])) {
                     $value = $Schema::validateProperty($Schema->properties[$name], $value, $name);
                 } else if(!isset($Schema->patternProperties) || !preg_match($Schema->patternProperties, $name)) {
-                    throw new Exception(array(S::t(static::$errorUnavailable,'exception'), $name, get_class($this)));
+                    throw new AppException(array(S::t(static::$errorUnavailable,'exception'), $name, get_class($this)));
                 }
             }
             $this->$name = $value;
         } else if(!property_exists($this, $name)) {
-            throw new Exception(array(S::t(static::$errorUnavailable,'exception'), $name, get_class($this)));
+            throw new AppException(array(S::t(static::$errorUnavailable,'exception'), $name, get_class($this)));
         } else {
             $this->$name = $value;
         }
@@ -345,9 +346,9 @@ class Schema implements ArrayAccess
 
         try {
             $values = static::validateProperty($meta, $values);
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             S::log('[INFO] Could not apply values: '.$e->getMessage());
-            if($throw) throw new Exception($e->getMessage());
+            if($throw) throw new AppException($e->getMessage());
         }
         if($Model && method_exists($Model, 'batchSet')) {
             $Model->batchSet($values, true);
@@ -384,15 +385,15 @@ class Schema implements ArrayAccess
             }
             if (!is_numeric($value) && $value!='') {
                 $label = (isset($def['label']))?($def['label']):(S::t(ucwords(str_replace('_', ' ', $name)), 'labels'));
-                throw new Exception(sprintf(S::t(static::$errorInvalid, 'exception'), $label).' '.S::t(static::$errorInteger, 'exception'));
+                throw new AppException(sprintf(S::t(static::$errorInvalid, 'exception'), $label).' '.S::t(static::$errorInteger, 'exception'));
             }
             if(!S::isempty($value)) $value = (int) $value;
             if (isset($def['min']) && $value < $def['min']) {
                 $label = (isset($def['label']))?($def['label']):(S::t(ucwords(str_replace('_', ' ', $name)), 'labels'));
-                throw new Exception(sprintf(S::t(static::$errorInvalid, 'exception'), $label).' '.sprintf(S::t(static::$errorMinorThan, 'exception'), $value, $def['min']));
+                throw new AppException(sprintf(S::t(static::$errorInvalid, 'exception'), $label).' '.sprintf(S::t(static::$errorMinorThan, 'exception'), $value, $def['min']));
             } else if (isset($def['max']) && $value > $def['max']) {
                 $label = (isset($def['label']))?($def['label']):(S::t(ucwords(str_replace('_', ' ', $name)), 'labels'));
-                throw new Exception(sprintf(S::t(static::$errorInvalid, 'exception'), $label).' '.sprintf(S::t(static::$errorGreaterThan, 'exception'), $value, $def['max']));
+                throw new AppException(sprintf(S::t(static::$errorInvalid, 'exception'), $label).' '.sprintf(S::t(static::$errorGreaterThan, 'exception'), $value, $def['max']));
             }
         } else if($def['type']==='object' || $def['type']==='array') {
             if(!is_object($value) && !is_array($value)) {
@@ -497,7 +498,7 @@ class Schema implements ArrayAccess
         }
         if (($value==='' || $value===null) && !$nullable) {
             $label = (isset($def['label']))?($def['label']):(S::t(ucwords(str_replace('_', ' ', $name)), 'labels'));
-            throw new Exception(sprintf(S::t(static::$errorMandatory, 'exception'), $label));
+            throw new AppException(sprintf(S::t(static::$errorMandatory, 'exception'), $label));
         } else if($value==='') {
             $value = false;
         }

@@ -17,10 +17,7 @@ namespace Studio;
 use Studio as S;
 use Studio\App;
 use Studio\Cache;
-use Studio\Exception\End;
 use Studio\Studio;
-use Tecnodesign_Exception as Error;
-use Exception;
 use ArrayObject;
 
 class Asset
@@ -130,8 +127,9 @@ class Asset
         }
         if($optimize) {
             $cmdoutput=null;
-            $cacheDir = ($app=S::getApp()) ?$app->tecnodesign['cache-dir'] :null;
-            if(!$cacheDir) $cacheDir = S_VAR.'/cache/minify';
+            $cacheDir = S::getApp()->config('app', 'cache-dir');
+            if(!$cacheDir) $cacheDir = S_VAR.'/cache';
+            $cacheDir .= '/minify';
             if(!is_dir($cacheDir)) {
                 mkdir($cacheDir, 0777, true);
             }
@@ -201,8 +199,9 @@ class Asset
             }
         }
 
-        $cacheDir = ($app=S::getApp()) ?$app->tecnodesign['cache-dir'] :null;
-        if(!$cacheDir) $cacheDir = S_VAR.'/cache/minify';
+        $cacheDir = S::getApp()->config('app', 'cache-dir');
+        if(!$cacheDir) $cacheDir = S_VAR.'/cache';
+        $cacheDir .= '/minify';
         if(!is_dir($cacheDir)) {
             mkdir($cacheDir, 0777, true);
         }

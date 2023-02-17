@@ -5,7 +5,7 @@
     "license": "GPL-3.0-only",
     "require": {
         "php": ">=7.3",
-        "capile/tecnodesign": "3.*",
+        "capile/tecnodesign": "^3.0.2",
         "erusev/parsedown": "1.7.*",
         "phpoffice/phpspreadsheet": "^1.6.0",
         "foxy/foxy": "^1.1.0",

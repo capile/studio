@@ -13,13 +13,14 @@
 namespace Studio\Query;
 
 use Studio as S;
+use Studio\Exception\AppException;
 use Studio\Query;
 use Studio\Model;
 use Studio\Schema\Model as SchemaModel;
 use Tecnodesign_Database as Database;
-use Tecnodesign_Exception as AppException;
 use Exception;
 use PDO;
+use PDOException;
 
 class Sql
 {
@@ -963,7 +964,7 @@ class Sql
         }
         $stmt = self::connect($n)->query($q);
         if(!$stmt) {
-            throw new \Exception('Statement failed! '.$q);
+            throw new Exception('Statement failed! '.$q);
         }
         return $stmt;
     }

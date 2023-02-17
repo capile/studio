@@ -13,9 +13,8 @@
 namespace Studio\Query;
 
 use Studio as S;
+use Studio\Exception\AppException;
 use Studio\Query;
-use Tecnodesign_Exception as AppException;
-use Exception;
 use SoapClient;
 
 class Soap
@@ -75,7 +74,7 @@ class Soap
         }
         if(!self::$C[$n]) {
             S::log('[INFO] Failed connection to '.$n);
-            if($exception) throw new Exception(array(S::t('Could not connect to %s.', 'exception'), $n));
+            if($exception) throw new AppException(array(S::t('Could not connect to %s.', 'exception'), $n));
         }
         return self::$C[$n];
     }

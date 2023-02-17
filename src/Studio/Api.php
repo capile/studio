@@ -16,7 +16,7 @@ namespace Studio;
 
 use Studio as S;
 use Studio\App;
-use Studio\Exception\End;
+use Studio\Exception\EndException;
 use Studio\Model;
 use Studio\Model\Interfaces;
 use Studio\Schema;
@@ -24,7 +24,7 @@ use Studio\Studio;
 use Studio\Cache;
 use Studio\Yaml;
 use Studio\Form;
-use Tecnodesign_Exception as Exception;
+use Studio\Exception\AppException;
 use ArrayAccess;
 
 class Api extends SchemaObject
@@ -598,10 +598,10 @@ class Api extends SchemaObject
             static::$ui = (!S_CLI && static::$format==='html');
             return $I->output($p);
 
-        } catch(End $e) {
+        } catch(EndException $e) {
             static::headers();
             throw $e;
-        } catch(Exception $e) {
+        } catch(AppException $e) {
             S::log('[ERROR] '.__METHOD__.'->'.get_class($e).':'.$e);
             static::error(500);
         }
@@ -2258,7 +2258,7 @@ class Api extends SchemaObject
             $post = App::request('post');
             if ($post) {
                 if (!$form->validate($post)) {
-                    throw new Exception((!$post) ? static::t('errorNoInput') : $form->getError());
+                    throw new AppException((!$post) ? static::t('errorNoInput') : $form->getError());
                 }
 
                 $newInterface['title'] = $post['title'];
@@ -2274,7 +2274,7 @@ class Api extends SchemaObject
                 $this->message('<div class="s-msg s-msg-success"><p>Shared interface /a/' . $fileName . ' created.</p></div>');
                 $this->redirect("/a/$fileName");
             }
-        } catch (Exception $e) {
+        } catch (AppException $e) {
             S::log('[INFO] User error while processing ' . __METHOD__ . ': ' . $e);
             $this->text['error'] = static::t('newError');
             $this->text['errorMessage'] = $e->getMessage();
@@ -2421,7 +2421,7 @@ class Api extends SchemaObject
                 if(!$fo->validate($post) || !$post) {
                     $err = (!$post)?(static::t('errorNoInput')):($fo->getError());
                     if(static::$format!='html') {
-                        throw new Exception($err);
+                        throw new AppException($err);
                     }
                     if(static::$format!='html') $this->text['error'] = $err;
                     $msg = '<div class="s-msg s-msg-error">'.static::t('newError').'</div>';
@@ -2465,7 +2465,7 @@ class Api extends SchemaObject
                 $this->text['summary'] .= $msg;
             }
             unset($post);
-        } catch(Exception $e) {
+        } catch(AppException $e) {
             S::log('[INFO] User error while processing '.__METHOD__.': '.$e->getMessage());
             $this->text['error'] = static::t('newError');
             $this->text['errorMessage'] = $e->getMessage();
@@ -2718,7 +2718,7 @@ class Api extends SchemaObject
                 if(!$fo->validate($post) || !$post) {
                     $err = (!$post)?(static::t('errorNoInput')):($fo->getError());
                     if(static::$format!='html') {
-                        throw new Exception($err);
+                        throw new AppException($err);
                     }
                     $this->text['error'] = static::t('updateError');
                     $msg = '<div class="s-msg s-msg-error">'.$this->text['error'].'</div>';
@@ -2771,7 +2771,7 @@ class Api extends SchemaObject
                 $this->text['summary'] .= $this->message();
             }
             unset($post);
-        } catch(Exception $e) {
+        } catch(AppException $e) {
             S::log('[INFO] User error while processing '.__METHOD__.': '.$e);
             $this->text['error'] = static::t('updateError');
             $this->text['errorMessage'] = $e->getMessage();
@@ -2833,7 +2833,7 @@ class Api extends SchemaObject
 
                 return $this->redirect($this->link(false, false), $oldurl);
             }
-        } catch(Exception $e) {
+        } catch(AppException $e) {
             S::log('[INFO] User error while processing '.__METHOD__.': '.$e);
         }
         $msg = static::t('deleteError');
@@ -4326,7 +4326,7 @@ class Api extends SchemaObject
         if (method_exists($this, $m='set'.S::camelize($name, true))) {
             $this->$m($value);
         } else if(!property_exists($this, $name)) {
-            throw new Exception(array(S::t('Column "%s" is not available at %s.','exception'), $name, get_class($this)));
+            throw new AppException(array(S::t('Column "%s" is not available at %s.','exception'), $name, get_class($this)));
         } else {
             $this->$name = $value;
         }

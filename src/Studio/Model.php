@@ -27,7 +27,7 @@ use Studio\Schema;
 use Studio\Schema\ModelProperty;
 use Studio\Yaml;
 use Studio\Query;
-use Tecnodesign_Exception as AppException;
+use Studio\Exception\AppException;
 use ArrayAccess;
 use Iterator;
 use Countable;

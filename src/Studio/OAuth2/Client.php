@@ -15,16 +15,17 @@ namespace Studio\OAuth2;
 
 use Studio as S;
 use Studio\App;
+use Studio\Cache;
+use Studio\Exception\AppException;
 use Studio\OAuth2\Server;
 use Studio\OAuth2\Storage;
-use Studio\Studio;
-use Studio\User;
-use Studio\Cache;
+use Studio\Query\Api as QueryApi;
 use OAuth2\Request;
 use OAuth2\Response;
-use Studio\Query\Api as QueryApi;
 use Studio\SchemaObject;
-use Tecnodesign_Exception as AppException;
+use Studio\Studio;
+use Studio\User;
+use Exception;
 
 class Client extends SchemaObject
 {
@@ -361,7 +362,7 @@ class Client extends SchemaObject
                 } else {
                     $err = S::t('Could not authenticate user.', 'exception');
                 }
-            } catch(\Exception $e) {
+            } catch(Exception $e) {
                 $err = $e->getMessage();
             }
 

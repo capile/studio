@@ -17,8 +17,8 @@ namespace Studio;
 use Studio as S;
 use Studio\Asset;
 use Studio\Cache as Cache;
-use Studio\Exception\End as End;
-use Tecnodesign_Exception as Error;
+use Studio\Exception\EndException;
+use Studio\Exception\AppException;
 use Exception;
 use ArrayObject;
 
@@ -247,7 +247,7 @@ class App
 
     public static function end($output='', $status=200)
     {
-        throw new End($output, $status);
+        throw new EndException($output, $status);
     }
 
     /**
@@ -337,10 +337,10 @@ class App
             if(isset(self::$_response['layout']) && self::$_response['layout']) {
                 self::$result = $this->runTemplate(self::$_response['layout']);
             }
-        } catch(End $e) {
+        } catch(EndException $e) {
             self::status($e->getCode());
             self::$result = $e->getMessage();
-        } catch(Error $e) {
+        } catch(AppException $e) {
             if($e->error) {
                 S::log('Error in action stack: '.$e->getMessage());
                 $this->runError(500, $defaults['layout']);

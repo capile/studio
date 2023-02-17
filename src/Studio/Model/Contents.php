@@ -15,11 +15,11 @@ use Studio\Api;
 use Studio\App;
 use Studio\Cache;
 use Studio\Collection;
+use Studio\Exception\AppException;
 use Studio\Model;
 use Studio\Model\Entries;
 use Studio\Studio;
 use Studio\Yaml;
-use Tecnodesign_Exception as Exception;
 
 class Contents extends Model
 {
@@ -249,7 +249,7 @@ class Contents extends Model
                 $rename = ($this->source && $page != $this->source);
 
                 if(!S::save(Entries::file($page, false), $c)) {
-                    throw new Exception("Could not save [{$this->source}]");
+                    throw new AppException("Could not save [{$this->source}]");
                     return false;
                 }
                 if($rename) {
@@ -261,7 +261,7 @@ class Contents extends Model
             } else if(!$this->id && !is_numeric($this->id) && $this->isNew()) {
                 $this->id=null;
             }
-            throw new Exception('We could not find the source content to update.', 1);
+            throw new AppException('We could not find the source content to update.', 1);
 
         }
         return parent::save($beginTransaction, $relations, $conn);

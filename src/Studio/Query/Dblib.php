@@ -14,9 +14,7 @@ namespace Studio\Query;
 
 use Studio as S;
 use Studio\Query\Sql;
-use Exception;
 use PDO;
-use Tecnodesign_Exception as AppException;
 
 class Dblib extends Sql
 {

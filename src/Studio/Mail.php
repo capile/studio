@@ -15,6 +15,7 @@
 namespace Studio;
 
 use Studio as S;
+use Studio\Exception\AppException;
 
 class Mail
 {
@@ -627,7 +628,7 @@ class Mail
             if ($mailer->send($msg)) {
                 $this->sent = true;
             }
-        } catch (Exception $e) {
+        } catch (AppException $e) {
             $this->error($e->getMessage());
         }
         return true;
@@ -641,7 +642,7 @@ class Mail
         $this->errors[microtime(true)]=$m;
         S::log($m);
         if(static::$haltOnError) {
-            throw new \Tecnodesign_Exception($m);
+            throw new AppException($m);
         }
     }
 

@@ -15,7 +15,7 @@
 namespace Studio;
 
 use Studio as S;
-use Tecnodesign_Exception as AppException;
+use Studio\Exception\AppException;
 
 class Git
 {

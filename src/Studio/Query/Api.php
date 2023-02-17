@@ -15,11 +15,11 @@ namespace Studio\Query;
 use Studio as S;
 use Studio\App;
 use Studio\Cache;
+use Studio\Exception\AppException;
 use Studio\Model;
 use Studio\Query;
 use Studio\Yaml;
 use Exception;
-use Tecnodesign_Exception as AppException;
 
 class Api
 {

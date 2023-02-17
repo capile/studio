@@ -13,11 +13,11 @@
 namespace Studio\Query;
 
 use Studio as S;
+use Studio\Exception\AppException;
 use Studio\Query;
 use Studio\Schema;
 use Studio\Yaml;
 use Exception;
-use Tecnodesign_Exception as AppException;
 
 class File
 {

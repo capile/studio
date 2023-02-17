@@ -21,7 +21,7 @@ use Studio\Model\Permissions;
 use Studio\Model\Tags;
 use Studio\Studio;
 use Studio\Yaml;
-use Tecnodesign_Exception as Exception;
+use Studio\Exception\AppException;
 
 class Entries extends Model
 {
@@ -1084,7 +1084,7 @@ class Entries extends Model
                 $q = ['type'=>['page', 'file'], 'link'=>$v];
                 if($this->id) $q['id!=']=$this->id;
                 if(self::find($q,1,['link'])) {
-                    throw new Exception(S::t('There\'s already a page or file with this link.', 'exception'));
+                    throw new AppException(S::t('There\'s already a page or file with this link.', 'exception'));
                 }
             }
         }

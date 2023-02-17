@@ -34,7 +34,9 @@ class Interfaces extends Model
         $S = $this->loadSchema(false);
         if(!$this->model) {
             $cn = 'Studio_Interfaces_'.S::camelize($this->id, true);
-            $d = S::getApp()->config('app', 'cache-dir').'/apis';
+            $cacheDir = S::getApp()->config('app', 'cache-dir');
+            if(!$cacheDir) $cacheDir = S_VAR.'/cache';
+            $d = $cacheDir.'/apis';
             if($d) {
                 $f = $d.'/'.$cn.'.php';
                 if(!file_exists($f)) {
@@ -146,7 +148,11 @@ class Interfaces extends Model
         static $i=1;
 
         if(is_null($n)) $n = (isset(Studio::$apiListParent['apis'])) ?Studio::$apiListParent['apis'] :'apis';
-        if(is_null($d) || $d==='/apis') $d = S::getApp()->config('app', 'cache-dir').'/apis';
+        if(is_null($d)) {
+            $cacheDir = S::getApp()->config('app', 'cache-dir');
+            if(!$cacheDir) $cacheDir = S_VAR.'/cache';
+            $d = $cacheDir.'/apis';
+        }
 
         $id = S::slug($this->id, '_', true);
         $f =  $d.'/'.$id.'.yml';

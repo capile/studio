@@ -16,10 +16,9 @@ namespace Studio;
 
 use Studio as S;
 use Studio\Schema;
+use Studio\Exception\AppException;
 use arrayObject;
 use ArrayAccess;
-use Tecnodesign_Exception as AppException;
-use Exception;
 
 #[AllowDynamicProperties]
 class SchemaObject implements ArrayAccess

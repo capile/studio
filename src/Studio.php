@@ -19,8 +19,8 @@ use Studio\Model;
 use Studio\Model\Entries;
 use Studio\Yaml;
 use Studio\Query;
-use Tecnodesign_Exception as AppException;
-use Tecnodesign_Mail as Mail;
+use Studio\Exception\AppException;
+use Studio\Mail;
 
 class Studio
 {

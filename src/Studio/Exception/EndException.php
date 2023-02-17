@@ -16,6 +16,6 @@ namespace Studio\Exception;
 
 use Exception;
 
-class End extends Exception
+class EndException extends Exception
 {
 }
