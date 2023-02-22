@@ -3798,7 +3798,10 @@ class Api extends SchemaObject
                         'fieldset'=>$fieldset,
                         'class'=>'s-search-input'
                     );
-                    if(isset($fd['multiple']) && $fd['multiple']) $fo['fields'][$slug]['multiple']=true;
+                    if(isset($fd['multiple']) && $fd['multiple']) {
+                        $fo['fields'][$slug]['multiple']=true;
+                        $fo['fields'][$slug]['size']=2000;
+                    }
                     if(isset($post[$slug])) $active = true;
                 } else {
                     $ff['q'][$slug]=$label;
