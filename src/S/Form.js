@@ -1118,7 +1118,7 @@ function initSubform(o)
     if(!fmax || fmax!=i || fmax!=fmin) {
         var b=o.parentNode.parentNode.querySelector('div.s-subform-buttons');
         if(!b) {
-            var t=Z.node(o.parentNode.parentNode.querySelector('dt')), bd={e:'div',p:{className:'s-subform-buttons s-buttons'},c:[btns[1]]};
+            var t=Z.node(o.parentNode.parentNode.querySelector('dt,.label')), bd={e:'div',p:{className:'s-subform-buttons s-buttons'},c:[btns[1]]};
             if(t) b = Z.element.call(t, bd);
             else b = Z.element(bd, o.parentNode);
         }
