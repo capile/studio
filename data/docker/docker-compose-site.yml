@@ -1,9 +1,12 @@
 ---
 services:
-  studio-site:
-    hostname: studio-site
-    container_name: studio-site
+  studio:
+    hostname: studio
+    container_name: studio
     image: tecnodesign/studio-site:v1.0
+    #volumes:
+    #  ## Use this if you already installed the composer dependencies and want the full folder loaded
+    #  - ./:/var/www/studio/data/docker:Z
   web.studio-site:
     hostname: web.studio-site
     image: nginx:alpine
