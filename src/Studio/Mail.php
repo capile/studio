@@ -224,7 +224,7 @@ class Mail
     {
         $r = array();
         if (is_array($email)) {
-            if(count($email)==2 && isset($email[0]) && isset($email[1]) && S::checkEmail($email[1], false) && !S::checkEmail($email[0], false)) {
+            if(count($email)==2 && isset($email[0]) && isset($email[1]) && is_string($email[1]) && is_string($email[0]) && S::checkEmail($email[1], false) && !S::checkEmail($email[0], false)) {
                 $r[$email[1]]=$email[0];
             } else {
                 foreach($email as $k=>$e) {
