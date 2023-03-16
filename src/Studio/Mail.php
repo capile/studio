@@ -427,6 +427,7 @@ class Mail
             'Cc' => ['m', 'addCC'],
             'Bcc' => ['m', 'addBCC'],
             'ReplyTo' => ['m', 'addReplyTo'],
+            'Return-Path' => ['s','ReturnPath'],
         ];
 
         $this->sent = false;
@@ -466,6 +467,8 @@ class Mail
                 $m = $H[$p][1];
                 if($H[$p][0]==='p') {
                     $mail->$m = $d;
+                } else if($H[$p][0]==='s') {
+                    $mail->$m = (is_array($d)) ?implode(';', $d) :(string)$d;
                 } else {
                     if(is_array($d)) {
                         foreach($d as $v) {
@@ -506,6 +509,9 @@ class Mail
                 }
             }
             $mail->XMailer = ' ';// omit mailer header
+            if(isset($this->headers['Id'])) {
+                $mail->MessageID = $this->headers['Id'][0];
+            }
 
             $this->sent = $mail->send();
         } catch (\PHPMailer\PHPMailer\Exception $e) {
