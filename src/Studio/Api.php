@@ -3561,7 +3561,7 @@ class Api extends SchemaObject
                         if($c && (!$U || !$U->hasCredential($c, false))) continue;
                     }
                     if(isset($this->options['scope'][$v])) {
-                        $r += $this->options['scope'][$v];
+                        $r += (isset($this->options['scope'][$v]['__default'])) ?$cn::columns($this->options['scope'][$v]) :$this->options['scope'][$v];
                     }
                     continue;
                 }
