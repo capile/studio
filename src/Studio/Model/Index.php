@@ -59,7 +59,8 @@ class Index extends Model
 
         $index = [];
         $q = [];
-        $indexApi = $indexFiles = true;
+        $indexApi = Studio::config('enable_api_index');
+        $indexFiles = ($indexApi && Studio::config('enable_api_content'));
         if(App::request('shell') && ($a = App::request('argv'))) {
             $p = $m = null;
             foreach($a as $i=>$o) {
