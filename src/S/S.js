@@ -7,7 +7,7 @@ var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl,
     Callback:'*[data-callback]',
     Copy:'a.s-copy[data-target]',
     DisplaySwitch:'*[data-display-switch]',
-    ToggleActive:'.s-toggle-active,.s-toggle-active',
+    ToggleActive:'.s-toggle-active',
     Studio_Form: 'form.s-form,form.z-form',
     Studio_Form_AutoSubmit: 'form.s-auto-submit',
     Studio_Form_CheckLabel:'.i-check-label input[type=radio],.i-check-label input[type=checkbox]',
@@ -1371,9 +1371,10 @@ Z.initToggleActive=function(o)
         el=((control && control.indexOf('self')>-1) || o.className.search(/\bs-toggler\b/)>-1) ?o :null,
         sibling=(control && control.indexOf('sibling')<0) ?false :true,
         child=(control && control.indexOf('child')<0) ?false :true,
+        toggler=(control && control.indexOf('no-toggler')>-1) ?false :true,
         storage=(control && control.indexOf('storage')>-1) ?true :false,
         drag=(control && control.indexOf('draggable')>-1) ?true :false,
-        load=false, a;
+        load=false, a, i;
     if((sibling && o.parentNode.querySelector(':scope > .s-toggler')) || (child && o.querySelector(':scope > .s-toggler'))) {
         return;
     }
@@ -1390,27 +1391,31 @@ Z.initToggleActive=function(o)
         load = (tw==='on' || (tw>0 && tw<window.innerWidth))
     }
 
-    if(!el) {
-        el={e:'a', a:{'data-target':'#'+id}, p:{className:'s-toggler'},t:{click:ToggleActive}};
-    } else {
-        Z.bind(el, 'click', ToggleActive);
-        if(el.className.search(/\bs-toggler\b/)<0) el.className += ' s-toggler';
+    if(child) {
+        for(i=0;i<o.childNodes.length;i++) {
+            Z.bind(o.childNodes[i], 'click', ToggleActive);
+        }
     }
-
-
-    if(sibling) a=Z.element(el, null, o);
-    if(drag) {
-        el.p.draggable=true;
-        el.t.dragstart = toggleDragStart;
-        el.t.dragend = toggleDragEnd;
-        if(o.getAttribute('data-toggler-drag-target')) el.a['data-drag-target']=o.getAttribute('data-toggler-drag-target');
-        if(o.getAttribute('data-toggler-drag')) el.a['data-drag']=o.getAttribute('data-toggler-drag');
-        if(o.getAttribute('data-draggable-default-style')) el.a['data-draggable-style']=o.getAttribute('data-draggable-default-style');
-
+    if(toggler) {
+        if(!el) {
+            a={e:'a', a:{'data-target':'#'+id}, p:{className:'s-toggler'},t:{click:ToggleActive}};
+            if(sibling) el=Z.element(a, null, o);
+            if(child) el=Z.element.call(o, a);
+        } else {
+            Z.bind(el, 'click', ToggleActive);
+            if(el.className.search(/\bs-toggler\b/)<0) el.className += ' s-toggler';
+        }
+        if(drag) {
+            el.draggable=true;
+            Z.bind(el, 'dragstart', toggleDragStart);
+            Z.bind(el, 'dragend', toggleDragEnd);
+            if(o.getAttribute('data-toggler-drag-target')) el.setAttribute('data-drag-target', o.getAttribute('data-toggler-drag-target'));
+            if(o.getAttribute('data-toggler-drag')) el.setAttribute('data-drag', o.getAttribute('data-toggler-drag'));
+            if(o.getAttribute('data-draggable-default-style')) el.setAttribute('data-draggable-style', o.getAttribute('data-draggable-default-style'));
+        }
     }
-    if(child) a=Z.element.call(o, el);
     if(load) {
-        ToggleActive.call(a);
+        ToggleActive.call(el);
     }
 };
 
@@ -1548,35 +1553,59 @@ function toggleDragEnd(e)
 
 function ToggleActive()
 {
-    var ts=this.getAttribute('data-target'), t;
-    if(ts) t=document.querySelector(ts);
-    else if(this.getAttribute('data-toggler-options') && this.getAttribute('data-toggler-options').search(/\bself\b/)>-1) t=this;
-    else this.previousSibling;
-    if(!t) return;
-    var c=this.getAttribute('data-active-class'), o=t.getAttribute('data-toggler-options'),
-        drag=(o && o.indexOf('draggable')>-1) ?true :false,
-        storage=(o && o.indexOf('storage')>-1) ?t.getAttribute('id') :null;
-    if(!c)c='s-active';
-    var re=new RegExp('\\s*\\b'+c+'\\b', 'g'), k, L, i, st='on';
-    if(t.className.search(c)>-1) { // disable
-        t.className = t.className.replace(re, '');
-        if(k=t.getAttribute('data-toggler-cookie-disable')) Z.cookie(k, true, null, '/');
-        if(k=t.getAttribute('data-toggler-cookie-enable'))  Z.cookie(k, null, new Date(2000, 1, 1), '/');
-        if(storage) Z.storage('s-toggler-'+storage, null);
-        if(drag) removeDrag();
-        st='off';
-    } else { // enable
-        t.className += ' '+c;
-        if(k=t.getAttribute('data-toggler-cookie-disable')) Z.cookie(k, null, new Date(2000, 1, 1),'/');
-        if(k=t.getAttribute('data-toggler-cookie-enable'))  Z.cookie(k, true, null, '/');
-        if(storage) Z.storage('s-toggler-'+storage, 1);
-        if(drag) enableAndApplyDrag();
-        st='on';
+    var ts=this.getAttribute('data-target'), o=this.getAttribute('data-toggler-options'), t, L, i, M, j;
+    if(ts) L=document.querySelectorAll(ts);
+    else if(o && o.search(/\bself\b/)>-1) t=this;
+    else t=this.previousSibling;
+    if(!L || L.length==0) {
+        if(t) L = [t];
+        else return;
     }
-    if(k=t.getAttribute('data-toggler-attribute-target')) {
-        L=document.querySelectorAll(k);
-        i=L.length;
-        while(i--) L[i].setAttribute('data-toggler', st);
+    if(!t) t=this;
+    var c=t.getAttribute('data-active-class'), d=t.getAttribute('data-inactive-class'),
+        drag=(o && o.indexOf('draggable')>-1) ?true :false,
+        storage=(o && o.indexOf('storage')>-1) ?t.getAttribute('id') :null,
+        disableSiblings=(o && o.indexOf('disable-siblings')>-1) ?true :false,
+        dontDisable=(o && o.indexOf('do-not-disable')>-1) ?true :false;
+    if(!c) c='s-active';
+    if(!d && disableSiblings) d='s-inactive';
+    var re=new RegExp('\\s*\\b'+c+'\\b', 'g'), rd= (d) ?new RegExp('\\s*\\b'+d+'\\b', 'g') :null, k, st='on';
+    i=L.length;
+    while(i--) {
+        t=L[i];
+        if(t.className.search(c)>-1) { // disable
+            if(dontDisable) continue;
+            t.className = t.className.replace(re, '');
+            if(d && t.className.search(rd)<0) t.className += ' '+d;
+            if(k=t.getAttribute('data-toggler-cookie-disable')) Z.cookie(k, true, null, '/');
+            if(k=t.getAttribute('data-toggler-cookie-enable'))  Z.cookie(k, null, new Date(2000, 1, 1), '/');
+            if(storage) Z.storage('s-toggler-'+storage, null);
+            if(drag) removeDrag();
+            st='off';
+        } else { // enable
+            if(d) t.className = t.className.replace(rd, '');
+            t.className += ' '+c;
+            if(disableSiblings) {
+                M=t.parentNode.childNodes;
+                j=M.length;
+                while(j--) {
+                    if(M[j]!==t) {
+                        M[j].className = M[j].className.replace(re, '');
+                        if(M[j].className.search(rd)<0) M[j].className  += ' '+d;
+                    }
+                }
+            }
+            if(k=t.getAttribute('data-toggler-cookie-disable')) Z.cookie(k, null, new Date(2000, 1, 1),'/');
+            if(k=t.getAttribute('data-toggler-cookie-enable'))  Z.cookie(k, true, null, '/');
+            if(storage) Z.storage('s-toggler-'+storage, 1);
+            if(drag) enableAndApplyDrag();
+            st='on';
+        }
+        if(k=t.getAttribute('data-toggler-attribute-target')) {
+            M=document.querySelectorAll(k);
+            j=L.length;
+            while(j--) M[i].setAttribute('data-toggler', st);
+        }
     }
 }
 
