@@ -308,6 +308,9 @@ class Field extends SchemaObject
                     $this->value = $M->$m();
                 } else {
                     $this->value = $M->{$this->bind};
+                    if($this->value===false && !property_exists($M, $this->bind)) {
+                        $this->value = null;
+                    }
                 }
                 if($this->value instanceof Collection) {
                     $this->value = ($this->value->count()>0)?($this->value->getItems()):(array());
