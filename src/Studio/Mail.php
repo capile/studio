@@ -218,7 +218,7 @@ class Mail
                     $s[]=$file;
                     $r[]=$nf;
                     if(!isset($added[$nf])) {
-                        $this->addPart($f, $nf);
+                        $this->addFile($f, $nf);
                     }
                 }
             }
