@@ -59,10 +59,38 @@ class Mail
         }
     }
 
+    public function addFile($file, $hint=false, $cid=null, $name=null)
+    {
+        $ct=strtolower($hint);
+        $meta=['attachment'=>false, 'file'=>$file ];
+        $attachment = false;
+        $contentType = ($ct && preg_match('/^[a-z]+\/[a-z\-0-9]+/',$ct))?($ct):(false);
+        if($contentType) {
+            $meta['content-type'] = $ct;
+        } else if($hint && !is_numeric($hint) && is_null($cid)) {
+            $cid = $hint;
+        } else {
+            $meta['content-type']='text/plain';
+        }
+        if($cid) {
+            $meta['attachment'] = true;
+            if (substr($cid, 0, 4)=='cid:' && strlen($cid)>4) {
+                $meta['id']=$cid;
+                $meta['inline']=true;
+            } else {
+                $meta['id']=$cid;
+                $meta['inline']=false;
+            }
+        }
+        $id = (!isset($meta['id']))?($meta['content-type']):($meta['id']);
+        if($name) $meta['name'] = $name;
+        $this->contents[$id]=$meta;
+    }
+
     public function addPart($content, $hint=false, $cid=null)
     {
         $ct=strtolower($hint);
-        $meta=array('attachment'=>false, 'content'=>$content);
+        $meta=['attachment'=>false, 'content'=>$content ];
         $attachment = false;
         $contentType = ($ct && preg_match('/^[a-z]+\/[a-z\-0-9]+/',$ct))?($ct):(false);
         if($contentType) {
@@ -498,7 +526,12 @@ class Mail
                 } else if($k==='text/html') {
                     $mail->Body = $v['content'];
                 } else if(substr($k, 0, 4)=='cid:') {
-                    $mail->addEmbeddedImage($v['content'], substr($k,4));
+                    $name = (isset($v['name'])) ?$v['name'] :'';
+                    if(isset($v['file'])) {
+                        $mail->addEmbeddedImage($v['file'], substr($k,4), $name);
+                    } else {
+                        $mail->addStringEmbeddedImage($v['content'], substr($k,4), $name);
+                    }
                 } else {
                     $m = (strlen($v['content'])<500 && file_exists($v['content'])) ?'addAttachment' :'addStringAttachment';
                     if(preg_match('/^[a-z]+\/[a-z\-0-9]+/',$k)) {
