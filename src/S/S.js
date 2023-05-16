@@ -2,7 +2,7 @@
 if(!('Studio' in window))window.Z=window.Studio={version:1.0, host:null,uid:'/_me',timeout:0,headers:{},env:'prod',timestamp:null};
 (function(Z) {
 "use strict";
-var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl, _assets={},
+var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl, _assets={}, _wm,
   defaultModules={
     Callback:'*[data-callback]',
     Copy:'a.s-copy[data-target]',
@@ -132,7 +132,8 @@ Z.storage=function(n, v, e)
     if(arguments.length>1) {
         if(arguments.length<3) e=0;
         else if(e<100000000) e+=t;
-        window.localStorage.setItem(n, parseInt(e)+','+JSON.stringify(v));
+        if(v===null) window.localStorage.removeItem(n);
+        else window.localStorage.setItem(n, parseInt(e)+','+JSON.stringify(v));
     } else if(r && r.search(/^([0-9]+),.+/)>-1) {
         var a=parseInt(r.substr(0,r.indexOf(',')));
         if(a > 0 && a < t) r=null;
@@ -473,10 +474,11 @@ function _setLanguage(l)
 }
 
 Z.element=function(o,before,after) {
-    var r,n;
+    var r,n,a=(typeof(o)==='object');
     if(typeof(o)=='string') {
         r=document.createTextNode(o);
-    } else if(o.e) {
+        a=false;
+    } else if(a && o.e) {
         r=document.createElement(o.e);
         if(o.p) {
             for(n in o.p) {
@@ -504,7 +506,7 @@ Z.element=function(o,before,after) {
         if(o instanceof Array) o={c:o};
         r=document.createDocumentFragment();
     }
-    if(o.c) {
+    if(a && ('c' in o)) {
         if(typeof(o.c)=='string') {
             if(('x' in o) && o.x) {
                 r.innerHTML = o.c;
@@ -521,6 +523,9 @@ Z.element=function(o,before,after) {
             i=null;
             t=null;
         }
+    }
+    if(a && ('d' in o) && (typeof(o.d)==='object')) {
+        Z.nodeData(r, o.d);
     }
 
     if(before) return before.parentNode.insertBefore(r,before);
@@ -1367,14 +1372,14 @@ Z.initToggleActive=function(o)
 {
     o=Z.node(this,o);
     var id=o.getAttribute('id'),
-        control=o.getAttribute('data-toggler-options'),
+        control=Z.nodeData(o, 'toggler-options'),
         el=((control && control.indexOf('self')>-1) || o.className.search(/\bs-toggler\b/)>-1) ?o :null,
         sibling=(control && control.indexOf('sibling')<0) ?false :true,
         child=(control && control.indexOf('child')<0) ?false :true,
         toggler=(control && control.indexOf('no-toggler')>-1) ?false :true,
         storage=(control && control.indexOf('storage')>-1) ?true :false,
         drag=(control && control.indexOf('draggable')>-1) ?true :false,
-        load=false, a, i;
+        load=false, a, i, tw;
     if((sibling && o.parentNode.querySelector(':scope > .s-toggler')) || (child && o.querySelector(':scope > .s-toggler'))) {
         return;
     }
@@ -1382,12 +1387,9 @@ Z.initToggleActive=function(o)
         storage = false;
         id='_n'+(_got++);
         o.setAttribute('id', id);
-    } else if(Z.storage('s-toggler-'+id)) {
+    } else if(Z.storage('s-toggler/#'+id)) {
         load = true;
-    }
-
-    var tw=o.getAttribute('data-toggler-default');
-    if(tw) {
+    } else if(tw=Z.nodeData(o, 'toggler-default')) {
         load = (tw==='on' || (tw>0 && tw<window.innerWidth))
     }
 
@@ -1399,6 +1401,7 @@ Z.initToggleActive=function(o)
     if(toggler) {
         if(!el) {
             a={e:'a', a:{'data-target':'#'+id}, p:{className:'s-toggler'},t:{click:ToggleActive}};
+            if(storage) a.d = {'toggler-options':'storage'};
             if(sibling) el=Z.element(a, null, o);
             if(child) el=Z.element.call(o, a);
         } else {
@@ -1540,6 +1543,27 @@ function enableAndApplyDrag(id)
     applyDrag(id);
 }
 
+Z.nodeData=function (el, n, d)
+{
+    if(!_wm) _wm = new WeakMap();
+    var p = _wm.get(el), r=null, l=arguments.length;
+    if(l==1) return p;
+    if(typeof(n)==='object' && l==2) {
+        _wm.set(el, n);
+        return p;
+    }
+
+    if(p && (n in p)) r = p[n];
+    else r = el.getAttribute('data-'+n);
+
+    if(l>2) {
+        if(!p) p={};
+        p[n] = d;
+        _wm.set(el, p);
+    }
+
+    return r;
+}
 
 function toggleDragEnd(e)
 {
@@ -1553,7 +1577,7 @@ function toggleDragEnd(e)
 
 function ToggleActive()
 {
-    var ts=this.getAttribute('data-target'), o=this.getAttribute('data-toggler-options'), t, L, i, M, j;
+    var ts=Z.nodeData(this, 'target'), o=Z.nodeData(this, 'toggler-options'), t, L, i, M, j;
     if(ts) L=document.querySelectorAll(ts);
     else if(o && o.search(/\bself\b/)>-1) t=this;
     else t=this.previousSibling;
@@ -1564,7 +1588,7 @@ function ToggleActive()
     if(!t) t=this;
     var c=t.getAttribute('data-active-class'), d=t.getAttribute('data-inactive-class'),
         drag=(o && o.indexOf('draggable')>-1) ?true :false,
-        storage=(o && o.indexOf('storage')>-1) ?t.getAttribute('id') :null,
+        storage=(o && o.indexOf('storage')>-1) ?ts :null,
         disableSiblings=(o && o.indexOf('disable-siblings')>-1) ?true :false,
         dontDisable=(o && o.indexOf('do-not-disable')>-1) ?true :false;
     if(!c) c='s-active';
@@ -1579,7 +1603,7 @@ function ToggleActive()
             if(d && t.className.search(rd)<0) t.className += ' '+d;
             if(k=t.getAttribute('data-toggler-cookie-disable')) Z.cookie(k, true, null, '/');
             if(k=t.getAttribute('data-toggler-cookie-enable'))  Z.cookie(k, null, new Date(2000, 1, 1), '/');
-            if(storage) Z.storage('s-toggler-'+storage, null);
+            if(storage) Z.storage('s-toggler/'+storage, null);
             if(drag) removeDrag();
             st='off';
         } else { // enable
@@ -1597,7 +1621,7 @@ function ToggleActive()
             }
             if(k=t.getAttribute('data-toggler-cookie-disable')) Z.cookie(k, null, new Date(2000, 1, 1),'/');
             if(k=t.getAttribute('data-toggler-cookie-enable'))  Z.cookie(k, true, null, '/');
-            if(storage) Z.storage('s-toggler-'+storage, 1);
+            if(storage) Z.storage('s-toggler/'+storage, 1);
             if(drag) enableAndApplyDrag();
             st='on';
         }
