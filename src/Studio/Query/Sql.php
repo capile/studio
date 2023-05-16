@@ -1170,19 +1170,18 @@ class Sql
         $data = [];
         $a = [];
 
-        $fs = $M::$schema['columns'];
+        $fs = $M::$schema->properties;
         if(!$fs) $fs = array_flip(array_keys($odata));
         foreach($fs as $fn=>$fv) {
             if(!is_array($fv) && !is_object($fv)) $fv=[];
-            if(isset($fv['increment']) && $fv['increment']=='auto' && !isset($odata[$fn])) {
+            if($fv->increment==='auto' && !isset($odata[$fn])) {
                 continue;
             }
-            if(isset($fv['alias'])) continue;
-            if(!isset($odata[$fn]) && isset($fv['default']) &&  $M->getOriginal($fn, false, true)===false) {
-                $odata[$fn] = $fv['default'];
+            if($fv->alias || $fv->readonly) continue;
+            if(!isset($odata[$fn]) && isset($fv->default) && $M->getOriginal($fn, false, true)===false) {
+                $odata[$fn] = $fv->default;
             }
-            $req = ((isset($fv['required']) && $fv['required']) || (isset($fv['null']) && !$fv['null']));
-            if (!isset($odata[$fn]) && $req) {
+            if (!isset($odata[$fn]) && $fv->required) {
                 throw new AppException(array(S::t('%s should not be null.', 'exception'), $M::fieldLabel($fn)));
             } else if(array_key_exists($fn, $odata)) {
                 $data[$fn] = self::sql($odata[$fn], $fv, true);
@@ -1194,7 +1193,7 @@ class Sql
             unset($fs[$fn], $fn, $fv);
         }
 
-        $tn = $M::$schema['tableName'];
+        $tn = $M::$schema->tableName;
         if($data) {
             if(!$conn) {
                 $conn = self::connect($this->schema('database'));
@@ -1256,7 +1255,7 @@ class Sql
         $quote = static::QUOTE;
         foreach($fs as $fn=>$fv) {
             $original=$M->getOriginal($fn, false);
-            if(is_object($fv) && ($fv->primary || $fv->alias)) continue;
+            if(is_object($fv) && ($fv->primary || $fv->alias || $fv->readonly)) continue;
             if(!is_object($fv)) $fv=new stdClass();
 
             if (!isset($odata[$fn]) && $original===false) {
@@ -1310,10 +1309,10 @@ class Sql
     {
         $pk = $M->getPk(true);
         if($pk) {
-            $tn = $M::$schema['tableName'];
+            $tn = $M::$schema->tableName;
             $wsql = '';
             foreach($pk as $fn=>$v) {
-                $fv = self::sql($v, (isset($M::$schema['columns'][$fn]))?($M::$schema['columns'][$fn]):(null));
+                $fv = self::sql($v, (isset($M::$schema->properties[$fn]))?($M::$schema->properties[$fn]):(null));
                 $wsql .= (($wsql!='')?(' and '):(''))
                        . "{$fn}={$fv}";
             }

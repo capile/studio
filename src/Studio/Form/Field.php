@@ -350,7 +350,7 @@ class Field extends SchemaObject
             try {
                 $regex = null;
                 if(substr($m, 0, 6)=='model:') {
-                    $fn = substr($m,0,6);
+                    $fn = substr($m, 6);
                     $tg = $this->getModel();
                 } else if(substr($m, 0, 7)=='regexp:') {
                     $regex = substr($m,7);
