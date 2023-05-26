@@ -26,8 +26,8 @@ use Studio\Model\Permissions;
 use Studio\Model\Relations;
 use Studio\Model\Index;
 use Studio\Query;
+use Studio\Translate;
 use Studio\Yaml;
-use Tecnodesign_Translate as Translate;
 
 class Studio
 {
@@ -195,7 +195,7 @@ class Studio
                 return $cn::$m();
             }
             self::error(404);
-        } else if(App::request('headers', 'tdz-slots') || $sn==self::$uid) {
+        } else if(App::request('headers', 'x-studio-slots') || $sn==self::$uid) {
             $cch = 'private';
             if(!static::$cacheTimeout) $cch .= ', no-cache';
             S::cacheControl($cch, static::$cacheTimeout);

@@ -183,7 +183,7 @@ class Studio
         $autoload,
         $tplDir,
         $userClass='Studio\\User',
-        $translator='Tecnodesign_Translate::message',
+        $translator='Studio\\Translate::message',
         $markdown='Tecnodesign_Markdown',
         $database,
         $useDatabaseHandlers=true,

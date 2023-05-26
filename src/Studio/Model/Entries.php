@@ -746,7 +746,7 @@ class Entries extends Model
         return $m;
     }
 
-    public static function findPage($url, $multiview=false, $redirect=false)
+    public static function findPage(&$url, $multiview=false, $redirect=false)
     {
         // get file-based page definitions
         if(substr(basename($url),0,1)=='.') return;
@@ -760,10 +760,8 @@ class Entries extends Model
                 }
             }
             // redirect rules: if it's a folder, S::scriptName() must end with / otherwise, can't end with /
-            if($P && $redirect) {
-                if(substr($url, -1)!=='/' && S::scriptName()===$url && ((substr($P->link, -1)==='/' && $P->link===$url.'/') || ($P->source && preg_replace('/\..*$/', '', basename($P->source))===static::$indexFile))) {
-                    S::redirect($url.'/');
-                }
+            if($P && $redirect && $P->link!==S::scriptName()) {
+                S::redirect($P->link);
             }
         } else if($url) {
             if(in_array('php', Contents::$multiviewContentType) && is_file($f=static::file($url.'.php')))
@@ -775,10 +773,11 @@ class Entries extends Model
         return $P;
     }
 
-    protected static function _checkPage($page, $url, $multiview=false, $extAttr=null)
+    protected static function _checkPage($page, &$url, $multiview=false, $extAttr=null)
     {
         if(is_dir($page)) return;
         $base = preg_replace('/\..*/', '', basename($page));
+        if($base===static::$indexFile && substr($url, -1)!=='/' && basename($url)!==static::$indexFile) $url .= '/';
         $pn = basename($page);
         //if(substr($pn, 0, strlen($base)+1)==$base.'.') $pn = substr($pn, strlen($base)+1);
         $pp = explode('.', $pn);
@@ -856,13 +855,13 @@ class Entries extends Model
 
             if($isPage) {
                 $url = preg_replace('/\.[a-z]+$/', '', $url);
-                if(basename($url)===static::$indexFile) {
-                    $url = substr($url, 0, strlen($url) - strlen(static::$indexFile));
-                }
             }
         }
 
         $meta = static::loadMeta($url, $page, $meta);
+        if($isPage && basename($url)===static::$indexFile && $source===$url.'.'.$ext) {
+            $url = substr($url, 0, strlen($url) - strlen(static::$indexFile));
+        }
         $t = date('Y-m-d\TH:i:s', filemtime($page));
         $d = [
             'id' => $id,
