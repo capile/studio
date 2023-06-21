@@ -1706,11 +1706,6 @@ var matchesSelector = function(node, selector) {
     return Array.prototype.indexOf.call(node.parentNode.querySelectorAll(selector)) != -1;
 };
 
-if('$' in window) {
-    // jquery available, probably needs backwards compatible functions
-    S.backwardsCompatible();
-}
-
 initStudio();
 
 })(window.Studio);

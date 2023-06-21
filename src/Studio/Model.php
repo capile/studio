@@ -981,7 +981,6 @@ class Model implements ArrayAccess, Iterator, Countable
             $auto = false;
             foreach($schema->properties as $fn=>$fv) {
                 if(isset($fv->primary) && $fv->primary) {
-                    if($fv->increment) $auto = true;
                     $pks[$fn] = $this->$fn;
                 }
             }
@@ -992,7 +991,7 @@ class Model implements ArrayAccess, Iterator, Countable
                     break;
                 }
             }
-            if($hasPk && !$auto) {
+            if($hasPk) {
                 $found = static::find($pks,1,array_keys($pks));
                 if(!$found) $hasPk = false;
                 unset($found);
@@ -1679,7 +1678,6 @@ class Model implements ArrayAccess, Iterator, Countable
             if(!$this->runEvent('before-save', $conn)) {
                 throw new AppException(array(S::t('Could not save %s.', 'exception'), $cn::label()));
             }
-
             $trans = false;
             if ($beginTransaction) {
                 $trans = $cn::beginTransaction($conn, $this->_query);
@@ -2568,6 +2566,9 @@ class Model implements ArrayAccess, Iterator, Countable
                     if(is_numeric($v)) $v = (int)$v;
                 } else if($fd['type']=='number') {
                     if(preg_match('/^[^0-9]*(\.[0-9]+)?$/', $v)) $v = (float)$v;
+                } else if($fd['type']=='string' && isset($fd['serialize']) && is_array($v)) {
+                    if($fd['serialize']==='json') $v = json_encode($v,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT);
+                    else $v = S::serialize($v, $fd['serialize']);
                 }
             }
         } else if(isset($fd['local']) && isset($fd['foreign'])) {
