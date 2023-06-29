@@ -1615,12 +1615,16 @@ class Field extends SchemaObject
 
         $prefix = (isset($this->prefix)) ?(string)$this->prefix :'';
         if($this->filters) {
+            $filter = $this->filters;
+            if(is_array($filter)) {
+                if(!isset($filter[0])) $filter = array_keys($filter);
+            }
             if($prefix) {
                 $this->attributes['data-filters']=$prefix.'['
-                    . ((is_array($this->filters))?(implode('],'.$prefix.'[',array_keys($this->filters))):($this->filters))
+                    . ((is_array($filter))?(implode('],'.$prefix.'[',$filter)):($filter))
                     . ']';
             } else {
-                $this->attributes['data-filters']=(is_array($this->filters))?(implode(',',array_keys($this->filters))):($this->filters);
+                $this->attributes['data-filters']=(is_array($filter))?(implode(',',$filter)):($filter);
             }
         }
         if($this->next) {

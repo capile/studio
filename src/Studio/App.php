@@ -64,6 +64,7 @@ class App
         ],
         $result,
         $http2push=false,
+        $requestIpHeader='REMOTE_ADDR',
         $link;
     protected static $configMap = ['tecnodesign'=>'app'];
     protected $_o=null;
@@ -900,7 +901,7 @@ class App
             self::$_request['method']=(!self::$_request['shell'])?(strtolower($_SERVER['REQUEST_METHOD'])):('get');
             self::$_request['ajax']=(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=='XMLHttpRequest');
             if (!self::$_request['shell']) {
-                self::$_request['ip'] = $_SERVER['REMOTE_ADDR'];
+                self::$_request['ip'] = (isset($_SERVER[static::$requestIpHeader])) ?$_SERVER[static::$requestIpHeader] :$_SERVER['REMOTE_ADDR'];
                 self::$_request['hostname']=preg_replace('/([\s\n\;]+|\:[0-9]+$)/', '', $_SERVER['HTTP_HOST']);
                 self::$_request['https']=(isset($_SERVER['HTTPS']));
                 if(isset($_SERVER['REQUEST_SCHEME'])) {
