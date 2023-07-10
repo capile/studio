@@ -345,7 +345,6 @@ class Studio
     {
         list($cn, $m) = explode('::', self::$translator);
         //$r = $cn::$m($message, $table, $to, $from);
-        //if($r==$message && substr($table, 0, 5)!='model') \self::debug(__METHOD__, func_get_args(), $cn::$m($message, $table, $to, $from));
         return $cn::$m($message, $table, $to, $from);
     }
 
@@ -2966,25 +2965,20 @@ class Studio
             }
             unset(self::$autoload[$cn]);
         }
-        if(file_exists($c=S_APP_ROOT.'/config/autoload.'.str_replace('\\', '_', $cn).'.ini')) {
-            $c = parse_ini_file($c, true);
-            if($c) {
-                foreach($c as $k=>$v) {
-                    $cn::$$k = self::rawValue($v);//(!is_array($v) && substr($v, 0, 1)=='{')?(json_decode($v, true)):($v);
-                    unset($c[$k], $k, $v);
-                }
-            }
-            unset($c);
-        } else if(file_exists($c=S_APP_ROOT.'/config/autoload.'.str_replace('\\', '_', $cn).'.yml')) {
-            $c = Yaml::load($c);
-            if($c) {
-                foreach($c as $k=>$v) {
-                    $cn::$$k = self::rawValue($v);
-                    unset($c[$k], $k, $v);
-                }
+        $c = null;
+        if(file_exists($f=S_APP_ROOT.'/config/autoload.'.str_replace('\\', '_', $cn).'.ini')) {
+            $c = parse_ini_file($f, true);
+        } else if(file_exists($f=S_APP_ROOT.'/config/autoload.'.str_replace('\\', '_', $cn).'.yml')) {
+            $c = Yaml::load($f);
+        }
+        if($c) {
+            foreach($c as $k=>$v) {
+                $cn::$$k = self::rawValue($v);
+                unset($c[$k], $k, $v);
             }
             unset($c);
         }
+        unset($f);
 
         if(defined($cn.'::AUTOLOAD_CALLBACK')) {
             $m = $cn::AUTOLOAD_CALLBACK;

@@ -95,7 +95,16 @@ class Schema implements ArrayAccess
                 $r = [];
                 if($Schema->properties) {
                     foreach($Schema->properties as $name=>$def) {
-                        if(isset($this->$name)) $r[$name] = $this->$name;
+                        if(isset($this->$name)) {
+                            if(isset($def['type']) && $def['type']==='object' && isset($def['item']) && is_array($this->$name)) {
+                                $r[$name] = [];
+                                foreach($this->$name as $i=>$o) {
+                                    $r[$name][$i] = ($o instanceof Schema) ?$o->value() :$o;
+                                }
+                            } else {
+                                $r[$name] = $this->$name;
+                            }
+                        }
                     }
                 }
             } else {
@@ -289,7 +298,7 @@ class Schema implements ArrayAccess
     public static function loadSchemaRef($ref)
     {
         if(is_null(static::$schemaDir)) {
-            static::$schemaDir = S::getApp()->config('tecnodesign', 'schema-dir');
+            static::$schemaDir = S::getApp()->config('app', 'schema-dir');
             if(!static::$schemaDir) {
                 static::$schemaDir = array();
             } else if(!is_array(static::$schemaDir)) {

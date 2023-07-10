@@ -34,20 +34,23 @@ class Interfaces extends Model
         $S = $this->loadSchema(false);
         if(!$this->model) {
             $cn = 'Studio_Interfaces_'.S::camelize($this->id, true);
+            $S->className = $cn;
             $cacheDir = S::getApp()->config('app', 'cache-dir');
             if(!$cacheDir) $cacheDir = S_VAR.'/cache';
             $d = $cacheDir.'/apis';
             if($d) {
                 $f = $d.'/'.$cn.'.php';
-                if(!file_exists($f)) {
+                if(!isset($this->updated) && $this->id) $this->refresh(['updated']);
+                $lmod = ($this->updated) ?S::strtotime($this->updated) :null;
+
+                if(!file_exists($f) || ($lmod && filemtime($f)<$lmod)) {
                     $fns = ($S->properties) ?array_keys($S->properties) :[];
                     if($S->relations) $fns = array_merge($fns, array_keys($S->relations));
                     $pf = ($fns) ?'protected $'.implode(', $', $fns).';' :'';
-                    S::save($f, '<?'.'php class '.$cn.' extends Studio\\Model { public static $schema, $allowNewProperties=true; };', true);
+                    S::save($f, '<?'.'php class '.$cn.' extends Studio\\Model { public static $schema='.var_export($S->value(), true).', $allowNewProperties=true; };', true);
                 }
                 require_once $f;
             }
-            $S->className = $cn;
             $S->patternProperties = '/.*/';
             $cn::$schema = $S;
         } else {
@@ -352,5 +355,17 @@ class Interfaces extends Model
 
         if($sources > 1) asort($r);
         return $r;
+    }
+
+    public function previewModel()
+    {
+        if(!isset($this->model) && $this->id) $this->refresh(['model']);
+        $cn = $this->model;
+        if(!$cn) {
+            $cn = $this->model();
+            if(Api::format()==='html') $cn = '<em>'.S::xml($cn).'</em>';
+        }
+
+        return $cn;
     }
 }

@@ -12,7 +12,7 @@ errorNotFound       : Not found or permanently disabled.
 errorNotSupported   : Format not supported.
 importError         : It wasn't possible to import this data. Please verify the error messages and try again.
 importSuccess       : %s ―%s― successfully imported.
-Interfaces          : API Sources
+Interfaces          : Data Sources
 labelActions        : Actions
 labelDelete         : Delete
 labelFilter         : Filter
