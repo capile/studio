@@ -471,7 +471,7 @@ class Model implements ArrayAccess, Iterator, Countable
                     static::$schema->scope[$scope] = $labels;
                     unset($labels);
                 }
-                $scope = static::$schema['scope'][$scope];
+                $scope = static::$schema->scope[$scope];
             }
         }
         if(isset($scope['__default'])) {

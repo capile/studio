@@ -89,3 +89,31 @@
 .s-html-editor-length.exceed {
   color: #fc0808;
 }
+
+.s-has-tooltip {
+  label, dt, p.label {
+    position:relative;
+  }
+}
+.s-tooltip[data-tooltip] {
+  &:after {
+    content: @iconTooltip;
+    font-family: @icon-font-name;
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: inherit;
+  }
+  &:hover, &:focus, &:active {
+    &:before {
+      content:attr(data-tooltip);
+      position:absolute;
+      top: 100%;
+      right:0;
+      background: rgba(0,0,0,0.75);
+      box-shadow: 0.5em 0.5em 0.5em rgba(0,0,0,0.4);
+      color:#fff;
+      padding: 0.5em;
+      border-radius:0.5em 0 0.5em 0.5em;
+    }
+  }
+}

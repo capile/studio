@@ -256,8 +256,11 @@ class Api
             // try to fetch a new access_token based on the refresh token
             $d = [
                 'grant_type' => ($c=$this->config('grant_type')) ?$c :'client_credentials',
-                'scope' => ($c=$this->config('auth_scope')) ?$c :'openid',
+                'scope' => (($c=$this->config('auth_scope')) || ($c=$this->config('scope'))) ?$c :'openid',
             ];
+            if($a=$this->config('token_options')) {
+                $d += $a;
+            }
             if(($ct = (string)$this->config('contentType')) && substr($c, -4)==='json') {
                 $data = S::serialize($d, 'json');
             } else {
@@ -970,7 +973,7 @@ class Api
         }
 
         $m = null;
-        if($msg || preg_match($this->config('errorPattern'), $this->headers, $m)) {
+        if($msg || preg_match($this->config('errorPattern'), (string)$this->headers, $m)) {
             if(!$msg && (!($c=$this->config('errorAttribute')) || !($msg=$this->_getResponseAttribute($c)))) {
                 $msg=$this->header('x-message');
             }
@@ -988,7 +991,7 @@ class Api
                 if(S::$log>2) S::log($body);
             }
             throw new AppException($msg);
-        } else if(!preg_match($this->config('successPattern'), $this->headers)) {
+        } else if(!preg_match($this->config('successPattern'), (string)$this->headers)) {
             $this->response = false;
         }
 

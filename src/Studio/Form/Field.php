@@ -39,6 +39,13 @@ class Field extends SchemaObject
             'mandatory',
             'error',
         ],
+        $templateProperties=[
+            'required',
+            'readonly',
+            'disabled',
+            'mandatory',
+            'tooltip',
+        ],
         $dateInputType='text',
         $dateInputFormat,
         $datetimeInputType='text',
@@ -1679,6 +1686,15 @@ class Field extends SchemaObject
         if(is_array($input) && isset($input['input'])) {
             $run['variables'] = $input + $run['variables'];
             $input = $run['variables']['input'];
+        }
+
+        if(static::$templateProperties) {
+            foreach(static::$templateProperties as $n) {
+                if(isset($this->$n) && !isset($run['variables'][$n])) {
+                    $run['variables'][$n] = $this->$n;
+                }
+                unset($n);
+            }
         }
         $tpl = ($this->template) ?S::templateFile($this->template) :null;
         if (!$tpl && isset($arg['template'])) {

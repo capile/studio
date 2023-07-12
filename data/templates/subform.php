@@ -21,6 +21,11 @@ if(isset(S::$variables['form-field-f__'.$id])) {
     $tpl = '<div id="f__$ID" class="field $CLASS">$ERROR<p class="label subform">$LABEL</p><div class="input">$INPUT</div></div>';
 }
 
+if(isset($tooltip)) {
+    $class .= ' s-has-tooltip';
+    $label = '<span class="s-tooltip" data-tooltip="'.S::xml($tooltip).'">'.$label.'</span>';
+}
+
 if($error) {
     if(!is_array($error)) $error=array($error);
     $err = '<span class="error">'

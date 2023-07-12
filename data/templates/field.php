@@ -27,6 +27,11 @@ if(isset(S::$variables['form-field-f__'.$id])) {
     $tpl = '<p id="f__$ID" class="field $CLASS"><label for="$UID"><span class="label">$LABEL</span><span class="input">$INPUT</span></label>$ERROR</p>';
 }
 
+if(isset($tooltip)) {
+    $class .= ' s-has-tooltip';
+    $label = '<span class="s-tooltip" data-tooltip="'.S::xml($tooltip).'">'.$label.'</span>';
+}
+
 if($error) {
     if(!is_array($error)) $error=array($error);
     $err = '<span class="error">'
