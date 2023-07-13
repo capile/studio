@@ -2919,7 +2919,10 @@ class Studio
         } else {
             foreach(self::$lib as $libi=>$d) {
                 if(substr($d, -1)=='/') self::$lib[$libi]=substr($d, 0, strlen($d)-1);
-                if (file_exists($f=$d.'/'.$c.'.php') ||
+                if ($c!==$cn && file_exists($f=$d.'/'.$cn.'.php')) {
+                    return $f;
+                } else if (
+                    file_exists($f=$d.'/'.$c.'.php') ||
                     file_exists($f=$d.'/'.$c.'/'.$c.'.php') ||
                     file_exists($f=$d.'/'.$c.'/'.$c.'.inc.php') ||
                     file_exists($f = $d.'/'.$c.'.class.php') ||
