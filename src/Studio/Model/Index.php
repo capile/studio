@@ -40,9 +40,9 @@ class Index extends Model
         if(!($id = implode('-', $M->getPk(true)))) return;
         try {
             $lmod = null;
-            if($updated && ($lmod = $M->$updated)) $lmod = strtotime($lmod);
+            if($updated && ($lmod = $M->$updated)) $lmod = S::strtotime($lmod);
             if(!static::checkConnection()) return false;
-            if(!($I=static::find(['interface'=>$interface, 'id'=>$id],1,['indexed'])) || ($lmod && strtotime($I->updated)<$lmod)) {
+            if(!($I=static::find(['interface'=>$interface, 'id'=>$id],1,['indexed'])) || ($lmod && S::strtotime($I->updated)<$lmod)) {
                 App::afterRun(array(
                     'callback'=>array(get_called_class(), 'reindex'),
                 ));
@@ -225,7 +225,9 @@ class Index extends Model
     public static function indexInterface($a, $icn=null, $scope='preview', $keyFormat=false, $valueFormat=false, $serialize=false)
     {
         $q = null;
-        if(isset($a['search']) && $a['search']) $q = $a['search'];
+        if(isset($a['search']) && $a['search']) {
+            $q = $a['search'];
+        }
 
         $II = null;
         if(is_object($a)) {
@@ -258,7 +260,7 @@ class Index extends Model
             ], null, null, true);
             if(!$II) return;
         } else {
-            $lmod = strtotime($II->indexed);
+            $lmod = S::strtotime($II->indexed);
             $II->indexed = S_TIMESTAMP;
             $II->save();
         }
@@ -344,7 +346,7 @@ class Index extends Model
                             $o->refresh($fn_updated);
                             $cmod = null;
                             foreach($fn_updated as $fn) {
-                                if(($dt=$o->$fn) && ($cmod=strtotime($dt))) {
+                                if(($dt=$o->$fn) && ($cmod=S::strtotime($dt))) {
                                     $d['updated'] = $dt;
                                     $d['__skip_timestamp_updated'] = true;
                                     break;
@@ -361,7 +363,7 @@ class Index extends Model
                         if($fn_created) {
                             $o->refresh($fn_created);
                             foreach($fn_created as $fn) {
-                                if(($dt=$o->$fn) && strtotime($dt)) {
+                                if(($dt=$o->$fn) && S::strtotime($dt)) {
                                     $d['created'] = $dt;
                                     $d['__skip_timestamp_created'] = true;
                                     break;
@@ -369,6 +371,7 @@ class Index extends Model
                             }
                         }
                         $P = [];
+                        $o->runEvent('index');
                         if($preview=$o->asArray($pscope, $keyFormat, $valueFormat, $serialize)) {
                             foreach($preview as $n=>$v) {
                                 if(!S::isempty($n)) {
@@ -399,6 +402,7 @@ class Index extends Model
             if(!isset($limit)) $limit = $cn::$queryBatchLimit;
             if(!$limit) $limit = 500;
             $offset = 0;
+            if(S::$log>0) S::log('[INFO] Cleaning up '.$count.' stale indexed records on '.$id);
             while($count > $offset) {
                 $L = $R->getItem($offset, $limit);
                 if(!$L) break;

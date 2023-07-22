@@ -102,6 +102,20 @@ class User
         return static::$cfg;
     }
 
+    public function nsConfig($key=null, $default=null)
+    {
+        if(is_null($key)) {
+            $r = ($this->_ns) ?$this->_ns :[];
+        } else if($this->_ns && isset($this->_ns[$key])) {
+            $r = $this->_ns[$key];
+        } else {
+            $r = static::config($key);
+            if(is_null($r)) $r = $default;
+        }
+
+        return $r;
+    }
+
     /**
      * User initialization
      *
@@ -221,7 +235,7 @@ class User
     {
         $cid = (is_null($this->_cid))?($this->getSessionId()):($this->_cid);
         $lk = 'user/access-log-'.$cid;
-        $storage = (isset($this->_ns['storage']))?($this->_ns['storage']):($this->_storage);
+        $storage = $this->nsConfig('storage', $this->_storage);
         $l = Cache::get($lk, 0, $storage, true);
         if(!$l) {
             $l=array('from'=>S_TIME,'to'=>S_TIME);
@@ -242,7 +256,7 @@ class User
     {
         if(is_null($this->lastAccess) && $this->_uid) {
             $uk = 'user/user-log-'.$this->_uid;
-            $storage = (isset($this->_ns['storage']))?($this->_ns['storage']):($this->_storage);
+            $storage = $this->nsConfig('storage', $this->_storage);
             $s = Cache::get($uk, 0, $storage, true);
             $cid = (is_null($this->_cid))?($this->getSessionId()):($this->_cid);
             $t = 0;
@@ -309,7 +323,9 @@ class User
                 $nso = null;
             }
         }
-        if(!$storage) $storage = (isset($this->_ns['storage']))?($this->_ns['storage']):($this->_storage);
+        if(is_null($storage)) {
+            $storage = $this->nsConfig('storage', $this->_storage);
+        }
         if(is_null($timeout)) $timeout = (isset($nso['timeout']))?($nso['timeout']):(static::$timeout);
         $fkey = "fpr/{$sid}";
         if($this->_me && is_object($this->_me)) {
@@ -336,12 +352,10 @@ class User
         $this->_me = (object) $me;
         if($nso) {
             $this->_ns = $nso;
-            if(isset($this->_ns['properties'])) {
-                $this->_map = $this->_ns['properties'];
-            }
-            $pk = (isset($this->_ns['properties']['id']))?($this->_ns['properties']['id']):('id');
+            $this->_map = $this->nsConfig('properties', []);
+            $pk = (isset($this->_map['id']))?($this->_map['id']):('id');
             $this->_uid = (isset($this->_me->$pk)) ?$this->_me->$pk :null;
-            if(isset($this->_ns['cookie']) && $this->_ns['cookie']) {
+            if($this->_map = $this->nsConfig('cookie')) {
                 if(!isset($timeout) || !$timeout) $timeout = static::$timeout;
                 $last = $this->getAttribute(static::LASTCOOKIE_ATTR);
                 if(!$last) {
@@ -514,7 +528,7 @@ class User
         $cid = (is_null($this->_cid))?($this->getSessionId()):($this->_cid);
         $ckey = "user/message-{$cid}";
         if(is_null($storage)) {
-            $storage = (isset($this->_ns['storage']))?($this->_ns['storage']):($this->_storage);
+            $storage = $this->nsConfig('storage', $this->_storage);
         }
         $msg = Cache::get($ckey, 0, $storage, true);
         if(!$this->_message) $this->_message=array();
@@ -595,7 +609,7 @@ class User
         $cid = (is_null($this->_cid))?($this->getSessionId(true)):($this->_cid);
         $ckey = "user/message-{$cid}";
         if(is_null($storage)) {
-            $storage = (isset($this->_ns['storage']))?($this->_ns['storage']):($this->_storage);
+            $storage = $this->nsConfig('storage', $this->_storage);
         }
         $message = null;
         $store   = false;
@@ -630,7 +644,7 @@ class User
             if(is_null($this->_message)) {
                 $ret = Cache::delete($ckey, $storage, true);
             } else {
-                $timeout = (isset($this->_ns['timeout']))?($this->_ns['timeout']):(static::$timeout);
+                $timeout = $this->nsConfig('timeout', static::$timeout);
                 $ret = Cache::set($ckey, $this->_message, $timeout, $storage, true);
             }
             if($setcookie) $this->setSessionCookie();
@@ -641,8 +655,8 @@ class User
 
     public function getSessionName()
     {
-        if(isset($this->_ns['cookie']) && $this->_ns['cookie']!=$this->_cname) {
-            $this->_cname = $this->_ns['cookie'];
+        if(($cookie=$this->nsConfig('cookie')) && $cookie!=$this->_cname) {
+            $this->_cname = $cookie;
         } else if(is_null($this->_cname)) {
             $cfg = S::getApp()->user;
             if(isset($cfg['session-name']) && ($n=S::getApp()->user['session-name'])) {
@@ -656,14 +670,14 @@ class User
 
     public function getCookieHost()
     {
-        if(isset($this->_ns['domain'])) {
-            $domain = $this->_ns['domain'];
+        if($domain=$this->nsConfig('domain')) {
             if($domain && substr($domain,0,1)!='.') {
                 $domain = ".{$domain}";
             }
         } else {
             $domain = App::request('hostname');
         }
+        if($r=static::config('cookie-domain-replace')) $domain = strtr($domain, $r);
         if(preg_match('/^[0-9\:]+([0-9a-f]*[\.\:])+[0-9a-f](\:|$)/', $domain)) {
             $domain = '';
             static::$cookieSecure = false;
@@ -682,9 +696,10 @@ class User
         if(static::$cookieSecure && !App::request('https')) {
             static::$cookieSecure = false;
         }
-        $timeout = (isset($this->_ns['timeout']))?($this->_ns['timeout']):(static::$timeout);
+        $timeout = $this->nsConfig('timeout', static::$timeout);
         if($timeout > 0 && $timeout<31536000) $timeout += time();
-        setcookie($n, $this->_cid, $timeout, '/', $this->getCookieHost(), static::$cookieSecure, static::$cookieHttpOnly);
+        $path = $this->nsConfig('cookie-path', '/');
+        setcookie($n, $this->_cid, $timeout, $path, $this->getCookieHost(), static::$cookieSecure, static::$cookieHttpOnly);
         self::$_cookiesSent[$n.'/'.$this->_cid]=true;
         unset($n, $domain, $timeout);
         return true;
@@ -711,10 +726,11 @@ class User
 
     public function getSessionNs()
     {
+        $r = static::config('session-default-ns');
         if (!$this->_me) {
-            return false;
+            return $r;
         }
-        return ($this->_ns && isset($this->_ns['id'])) ?$this->_ns['id'] :null;
+        return $this->nsConfig('id', $r);
     }
 
     public function store($storage=null)
@@ -722,14 +738,13 @@ class User
         if (!$this->_me) {
             return false;
         }
-
-        if(is_null($storage) && $this->_ns && isset($this->_ns['storage'])) {
-            $storage = $this->_ns['storage'];
+        if(is_null($storage)) {
+            $storage = $this->nsConfig('storage', $this->_storage);
         }
         $sid = $this->getSessionId(true);
         $ckey = "user/{$this->getSessionNs()}-".$sid;
         $fkey = 'fpr/'.$sid;
-        $timeout = ($this->_ns && isset($this->_ns['timeout']))?($this->_ns['timeout']):(static::$timeout);
+        $timeout = $this->nsConfig('timeout', static::$timeout);
         Cache::set($ckey, $this->_me, $timeout, $storage);
         if(isset(static::$fingerprint) && is_object($this->_me)) {
             $fprk = static::$fingerprint;
@@ -747,21 +762,21 @@ class User
         if (is_null($this->_cid)) {
             return false;
         }
-        if(is_null($storage) && isset($this->_ns['storage'])) {
-            $storage = $this->_ns['storage'];
+        if(is_null($storage)) {
+            $storage = $this->nsConfig('storage', $this->_storage);
         }
-        $ckey = "user/{$this->_ns['id']}-".$this->getSessionId();
-        $timeout = (isset($this->_ns['timeout']))?($this->_ns['timeout']):(static::$timeout);
+        $ckey = "user/{$this->getSessionNs()}-".$this->getSessionId();
+        $timeout = $this->nsConfig('timeout', static::$timeout);
         return Cache::get($ckey, $timeout, $storage);
     }
     
     public function destroy($storage=null, $msg=null, $redirect=null)
     {
-        if(is_null($storage) && isset($this->_ns['storage'])) {
-            $storage = $this->_ns['storage'];
+        if(is_null($storage)) {
+            $storage = $this->nsConfig('storage', $this->_storage);
         }
         if($this->_cid) {
-            $ckey = "user/{$this->_ns['id']}-{$this->_cid}";
+            $ckey = "user/{$this->getSessionNs()}-{$this->_cid}";
             Cache::delete($ckey, $storage);
             Cache::delete("user/attr-{$this->_cid}");
             Cache::delete("fpr/{$this->_cid}");
@@ -809,26 +824,30 @@ class User
                 }
                 if(!isset($nso['id'])) $nso['id'] = $ns;
                 $this->_ns = $nso;
+                $this->_map = $this->nsConfig('properties', []);
                 if($this->authenticate($user, $key)) {
                     return true;
                     break;
                 }
                 $this->_ns = null;
+                $this->_map = $this->nsConfig('properties', []);
                 unset($ns, $nso);
             }
             return false;
+        } else if(!$this->_map && $this->_ns) {
+            $this->_map = $this->nsConfig('properties', []);
         }
 
         $finder = null;
         $U = null;
-        if(isset($this->_ns['finder']) && $this->_ns['finder']) $finder = $this->_ns['finder'];
-        else if(isset($this->_ns['class']) && $this->_ns['class']) $finder = $this->_ns['class'];
-        else $finder = static::config('model');
+        if(!($finder=$this->nsConfig('finder')) && !($finder=$this->nsConfig('class'))) {
+            $finder = static::config('model');
+        }
 
         if($finder && class_exists($finder)) {
             $find = $user;
-            if(isset($this->_ns['properties']['username'])) {
-                $find = array($this->_ns['properties']['username']=>$find);
+            if(isset($this->_map['username'])) {
+                $find = array($this->_map['username']=>$find);
             }
             $scope = (isset(static::$cfg['scope']))?(static::$cfg['scope']):(null);
             $U = $finder::find($find,1,$scope);
@@ -836,14 +855,12 @@ class User
         }
 
         if ($U) {
-            $pass = (isset($this->_ns['properties']['password']))?($this->_ns['properties']['password']):('password');
+            $pass = (isset($this->_map['password']))?($this->_map['password']):('password');
             $pass = $U->$pass;
             if(method_exists($U, 'authenticate')) {
                 if($U->authenticate($key)) {
                     $this->_me = $U;
-                    if(isset($this->_ns['properties'])) {
-                        $this->_map = $this->_ns['properties'];
-                    }
+
                     return true;
                 }
             } else {
@@ -856,9 +873,7 @@ class User
                 if($valid) {
                     // user authenticated
                     $this->_me = $U;
-                    if(isset($this->_ns['properties'])) {
-                        $this->_map = $this->_ns['properties'];
-                    }
+
                     return true;
                 }
             }
@@ -1030,8 +1045,7 @@ class User
                 }
             }
             if($this->_me) {
-                if(!isset($this->_ns['id'])) $this->_ns['id'] = '';
-                $id = $this->_ns['id'].':'.$this->_uid;
+                $id = $this->getSessionNs().':'.$this->_uid;
                 if($id && isset(static::$cfg['credentials'])) {
                     foreach(static::$cfg['credentials'] as $cn=>$users) {
                         if(!is_array($users)) {
@@ -1397,8 +1411,7 @@ class User
     {
         if($this->_me) {
             if(is_null($scope)) {
-                if(isset($this->_ns['export'])) $scope = $this->_ns['export'];
-                else if(isset($this->_ns['properties'])) $scope = $this->_ns['properties'];
+                $scope = $this->nsConfig('export', $this->nsConfig('properties'));
             }
             if($this->_me instanceof Model) {
                 return $this->_me->asArray($scope);
@@ -1494,7 +1507,7 @@ class User
         $msgid=S::slug($msgid);
         $ckey = "user/flash-{$msgid}-"
               . ((is_null($this->_cid))?($this->getSessionId(true)):($this->_cid));
-        $timeout = (isset($this->_ns['timeout']))?($this->_ns['timeout']):(static::$timeout);
+        $timeout = $this->nsConfig('timeout', static::$timeout);
         $r = Cache::get($ckey, $timeout, $storage);
         unset($timeout);
         return $r;
@@ -1506,12 +1519,12 @@ class User
         $ckey = "user/flash-{$msgid}-"
               . ((is_null($this->_cid))?($this->getSessionId(true)):($this->_cid));
         if(is_null($storage)) {
-            $storage = (isset($ns['storage']))?($ns['storage']):($this->_storage);
+            $storage = $this->nsConfig('storage', $this->_storage);
         }
         if(!$msg) {
             $r = Cache::delete($ckey, $storage);
         } else {
-            $timeout = (isset($this->_ns['timeout']))?($this->_ns['timeout']):(static::$timeout);
+            $timeout = $this->nsConfig('timeout', static::$timeout);
             $r = Cache::set($ckey, $msg, $timeout, $storage);
             unset($timeout);
         }
@@ -1529,7 +1542,7 @@ class User
         if (is_null($this->_me) || !is_object($this->_me)) {
             return false;
         }
-        if (!is_null($this->_map) && isset($this->_map[$name])) {
+        if (isset($this->_map[$name])) {
             $name = $this->_map[$name];
         }
         $value = false;
@@ -1547,7 +1560,7 @@ class User
         if (is_null($this->_me)) {
             return false;
         }
-        if (!is_null($this->_map) && isset($this->_map[$name])) {
+        if (isset($this->_map[$name])) {
             $name = $this->_map[$name];
         }
         $value = null;
@@ -1568,7 +1581,7 @@ class User
         if (is_null($this->_me)) {
             return false;
         }
-        if (!is_null($this->_map) && isset($this->_map[$name])) {
+        if (isset($this->_map[$name])) {
             $name = $this->_map[$name];
         }
         try {

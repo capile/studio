@@ -164,7 +164,15 @@ class Interfaces extends Model
         if($this->updated) $lmod = strtotime($this->updated);
         if($f0 && file_exists($f0) && ($t=filemtime($f0)) && $t>$lmod) $lmod = $t;
         if(!file_exists($f) || $lmod>filemtime($f)) {
-            $a = ['all'=>['api'=>$id]];
+            $a = ['all'=>[
+                'api'=>$id,
+                'model'=>'Studio\\Model\\Index',
+                'search'=>['interface'=>$this->id],
+                'key'=>'id',
+                'options'=>[
+                    'scope'=>['uid'=>'id'],
+                ]
+            ]];
             $addParent = true;
             if($f0 && $f0!==$f) {
                 //$a['all']['base'] = $id;
@@ -175,15 +183,6 @@ class Interfaces extends Model
                 unset($a0);
             }
             $a['all'] += $this->asArray('interface');
-            if(!isset($a['all']['model'])) {
-                $a['all']['model'] = 'Studio\\Model\\Index';
-                $a['all']['search'] = ['interface'=>$this->id];
-                $a['all']['key'] = 'id';
-                $a['all']['options']['scope']['uid'] = ['id'];
-            } else {
-                $a['all']['model'] = str_replace('\\\\', '\\', $a['all']['model']);
-            }
-
             if(!isset($a['all']['options'])) $a['all']['options'] = [];
             if($addParent) {
                 $a['all']['options'] += ['list-parent'=>$n, 'priority'=>$i++];

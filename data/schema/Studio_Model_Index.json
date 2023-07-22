@@ -20,7 +20,36 @@
         "IndexBlob": { "local": [ "interface", "id" ], "foreign": [ "interface", "id" ], "type": "many", "className": "Studio\\Model\\IndexBlob" }
     },
     "scope": {
-        "string": [ "summary", "indexed" ]
+        "string": [ "id" ],
+        "review": [ "interface", "id", "summary", "indexed" ],
+        "search": {
+            "*API":"interface",
+            "*ID":"id",
+            "*Summary":"summary",
+            "*Text Attribute": "IndexText.value",
+            "*Number Attribute": "IndexNumber.value",
+            "*Blob Attribute": "IndexBlob.value",
+            "*Indexed": "indexed",
+            "*Created": "created",
+            "*Date Attribute": "IndexDate.value"
+        },
+        "preview": {
+            "__default": {
+                "class": "i1s2",
+                "fieldset": "*Metadata"
+            },
+            "*API": "interface",
+            "*ID":"id",
+            "*Summary":"summary",
+            "*Indexed":"indexed",
+            "Source": {
+                "bind":"null _source",
+                "fieldset": "*Object",
+                "type": "string",
+                "serialize": "json",
+                "class": "ih100"
+            }
+        }
     },
     "order": {
     },

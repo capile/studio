@@ -1293,7 +1293,7 @@ function ajaxOnload()
 function ajaxProbe(e)
 {
     //Z.log('ajaxProbe', JSON.stringify(e));
-    var u;
+    var u, err;
     for(u in _ajax) {
         /*
         Z.log(u+': '+JSON.stringify({
@@ -1307,13 +1307,26 @@ function ajaxProbe(e)
             var d, R=_ajax[u];
             delete(_ajax[u]);
 
-            if(R.type=='xml' && R.r.responseXML) d=R.r.responseXML;
-            else if(R.type=='json') {
-                if(R.r.responseText) d=JSON.parse(R.r.responseText);
-                else d=null;
-            } else if('responseText' in R.r) d=R.r.responseText;
-            else d=R.r.response;
-            if(R.r.status==200) {
+            if(R.type=='xml' && R.r.responseXML) {
+                d=R.r.responseXML;
+            } else if(R.type=='json') {
+                if(R.r.responseText) {
+                    try {
+                        d=JSON.parse(R.r.responseText);
+                    } catch (e) {
+                        Z.error(e);
+                        err = true;
+                        d = e;
+                    }
+                } else {
+                    d=null;
+                }
+            } else if('responseText' in R.r) {
+                d=R.r.responseText;
+            } else {
+                d=R.r.response;
+            }
+            if(R.r.status==200 && !err) {
                 R.success.apply(R.context, [ d, R.r.status, u, R.r ]);
             } else {
                 R.error.apply(R.context, [ d, R.r.status, u, R.r ]);

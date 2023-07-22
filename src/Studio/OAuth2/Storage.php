@@ -112,6 +112,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
                 'user_map'=>'options.user_map',
                 'button'=>'options.button',
                 'name'=>'options.name',
+                'options'=>'options',
             ],
         ],
         $defaultTokenFinder='Studio\\Model\\Tokens';

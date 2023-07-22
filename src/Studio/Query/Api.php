@@ -120,6 +120,10 @@ class Api
             }
             if(isset($db['options'])) {
                 $this->_options = $db['options'];
+                if(isset($this->_options['options']) && is_array($this->_options['options'])) {
+                    $this->_options += $this->_options['options'];
+                    unset($this->_options['options']);
+                }
             }
             unset($db);
         }
@@ -180,15 +184,19 @@ class Api
             'decode',
         ];
         if($n) {
+            $r = null;
             if(isset($this->_options[$n])) {
+                $r = $this->_options[$n];
                 if(!is_null($newValue)) $this->_options[$n] = $newValue;
-                return $this->_options[$n];
             } else if(in_array($n, $options)) {
+                $r = static::${$n};
                 if(!is_null($newValue)) static::$$n = $newValue;
-                return static::${$n};
-            } else {
-                return null;
+            } else if(property_exists($this, $p='_'.$n)) {
+                $r = $this->$p;
+                if(!is_null($newValue)) $this->$p = $newValue;
             }
+
+            return $r;
         }
 
         return $this->_options;
@@ -251,6 +259,7 @@ class Api
     {
         $ckey = $n.'/req-token';
         if(!($url=$this->config('token_endpoint')) || !isset(self::$C[$n]) || !($conn = curl_copy_handle(self::$C[$n]))) return false;
+        $ckey .= '-'.sha1($url);
 
         if(!(($R=Cache::get($ckey, 0, 'file')) && isset($R['access_token']) && isset($R['expires']) && $R['expires']>time())) {
             // try to fetch a new access_token based on the refresh token
@@ -632,6 +641,13 @@ class Api
     public function header($n=null)
     {
         if($n && $this->headers) {
+            if($n==='status') {
+                if(preg_match('/^HTTP[0-9\.]+ ([0-9]+)/', $this->headers, $m)) {
+                    return $m[1];
+                } else {
+                    return;
+                }
+            }
             if(!($h = $this->config($n))) {
                 $h = $n;
             }
@@ -936,7 +952,7 @@ class Api
         } else {
             if(($c=$this->config('curlOptions')) && isset($c[CURLOPT_HEADER]) && $c[CURLOPT_HEADER]) {
                 list($this->headers, $body) = preg_split('/\r?\n\r?\n/', $r, 2);
-                while(preg_match('#^HTTP/1.[0-9]+ [0-9]+ #', $body)) {
+                while(preg_match('#^HTTP/[0-9\.]+ [0-9]+ #', $body)) {
                     list($this->headers, $body) = preg_split('/\r?\n\r?\n/', $body, 2);
                 }
             } else {
@@ -954,7 +970,7 @@ class Api
                 if(strpos($ct, 'json')) $decode[] = 'json';
             }
 
-            if($decode) {
+            if($decode && $body) {
                 foreach($decode as $dn) {
                     if(method_exists($this, $dm = 'decode'.S::camelize($dn, true))) {
                         $body = $this->$dm($body);
