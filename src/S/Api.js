@@ -1415,19 +1415,6 @@
     {
         var u=I.getAttribute('data-url'), s, p;
         if(!u) return;
-
-        /*
-        if((s=I.getAttribute('data-ui'))) {
-            I.removeAttribute('data-ui');
-            if((p=JSON.parse(btoa(s)))) {
-                _props[u]=p;
-            }
-        }
-        if(!p) {
-            if(u in _props) p=_props[u];
-            else return removeDashboard();// clean up dashboard?
-        }
-        */
     }
 
     function removeDashboard()

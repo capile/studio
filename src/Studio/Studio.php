@@ -76,6 +76,7 @@ class Studio
         $apiListParent = [
             'apis'=>'interfaces',
         ],
+        $headersTemplate,
         $cliApps=[
             'start'=>['Studio\\Model\\Config','standaloneConfig'],
             'reset'=>['Studio\\Model\\Config','resetStudio'],
@@ -649,6 +650,9 @@ class Studio
             $cch = 'private';
             if(!static::$cacheTimeout) $cch .= ', no-cache';
             S::cacheControl($cch, static::$cacheTimeout);
+            if(self::$headersTemplate && ($f=S::templateFile(self::$headersTemplate))) {
+                S::exec(['script'=>$f]);
+            }
             S::output(S::serialize($r, 'json'), 'json');
         }
 

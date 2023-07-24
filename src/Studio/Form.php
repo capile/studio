@@ -669,6 +669,14 @@ class Form implements ArrayAccess //, Iterator, Countable
     public function getError($array=false)
     {
         $s=($array)?(array()):('');
+        if($this->err) {
+            if($array) $s['_form'] = $this->err;
+            else $s .= '<div id="error__form">'.$this->err.'</div>';
+        }
+        if(isset($this->limits['error']) && $this->limits['error']) {
+            if($array) $s['_limits'] = $this->limits['error'];
+            else $s .= '<div id="error__limits">'.$this->limits['error'].'</div>';
+        }
         foreach($this->fields as $fn=>$fv) {
             $e = $fv->getError();
             if ($e) {

@@ -1,5 +1,5 @@
 /*! capile/studio v1.0 | (c) 2022 Tecnodesign <ti@tecnodz.com> */
-if(!('Studio' in window))window.Z=window.Studio={version:1.0, host:null,uid:'/_me',timeout:0,headers:{},env:'prod',timestamp:null};
+if(!('Studio' in window))window.Z=window.Studio={version:1.0, host:null, altHost:null,uid:'/_me',timeout:0,headers:{},env:'prod',timestamp:null};
 (function(Z) {
 "use strict";
 var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl, _assets={}, _wm,
@@ -16,7 +16,8 @@ var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl,
     Studio_Graph: '.s-graph',
     Recaptcha: '.s-recaptcha',
     LoadUri: '.s-action[data-load-uri]',
-    LanguageSelection: 'link[rel="alternate"][hreflang]'
+    LanguageSelection: 'link[rel="alternate"][hreflang]',
+    Autofocus: 'input[autofocus],textarea[autofocus],select[autofocus]'
   }, _sTimestamp='';
 
 // load authentication info
@@ -29,7 +30,7 @@ function initStudio(d)
         var zh = document.querySelector('html'), zc=zh.getAttribute('data-studio-config'), cfg=JSON.parse(zc.indexOf('{')<0 ?atob(zc) :zc), cn;
         zh.removeAttribute('data-studio-config');
         if(cfg) {
-            for(cn in cfg) if((cn in S) && (typeof(Z[cn])!='function')) Z[cn] = cfg[cn];
+            for(cn in cfg) if((cn in Z) && (typeof(Z[cn])!='function')) Z[cn] = cfg[cn];
         }
     }
 
@@ -152,7 +153,7 @@ Z.init=function(o)
     if('ZModules' in window) {
         var fn;
         for(var q in ZModules) {
-            if(typeof ZModules[q]=='function') {
+            if(typeof(ZModules[q])=='function') {
                 fn=('name' in ZModules[q])?(ZModules[q].name):(q);
                 Z.addPlugin(fn, ZModules[q], q);
             }
@@ -286,6 +287,9 @@ Z.load=function()
 
 Z.addPlugin=function(id, fn, q) {
     var pid = '_'+id;
+    if(!('modules' in Z)) {
+        Z.modules = defaultModules;
+    }
     if(!(pid in Z.modules)) {
         if((id in Z.modules) && Z.modules[id]==q) {
             pid=id;
@@ -1511,7 +1515,7 @@ function applyDrag(id)
 
 Z.resizeCallback=function(fn)
 {
-    if(fn && (typeof fn == 'function')) {
+    if(fn && (typeof(fn)=='function')) {
         if(_onResize.length==0) {
             Z.bind(window, 'resize', Z.resizeCallback);
         }
@@ -1673,6 +1677,11 @@ Z.initRecaptcha = function()
     if(this.className.search(/\bs-recaptcha\b/)>-1) this.className = this.className.replace(/\bs-recaptcha\b/g, 'g-recaptcha');
     if(!('grecaptcha' in window)) Z.load('https://www.google.com/recaptcha/api.js?hl='+Z.lang());
     else grecaptcha.render(this);
+}
+
+Z.initAutofocus = function()
+{
+    this.focus();
 }
 
 window.requestAnimFrame = (function(){

@@ -642,10 +642,10 @@ class Api
     {
         if($n && $this->headers) {
             if($n==='status') {
-                if(preg_match('/^HTTP[0-9\.]+ ([0-9]+)/', $this->headers, $m)) {
+                if(preg_match('/^HTTP\/[0-9\.]+ ([0-9]+)/', $this->headers, $m)) {
                     return $m[1];
                 } else {
-                    return;
+                    return null;
                 }
             }
             if(!($h = $this->config($n))) {
