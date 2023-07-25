@@ -1111,11 +1111,12 @@ class Studio
         ob_start();
         if(isset($arguments['callback'])) {
             if(isset($arguments['arguments'])) {
-                $execResult .= call_user_func_array($arguments['callback'], $arguments['arguments']);
+                $callbackResult = call_user_func_array($arguments['callback'], $arguments['arguments']);
             } else {
-                $execResult .= call_user_func($arguments['callback']);
+                $callbackResult = call_user_func($arguments['callback']);
             }
-            if($execResult) {
+            if($callbackResult) {
+                $execResult = (is_array($callbackResult)) ?self::serialize($callbackResult) :(string)$callbackResult;
                 ob_clean();
             }
         }

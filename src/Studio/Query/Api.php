@@ -342,7 +342,7 @@ class Api
     public function schema($prop=null)
     {
         $cn = $this->_schema;
-        if($prop) {
+        if($prop && $cn) {
             $base = $cn::$schema;
             while(strpos($prop, '/')!==false) {
                 $p = strpos($prop, '/');
