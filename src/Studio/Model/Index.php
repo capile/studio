@@ -52,16 +52,16 @@ class Index extends Model
         }
     }
 
-    public static function reindex()
+    public static function reindex($q=[], $noCli=null)
     {
         // studio indexing
         if(!static::checkConnection()) return;
 
         $index = [];
-        $q = [];
         $indexApi = Studio::config('enable_api_index');
         $indexFiles = ($indexApi && Studio::config('enable_api_content'));
-        if(App::request('shell') && ($a = App::request('argv'))) {
+        if(!$noCli && App::request('shell') && ($a = App::request('argv'))) {
+            $q = [];
             $p = $m = null;
             foreach($a as $i=>$o) {
                 if(substr($o, 0, 1)==='-') {
@@ -81,10 +81,10 @@ class Index extends Model
                 }
                 unset($a[$i], $i, $o, $p, $m);
             }
-            if($q) {
-                $index = Interfaces::find(['id'=>$q],null,null,false);
-                if(!$index) $index = [];
-            }
+        }
+        if($q) {
+            $index = Interfaces::find($q,null,null,false);
+            if(!$index) $index = [];
         }
 
         if($p=Cache::get('studio/indexing')) {

@@ -53,6 +53,7 @@ class Api
         $deleteQuery,
         $deleteMethod='POST',
         $saveToModel,
+        $serializeBody=true,
         $postFormat='json',
         $postCharset,
         $curlOptions=array(
@@ -83,10 +84,19 @@ class Api
         $enableOffset=true,
         $pagingAttribute,
         $nextPage,
+        $maxCount=10000000,
         $cookieJar,
-        $connectionCallback;
+        $connectionCallback,
+        // enables ratelimit logging and verification
+        $ratelimit=true,
+        // actually changes the querying rate, by a certain threshold 0.0 (no delay at all) - 1.0 (keep a full margin)
+        $ratelimitDelay=0.1,
+        $ratelimitStatus=429,
+        $ratelimitHeaderPrefix='x-ratelimit-',
+        // apply ratelimit to all connections or just this specific connection 
+        $ratelimitStrategy='site'; // site | client
     protected static $options, $conn=array();
-    protected $_schema, $_method, $_url, $_reqBody, $_scope, $_select, $_where, $_orderBy, $_groupBy, $_limit, $_offset, $_options, $_last, $_next, $_count, $_unique, $headers, $response;
+    protected $_schema, $_method, $_url, $_reqBody, $_scope, $_select, $_where, $_orderBy, $_groupBy, $_limit, $_offset, $_options, $_last, $_next, $_count, $_unique, $_cid, $headers, $response, $error=[];
 
     public function __construct($s=null)
     {
@@ -143,6 +153,7 @@ class Api
             'fieldnames',
             'limit',
             'limitCount',
+            'maxCount',
             'limitAbsolute',
             'offset',
             'pageOffset',
@@ -164,6 +175,7 @@ class Api
             'deleteQuery',
             'deleteMethod',
             'saveToModel',
+            'serializeBody',
             'postFormat',
             'postCharset',
             'curlOptions',
@@ -182,6 +194,11 @@ class Api
             'cookieJar',
             'connectionCallback',
             'decode',
+            'ratelimit',
+            'ratelimitDelay',
+            'ratelimitStatus',
+            'ratelimitHeaderPrefix',
+            'ratelimitStrategy',
         ];
         if($n) {
             $r = null;
@@ -226,6 +243,7 @@ class Api
             }
             $req = true;
         }
+        $this->_cid = $n;
         if($c=$this->config('cookieJar')) {
             if(!is_string($c)) {
                 $c = tempnam(Cache::cacheDir(), 'cookie');
@@ -283,12 +301,12 @@ class Api
                 'content-type: '.$ct,
                 'authorization: Basic '.base64_encode($this->config('client_id').':'.$this->config('client_secret')),
             );
-            curl_setopt($conn, CURLOPT_HEADER, false);
+            //curl_setopt($conn, CURLOPT_HEADER, false);
             curl_setopt($conn, CURLOPT_URL, $url);
             curl_setopt($conn, CURLOPT_POST, true);
             curl_setopt($conn, CURLOPT_POSTFIELDS, $data);
             curl_setopt($conn, CURLOPT_HTTPHEADER, $headers);
-            $R = S::unserialize(curl_exec($conn), 'json');
+            $R = $this->_exec($conn, 'json');
             curl_close($conn);
             if($R && isset($R['access_token'])) {
                 $expires = 100;
@@ -372,6 +390,12 @@ class Api
                 }
             }
             $this->response = null;
+        }
+        if($this->headers) {
+            $this->headers = null;
+        }
+        if($this->error) {
+            $this->error = [];
         }
     }
 
@@ -830,7 +854,7 @@ class Api
 
         if(!is_array($headers)) $headers = array();
 
-        if($data && !is_string($data)) {
+        if($Q->config('serializeBody') && $data && !is_string($data)) {
             if($Q->config('postFormat')==='json') {
                 $data = S::serialize($data, 'json');
                 $headers[] = 'content-type: application/json'.(($c=$Q->config('postCharset')) ?';charset='.$c :'');
@@ -857,51 +881,12 @@ class Api
         }
 
         if($headers) {
+            $Q->config('headersOut', true);
             curl_setopt($conn, CURLOPT_HTTPHEADER, $headers);
         }
-        $r = curl_exec($conn);
-        if($disconnect) $Q->disconnect($n);
-        $msg = '';
-        if(!$r) {
-            S::log('[ERROR] Curl error: '.curl_error($conn));
-            return false;
-        }
-        if($callback && $callback=='json') {
-            if(($c=$Q->config('curlOptions')) && isset($c[CURLOPT_HEADER]) && $c[CURLOPT_HEADER]) {
-                list($headers, $body) = preg_split('/\r?\n\r?\n/', $r, 2);
-                while(preg_match('#^HTTP/1.[0-9]+ [0-9]+ #', $body)) {
-                    list($headers, $body) = preg_split('/\r?\n\r?\n/', $body, 2);
-                }
-                $body = preg_replace('/^\xEF\xBB\xBF/', '', $body);
-                $r = json_decode($body, true);
-                if($r===null) {
-                    $err = json_last_error();
-                    if($err) {
-                        $errs = array (
-                          0 => 'JSON_ERROR_NONE',
-                          1 => 'JSON_ERROR_DEPTH',
-                          2 => 'JSON_ERROR_STATE_MISMATCH',
-                          3 => 'JSON_ERROR_CTRL_CHAR',
-                          4 => 'JSON_ERROR_SYNTAX',
-                          5 => 'JSON_ERROR_UTF8',
-                          6 => 'JSON_ERROR_RECURSION',
-                          7 => 'JSON_ERROR_INF_OR_NAN',
-                          8 => 'JSON_ERROR_UNSUPPORTED_TYPE',
-                          9 => 'JSON_ERROR_INVALID_PROPERTY_NAME',
-                          10 => 'JSON_ERROR_UTF16',
-                        );
-                        if(isset($errs[$err])) {
-                            S::log('[ERROR] JSON decoding error: '.$errs[$err]);
-                        } else {
-                            S::log('[ERROR] JSON unknown error: '.$err);
-                        }
-                    }
-                }
-                unset($body, $c);
-            } else {
-                $r = json_decode($r, true);
-            }
-        } else if($callback) {
+
+        $r = $Q->_exec($conn, $callback, $disconnect);
+        if($r && $callback && $callback!='json') {
             return call_user_func($callback, $r);
         }
         return $r;
@@ -936,69 +921,31 @@ class Api
 
         if($this->_reqBody && $this->_method!='GET') {
             $data = $this->_reqBody;
-            if(!is_string($data)) $data = S::serialize($data, $this->config('postFormat'));
+            if(!is_string($data) && $this->config('serializeBody')) $data = S::serialize($data, $this->config('postFormat'));
             curl_setopt($conn, CURLOPT_POST, true);
             curl_setopt($conn, CURLOPT_POSTFIELDS, $data);
         }
 
-        if(S::$log) S::log("[INFO] {$this->_method} call to $q (".ceil(memory_get_peak_usage() * 0.000001).'M, '.substr((microtime(true) - S_TIME), 0, 5).'s)');
-        $this->cleanup();
-        $r = curl_exec($conn);
-
-        $msg = '';
-        $body = null;
-        if(!$r) {
-            $msg = curl_error($conn);
-        } else {
-            if(($c=$this->config('curlOptions')) && isset($c[CURLOPT_HEADER]) && $c[CURLOPT_HEADER]) {
-                list($this->headers, $body) = preg_split('/\r?\n\r?\n/', $r, 2);
-                while(preg_match('#^HTTP/[0-9\.]+ [0-9]+ #', $body)) {
-                    list($this->headers, $body) = preg_split('/\r?\n\r?\n/', $body, 2);
-                }
-            } else {
-                $this->headers = null;
-                $body = $r;
-            }
-            $body = preg_replace('/^\xEF\xBB\xBF/', '', $body);
-            if($decode=$this->config('decode')) {
-                if(is_string($decode)) {
-                    $decode = preg_split('/\s*[\,\|]+\s*/', $decode, -1, PREG_SPLIT_NO_EMPTY);
-                }
-            } else if($this->headers && ($ct=$this->header('content-type'))) {
-                $decode = [];
-                if(strpos($ct, 'gzip')) $decode[] = 'gzip';
-                if(strpos($ct, 'json')) $decode[] = 'json';
-            }
-
-            if($decode && $body) {
-                foreach($decode as $dn) {
-                    if(method_exists($this, $dm = 'decode'.S::camelize($dn, true))) {
-                        $body = $this->$dm($body);
-                        if(is_null($body) || $body===false) break;
-                        unset($dm, $dn);
-                    }
-                }
-            }
-            $this->response = $body;
-            unset($body);
-        }
-        unset($r);
+        $this->_exec($conn, $callback);
+        $msg = $this->error;
 
         if($this->response && is_array($this->response) && $this->_unique) {
             $this->response = array($this->response);
         }
 
         $m = null;
-        if($msg || preg_match($this->config('errorPattern'), (string)$this->headers, $m)) {
-            if(!$msg && (!($c=$this->config('errorAttribute')) || !($msg=$this->_getResponseAttribute($c)))) {
-                $msg=$this->header('x-message');
+        if($this->error || preg_match($this->config('errorPattern'), (string)$this->headers, $m)) {
+            if(!$this->error && (!($c=$this->config('errorAttribute')) || !($msg=$this->_getResponseAttribute($c)))) {
+                if($msg=$this->header('x-message')) {
+                    $this->error[] = $msg;
+                }
             }
-            if(is_array($msg)) {
-                $msg = S::xmlImplode($msg);
+            $msg = '';
+            if($this->error) {
+                $msg = '<div class="s-msg s-msg-error">'
+                     . S::xmlImplode($this->error)
+                     . '</div>';
             }
-            $msg = '<div class="s-msg s-msg-error">'
-                 . $msg
-                 . '</div>';
             if(isset($this->response['message'])) {
                 $msg .= $this->response['message'];
             }
@@ -1037,8 +984,11 @@ class Api
             }
 
             $count = count($R);
-            $max = ($this->_limit) ?$this->_limit :(int)$this->config('limitCount');
-            while(($nextPage=$this->nextPage($q)) && $page!=$nextPage && ($max==0 || $count < $max)) {
+            $pnum = 0;
+            if(S::$log>0) S::log('[INFO] Loading paging resultset: '.$count.' records...'.($pnum++));
+            $max = ($this->_limit && $this->_limit!=$count) ?$this->_limit :(int)$this->config('maxCount');
+            $nextPage=$this->nextPage($q);
+            while($nextPage && $page!=$nextPage && ($max==0 || $count < $max)) {
                 // check if cursor is an URL or a parameter
                 $page = $nextPage;
                 $this->response = null;
@@ -1065,8 +1015,12 @@ class Api
                     } else {
                         $R = array_merge($R, $M);
                     }
+                    $this->_next=$this->_getResponseAttribute($c);
                 }
+                $nextPage=$this->nextPage($q);
+                if(S::$log>0) S::log('[INFO] Loading paging resultset: '.$count.' records so far...'.($pnum++));
             }
+            if(S::$log>0) S::log('[INFO] Loading paging resultset: '.$count.' records total.');
             if($dataAttribute) {
                 $this->config('dataAttribute', $dataAttribute);
                 $dataAttribute = null;
@@ -1092,8 +1046,6 @@ class Api
             $this->disconnect($this->schema('database'));
         }
 
-        unset($body);
-
         if($cn && $this->response) {
             foreach($this->response as $i=>$o) {
                 $O = $this->getObject($o, $cn, $defaults, $callback, $args);
@@ -1111,7 +1063,7 @@ class Api
 
     public function decodeJson($s)
     {
-        $r = S::unserialize($s, 'json');
+        $r = ($s && is_string($s)) ?S::unserialize($s, 'json') :$s;
         if($r===null) {
             $err = json_last_error();
             if($err) {
@@ -1129,9 +1081,11 @@ class Api
                   10 => 'JSON_ERROR_UTF16',
                 );
                 if(isset($errs[$err])) {
-                    S::log('[ERROR] JSON decoding error: '.$errs[$err]);
+                    if(S::$log > 0) S::log('[ERROR] JSON decoding error: '.$errs[$err]);
+                    $this->error[] = 'JSON decoding error: '.$errs[$err];
                 } else {
-                    S::log('[ERROR] JSON unknown error: '.$err);
+                    if(S::$log > 0) S::log('[ERROR] JSON unknown error: '.$err);
+                    $this->error[] = 'JSON unknown error: '.$err;
                 }
             }
         }
@@ -1374,7 +1328,7 @@ class Api
         if(!$conn) $conn = $this->connect($this->schema('database'));
         $H = $this->config('requestHeaders');
         if(!is_array($H)) $H = array();
-        if($data && !is_string($data)) {
+        if($this->config('serializeBody') && $data && !is_string($data)) {
             if($this->config('postFormat')==='json') {
                 $data = S::serialize($data, 'json');
                 $H[] = 'content-type: application/json'.(($c=$this->config('postCharset')) ?';charset='.$c :'');
@@ -1564,4 +1518,144 @@ class Api
         return S::$variables['timestamp'][$cn];
     }
 
+    protected function _exec($conn, $decode=null, $disconnect=null)
+    {
+        if($this->config('ratelimit')) {
+            $this->ratelimitPreExec($conn, $decode, $disconnect);
+        }
+        $this->cleanup();
+        if(is_null($headersOut = $this->config('headersOut')) && (($c=$this->config('curlOptions')) && isset($c[CURLOPT_HEADER]))) {
+            $headersOut = $c[CURLOPT_HEADER];
+        }
+        if(!is_null($headersOut)) {
+            curl_setopt($conn, CURLOPT_HEADER, $headersOut);
+        }
+
+        $r = curl_exec($conn);
+        if(S::$log) S::log("[INFO] {$this->_method} call to ".curl_getinfo($conn, CURLINFO_EFFECTIVE_URL).' ('.ceil(memory_get_peak_usage() * 0.000001).'M, '.substr((microtime(true) - S_TIME), 0, 5).'s)');
+
+        $body = null;
+        if(!$r) {
+            if($msg = curl_error($conn)) {
+                $this->error[] = $msg;
+            }
+        } else {
+            if($headersOut) {
+                list($this->headers, $body) = preg_split('/\r?\n\r?\n/', $r, 2);
+                while(preg_match('#^HTTP/[0-9\.]+ [0-9]+#', $body)) {
+                    list($this->headers, $body) = preg_split('/\r?\n\r?\n/', $body, 2);
+                }
+            } else {
+                $this->headers = null;
+                $body = $r;
+            }
+            $body = preg_replace('/^\xEF\xBB\xBF/', '', $body);
+            if($decode=$this->config('decode')) {
+                if(is_string($decode)) {
+                    $decode = preg_split('/\s*[\,\|]+\s*/', $decode, -1, PREG_SPLIT_NO_EMPTY);
+                }
+            } else if($this->headers && ($ct=$this->header('content-type'))) {
+                $decode = [];
+                if(strpos($ct, 'gzip')) $decode[] = 'gzip';
+                if(strpos($ct, 'json')) $decode[] = 'json';
+            }
+
+            if($decode && $body) {
+                foreach($decode as $dn) {
+                    if(method_exists($this, $dm = 'decode'.S::camelize($dn, true))) {
+                        $body = $this->$dm($body);
+                        if(is_null($body) || $body===false) break;
+                        unset($dm, $dn);
+                    }
+                }
+            }
+            $this->response = $body;
+        }
+        unset($body, $r);
+        if($this->config('ratelimit')) {
+            $this->ratelimitPostExec($conn, $decode, $disconnect);
+        }
+        unset($r);
+
+        return $this->response;
+    }
+
+    /*
+        // enables ratelimit logging and verification
+        $ratelimit=true,
+        // actually changes the querying rate, by a certain threshold 0.0 (no delay at all) - 1.0 (keep a full margin)
+        $ratelimitDelay=0.1,
+        $ratelimitStatus=429,
+        $ratelimitHeaderPrefix='x-ratelimit-',
+        // apply ratelimit to all connections or just this specific connection 
+        $ratelimitStrategy='site'; // site | client
+    */
+
+    protected function ratelimitPreExec($conn, $decode=null, $disconnect=null)
+    {
+        $strategy = $this->config('ratelimitStrategy');
+        $strategyTo = null;
+        $R = [];
+        if($strategy==='site') {
+            $R = Cache::get('ratelimit/'.$this->_cid.'-site');
+            if($this->_cid) $strategyTo = ' to '.$this->_cid;
+        } else if(isset($this->_ratelimit)) {
+            $R = $this->_ratelimit;
+            $strategyTo = ' to client';
+        };
+        if($R && isset($R['limit']) && isset($R['remaining'])) {
+            $delay = (float) $this->config('ratelimitDelay');
+            $rate = ($R['remaining']>0) ?(((int)$R['remaining']) / ((int)$R['limit'])) :0;
+            if($delay > $rate) {
+                $reset = (isset($R['reset'])) ?$R['reset'] :time();
+                $toReset = $reset - time();
+                if($toReset > 0) {
+                    if($rate > 0.0) {
+                        $toDelay = $delay * $toReset;
+                    } else {
+                        $toDelay = $toReset;
+                    }
+                    if(S::$log > 1) S::log('[INFO] Ratelimit: sleeping '.$toDelay.' seconds before next API call'.$strategyTo.'.', $R);
+                    if($toDelay > 1) {
+                        sleep(ceil($toDelay));
+                    } else {
+                        usleep($toDelay * 1000000);
+                    }
+                }
+            }
+        }
+    }
+
+    protected function ratelimitPostExec($conn, $decode=null, $disconnect=null)
+    {
+        $R = [];
+        if($this->headers) {
+            $p = $this->config('ratelimitHeaderPrefix');
+            $R = [
+                'limit' => (int)$this->header($p.'limit'),
+                'remaining' => (int)$this->header($p.'remaining'),
+                'reset' => (int)$this->header($p.'reset'),
+            ];
+
+            $strategy = $this->config('ratelimitStrategy');
+            $strategyTo = null;
+            $expires = ($R['reset'] > time()) ?($R['reset'] - time()) :5;
+            if($strategy==='site') {
+                Cache::set('ratelimit/'.$this->_cid.'-site', $R, $expires);
+                if($this->_cid) $strategyTo = ' to '.$this->_cid;
+            } else {
+                $this->_ratelimit = $R;
+                $strategyTo = ' to client';
+            }
+            if($R['limit']==0 && $this->header('status')===429) {
+                // retry exec
+                if(S::$log > 1) S::log('[INFO] Ratelimit exceeded: retrying request.', $this->response);
+                if(!$this->config('ratelimitDelay')) {
+                    if(S::$log > 0) S::log('[INFO] Ratelimit: sleeping '.$expires.' seconds before next API call'.$strategyTo.'.', $R);
+                    sleep($expires);
+                }
+                $this->exec($conn, $decode, $disconnect);
+            }
+        }
+    }
 }

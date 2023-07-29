@@ -2401,14 +2401,15 @@ class Studio
     /**
      * Date and time functions
      */
-    public static function strtotime($date, $showtime = true)
+    public static function strtotime($date, $showtime = true, $microseconds=null)
     {
-        $hour=$minute=$second=0;
+        $hour=$minute=$second=$ms=0;
         if(preg_match('/^([0-9]{4})(-([0-9]{2})(-([0-9]{2})(T([0-9]{2})\:([0-9]{2})(\:([0-9]{2})(\.[0-9]+)?)?(Z|([-+])([0-9]{2})\:([0-9]{2}))?)?)?)?$/', trim($date), $m)){
             //           [year    ] -[month   ] -[day     ]  T[hour and minute     ]  :[seconds ][mseconds]   [timezone                  ]
             $m[3] = ($m[3]=='')?(1):((int)$m[3]);
             $m[5] = ($m[5]=='')?(1):((int)$m[5]);
-            return @mktime((int)$m[7], (int)$m[8], (int)$m[10], $m[3], $m[5], (int)$m[1]);
+            if(isset($m[6]) && $m[6]) $ms = (float)$m[6];
+            $r = @mktime((int)$m[7], (int)$m[8], (int)$m[10], $m[3], $m[5], (int)$m[1]);
         } elseif (strpos($date,"/") > 0 && (self::$dateFormat != '' && (self::$timeFormat != '' || !$showtime))){
             $format = self::$dateFormat.(($showtime)?(' '.self::$timeFormat):(''));
             $dtcomp = preg_split('%[- /.:]%', $date);
@@ -2430,10 +2431,13 @@ class Studio
                     }
                 }
             }
-            return mktime((int)$hour, (int)$minute, (int)$second, (int)$month, (int)$day, (int)$year);
+            $r = mktime((int)$hour, (int)$minute, (int)$second, (int)$month, (int)$day, (int)$year);
         } else {
-            return @strtotime($date);
+            $r = @strtotime($date);
         }
+        if($microseconds && $ms > 0.0 && $ms < 1.0) $r += $ms; 
+
+        return $r;
     }
     public static function date($t, $showtime=true)
     {
