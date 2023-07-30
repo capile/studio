@@ -17,6 +17,7 @@ use Studio\Exception\AppException;
 use Studio\Query;
 use Studio\Model;
 use Studio\Schema\Model as SchemaModel;
+use Studio\Schema\ModelProperty;
 use Tecnodesign_Database as Database;
 use Exception;
 use PDO;
@@ -1685,7 +1686,7 @@ class Sql
         if(isset($fd['default'])) $f['default'] = $fd['default'];
         $f += $base;
         
-        return $f;
+        return new ModelProperty($f);
     }
 
     public function getTableSchema($table, $schema=null, $Model=null)
