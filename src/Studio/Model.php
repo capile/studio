@@ -1080,9 +1080,11 @@ class Model implements ArrayAccess, Iterator, Countable
         if($scope && is_array($scope)) {
             foreach($scope as $fn=>$fv) {
                 $type = 'string';
-                if(is_string($fv) && isset($schema->properties[$fv]->bind) && $schema->properties[$fv]->bind!=$fv) {
-                    $fv = $schema->properties[$fv]->bind;
+                if(is_string($fv) && isset($schema->properties[$fv])) {
                     if($schema->properties[$fv]->type) $type = $schema->properties[$fv]->type;
+                    if(isset($schema->properties[$fv]->bind) && $schema->properties[$fv]->bind!=$fv) {
+                        $fv = $schema->properties[$fv]->bind;
+                    }
                 } else if(is_array($fv) || is_object($fv)) {
                     if(isset($fv['type'])) $type = $fv['type'];
                     $fv = (isset($fv['bind']))?($fv['bind']):($fn);

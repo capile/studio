@@ -170,7 +170,7 @@ class Query extends SchemaObject
                         $rel = array();
                         foreach($r as $fn=>$fv) {
                             if (isset($sc->properties[$fn]) || substr($fn, 0, 1)=='_') {
-                                if(!$fv) {
+                                if(S::isempty($fv)) {
                                     $fv = false;
                                 }
                                 $o->$fn = $fv;
