@@ -957,7 +957,7 @@ function formFilters(e)
     if(reset) this.className += ' s-a-filters';
 
     var t=(a.indexOf(',')>-1)?(a.split(',')):([a]), i=t.length, nn=this.getAttribute('name'), fa=this.getAttribute('data-filter-action'),
-      tn, ltn, tp='', L, l, T, s, v=Z.val(this), tv, O,sel,A,fn,P, fid=(this.form.id)?(this.form.id + '.'):(''), fk, n;
+      tn, ltn, tp='', L, l, T, s, v=Z.val(this), tv, O,sel,A,fn,P, fid=(this.form.id)?(this.form.id + '.'):(''), fk, n, F=Z.parentNode(this, '.item', 'form');
     if(v && this.getAttribute('data-filter-value')) {
         var av=this.getAttribute('data-filter-value').split(/\s*\,\s*/g), avi=av.length,avf;
         while(avi--) {
@@ -977,14 +977,14 @@ function formFilters(e)
         ltn = (tn.search(/\[[^\]]+/i)>-1)?(tn.replace(/^.*\[([^\]]+)\](\[\])?$/, '$1')+' '):(tn);
         fk = fid+tn;
         if(fa) {
-            if((T=this.form.querySelector('#f__'+tn.replace(/[\[\]\-]+/g, '_')+',.if--'+ltn))) {
+            if((T=F.querySelector('#f__'+tn.replace(/[\[\]\-]+/g, '_')+',.if--'+ltn))) {
                 if(fa=='enable' || fa=='disable') {
                     enableField.call(T, (fa=='enable')?(v):(!v));
                 } if(fa=='show' || fa=='display' || fa=='hide') {
                     displayField.call(T, (fa!='hide')?(v):(!v));
                 }
             }
-        } else if((T=this.form.querySelector('select#'+tn))) {
+        } else if((T=F.querySelector('select#'+tn))) {
             L = T.querySelectorAll('option');
             if(!(fk in _FF)) {
                 _FF[fk]={o:[], v:{}, f:{}};
@@ -1032,7 +1032,7 @@ function formFilters(e)
                     Z.fire(T, 'change');
                 }
             }
-        } else if((T=this.form.querySelector('#f__'+tn.replace(/-/g, '_')))) {
+        } else if((T=F.querySelector('#f__'+tn.replace(/-/g, '_')))) {
             L = T.querySelectorAll('input[type="radio"],input[type="checkbox"]');
             if(!(fk in _FF)) {
                 _FF[fk]={c:{}, v:{}, f:{}};
