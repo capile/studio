@@ -1511,7 +1511,12 @@ class Field extends SchemaObject
         }
         if (!isset($this->choices) && !isset($this->_choicesCollection) && isset($this->query)) {
             $this->choices = [];
-            $this->_choicesCollection = $this->query->find((isset($this->choicesFilter)) ?$this->choicesFilter :null);
+            $q = null;
+            if(isset($this->choicesFilter) && is_array($this->choicesFilter)) {
+                $q = (isset($this->choicesFilter['where'])) ?$this->choicesFilter :['where'=>$this->choicesFilter];
+            }
+            $this->_choicesCollection = $this->query->find($q);
+            unset($q);
             if(is_array($this->_choicesCollection)) {
                 $this->choices = $this->_choicesCollection;
                 $this->_choicesCollection = null;
