@@ -22,7 +22,7 @@ use Studio\Yaml;
 use ArrayAccess;
 use Exception;
 
-#[AllowDynamicProperties]
+#[\AllowDynamicProperties]
 class Schema implements ArrayAccess
 {
     const SCHEMA_PROPERTY='meta';

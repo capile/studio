@@ -20,7 +20,7 @@ use arrayObject;
 use ArrayAccess;
 use Exception;
 
-#[AllowDynamicProperties]
+#[\AllowDynamicProperties]
 class SchemaObject implements ArrayAccess
 {
     const SCHEMA_PROPERTY='meta';

@@ -36,36 +36,7 @@ class Studio
     $script_name = null,
     $real_script_name = null,
     $encoder,
-    $cacheControlExpires=864000,
-    $cp1252_map = array(
-        "\xc2\x80" => "\xe2\x82\xac",
-        "\xc2\x82" => "\xe2\x80\x9a",
-        "\xc2\x83" => "\xc6\x92",
-        "\xc2\x84" => "\xe2\x80\x9e",
-        "\xc2\x85" => "\xe2\x80\xa6",
-        "\xc2\x86" => "\xe2\x80\xa0",
-        "\xc2\x87" => "\xe2\x80\xa1",
-        "\xc2\x88" => "\xcb\x86",
-        "\xc2\x89" => "\xe2\x80\xb0",
-        "\xc2\x8a" => "\xc5\xa0",
-        "\xc2\x8b" => "\xe2\x80\xb9",
-        "\xc2\x8c" => "\xc5\x92",
-        "\xc2\x8e" => "\xc5\xbd",
-        "\xc2\x91" => "\xe2\x80\x98",
-        "\xc2\x92" => "\xe2\x80\x99",
-        "\xc2\x93" => "\xe2\x80\x9c",
-        "\xc2\x94" => "\xe2\x80\x9d",
-        "\xc2\x95" => "\xe2\x80\xa2",
-        "\xc2\x96" => "\xe2\x80\x93",
-        "\xc2\x97" => "\xe2\x80\x94",
-        "\xc2\x98" => "\xcb\x9c",
-        "\xc2\x99" => "\xe2\x84\xa2",
-        "\xc2\x9a" => "\xc5\xa1",
-        "\xc2\x9b" => "\xe2\x80\xba",
-        "\xc2\x9c" => "\xc5\x93",
-        "\xc2\x9e" => "\xc5\xbe",
-        "\xc2\x9f" => "\xc5\xb8"
-            );
+    $cacheControlExpires=864000;
 
     public static
         $formats = array(
@@ -184,7 +155,7 @@ class Studio
         $tplDir,
         $userClass='Studio\\User',
         $translator='Studio\\Translate::message',
-        $markdown='Tecnodesign_Markdown',
+        $markdown='Studio\\Markdown',
         $database,
         $useDatabaseHandlers=true,
         $log,
@@ -1186,53 +1157,63 @@ class Studio
 
     public static function fixEncoding($s, $encoding='UTF-8')
     {
-        static $mb;
-        if(is_null($mb)) $mb=function_exists('mb_check_encoding');
-
-        if(self::$encoder===false || ($mb && mb_check_encoding($s, $encoding))) {
-            return $s;
-        } else if($mb && !self::$encoder && PHP_VERSION_ID > 70200) {
-            return mb_convert_encoding($s, $encoding);
-        } else if (is_array($s)) {
-            foreach ($s as $k => $v) {
-                unset($s[$k]);
-                $s[$k] = self::fixEncoding($v, $encoding);
-                unset($k, $v);
-            }
-        } else if(is_string($s)) {
-            if(self::$encoder) {
-                $m = self::$encoder;
-                return $m($s, $encoding);
-            } else if($mb) {
-                return mb_convert_encoding($s, $encoding);
-            } else {
-                $s0 = $s;
-                $s=iconv($encoding, "{$encoding}//IGNORE", $s);
-                if($s===false) {
-                    $s = $s0;
-                }
-                unset($s0);
-            }
-        }
-        return $s;
+        return self::encode($s, $encoding);
     }
 
-    public static function encode($s)
+    public static function encode($s, $to='UTF-8')
     {
-        $s = self::encodeUTF8($s);
+        static
+        $uenc = [
+            'UTF-32',
+            'UTF-16',
+            'UTF-8',
+        ];
+        static $enc=[
+            'ASCII',
+            '7bit',
+            '8bit',
+            'UCS-4',
+            'UCS-2',
+            'UTF-7',
+            'UTF7-IMAP',
+            'ISO-8859-1',
+            'ISO-8859-2',
+            'ISO-8859-3',
+            'ISO-8859-4',
+            'ISO-8859-5',
+            'ISO-8859-6',
+            'ISO-8859-7',
+            'ISO-8859-8',
+            'ISO-8859-9',
+            'ISO-8859-10',
+            'ISO-8859-13',
+            'ISO-8859-14',
+            'ISO-8859-15',
+            'ISO-8859-16',
+            'Windows-1251',
+            'Windows-1252',
+            'Windows-1254',
+        ];
+        static $setOrder;
+        if(is_null($setOrder)) $setOrder = mb_detect_order($enc);
+
+        if(is_array($s)) {
+            foreach($s as $k=>$v) {
+                $s[$k] = self::encode($v, $to);
+            }
+        } else if(is_string($s)) {
+            $from = mb_detect_encoding($s, (preg_match('//u', $s)) ?$uenc :$enc);
+            if($to!==$from && $from!=='ASCII') {
+                $s = iconv($from, $to.'//TRANSLIT', $s);
+            }
+        }
+
         return $s;
     }
 
     public static function encodeUTF8($s)
     {
-        if (is_array($s)) {
-            foreach ($s as $k => $v) {
-                $s[$k] = self::encodeUTF8($v);
-            }
-        } else {
-            $s=strtr(utf8_encode($s), self::$cp1252_map);
-        }
-        return $s;
+        return self::encode($s, 'UTF-8');
     }
 
     public static function decode($s)
@@ -1242,14 +1223,7 @@ class Studio
 
     public static function encodeLatin1($s)
     {
-        if (is_array($s)) {
-            foreach ($s as $k => $v) {
-                $s[$k] = self::encodeLatin1($v);
-            }
-        } else {
-            $s=utf8_decode(strtr($s, array_flip(self::$cp1252_map)));
-        }
-        return $s;
+        return self::encode($s, 'ISO-8859-1,Windows-1252');
     }
 
     public static function getBrowserCache($etag, $lastModified, $expires=null)

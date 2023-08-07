@@ -22,7 +22,7 @@ use Studio\Cache\Memcached;
 
 class Cache
 {
-    public static $expires=0, $memcachedServers=array(), $storage;
+    public static $expires=0, $memcachedServers=array(), $storage, $preferredStorage=['memcached', 'memcache', 'file', 'apc'];
     /**
      * Cache key used for storing this site information in memory, must be a 
      * unique string.
@@ -56,22 +56,38 @@ class Cache
         return $ret;
     }
 
+    public static function preferredStorage()
+    {
+        if(is_null(self::$storage)) {
+            $m = null;
+            foreach(self::$preferredStorage as $m) {
+                if($m==='memcached') {
+                    if(self::$memcachedServers && ini_get('memcached.serializer') && Memcached::memcached()) break;
+                } else if($m==='memcache') {
+                    if(self::$memcachedServers && function_exists('memcache_debug') && Memcache::memcache()) break;
+                } else if($m==='apc') {
+                    if(function_exists('apc_fetch') || function_exists('apcu_fetch')) break;
+                } else if($m==='file') {
+                    break;
+                }
+                $m = null;
+            }
+            self::$storage = ($m) ?$m :'file';
+        }
+
+        return self::$storage;
+    }
+
     public static function storage($method=null, $className=false)
     {
         $r = null;
         if(!is_null($method) && is_string($method) && in_array($method, array('file', 'apc', 'memcache', 'memcached'))) {
             $r = $method;
-        } else if(!is_null(self::$storage)) {
-            $r = self::$storage;
         } else {
-            if(self::$memcachedServers && ini_get('memcached.serializer') && Memcached::memcached()) $r='memcached';
-            else if(self::$memcachedServers && function_exists('memcache_debug') && Memcache::memcache()) $r='memcache';
-            else if(function_exists('apc_fetch') || function_exists('apcu_fetch')) $r='apc';
-            else $r='file';
-            self::$storage = $r;
+            $r = self::preferredStorage();
         }
         
-        return ($className) ?'Studio\\Cache\\'.ucfirst($r) :self::$storage;
+        return ($className) ?'Studio\\Cache\\'.ucfirst($r) :$r;
     }
 
     /**
