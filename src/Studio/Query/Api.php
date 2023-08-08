@@ -87,6 +87,7 @@ class Api
         $maxCount=10000000,
         $cookieJar,
         $connectionCallback,
+        $storeRequest,
         // enables ratelimit logging and verification
         $ratelimit=true,
         // actually changes the querying rate, by a certain threshold 0.0 (no delay at all) - 1.0 (keep a full margin)
@@ -96,7 +97,7 @@ class Api
         // apply ratelimit to all connections or just this specific connection 
         $ratelimitStrategy='site'; // site | client
     protected static $options, $conn=array();
-    protected $_schema, $_method, $_url, $_reqBody, $_scope, $_select, $_where, $_orderBy, $_groupBy, $_limit, $_offset, $_options, $_last, $_next, $_count, $_unique, $_cid, $headers, $response, $error=[];
+    protected $_schema, $_method, $_url, $_requestHeaders, $_requestBody, $_scope, $_select, $_where, $_orderBy, $_groupBy, $_limit, $_offset, $_options, $_last, $_next, $_count, $_unique, $_cid, $headers, $response, $error=[];
 
     public function __construct($s=null)
     {
@@ -194,6 +195,7 @@ class Api
             'cookieJar',
             'connectionCallback',
             'decode',
+            'storeRequest',
             'ratelimit',
             'ratelimitDelay',
             'ratelimitStatus',
@@ -914,13 +916,13 @@ class Api
 
         $this->_last = $q;
         if(!$this->_method) {
-            $this->_method = ($this->_reqBody) ?'POST' :$this->config('queryMethod');
+            $this->_method = ($this->_requestBody) ?'POST' :$this->config('queryMethod');
         } else if($this->_method!='GET' && $this->_method!='POST') {
             curl_setopt($conn, CURLOPT_CUSTOMREQUEST, $this->_method);
         }
 
-        if($this->_reqBody && $this->_method!='GET') {
-            $data = $this->_reqBody;
+        if($this->_requestBody && $this->_method!='GET') {
+            $data = $this->_requestBody;
             if(!is_string($data) && $this->config('serializeBody')) $data = S::serialize($data, $this->config('postFormat'));
             curl_setopt($conn, CURLOPT_POST, true);
             curl_setopt($conn, CURLOPT_POSTFIELDS, $data);
@@ -935,8 +937,10 @@ class Api
 
         $m = null;
         if($this->error || preg_match($this->config('errorPattern'), (string)$this->headers, $m)) {
-            if(!$this->error && (!($c=$this->config('errorAttribute')) || !($msg=$this->_getResponseAttribute($c)))) {
-                if($msg=$this->header('x-message')) {
+            if(!$this->error) {
+                if(($c=$this->config('errorAttribute')) && ($msg=$this->_getResponseAttribute($c))) {
+                    $this->error[] = $msg;
+                } else if($msg=$this->header('x-message')) {
                     $this->error[] = $msg;
                 }
             }
@@ -950,8 +954,8 @@ class Api
                 $msg .= $this->response['message'];
             }
             if($m) {
-                S::log("[INFO] Bad response for {$q}: \n{$this->headers}\n  ".strip_tags($msg));
-                if(S::$log>2) S::log($body);
+                S::log("[INFO] Bad response for {$q}: {$this->header('status')}\n  ".strip_tags($msg));
+                if(S::$log>2) S::log($this->response);
             }
             throw new AppException($msg);
         } else if(!preg_match($this->config('successPattern'), (string)$this->headers)) {
@@ -1332,20 +1336,25 @@ class Api
             if($this->config('postFormat')==='json') {
                 $data = S::serialize($data, 'json');
                 $H[] = 'content-type: application/json'.(($c=$this->config('postCharset')) ?';charset='.$c :'');
+                //$this->config('requestHeaders', $H);
+                $this->config('headersOut', true);
+                curl_setopt($conn, CURLOPT_HTTPHEADER, $H);
             } else {
                 $data = S::serialize($data, 'query');
             }
         }
 
+        $this->_requestBody = $data;
         if($data) {
+            if(!$method || $method==='GET') $method = 'POST';
+            /*
             curl_setopt($conn, CURLOPT_POST, true);
             curl_setopt($conn, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($conn, CURLOPT_HTTPHEADER, $H);
-            $this->_method = 'POST';
+            */
         }
         if($method) {
             $this->_method = $method;
-            curl_setopt($conn, CURLOPT_CUSTOMREQUEST, $method);
+            //curl_setopt($conn, CURLOPT_CUSTOMREQUEST, $method);
         }
         $R = $this->run($url, $conn);
         return $R;
@@ -1526,12 +1535,20 @@ class Api
         $this->cleanup();
         if(is_null($headersOut = $this->config('headersOut')) && (($c=$this->config('curlOptions')) && isset($c[CURLOPT_HEADER]))) {
             $headersOut = $c[CURLOPT_HEADER];
+            unset($c);
         }
         if(!is_null($headersOut)) {
             curl_setopt($conn, CURLOPT_HEADER, $headersOut);
         }
+        if($h=$this->config('storeRequest')) {
+            curl_setopt($conn, CURLINFO_HEADER_OUT, true);
+        }
 
         $r = curl_exec($conn);
+
+        if($h) {
+            $this->_requestHeaders = curl_getinfo($conn,  CURLINFO_HEADER_OUT);
+        }
         if(S::$log) S::log("[INFO] {$this->_method} call to ".curl_getinfo($conn, CURLINFO_EFFECTIVE_URL).' ('.ceil(memory_get_peak_usage() * 0.000001).'M, '.substr((microtime(true) - S_TIME), 0, 5).'s)');
 
         $body = null;

@@ -87,6 +87,7 @@ class Studio
             'assets'=>['Studio\\Asset','check'],
             'build'=>['Studio\\Asset','buildCheck'],
             'app'=>['Studio\\Studio','standaloneApp'],
+            'cleanup'=>['Studio\\Cache', 'cleanup'],
         ];
     const VERSION = 1.0;    // should match the development branch 
 

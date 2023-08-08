@@ -187,4 +187,29 @@ class Cache
     {
         return File::cacheDir($s);
     }
+
+    public static function cleanup()
+    {
+        $L = [File::cacheDir()];
+        $i = 0;
+        $c = 0;
+        while($L) {
+            $o = array_shift($L);
+            if(is_dir($o)) {
+                if(substr($o, -1)!='/') $o .= '/';
+                $L = array_merge($L, glob($o.'*', GLOB_NOSORT));
+            } else {
+                if(substr($o, -6)=='.cache' && file_exists($o)) {
+                    $i++;
+                    $s = preg_replace('/[\r\n]+.*/', '', fgets(fopen($o, 'r')));
+                    if(is_numeric($s) && $s > 0 && $s < S_TIME) {
+                        $c++;
+                        unlink($o);
+                    }
+                }
+            }
+            unset($o);
+        }
+        if(S::$log > 0) S::log("[INFO] Cleaned up {$c} files in {$i} cached entries.");
+    }
 }
