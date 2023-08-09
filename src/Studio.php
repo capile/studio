@@ -386,7 +386,7 @@ class Studio
                 self::$variables['metrics']['query']['count']++;
             }
         } catch(Exception $e) {
-            self::log('Error in '.__METHOD__.":\n  ".$e->getMessage()."\n {$sql}");
+            self::log("[ERROR] Query Error: ".$e->getMessage()."\n {$sql}");
             return false;
         }
         return $ret;
@@ -1201,7 +1201,7 @@ class Studio
             foreach($s as $k=>$v) {
                 $s[$k] = self::encode($v, $to);
             }
-        } else if(is_string($s)) {
+        } else if(is_string($s) && !mb_check_encoding($s, 'ASCII')) {
             $from = mb_detect_encoding($s, (preg_match('//u', $s)) ?$uenc :$enc);
             if($to!==$from && $from!=='ASCII') {
                 $s = iconv($from, $to.'//TRANSLIT', $s);
@@ -3007,7 +3007,7 @@ class Studio
                 }
                 return rmdir($dir);
             } catch (Exception $e) {
-                throw new AppException('Error '.$e.' ('.__METHOD__.' - '.__LINE.')');
+                throw new AppException('[ERROR] Could not remove directory recursively: '.$dir.': '.$e->getMessage());
                 return false;
             }
         }

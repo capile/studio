@@ -18,7 +18,7 @@ use PDO;
 
 class Mysql extends Sql
 {
-    const DRIVER='mysql';
+    const DRIVER='mysql', INITIALIZE_CMD='set names utf8mb4';
     public static $options=array(
         PDO::ATTR_PERSISTENT => false,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,

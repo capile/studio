@@ -25,7 +25,7 @@ use PDOException;
 
 class Sql
 {
-    const TYPE='sql', DRIVER='sql', QUOTE='``', PDO_AUTOCOMMIT=1, PDO_TRANSACTION=1;
+    const TYPE='sql', DRIVER='sql', QUOTE='``', PDO_AUTOCOMMIT=1, PDO_TRANSACTION=1, INITIALIZE_CMD='';
     public static 
         $microseconds=6,
         $datetimeSize=6,
@@ -121,7 +121,7 @@ class Sql
                 } else if(isset($db['options']['initialize'])) {
                     $cmd = $db['options']['initialize'];
                 } else {
-                    $cmd = null;
+                    $cmd = static::INITIALIZE_CMD;
                 }
                 $level = 'connect';
                 static::$conn[$n] = new \PDO($db['dsn'], $db['username'], $db['password'], $db['options']);
@@ -1013,8 +1013,10 @@ class Sql
                 unset($n, $C);
             }
         }
+        $N = ($enclose && S::$sqlUnicode && !mb_check_encoding($str, 'ASCII')) ?'N' :'';
         $str = str_replace(array('\\', "'"), array('\\\\', "''"), (string) $str);
-        $str = ($enclose) ? ("'{$str}'") : ($str);
+        $str = ($enclose) ? ("$N'{$str}'") : ($str);
+
         return $str;
     }
 
@@ -1543,7 +1545,7 @@ class Sql
         }
         catch(PDOException $e)
         {
-            S::log('[WARNING] timestamp exception: in '.__METHOD__.': '.$e->getMessage());
+            S::log('[WARNING] timestamp exception: '.$e->getMessage());
             return false;
         }
         return S::$variables['timestamp'][$cn];
