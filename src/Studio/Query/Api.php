@@ -1001,7 +1001,7 @@ class Api
                 if($this->response) {
                     if($dataAttribute) {
                         $M = $this->_getResponseAttribute($dataAttribute);
-                        $count += count($M);
+                        if($M) $count += count($M);
                     } else {
                         $count += count($this->response);
                         $M = $this->response;

@@ -483,6 +483,7 @@ class Index extends Model
         else if($type=='text' && is_string($value) && strlen($value)>2000) $type='blob';
         else if(substr($type, 0, 4)=='date') $type='date';
         else if(is_int($value) || is_float($value)) $type = 'number';
+        else if(is_bool($value)) $type = 'bool';
 
         $rel = 'Index'.ucwords($type);
         if(!isset($output[$rel])) $rel = 'IndexText';

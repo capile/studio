@@ -18,4 +18,13 @@ class IndexNumber extends Model
 {
     public static $schema;
     protected $interface, $id, $name, $value, $created, $updated, $Index;
+
+    public function getValue()
+    {
+        if(isset($this->value) && is_string($this->value) && is_numeric($this->value)) {
+            return (strpos($this->value, '.')!==false) ?(float) $this->value :(int)$this->value;
+        }
+
+        return $this->value;
+    }
 }
