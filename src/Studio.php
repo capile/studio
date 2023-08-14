@@ -487,7 +487,7 @@ class Studio
         return array();
     }
 
-    public static function expandVariables($a, $vars=null)
+    public static function expandVariables($a, $vars=null, $dottedProperties=null)
     {
         if(!is_array($a) && !is_object($a)) {
             if(preg_match_all('/\$(([A-Za-z0-9\_]+\:\:)?[A-Za-z0-9\_]+)/', $a, $m)) {
@@ -506,8 +506,27 @@ class Studio
                 unset($m);
             }
         } else {
+            $dot = null;
+            if($dottedProperties) {
+                $dot = (is_string($dottedProperties)) ?$dottedProperties :'.';
+            }
             foreach($a as $i=>$o) {
-                $a[$i] = self::expandVariables($o, $vars);
+                if($dot && strpos($i, $dot)!==false) {
+                    unset($a[$i]);
+                    $p=explode($dot, $i);
+                    $r=&$a;
+                    while(($n=array_shift($p))) {
+                        if($p) {
+                            if(!isset($r[$n])) $r[$n] = [];
+                            $r = &$r[$n];
+                        } else {
+                            $r[$n] = $o;
+                        }
+                    }
+                    unset($r);
+                } else {
+                    $a[$i] = self::expandVariables($o, $vars);
+                }
                 unset($i, $o);
             }
         }

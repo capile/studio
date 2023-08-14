@@ -2,7 +2,7 @@
 #
 # docker build -f data/docker/01-php-node.dockerfile  data/docker -t tecnodesign/php-node:v1.0
 # docker push tecnodesign/php-node:v1.0
-FROM php:8.1-fpm
+FROM php:8.2-fpm
 RUN apt-get update && apt-get install -y \
     git \
     gnupg \

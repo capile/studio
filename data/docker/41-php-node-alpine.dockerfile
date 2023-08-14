@@ -2,7 +2,7 @@
 #
 # docker build -f data/docker/41-php-node-alpine.dockerfile  data/docker -t tecnodesign/php-node:alpine-v1.0
 # docker push tecnodesign/php-node:alpine-v1.0
-FROM php:8.1-fpm-alpine
+FROM php:8.2-fpm-alpine
 RUN apk --no-cache add \
     git \
     gnupg \
