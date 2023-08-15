@@ -698,7 +698,10 @@ class User
         }
         $timeout = $this->nsConfig('timeout', static::$timeout);
         if($timeout > 0 && $timeout<31536000) $timeout += time();
-        $path = $this->nsConfig('cookie-path', '/');
+        if(!($path=$this->getAttribute('session-path')) && ($path = $this->nsConfig('cookie-path')) && $path!='/' && substr($path, 0, 1)=='/') {
+            $this->setAttribute('session-path', $path);
+        }
+        if(!$path || substr($path, 0, 1)!='/') $path = '/';
         setcookie($n, $this->_cid, $timeout, $path, $this->getCookieHost(), static::$cookieSecure, static::$cookieHttpOnly);
         self::$_cookiesSent[$n.'/'.$this->_cid]=true;
         unset($n, $domain, $timeout);
