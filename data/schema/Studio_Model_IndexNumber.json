@@ -7,7 +7,7 @@
         "interface": { "type": "string", "required": true, "primary": true },
         "id": { "type": "string", "required": true, "primary": true },
         "name": { "type": "string", "required": true, "primary": true, "size": 200 },
-        "value": { "type": "decimal", "index": [ "studio_index_number__idx" ] },
+        "value": { "type": "decimal", "size": 18, "decimal": 2, "index": [ "studio_index_number__idx" ] },
         "created": { "type": "datetime", "required": true },
         "updated": { "type": "datetime", "required": true }
     },

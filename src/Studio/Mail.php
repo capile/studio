@@ -533,13 +533,25 @@ class Mail
                         $mail->addStringEmbeddedImage($v['content'], substr($k,4), $name);
                     }
                 } else {
-                    $m = (strlen($v['content'])<500 && file_exists($v['content'])) ?'addAttachment' :'addStringAttachment';
-                    if(preg_match('/^[a-z]+\/[a-z\-0-9]+/',$k)) {
-                        $mail->$m($v['content'], '', \PHPMailer\PHPMailer\PHPMailer::ENCODING_8BIT, $k);
+                    $a0 = $a1 = $a2 = $a3 = null;
+                    if(isset($v['file'])) {
+                        $a0 = $v['file'];
+                        $m = 'addAttachment';
+                    } else if(strlen($v['content'])<500 && file_exists($v['content'])) {
+                        $m = 'addAttachment';
+                        $a0 = $v['content'];
                     } else {
-                        $mail->$m($v['content'], $k);
+                        $m = 'addStringAttachment';
+                        $a0 = $v['content'];
                     }
+                    if(isset($v['name'])) $a1 = $v['name'];
+                    else $a1 = $k;
+                    $a2 = \PHPMailer\PHPMailer\PHPMailer::ENCODING_BASE64;
+                    if(isset($v['content-type'])) $a3 = $v['content-type'];
+                    $mail->$m($a0, $a1, $a2, $a3);
+                    unset($m, $a0, $a1, $a2, $a3);
                 }
+                unset($k, $v);
             }
             $mail->XMailer = ' ';// omit mailer header
             if(isset($this->headers['Id'])) {
