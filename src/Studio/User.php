@@ -719,7 +719,7 @@ class User
                 break;
             }
             if($setCookie && is_null($this->_cid)) {
-                $this->_cid = S::salt();
+                $this->_cid = S::salt(40, 'a-zA-Z0-9\-');
                 self::$_cookies[$n][]=$this->_cid;
             }
             if($setCookie) $this->setSessionCookie();

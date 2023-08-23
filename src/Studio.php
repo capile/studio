@@ -2277,7 +2277,7 @@ class Studio
                 } else if($salt!==false) {
                     // generate uniqid in base64: 10 char string
                     while(!$r) {
-                        $r = rtrim(strtr(base64_encode((function_exists('openssl_random_pseudo_bytes'))?(openssl_random_pseudo_bytes(7)):(pack('H*',uniqid(true)))), '+/', '-_'), '=');
+                        $r = self::encodeBase64Url((function_exists('openssl_random_pseudo_bytes'))?(openssl_random_pseudo_bytes(7)):(pack('H*',uniqid(true))));
                         if(Cache::get('uuids/'.$r)) {
                             $r='';
                         }
@@ -2306,7 +2306,7 @@ class Studio
                 }
             }
         }
-        return rtrim(strtr(base64_encode($s), '+/', '-_'), '=');
+        return self::encodeBase64Url($s);
     }
 
     public static function salt($length=40, $safe=true)
@@ -2318,12 +2318,35 @@ class Studio
         } else {
             $rnd = pack('H*',uniqid(true).uniqid(true).uniqid(true).uniqid(true).uniqid(true));
         }
-        if($safe) {
-            return substr(rtrim(strtr(base64_encode($rnd), '+/', '-_'), '='),0,$length);
+        if($safe && is_string($safe)) {
+            return substr(preg_replace('/[^'.$safe.']+/', '', base64_encode($rnd)),0,$length);
+        } else if($safe) {
+            return substr(self::encodeBase64Url($rnd),0,$length);
         } else {
             return substr(base64_encode($rnd), 0, $length);
 
         }
+    }
+
+    public static function encodeBase64Url($s)
+    {
+        return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($s));
+    }
+
+    public static function decodeBase64Url($s)
+    {
+        return base64_decode(str_pad(strtr($s, '-_', '+/'), strlen($s) % 4, '=', STR_PAD_RIGHT));
+    }
+
+    public static function encodeBase64($s, $urlSafe=null)
+    {
+        return ($urlSafe) ?self::encodeBase64Url($s) :base64_encode($s);
+    }
+
+    public static function decodeBase64($s, $urlSafe=null)
+    {
+        if(is_null($urlSafe)) $urlSafe = preg_match('@[\-\_]@', $s);
+        return ($urlSafe) ?self::decodeBase64Url($s) :base64_decode($s);
     }
 
     /**
@@ -2348,7 +2371,7 @@ class Studio
                 if(is_null($salt) && !($salt=Cache::get('rnd', 0, true, true))) {
                     return false;
                 }
-                $r = base64_decode(strtr($r, '-_', '+/'));
+                $r = self::decodeBase64Url($r);
                 if(function_exists('openssl_encrypt')) {
                     if($alg===true) $alg = 'AES-256-CFB';
                     $l = openssl_cipher_iv_length($alg);
@@ -2364,7 +2387,7 @@ class Studio
                 return $s;
             }
         }
-        return base64_decode(strtr($r, '-_', '+/'));
+        return self::decodeBase64Url($r);
     }
 
     /**
