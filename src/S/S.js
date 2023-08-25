@@ -1,6 +1,6 @@
-/*! capile/studio v1.0 | (c) 2022 Tecnodesign <ti@tecnodz.com> */
+/*! capile/studio v1.0 | (c) 2023 Tecnodesign <ti@tecnodz.com> */
 if(!('Studio' in window))window.Z=window.Studio={version:1.0, host:null, altHost:null,uid:'/_me',timeout:0,headers:{},env:'prod',timestamp:null};
-(function(Z) {
+(function(S) {
 "use strict";
 var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl, _assets={}, _wm,
   defaultModules={
@@ -24,18 +24,18 @@ var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl,
 var _reWeb=/^https?:\/\//;
 function initStudio(d)
 {
-    Z.lang();
+    S.lang();
 
     if(document.querySelector('html[data-studio-config]')) {
         var zh = document.querySelector('html'), zc=zh.getAttribute('data-studio-config'), cfg=JSON.parse(zc.indexOf('{')<0 ?atob(zc) :zc), cn;
         zh.removeAttribute('data-studio-config');
         if(cfg) {
-            for(cn in cfg) if((cn in Z) && (typeof(Z[cn])!='function')) Z[cn] = cfg[cn];
+            for(cn in cfg) if((cn in S) && (typeof(S[cn])!='function')) S[cn] = cfg[cn];
         }
     }
 
-    if(!('modules' in Z)) {
-        Z.modules = defaultModules;
+    if(!('modules' in S)) {
+        S.modules = defaultModules;
     }
 
     if(!_assetUrl) {
@@ -44,88 +44,88 @@ function initStudio(d)
         if(e) _assetUrl = e.getAttribute('src').replace(/\/s\.js.*/, '/');
         else if((e=document.querySelector('script[src*=".js"]'))) _assetUrl = e.getAttribute('src').replace(/\/[^\/]+\.js.*/, '/');
         else _assetUrl = '/';
-        if(_assetUrl.search(/^[a-z0-9]*?\:\/\//)>-1) Z.host=_assetUrl.replace(/^([a-z0-9]*?\:\/\/[^\/]+).*/, '$1');
+        if(_assetUrl.search(/^[a-z0-9]*?\:\/\//)>-1) S.host=_assetUrl.replace(/^([a-z0-9]*?\:\/\/[^\/]+).*/, '$1');
         // defining assets
         var L=document.querySelectorAll('script[src^="'+_assetUrl+'/s-.+\.js"]'), i=L.length;
         while(i--) {
-            //Z.debug('asset '+L[i].getAttribute('src').replace(/\.js.*/, ''));
+            //S.debug('asset '+L[i].getAttribute('src').replace(/\.js.*/, ''));
             _assets[L[i].getAttribute('src').replace(/\.js.*/, '')]=true;
         }
     }
 
     var store=true;
-    if(!('user' in Z)) {
-        Z.user=null;
-        d=Z.storage('s-auth');
+    if(!('user' in S)) {
+        S.user=null;
+        d=S.storage('s-auth');
         if(d && String(d)) {
             if(('token' in d) && d.token) {
-                if(!('headers' in Z)) Z.headers = {};
-                Z.headers['z-token']=d.token;
+                if(!('headers' in S)) S.headers = {};
+                S.headers['z-token']=d.token;
             }
             if(String(window.location).search('reload')<0) {
-                Z.uid=null;
+                S.uid=null;
                 store = false;
            }
         }
-        if(Z.uid && (_reWeb.test(window.location.origin) || _reWeb.test(Z.uid))) {
-            if(Z.host && !_reWeb.test(Z.uid)) Z.uid = Z.host + Z.uid;
+        if(S.uid && (_reWeb.test(window.location.origin) || _reWeb.test(S.uid))) {
+            if(S.host && !_reWeb.test(S.uid)) S.uid = S.host + S.uid;
             var ts, qs='', hp=window.location.hash.search(/#@[0-9]+$/);
             if(hp>-1) {
                 ts=window.location.hash.substr(hp).replace(/[^0-9]+/g, '');
-                Z.storage('s-ts', parseInt(ts));
+                S.storage('s-ts', parseInt(ts));
                 window.location.hash=window.location.hash.substr(0, hp);
             } else {
-                ts=Z.storage('s-ts');
+                ts=S.storage('s-ts');
             }
             if(ts) qs = '?'+ts;
-            Z.ajax(Z.uid+qs, null, initStudio, null, 'json');
+            S.ajax(S.uid+qs, null, initStudio, null, 'json');
             return;
         }
     }
     if(d) {
-        if(!Z.timestamp) {
-            var S=document.querySelector('script[src^="'+_assetUrl+'z.js?"]');
-            if(S) _sTimestamp = '?'+encodeURIComponent(S.getAttribute('src').substr(_assetUrl.length + 5));
+        if(!S.timestamp) {
+            var sT=document.querySelector('script[src^="'+_assetUrl+'s.js?"]');
+            if(sT) _sTimestamp = '?'+encodeURIComponent(sT.getAttribute('src').substr(_assetUrl.length + 5));
         }
 
         if(Object.prototype.toString.call(d)=='[object Array]') {
-            Z.user = false;
+            S.user = false;
         } else {
             var n, run=[]; //, start=false;
             if('plugins' in d) {
-                if(!('plugins' in Z)) Z.plugins = {};
+                if(!('plugins' in S)) S.plugins = {};
                 for(n in d.plugins) {
-                    if(n in Z.plugins) continue;
-                    Z.plugins[n]=d.plugins[n];
-                    if('load' in Z.plugins[n]) {
-                        Z.load.apply(Z, d.plugins[n].load);
+                    if(n in S.plugins) continue;
+                    S.plugins[n]=d.plugins[n];
+                    if('load' in S.plugins[n]) {
+                        S.load.apply(S, d.plugins[n].load);
                     }
-                    if('callback' in Z.plugins[n]) {
-                        if(Z.plugins[n].callback in Z) run.push(Z[Z.plugins[n].callback]);
-                        else if(Z.plugins[n].callback in window) run.push(window[Z.plugins[n].callback]);
+                    if('callback' in S.plugins[n]) {
+                        if(S.plugins[n].callback in S) run.push(S[S.plugins[n].callback]);
+                        else if(S.plugins[n].callback in window) run.push(window[S.plugins[n].callback]);
                     }
                 }
                 delete(d.plugins);
             }
-            Z.user = d;
+            S.user = d;
             if(run.length>1) {
                 while(run.lengh>0) {
-                    run.pop().call(Z.user);
+                    run.pop().call(S.user);
                 }
             }
-            if('updateUserInfo' in Z) Z.updateUserInfo(Z.user);
+            if('updateUserInfo' in S) S.updateUserInfo(S.user);
         }
-    } else if(Z.uid) {
+    } else if(S.uid) {
         return;
     }
-    if(!('timeout' in Z)) Z.timeout = 0;
-    if(store && Z.timeout) Z.storage('s-auth', d, Z.timeout);
+    if(!('timeout' in S)) S.timeout = 0;
+    if(store && S.timeout) S.storage('s-auth', d, S.timeout);
 
-    Z.ready(Z.init);
-    setTimeout(Z.init, 500);
+    S.ready(S.init);
+    setTimeout(S.init, 500);
 }
 
-Z.storage=function(n, v, e)
+S.storage=function(n, v, e)
 {
     if(!('localStorage' in window)) return; // add new storage types
     var r=window.localStorage.getItem(n);
@@ -143,19 +143,19 @@ Z.storage=function(n, v, e)
     return r;
 };
 
-Z.init=function(o)
+S.init=function(o)
 {
-    if(!('modules' in Z)) {
-        Z.modules = defaultModules;
+    if(!('modules' in S)) {
+        S.modules = defaultModules;
     }
-    if(!('modules' in Z)) return;
+    if(!('modules' in S)) return;
 
     if('ZModules' in window) {
         var fn;
         for(var q in ZModules) {
             if(typeof(ZModules[q])=='function') {
                 fn=('name' in ZModules[q])?(ZModules[q].name):(q);
-                Z.addPlugin(fn, ZModules[q], q);
+                S.addPlugin(fn, ZModules[q], q);
             }
             ZModules[q]=null;
             delete(ZModules[q]);
@@ -163,42 +163,42 @@ Z.init=function(o)
         delete(window.ZModules);
     }
 
-    var c=(arguments.length>0)?(Z.node(o, this)):(null),n;
+    var c=(arguments.length>0)?(S.node(o, this)):(null),n;
     if(!c) {
         c=document;
         n=true;
     }
-    for(var i in Z.modules) {
+    for(var i in S.modules) {
         var ifn='init'+i;
 
-        if(!Z.modules[i]) continue;
-        var L=c.querySelectorAll(Z.modules[i]), j=L.length;
+        if(!S.modules[i]) continue;
+        var L=c.querySelectorAll(S.modules[i]), j=L.length;
 
-        if(!(ifn in Z) && j && i.search(/_/)>-1) {
+        if(!(ifn in S) && j && i.search(/_/)>-1) {
             // must load component, then initialize the object
             var a=i.replace(/^S(tudio)?_/, '').split(/_/);
-            //Z.debug('initializing module: '+i, a);
+            //S.debug('initializing module: '+i, a);
             if(i.substr(0,7)==='Studio_' && (i in window)) {
                 if(typeof(window[i])=='function') {
-                    //Z.debug('adding plugin: '+i, window[i], Z.modules[i]);
-                    ifn=Z.addPlugin(i, window[i], Z.modules[i]);
+                    //S.debug('adding plugin: '+i, window[i], S.modules[i]);
+                    ifn=S.addPlugin(i, window[i], S.modules[i]);
                     window[i]=null;
                     delete(window[i]);
                 }
             } else {
-                var u='s-'+Z.slug(a[0]);
+                var u='s-'+S.slug(a[0]);
                 if(!(u in _assets)) {
-                    loadAsset('s-'+Z.slug(a[0]), Z.init, arguments, c);
+                    loadAsset('s-'+S.slug(a[0]), S.init, arguments, c);
                 }
             }
         }
-        if(ifn in Z) {
-            if(typeof(Z.modules[i])=='string') {
-                for(j=0;j<L.length;j++) Z[ifn].call(L[j]);
+        if(ifn in S) {
+            if(typeof(S.modules[i])=='string') {
+                for(j=0;j<L.length;j++) S[ifn].call(L[j]);
                 L=null;
                 j=null;
-            } else if(Z.modules[i]) {
-                Z[ifn](c);
+            } else if(S.modules[i]) {
+                S[ifn](c);
             }
         }
     }
@@ -207,8 +207,8 @@ Z.init=function(o)
 var _delayed={};
 function loadAsset(f, fn, args, ctx)
 {
-    //Z.debug('loadAsset: '+f);
-    var T, o, r, s=((Z.env=='dev' && Z.timestamp) ?'?'+(new Date().getTime()) :_sTimestamp);
+    //S.debug('loadAsset: '+f);
+    var T, o, r, s=((S.env=='dev' && S.timestamp) ?'?'+(new Date().getTime()) :_sTimestamp);
     if(f in _assets) return;
     _assets[f]=true;
 
@@ -244,7 +244,7 @@ function loadAsset(f, fn, args, ctx)
     }
 
     if(T && o) {
-        Z.element.call(T, o);
+        S.element.call(T, o);
         T=null;
         o=null;
     }
@@ -275,7 +275,7 @@ function loadAssetDelayed()
     for(var n in _delayed) loadAsset(n);
 }
 
-Z.load=function()
+S.load=function()
 {
     //_isReady = true;// fix this
     var i=arguments.length;
@@ -285,22 +285,22 @@ Z.load=function()
     i=null;
 };
 
-Z.addPlugin=function(id, fn, q) {
+S.addPlugin=function(id, fn, q) {
     var pid = '_'+id;
-    if(!('modules' in Z)) {
-        Z.modules = defaultModules;
+    if(!('modules' in S)) {
+        S.modules = defaultModules;
     }
-    if(!(pid in Z.modules)) {
-        if((id in Z.modules) && Z.modules[id]==q) {
+    if(!(pid in S.modules)) {
+        if((id in S.modules) && S.modules[id]==q) {
             pid=id;
         }
-        Z.modules[pid]=q;
-        Z['init'+pid]=fn;
+        S.modules[pid]=q;
+        S['init'+pid]=fn;
         return 'init'+pid;
     }
 };
 
-Z.get=function(q, o, i)
+S.get=function(q, o, i)
 {
     var r;
     if(!o) { // non-contextual
@@ -309,7 +309,7 @@ Z.get=function(q, o, i)
     } else if('length' in o) {
         r=[];
         for(var oi=0;oi<o.length;oi++) {
-            var ro=Z.get(q, o[oi]);
+            var ro=S.get(q, o[oi]);
             if(ro.length>0) {
                 for(var roi=0;roi<ro.length;roi++) {
                     r.push(ro[roi]);
@@ -336,21 +336,21 @@ Z.get=function(q, o, i)
     return r;
 };
 
-Z.encodeHtml=function (s) {
+S.encodeHtml=function (s) {
     return s.replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
             .replace(/'/g, '&apos;')
             .replace(/"/g, '&quot;');
 };
-Z.decodeHtml=function (s) {
+S.decodeHtml=function (s) {
     return s.replace(/&quot;/g, '"')
             .replace(/&apos;/g, '\'')
             .replace(/&gt;/g, '>')
             .replace(/&lt;/g, '<')
             .replace(/&amp;/g, '&');
 };
-Z.cookie=function(name, value, expires, path, domain, secure) {
+S.cookie=function(name, value, expires, path, domain, secure) {
     if(arguments.length>1) {
         document.cookie = name + "=" + escape(value) + ((arguments.length>2 && expires != null)?("; expires=" + expires.toGMTString()):('')) + ((arguments.length>3 && path)?("; path=" + path):('')) + ((arguments.length>4 && domain)?("; domain=" + domain):('')) + ((arguments.length<5 || secure)?("; secure"):(''));
     } else {
@@ -373,7 +373,7 @@ Z.cookie=function(name, value, expires, path, domain, secure) {
     return value;
 };
 
-Z.slug=function(s)
+S.slug=function(s)
 {
     return String(s).toLowerCase()
       .replace(/[ąàáäâãåæă]/g, 'a')
@@ -396,7 +396,7 @@ Z.slug=function(s)
       .replace(/^-+|-+$/g, ''); // remove leading, trailing -
 };
 
-Z.unique=function(array) {
+S.unique=function(array) {
     var a = array.concat();
     for(var i=0; i<a.length; ++i) {
         for(var j=i+1; j<a.length; ++j) {
@@ -407,41 +407,41 @@ Z.unique=function(array) {
     return a;
 };
 
-Z.lang=function(s)
+S.lang=function(s)
 {
-    if(s) Z.language=s;
+    if(s) S.language=s;
     else {
-        if(!Z.language) {
-            Z.language = Z.cookie('lang');
+        if(!S.language) {
+            S.language = S.cookie('lang');
         }
-        Z.language = Z.cookie('lang');
+        S.language = S.cookie('lang');
 
-        if(!Z.language) {
+        if(!S.language) {
             var m=document.querySelector('meta[name="language"]');
-            if(m) Z.language = m.getAttribute('content');
+            if(m) S.language = m.getAttribute('content');
             else {
                 if((m=document.querySelector('html[lang]'))) {
-                    Z.language = m.getAttribute('lang');
+                    S.language = m.getAttribute('lang');
                 } else {
-                    Z.language = 'en';
+                    S.language = 'en';
                 }
             }
         }
     }
 
-    if(Z.language.length>2 && !(Z.language in Z.l)) {
-        Z.language = Z.language.substr(0,2);
+    if(S.language.length>2 && !(S.language in S.l)) {
+        S.language = S.language.substr(0,2);
     }
 
-    if(!(Z.language in Z.l)) {
-        Z.language = 'en';
+    if(!(S.language in S.l)) {
+        S.language = 'en';
     }
-    return Z.language;
+    return S.language;
 };
 
-Z.langw=function(ctx,before,after)
+S.langw=function(ctx,before,after)
 {
-    var h=Z.get('link[rel="alternate"][hreflang],meta[name="language"]');
+    var h=S.get('link[rel="alternate"][hreflang],meta[name="language"]');
     if(h.length>1) {
         var r={e:'span',a:{'class':'lang s-languages'},c:[]},l='';
         for(var hi=0;hi<h.length;hi++) {
@@ -455,8 +455,8 @@ Z.langw=function(ctx,before,after)
                 r.c.push({e:'a',a:{'class':l,'data-lang':l,href:'#'+l},c:l,t:{trigger:_setLanguage}});
             }
         }
-        if(ctx) return Z.element.call(((typeof ctx) == 'string')?(Z.get(ctx,null,0)):(ctx),r,before,after);
-        else return Z.element(r,before,after);
+        if(ctx) return S.element.call(((typeof ctx) == 'string')?(S.get(ctx,null,0)):(ctx),r,before,after);
+        else return S.element(r,before,after);
     }
     return false;
 };
@@ -472,12 +472,12 @@ function _setLanguage(l)
         l=this.getAttribute('data-lang');
     }
     if(!(l in _langs)) return false;
-    Z.cookie('lang', l, null, '/');
+    S.cookie('lang', l, null, '/');
     window.location.reload();
     return false;
 }
 
-Z.element=function(o,before,after) {
+S.element=function(o,before,after) {
     var r,n,a=(typeof(o)==='object');
     if(typeof(o)=='string') {
         r=document.createTextNode(o);
@@ -498,12 +498,12 @@ Z.element=function(o,before,after) {
         }
         if(o.t) {
             for(n in o.t) {
-                if(n=='trigger' || n=='fastTrigger') Z[n](r,o.t[n]);
-                else Z.addEvent(r,n,o.t[n]);
+                if(n=='trigger' || n=='fastTrigger') S[n](r,o.t[n]);
+                else S.addEvent(r,n,o.t[n]);
                 n=null;
             }
         }
-    } else if(Z.isNode(o)) {
+    } else if(S.isNode(o)) {
         r=o;
         o={};
     } else {
@@ -521,7 +521,7 @@ Z.element=function(o,before,after) {
             var t=o.c.length,i=0;
             while(i < t) {
                 if(typeof(o.c[i])=='string') r.appendChild(document.createTextNode(o.c[i]));
-                else Z.element.call(r,o.c[i]);
+                else S.element.call(r,o.c[i]);
                 i++;
             }
             i=null;
@@ -529,7 +529,7 @@ Z.element=function(o,before,after) {
         }
     }
     if(a && ('d' in o) && (typeof(o.d)==='object')) {
-        Z.nodeData(r, o.d);
+        S.nodeData(r, o.d);
     }
 
     if(before) return before.parentNode.insertBefore(r,before);
@@ -538,7 +538,7 @@ Z.element=function(o,before,after) {
     else return r;
 };
 
-Z.addEvent=function(o, tg, fn) {
+S.addEvent=function(o, tg, fn) {
     if (o.addEventListener) {
         o.addEventListener(tg, fn, false);
     } else if (o.attachEvent) {
@@ -548,9 +548,9 @@ Z.addEvent=function(o, tg, fn) {
     }
 };
 
-Z.bind=Z.addEvent;
+S.bind=S.addEvent;
 
-Z.removeEvent=function(o, tg, fn) {
+S.removeEvent=function(o, tg, fn) {
     if (o.addEventListener) {
         o.removeEventListener(tg, fn, false);
     } else if (o.detachEvent) {
@@ -562,8 +562,8 @@ Z.removeEvent=function(o, tg, fn) {
     }
 };
 
-Z.unbind=Z.removeEvent;
-Z.fastTrigger=function(o,fn){
+S.unbind=S.removeEvent;
+S.fastTrigger=function(o,fn){
     if(o.addEventListener) {
         o.addEventListener('touchstart', fn, false);
         o.addEventListener('mousedown', fn, false);
@@ -572,7 +572,7 @@ Z.fastTrigger=function(o,fn){
     }
 };
 
-Z.trigger=function(o,fn){
+S.trigger=function(o,fn){
     if(o.addEventListener) {
         o.addEventListener('tap', fn, false);
         o.addEventListener('click', fn, false);
@@ -581,31 +581,31 @@ Z.trigger=function(o,fn){
     }
 };
 
-Z.stopEvent=function(e){
+S.stopEvent=function(e){
     e.preventDefault();
     e.stopPropagation();
     return false;
 };
 
-Z.ready=function(fn)
+S.ready=function(fn)
 {
     if(arguments.length>0) {
-        if(!_isReady) setReady(Z.ready);
+        if(!_isReady) setReady(S.ready);
         _onReady.push(fn);
     }
     if(_isReady) {
         for(var i=0;i<_onReady.length;i++) {
-            _onReady[i].call(Z);
+            _onReady[i].call(S);
         }
     }
 };
 
-Z.isReady=function()
+S.isReady=function()
 {
     return _isReady;
 };
 
-Z.isNode=function()
+S.isNode=function()
 {
     for(var i=0;i<arguments.length;i++) {
         var o=arguments[i];
@@ -620,7 +620,7 @@ Z.isNode=function()
     return false;
 };
 
-Z.node=function()
+S.node=function()
 {
     for(var i=0;i<arguments.length;i++) {
         var o=arguments[i];
@@ -633,29 +633,29 @@ Z.node=function()
     return false;
 };
 
-Z.parentNode=function(p, q)
+S.parentNode=function(p, q)
 {
-    if(!p || !(p=Z.node(p))) return false;
+    if(!p || !(p=S.node(p))) return false;
     else if((typeof(q)=='string' && p.matchesSelector(q))||p==q) return p;
-    else if(p.nodeName.toLowerCase()!='html') return Z.parentNode(p.parentNode, q);
+    else if(p.nodeName.toLowerCase()!='html') return S.parentNode(p.parentNode, q);
     else return;
 };
 
-Z.blur=function(o)
+S.blur=function(o)
 {
     if(o && o.className.search(/\bs-blur\b/)<0) {
         o.className += ' s-blur';
     }
 };
 
-Z.focus=function(o)
+S.focus=function(o)
 {
     if(o && o.className.search(/\bs-blur\b/)>0) {
         o.className = o.className.replace(/\s*\bs-blur\b/, '');
     }
 };
 
-Z.text=function(o, s)
+S.text=function(o, s)
 {
     if(!o) return;
     var n=(arguments.length>1)?(o.querySelector(s)):(o);
@@ -663,24 +663,24 @@ Z.text=function(o, s)
 };
 
 
-Z.click=function(c)
+S.click=function(c)
 {
-    return Z.fire(c, 'click');
+    return S.fire(c, 'click');
 };
 
-Z.events={};
-Z.event=function(c, ev)
+S.events={};
+S.event=function(c, ev)
 {
-    if(ev in Z.events) {
-        var L=Z.events[ev], i;;
-        if(typeof(L)=='function') Z.events[ev].call(c);
+    if(ev in S.events) {
+        var L=S.events[ev], i;;
+        if(typeof(L)=='function') S.events[ev].call(c);
         else {
-            for(i=0;i<L.length;i++) Z.events[ev][i].call(c);
+            for(i=0;i<L.length;i++) S.events[ev][i].call(c);
         }
     }
 }
 
-Z.fire=function(c, ev)
+S.fire=function(c, ev)
 {
     if('createEvent' in document) {
         var e=document.createEvent('HTMLEvents');
@@ -691,15 +691,15 @@ Z.fire=function(c, ev)
     }
 };
 
-Z.checkInput=function(e, c, r)
+S.checkInput=function(e, c, r)
 {
     if(arguments.length==1 || c===null) c=e.checked;
     else if(e.checked==c) return;
     if(e.checked!=c) {
         e.checked = c;
-        Z.fire(e, 'change');
+        S.fire(e, 'change');
     }
-    if(arguments.length<3 || r) Z.fire(e, 'click');
+    if(arguments.length<3 || r) S.fire(e, 'click');
     var i=3, p=e.parentNode;
     while(p && i-- > 0) {
         if(p.nodeName.toLowerCase()=='tr' || p.className.search(/\binput\b/)>-1) {
@@ -715,29 +715,29 @@ Z.checkInput=function(e, c, r)
 };
 
 var _delayTimers = {};
-Z.delay = function (fn, ms, uid) {
+S.delay = function (fn, ms, uid) {
     if (!uid) uid ='dunno';
     if (uid in _delayTimers) clearTimeout(_delayTimers[uid]);
     _delayTimers[uid] = setTimeout(fn, ms);
 };
 
-Z.toggleInput=function()
+S.toggleInput=function()
 {
-    var f, t=(Z.isNode(this))?(this.getAttribute('data-target')):(null);
+    var f, t=(S.isNode(this))?(this.getAttribute('data-target')):(null);
     if(t && this.form) {
         f=this.form.querySelectorAll(t+' input[type="checkbox"],input[type="checkbox"]'+t);
     } else if(this.parentNode) {
         if(this.parentNode.nodeName.toLowerCase()=='th') {
-            f=Z.parentNode(this,'table').querySelectorAll('td > input[type="checkbox"]');
+            f=S.parentNode(this,'table').querySelectorAll('td > input[type="checkbox"]');
         } else {
-            f=Z.parentNode(this,'div').querySelectorAll('input[name][type="checkbox"]');
+            f=S.parentNode(this,'div').querySelectorAll('input[name][type="checkbox"]');
         }
     }
     if(!f) return;
-    var i=f.length, chk=(Z.isNode(this))?(this.checked):(false);
+    var i=f.length, chk=(S.isNode(this))?(this.checked):(false);
     while(i-- > 0) {
         if(f[i]==this) continue;
-        Z.checkInput(f[i], chk, false);
+        S.checkInput(f[i], chk, false);
     }
 };
 
@@ -745,7 +745,7 @@ function setReady(fn)
 {
     _isReady = (('readyState' in document) && document.readyState=='complete');
     if(_isReady) {
-        if(!('time' in Z)) Z.time = new Date().getTime();
+        if(!('time' in S)) S.time = new Date().getTime();
         return fn();
     }
     // Mozilla, Opera, Webkit
@@ -772,13 +772,13 @@ function setReady(fn)
     // flush if it reached onload event
     window.onload = function() {
         _isReady = true;
-        Z.ready();
+        S.ready();
     };
 }
 
 var _v=false, _f={};
 
-Z.val=function(o, val, fire)
+S.val=function(o, val, fire)
 {
     if(typeof(o)=='string') {
         o=document.getElementById(o);
@@ -794,7 +794,7 @@ Z.val=function(o, val, fire)
                 else if(o.options[i].selected) o.options[i].selected=false;
             } else if (o.options[i].selected) v.push(o.options[i].value);
         }
-        if(val && fire) Z.fire(o, 'change');
+        if(val && fire) S.fire(o, 'change');
         i=null;
     } else if(t && (t=='checkbox' || t=='radio')) {
         var id=o.name;
@@ -812,13 +812,13 @@ Z.val=function(o, val, fire)
                     if(!L[i].checked) {
                         L[i].setAttribute('checked','checked');
                         L[i].checked = true;
-                        if(fire) Z.fire(L[i], 'change');
+                        if(fire) S.fire(L[i], 'change');
                     }
                 } else {
                     if(L[i].checked) {
                         L[i].removeAttribute('checked');
                         L[i].checked = false;
-                        if(fire) Z.fire(L[i], 'change');
+                        if(fire) S.fire(L[i], 'change');
                     }
                 }
             }
@@ -838,19 +838,19 @@ Z.val=function(o, val, fire)
         L=null;
         i=null;
     } else if(f=='html' && (!(e=o.getAttribute('data-editor')) || e=='tinymce')) {
-        Z.fire(o, 'validate');
+        S.fire(o, 'validate');
         v=o.value;
     } else if('value' in o) {
         if(val!==false) {
             o.value=val;
             o.setAttribute('value', val);
-            if(fire) Z.fire(o, 'change');
+            if(fire) S.fire(o, 'change');
         }
         v = o.value;
     } else {
         if(val!==false) {
             o.setAttribute('value', val);
-            if(fire) Z.fire(o, 'change');
+            if(fire) S.fire(o, 'change');
         }
         v=o.getAttribute('value');
     }
@@ -859,12 +859,12 @@ Z.val=function(o, val, fire)
     return v;
 };
 
-Z.isVisible=function(o)
+S.isVisible=function(o)
 {
     return o.offsetWidth > 0 && o.offsetHeight > 0;
 };
 
-Z.formData=function(f, includeEmpty, returnObject)
+S.formData=function(f, includeEmpty, returnObject)
 {
     var d, n;
     if(arguments.length<3) returnObject=false;
@@ -882,7 +882,7 @@ Z.formData=function(f, includeEmpty, returnObject)
                 nt=(nn=='input')?(f.elements[i].type):(f.elements[i].getAttribute('type'));
                 if(nn=='input' && nt=='file') continue;
 
-                v = Z.val(f.elements[i]);
+                v = S.val(f.elements[i]);
                 if(nt=='checkbox' || nt=='radio') skip[n]=true;
                 if(v!==null && (v || includeEmpty || f.elements[i].getAttribute('data-always-send'))) {
                     if((n in d) && n.substr(-2)=='[]') {
@@ -917,14 +917,14 @@ Z.formData=function(f, includeEmpty, returnObject)
     return s;
 };
 
-Z.deleteNode=function(o)
+S.deleteNode=function(o)
 {
     if(o.parentNode) return o.parentNode.removeChild(o);
 };
 
-Z.initCallback=function(o)
+S.initCallback=function(o)
 {
-    if(!o || !Z.node(o)) o=this;
+    if(!o || !S.node(o)) o=this;
     var fn = o.getAttribute('data-callback'),
         e=o.getAttribute('data-callback-event'),
         nn=o.nodeName.toLowerCase(),
@@ -938,8 +938,8 @@ Z.initCallback=function(o)
         o.removeAttribute('data-callback-event');
     }
 
-    if(fn in Z) {
-        C=Z[fn];
+    if(fn in S) {
+        C=S[fn];
     } else if(fn in window) {
         C=window[fn];
     } else if(fn.indexOf('.')>-1) {
@@ -960,7 +960,7 @@ Z.initCallback=function(o)
 
     if(noe && ((nn=='input' && o.type!='radio' && o.type!='checkbox' && o.type!='button')||nn=='textarea'||nn=='select')) {
         e='change';
-        f=Z.val(o);
+        f=S.val(o);
     } else if(noe && nn=='form') {
         e='submit';
     } else {
@@ -968,28 +968,28 @@ Z.initCallback=function(o)
             f=true;
         }
     }
-    Z.bind(o, e, C);
+    S.bind(o, e, C);
     if(f) {
-        Z.fire(o, e);
+        S.fire(o, e);
     }
 
 };
 
 
-Z.initCopy=function(o)
+S.initCopy=function(o)
 {
-    if(!o || !Z.node(o)) o=this;
+    if(!o || !S.node(o)) o=this;
     if(!o.getAttribute('data-target')) return;
-    Z.bind(o, 'click', executeAction);
+    S.bind(o, 'click', executeAction);
 }
 
-Z.initDisplaySwitch=function(o)
+S.initDisplaySwitch=function(o)
 {
-    if(!o || !Z.node(o)) o=this;
+    if(!o || !S.node(o)) o=this;
     if(o.getAttribute('data-display-active')) return;
     o.setAttribute('data-display-active', '1');
     displaySwitch.call(o);
-    if(o.nodeName.toLowerCase()=='button') Z.bind(o, 'click', displaySwitch);
+    if(o.nodeName.toLowerCase()=='button') S.bind(o, 'click', displaySwitch);
 }
 
 function displaySwitch()
@@ -1021,7 +1021,7 @@ function displaySwitch()
 
 function executeAction(e)
 {
-    Z.stopEvent(e);
+    S.stopEvent(e);
     var a = this.getAttribute('data-action');
     if(!a) {
         if(this.className.search(/\bs-copy\b/)>-1) a='copy';
@@ -1034,29 +1034,29 @@ function executeAction(e)
         var d=t.getAttribute('href');
         if(d && d.search(/^data:/)>-1) {
             if(d.substr(0, 15)=='data:text/plain') d=decodeURIComponent(d.replace(/^data:[^\,]+\,/, ''));
-        } else if(!d) d=Z.val(t);
+        } else if(!d) d=S.val(t);
 
-        var input = Z.element.call(document.body,{e:'textarea',a:{style:'position:absolute;left:-2000px;top:0;'},c:''});
+        var input = S.element.call(document.body,{e:'textarea',a:{style:'position:absolute;left:-2000px;top:0;'},c:''});
         input.value = d;
         input.select();
         input.setSelectionRange(0, d.length);
         document.execCommand(a);
-        Z.deleteNode(input);
+        S.deleteNode(input);
     }
 }
 
 
-Z.removeChildren=function(o)
+S.removeChildren=function(o)
 {
     var i=o.children.length;
     while(i--) {
-        Z.deleteNode(o.children[i]);
+        S.deleteNode(o.children[i]);
     }
 };
 
-Z.selectOption=function(e)
+S.selectOption=function(e)
 {
-    var o=this.getAttribute('data-original'), val=Z.val(this);
+    var o=this.getAttribute('data-original'), val=S.val(this);
     if(o===null) {
         this.setAttribute('data-original',val);
         if(!e) return;
@@ -1082,8 +1082,8 @@ Z.selectOption=function(e)
                     if((t=F.querySelector(q))) {
                         var dtp=t.getAttribute('data-datalist-preserve');
                         if(dtp && (dtp=='0'||dtp=='false'||dtp=='off')) dtp=null;
-                        if(!dtp || !Z.val(t)) {
-                            Z.val(t,v,true);
+                        if(!dtp || !S.val(t)) {
+                            S.val(t,v,true);
                         }
                     }
                 }
@@ -1094,91 +1094,91 @@ Z.selectOption=function(e)
 };
 
 // pt_BR
-if(!('l' in Z)) Z.l={en:{},pt:{}};
-Z.l.pt.add='Acrescentar';
-Z.l.pt.del='Excluir';
-Z.l.pt.Nothing='Nenhuma opção foi encontrada para esta consulta.';
-Z.l.pt.Error401='É necessário se autenticar para acessar esta página. Por favor experimente se conectar.';
-Z.l.pt.Error403='Parece que você não possui as credenciais para acessar esta página. Por favor experimente se conectar ou acessar com uma credencial diferente.';
-Z.l.pt.Error404='O recurso selecionado não existe (erro 404).';
-Z.l.pt.Error504='O recurso selecionado excedeu o tempo limite da requisição (erro 504).';
-Z.l.pt.Error='Houve um erro ao processar esta informação. Por favor tente novamente ou entre em contato com o suporte.';
-Z.l.pt.moreRecord="É necessário selecionar mais de um registro para essa operação.";
-Z.l.pt.noRecordSelected='Nenhum registro foi selecionado para essa operação.';
-Z.l.pt.decimalSeparator = ',';
-Z.l.pt.thousandSeparator = '.';
-Z.l.pt.UploadSize='O arquivo é maior que o permitido.';
-Z.l.pt.UploadInvalidFormat='O formato do arquivo não é suportado.';
-Z.l.pt.EditorLimit='Limite: [n]/[t]';
+if(!('l' in S)) S.l={en:{},pt:{}};
+S.l.pt.add='Acrescentar';
+S.l.pt.del='Excluir';
+S.l.pt.Nothing='Nenhuma opção foi encontrada para esta consulta.';
+S.l.pt.Error401='É necessário se autenticar para acessar esta página. Por favor experimente se conectar.';
+S.l.pt.Error403='Parece que você não possui as credenciais para acessar esta página. Por favor experimente se conectar ou acessar com uma credencial diferente.';
+S.l.pt.Error404='O recurso selecionado não existe (erro 404).';
+S.l.pt.Error504='O recurso selecionado excedeu o tempo limite da requisição (erro 504).';
+S.l.pt.Error='Houve um erro ao processar esta informação. Por favor tente novamente ou entre em contato com o suporte.';
+S.l.pt.moreRecord="É necessário selecionar mais de um registro para essa operação.";
+S.l.pt.noRecordSelected='Nenhum registro foi selecionado para essa operação.';
+S.l.pt.decimalSeparator = ',';
+S.l.pt.thousandSeparator = '.';
+S.l.pt.UploadSize='O arquivo é maior que o permitido.';
+S.l.pt.UploadInvalidFormat='O formato do arquivo não é suportado.';
+S.l.pt.EditorLimit='Limite: [n]/[t]';
 
-Z.l.en.add='Insert';
-Z.l.en.del='Remove';
-Z.l.en.Nothing='No records were found.';
-Z.l.en.Error401='Authentication is required, and we could not authenticate your request. Please try signing in.';
-Z.l.en.Error403='Looks like you don\'t have enough credentials to access this page. Please try signing in or accessing it with a different username.';
-Z.l.en.Error404='The selected resource is not available (404 not found).';
-Z.l.en.Error504='The selected resource exceeded the response time limit (504 gateway error).';
-Z.l.en.Error='There was an error while processing this request. Please try again or contact support.';
-Z.l.en.moreRecord="You need to select more than one record for this action.";
-Z.l.en.noRecordSelected='No record was selected for this action.';
-Z.l.en.decimalSeparator = '.';
-Z.l.en.thousandSeparator = ',';
-Z.l.en.UploadSize='Uploaded file exceeds the limit of %s.';
-Z.l.en.UploadInvalidFormat='File format is not supported.';
-Z.l.en.EditorLimit='Limit: [n]/[t]';
+S.l.en.add='Insert';
+S.l.en.del='Remove';
+S.l.en.Nothing='No records were found.';
+S.l.en.Error401='Authentication is required, and we could not authenticate your request. Please try signing in.';
+S.l.en.Error403='Looks like you don\'t have enough credentials to access this page. Please try signing in or accessing it with a different username.';
+S.l.en.Error404='The selected resource is not available (404 not found).';
+S.l.en.Error504='The selected resource exceeded the response time limit (504 gateway error).';
+S.l.en.Error='There was an error while processing this request. Please try again or contact support.';
+S.l.en.moreRecord="You need to select more than one record for this action.";
+S.l.en.noRecordSelected='No record was selected for this action.';
+S.l.en.decimalSeparator = '.';
+S.l.en.thousandSeparator = ',';
+S.l.en.UploadSize='Uploaded file exceeds the limit of %s.';
+S.l.en.UploadInvalidFormat='File format is not supported.';
+S.l.en.EditorLimit='Limit: [n]/[t]';
 
 // for timepickers
-Z.l.en.previousMonth = 'Previous Month';
-Z.l.en.nextMonth     = 'Next Month';
-Z.l.en.months        = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-Z.l.en.weekdays      = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-Z.l.en.weekdaysShort = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-Z.l.en.midnight      = 'Midnight';
-Z.l.en.noon          = 'Noon';
-Z.l.en.dateFormat    ='YYYY-MM-DD';
-Z.l.en.timeFormat    ='HH:mm';
+S.l.en.previousMonth = 'Previous Month';
+S.l.en.nextMonth     = 'Next Month';
+S.l.en.months        = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+S.l.en.weekdays      = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+S.l.en.weekdaysShort = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+S.l.en.midnight      = 'Midnight';
+S.l.en.noon          = 'Noon';
+S.l.en.dateFormat    ='YYYY-MM-DD';
+S.l.en.timeFormat    ='HH:mm';
 
 
-Z.l.pt.previousMonth = 'Anterior';
-Z.l.pt.nextMonth     = 'Próximo';
-Z.l.pt.months        = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-Z.l.pt.weekdays      = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-Z.l.pt.weekdaysShort = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-Z.l.pt.midnight      = 'Meia-noite';
-Z.l.pt.noon          = 'Meio-dia';
-Z.l.pt.dateFormat    ='DD/MM/YYYY';
-Z.l.pt.timeFormat    ='HH:mm';
-Z.l.pt_BR = Z.l.pt;
+S.l.pt.previousMonth = 'Anterior';
+S.l.pt.nextMonth     = 'Próximo';
+S.l.pt.months        = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+S.l.pt.weekdays      = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+S.l.pt.weekdaysShort = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+S.l.pt.midnight      = 'Meia-noite';
+S.l.pt.noon          = 'Meio-dia';
+S.l.pt.dateFormat    ='DD/MM/YYYY';
+S.l.pt.timeFormat    ='HH:mm';
+S.l.pt_BR = S.l.pt;
 
-Z.error=function(msg)
+S.error=function(msg)
 {
-    Z.log('ERROR', this);
+    S.log('ERROR', this);
     for(var i=0;i<arguments.length;i++) {
-        Z.log(arguments[i]);
+        S.log(arguments[i]);
     }
 };
 
-Z.loggr=null;
-Z.log=function()
+S.loggr=null;
+S.log=function()
 {
     var i=0;
-    if(Z.loggr) {
+    if(S.loggr) {
         while(i < arguments.length) {
-            Z.element.call(Z.loggr, {e:'p',p:{className:'msg log'},c:''+arguments[i]});
+            S.element.call(S.loggr, {e:'p',p:{className:'msg log'},c:''+arguments[i]});
         }
         i++;
     }
     if('console' in window) console.log.apply(this, arguments);
 };
-Z.debug=function()
+S.debug=function()
 {
-    if(Z.env!='prod') Z.log.apply(this, arguments);
+    if(S.env!='prod') S.log.apply(this, arguments);
 }
 
-Z.backwardsCompatible=function()
+S.backwardsCompatible=function()
 {
-    Z.trace=Z.log;
-    if(!('tdz' in window)) window.tdz = Z;
+    S.trace=S.log;
+    if(!('tdz' in window)) window.tdz = S;
 
     if (!String.prototype.encodeHTML) {
       String.prototype.encodeHTML = function () {
@@ -1189,7 +1189,7 @@ Z.backwardsCompatible=function()
                    .replace(/'/g, '&apos;');
       };
     }
-    Z.xmlEscape = function(s) {return s.encodeHTML();};
+    S.xmlEscape = function(s) {return s.encodeHTML();};
     if (!String.prototype.decodeHTML) {
       String.prototype.decodeHTML = function () {
         return this.replace(/&apos;/g, "'")
@@ -1199,10 +1199,10 @@ Z.backwardsCompatible=function()
                    .replace(/&amp;/g, '&');
       };
     }
-    Z.xmlUnescape = function(s) {return s.decodeHTML();};
+    S.xmlUnescape = function(s) {return s.decodeHTML();};
 }
 
-Z.initLoadUri=function()
+S.initLoadUri=function()
 {
     var u=this.getAttribute('data-load-uri');
     if(!u) return;
@@ -1210,25 +1210,25 @@ Z.initLoadUri=function()
 
     var t=this.getAttribute('data-target'), T=(t) ?document.querySelector(t) :this;
 
-    Z.ajax(u, null, loadHtml, Z.error, 'html', T, {'x-studio-action': 'load-uri'});
+    S.ajax(u, null, loadHtml, S.error, 'html', T, {'x-studio-action': 'load-uri'});
 }
 
-Z.initLanguageSelection=function()
+S.initLanguageSelection=function()
 {
-    if(!document.querySelector('.s-languages')) Z.langw(document.body);
+    if(!document.querySelector('.s-languages')) S.langw(document.body);
 }
 
 function loadHtml(html)
 {
     if(this && ('innerHTML' in this)) {
         this.innerHTML = html;
-        Z.init(this);
+        S.init(this);
     }
 }
 
 var _ResponseType={arraybuffer:true,blob:true,document:true,json:true,text:true};
 
-Z.ajax=function(url, data, success, error, dataType, context, headers)
+S.ajax=function(url, data, success, error, dataType, context, headers)
 {
     if( typeof error == 'undefined' || !error ) error = this.error;
     if(!context) context = this;
@@ -1256,10 +1256,10 @@ Z.ajax=function(url, data, success, error, dataType, context, headers)
     _ajax[url].r.setRequestHeader('x-requested-with', 'XMLHttpRequest');
     _ajax[url].r.withCredentials = true;
     var n, ct;
-    if('headers' in Z) {
-        for(n in Z.headers) {
-            if(Z.headers[n]) {
-                _ajax[url].r.setRequestHeader(n, Z.headers[n]);
+    if('headers' in S) {
+        for(n in S.headers) {
+            if(S.headers[n]) {
+                _ajax[url].r.setRequestHeader(n, S.headers[n]);
                 if(n.toLowerCase()==='content-type') ct=headers[n];
             }
         }
@@ -1289,18 +1289,18 @@ Z.ajax=function(url, data, success, error, dataType, context, headers)
 
 function ajaxOnload()
 {
-    //Z.log('ajaxOnload', arguments);
+    //S.log('ajaxOnload', arguments);
     return ajaxProbe();
 }
 
 
 function ajaxProbe(e)
 {
-    //Z.log('ajaxProbe', JSON.stringify(e));
+    //S.log('ajaxProbe', JSON.stringify(e));
     var u, err;
     for(u in _ajax) {
         /*
-        Z.log(u+': '+JSON.stringify({
+        S.log(u+': '+JSON.stringify({
             readyState:_ajax[u].r.readyState,
             withCredentials:_ajax[u].r.withCredentials,
             status:_ajax[u].r.status,
@@ -1318,7 +1318,7 @@ function ajaxProbe(e)
                     try {
                         d=JSON.parse(R.r.responseText);
                     } catch (e) {
-                        Z.error(e);
+                        S.error(e);
                         err = true;
                         d = e;
                     }
@@ -1342,33 +1342,33 @@ function ajaxProbe(e)
     }
 }
 
-Z.t=function(s, lang)
+S.t=function(s, lang)
 {
-    if(!lang) lang=Z.language;
-    if((lang in Z.l) && (s in Z.l[lang])) {
-        return Z.l[lang][s];
+    if(!lang) lang=S.language;
+    if((lang in S.l) && (s in S.l[lang])) {
+        return S.l[lang][s];
     } else if(lang.indexOf(/[-_]/)>0) {
-        return Z.t(s, lang.replace(/[-_].*$/, ''));
+        return S.t(s, lang.replace(/[-_].*$/, ''));
     }
     return s;
 };
 
-Z.formatNumber=function(n, d, ds, ts)
+S.formatNumber=function(n, d, ds, ts)
 {
     if(!d) d=2;
     var x = (n.toFixed(d) + '').split('.');
     var x1 = x[0];
-    if(!ds) ds=Z.t('decimalSeparator');
+    if(!ds) ds=S.t('decimalSeparator');
     var x2 = x.length > 1 ? ds + x[1] : '';
     var rgx = /(\d+)(\d{3})/;
     while (rgx.test(x1)) {
-        if(!ts) ts = Z.t('thousandSeparator');
+        if(!ts) ts = S.t('thousandSeparator');
         x1 = x1.replace(rgx, '$1' + ts + '$2')
     }
     return x1 + x2;
 };
 
-Z.formatBytes=function(s, precision)
+S.formatBytes=function(s, precision)
 {
     if(!precision) precision=2;
 
@@ -1379,17 +1379,17 @@ Z.formatBytes=function(s, precision)
         pow = Math.min(pow, units.length -1);
         var b = s / Math.pow(1024, pow);
 
-        return Z.formatNumber(b, precision)+' '+units[pow];
+        return S.formatNumber(b, precision)+' '+units[pow];
     } else {
         return '0';
     }
 };
 
-Z.initToggleActive=function(o)
+S.initToggleActive=function(o)
 {
-    o=Z.node(this,o);
+    o=S.node(this,o);
     var id=o.getAttribute('id'),
-        control=Z.nodeData(o, 'toggler-options'),
+        control=S.nodeData(o, 'toggler-options'),
         el=((control && control.indexOf('self')>-1) || o.className.search(/\bs-toggler\b/)>-1) ?o :null,
         sibling=(control && control.indexOf('sibling')<0) ?false :true,
         child=(control && control.indexOf('child')<0) ?false :true,
@@ -1404,31 +1404,31 @@ Z.initToggleActive=function(o)
         storage = false;
         id='_n'+(_got++);
         o.setAttribute('id', id);
-    } else if(Z.storage('s-toggler/#'+id)) {
+    } else if(S.storage('s-toggler/#'+id)) {
         load = true;
-    } else if(tw=Z.nodeData(o, 'toggler-default')) {
+    } else if(tw=S.nodeData(o, 'toggler-default')) {
         load = (tw==='on' || (tw>0 && tw<window.innerWidth))
     }
 
     if(child) {
         for(i=0;i<o.childNodes.length;i++) {
-            Z.bind(o.childNodes[i], 'click', ToggleActive);
+            S.bind(o.childNodes[i], 'click', ToggleActive);
         }
     }
     if(toggler) {
         if(!el) {
             a={e:'a', a:{'data-target':'#'+id}, p:{className:'s-toggler'},t:{click:ToggleActive}};
             if(storage) a.d = {'toggler-options':'storage'};
-            if(sibling) el=Z.element(a, null, o);
-            if(child) el=Z.element.call(o, a);
+            if(sibling) el=S.element(a, null, o);
+            if(child) el=S.element.call(o, a);
         } else {
-            Z.bind(el, 'click', ToggleActive);
+            S.bind(el, 'click', ToggleActive);
             if(el.className.search(/\bs-toggler\b/)<0) el.className += ' s-toggler';
         }
         if(drag) {
             el.draggable=true;
-            Z.bind(el, 'dragstart', toggleDragStart);
-            Z.bind(el, 'dragend', toggleDragEnd);
+            S.bind(el, 'dragstart', toggleDragStart);
+            S.bind(el, 'dragend', toggleDragEnd);
             if(o.getAttribute('data-toggler-drag-target')) el.setAttribute('data-drag-target', o.getAttribute('data-toggler-drag-target'));
             if(o.getAttribute('data-toggler-drag')) el.setAttribute('data-drag', o.getAttribute('data-toggler-drag'));
             if(o.getAttribute('data-draggable-default-style')) el.setAttribute('data-draggable-style', o.getAttribute('data-draggable-default-style'));
@@ -1445,7 +1445,7 @@ function toggleDragStart(e)
     var dt = (this.getAttribute('data-drag-target')) ?document.querySelector(this.getAttribute('data-drag-target')) :null,
         id = this.getAttribute('id');
     if(!dt) dt = this.parentNode;
-    if(!dt && e) Z.stopEvent(e);
+    if(!dt && e) S.stopEvent(e);
     if(!id) {
         id='_n'+(_got++);
         this.setAttribute('id', id);
@@ -1462,10 +1462,10 @@ function toggleDragStart(e)
     _drag[dp].enable = true;
     _drag[dp].minWidth = 640;
 
-    Z.bind(dt, 'dragover', toggleDragOver);
+    S.bind(dt, 'dragover', toggleDragOver);
     if(_dragW<0) {
         _dragW = _onResize.length;
-        Z.resizeCallback(applyDrag);
+        S.resizeCallback(applyDrag);
     }
 }
 
@@ -1513,11 +1513,11 @@ function applyDrag(id)
     }
 }
 
-Z.resizeCallback=function(fn)
+S.resizeCallback=function(fn)
 {
     if(fn && (typeof(fn)=='function')) {
         if(_onResize.length==0) {
-            Z.bind(window, 'resize', Z.resizeCallback);
+            S.bind(window, 'resize', S.resizeCallback);
         }
         _onResize.push(fn);
 
@@ -1560,7 +1560,7 @@ function enableAndApplyDrag(id)
     applyDrag(id);
 }
 
-Z.nodeData=function (el, n, d)
+S.nodeData=function (el, n, d)
 {
     if(!_wm) _wm = new WeakMap();
     var p = _wm.get(el), r=null, l=arguments.length;
@@ -1586,15 +1586,15 @@ function toggleDragEnd(e)
 {
     var dt = (this.getAttribute('data-drag-target')) ?document.querySelector(this.getAttribute('data-drag-target')) :null;
     if(!dt) dt = this.parentNode;
-    if(!dt && e) Z.stopEvent(e);
-    Z.unbind(dt, 'dragover', toggleDragOver);
-    Z.resizeCallback();
+    if(!dt && e) S.stopEvent(e);
+    S.unbind(dt, 'dragover', toggleDragOver);
+    S.resizeCallback();
 }
 
 
 function ToggleActive()
 {
-    var ts=Z.nodeData(this, 'target'), o=Z.nodeData(this, 'toggler-options'), t, L, i, M, j;
+    var ts=S.nodeData(this, 'target'), o=S.nodeData(this, 'toggler-options'), t, L, i, M, j;
     if(ts) L=document.querySelectorAll(ts);
     else if(o && o.search(/\bself\b/)>-1) t=this;
     else t=this.previousSibling;
@@ -1618,9 +1618,9 @@ function ToggleActive()
             if(dontDisable) continue;
             t.className = t.className.replace(re, '');
             if(d && t.className.search(rd)<0) t.className += ' '+d;
-            if(k=t.getAttribute('data-toggler-cookie-disable')) Z.cookie(k, true, null, '/');
-            if(k=t.getAttribute('data-toggler-cookie-enable'))  Z.cookie(k, null, new Date(2000, 1, 1), '/');
-            if(storage) Z.storage('s-toggler/'+storage, null);
+            if(k=t.getAttribute('data-toggler-cookie-disable')) S.cookie(k, true, null, '/');
+            if(k=t.getAttribute('data-toggler-cookie-enable'))  S.cookie(k, null, new Date(2000, 1, 1), '/');
+            if(storage) S.storage('s-toggler/'+storage, null);
             if(drag) removeDrag();
             st='off';
         } else { // enable
@@ -1636,9 +1636,9 @@ function ToggleActive()
                     }
                 }
             }
-            if(k=t.getAttribute('data-toggler-cookie-disable')) Z.cookie(k, null, new Date(2000, 1, 1),'/');
-            if(k=t.getAttribute('data-toggler-cookie-enable'))  Z.cookie(k, true, null, '/');
-            if(storage) Z.storage('s-toggler/'+storage, 1);
+            if(k=t.getAttribute('data-toggler-cookie-disable')) S.cookie(k, null, new Date(2000, 1, 1),'/');
+            if(k=t.getAttribute('data-toggler-cookie-enable'))  S.cookie(k, true, null, '/');
+            if(storage) S.storage('s-toggler/'+storage, 1);
             if(drag) enableAndApplyDrag();
             st='on';
         }
@@ -1650,7 +1650,7 @@ function ToggleActive()
     }
 }
 
-Z.disableForm=function(F)
+S.disableForm=function(F)
 {
     if(F.className.search(/\bs-disabled\b/)>-1) return;
     F.className+=' s-disabled';
@@ -1662,7 +1662,7 @@ Z.disableForm=function(F)
     }
 }
 
-Z.enableForm=function(F)
+S.enableForm=function(F)
 {
     var L=F.querySelectorAll('.s-disabled-input'), i=L.length;
     while(i--) {
@@ -1672,14 +1672,14 @@ Z.enableForm=function(F)
     if(F.className.search(/\bs-disabled\b/)>-1) F.className = F.className.replace(/\s*\bs-disabled\b/g, '');
 }
 
-Z.initRecaptcha = function()
+S.initRecaptcha = function()
 {
     if(this.className.search(/\bs-recaptcha\b/)>-1) this.className = this.className.replace(/\bs-recaptcha\b/g, 'g-recaptcha');
-    if(!('grecaptcha' in window)) Z.load('https://www.google.com/recaptcha/api.js?hl='+Z.lang());
+    if(!('grecaptcha' in window)) S.load('https://www.google.com/recaptcha/api.js?hl='+S.lang());
     else grecaptcha.render(this);
 }
 
-Z.initAutofocus = function()
+S.initAutofocus = function()
 {
     this.focus();
 }

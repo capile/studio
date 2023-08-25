@@ -4,15 +4,15 @@
 
 "use strict";
 
-var Z, _Tl,_L=[], _eids=0;
+var S, _Tl,_L=[], _eids=0;
 
 function init()
 {
     if(!('Studio' in window)) {
         return setTimeout(init, 500);
     }
-    if(!Z) Z=Studio;
-    Z.Form = {
+    if(!S) S=window.Studio;
+    S.Form = {
         fieldSelector: '.s-api-field,.field',
         checkSelector: 'input[type="radio"],input[type="checkbox"]',
         inputSelector: 'input,select,textarea'
@@ -24,12 +24,12 @@ function checkLabel(e)
     /*jshint validthis: true */
     if(_Tl) clearTimeout(_Tl);
     if(arguments.length>0) {
-        if(Z.node(this)) {
+        if(S.node(this)) {
             var nn=this.nodeName.toLowerCase(),E;
             if(nn=='input') {
                 _L.push(this);
             } else {
-                E=this.querySelector(Z.Form.checkSelector);
+                E=this.querySelector(S.Form.checkSelector);
                 if(E) {
                     _L.push(E);
                 }
@@ -51,14 +51,14 @@ function checkLabel(e)
         _Tl=setTimeout(checkLabel, 50);
         return;
     }
-    var L=('Studio_Form_CheckLabel' in Z.modules) ?document.querySelectorAll(Z.modules['Studio_Form_CheckLabel']) :[], i=L.length, P, cn;
+    var L=('Studio_Form_CheckLabel' in S.modules) ?document.querySelectorAll(S.modules['Studio_Form_CheckLabel']) :[], i=L.length, P, cn;
     if(!i && _L.length>0) {
         L = _L;
         i=L.length;
         _L=[];
     }
     while(i--) {
-        P=Z.parentNode(L[i], 'label');
+        P=S.parentNode(L[i], 'label');
         if(!P) P=L[i].parentNode;
         cn=P.className;
 
@@ -84,9 +84,9 @@ function initCheckLabel(e)
     /*jshint validthis: true */
     if(!this.getAttribute('data-check-label')) {
         this.setAttribute('data-check-label',1);
-        var l=Z.parentNode(this, 'label');
+        var l=S.parentNode(this, 'label');
         if(!l) l=this.parentNode;
-        Z.bind(l, 'click', checkLabel);
+        S.bind(l, 'click', checkLabel);
         checkLabel(true);
     }
 }
@@ -96,12 +96,12 @@ function initAutoSubmit(e)
     /*jshint validthis: true */
     if(!this.getAttribute('data-auto-submit')) {
         this.setAttribute('data-auto-submit',1);
-        var L=this.querySelectorAll(Z.Form.inputSelector), i=L.length,found=false,t, nn, a;
+        var L=this.querySelectorAll(S.Form.inputSelector), i=L.length,found=false,t, nn, a;
         while(i--) {
             t=L[i].getAttribute('type');
             nn=L[i].nodeName.toLowerCase();
             if(t && (t==='submit' || t==='button')) continue;
-            Z.bind(L[i], (nn==='select' || t==='checkbox' || t==='radio') ?'input' :'change', autoSubmit);
+            S.bind(L[i], (nn==='select' || t==='checkbox' || t==='radio') ?'input' :'change', autoSubmit);
             found=true;
         }
         if(!found) return;
@@ -112,7 +112,7 @@ function initAutoSubmit(e)
 function autoSubmit(e)
 {
     /*jshint validthis: true */
-    Z.stopEvent(e);
+    S.stopEvent(e);
     if(!this.form || this.form.getAttribute('data-do-not-submit')) return false;
     else if(this.form.className.search(/\bs-form-reload\b/)>-1) formReload.call(this, e);
     else if(this.form) this.form.submit(e);
@@ -124,10 +124,10 @@ function autoSubmit(e)
 function formReload(e)
 {
     /*jshint validthis: true */
-    Z.stopEvent(e);
+    S.stopEvent(e);
     if(this.form && !this.form.getAttribute('data-do-not-submit')) {
-        var data=Z.formData(this.form, true);
-        Z.ajax(this.form.getAttribute('action'), data, formReloadData, Z.error, 'html', this, {'x-studio-action':'Form.Validate'});
+        var data=S.formData(this.form, true);
+        S.ajax(this.form.getAttribute('action'), data, formReloadData, S.error, 'html', this, {'x-studio-action':'Form.Validate'});
     }
     return false;
 }
@@ -146,21 +146,21 @@ function formReloadData(d)
     }
     F.parentNode.replaceChild(R, F);
     R.setAttribute('data-do-not-submit', '1');
-    Z.init(R.parentNode);
+    S.init(R.parentNode);
     R.removeAttribute('data-do-not-submit');
 }
 
 function initCleanup(o)
 {
     /*jshint validthis: true */
-    if(!o || !Z.node(o)) o=this;
-    Z.bind(o, 'click', cleanup);
+    if(!o || !S.node(o)) o=this;
+    S.bind(o, 'click', cleanup);
 }
 
 function cleanup(e)
 {
     /*jshint validthis: true */
-    if(this.className.search(/\bcleanup\b/)>-1) Z.clearForm(this.form);
+    if(this.className.search(/\bcleanup\b/)>-1) S.clearForm(this.form);
 }
 
 function clearForm(f)
@@ -194,18 +194,18 @@ function clearForm(f)
 function initDatalist(o)
 {
     /*jshint validthis: true */
-    var t=Z.node(this, o);
+    var t=S.node(this, o);
     if(!t || !('nodeName' in t) || t.getAttribute('data-datalist-t')) return false;
     t.setAttribute('data-datalist-t', 1);
-    t.setAttribute('data-datalist-q', Z.val(t));
+    t.setAttribute('data-datalist-q', S.val(t));
     if(t.nodeName.toLowerCase()=='input') {
         t.setAttribute('autocomplete', 'off');
-        //Z.bind(t, 'keypress', tdz.delayedChange);
-        Z.bind(t, 'keydown', datalistKeypress);
-        Z.bind(t, 'focus', datalistQuery);
-        Z.bind(t, 'blur', datalistBlurTimeout);
+        //S.bind(t, 'keypress', tdz.delayedChange);
+        S.bind(t, 'keydown', datalistKeypress);
+        S.bind(t, 'focus', datalistQuery);
+        S.bind(t, 'blur', datalistBlurTimeout);
     }
-    Z.bind(t, 'change', datalistQueryTimeout);
+    S.bind(t, 'change', datalistQueryTimeout);
     t.parentNode.className += ' s-input-search';
     if(t.getAttribute('data-datalist-visible')) {
         datalistQuery.call(t);
@@ -219,8 +219,8 @@ function datalistKeypress(e)
 
     var m=0,t=false;
 
-    var o=Z.node(this);
-    if(!o && e && ('target' in e)) o=Z.node(e.target);
+    var o=S.node(this);
+    if(!o && e && ('target' in e)) o=S.node(e.target);
 
     if (e.keyCode == '38' || e.keyCode == '37') {
         // up arrow or left arrow
@@ -291,9 +291,9 @@ function datalistQuery(e)
     if(o.getAttribute('id').search(/^q__/)>-1) {
         x=o.getAttribute('id').replace(/^q__/, '');
         var T=o.form.querySelector('#'+x);
-        if(!focus && T && Z.val(T)!='') {
-            Z.val(T, '');
-            Z.fire(T, 'change');
+        if(!focus && T && S.val(T)!='') {
+            S.val(T, '');
+            S.fire(T, 'change');
         }
     } else {
         x = o.getAttribute('id');
@@ -310,7 +310,7 @@ function datalistQuery(e)
         }
         while(i-- > 0) {
             n=o.form.querySelector('#'+m[i].substr(1));
-            if(n) u=u.replace(m[i], encodeURIComponent(Z.val(n)));
+            if(n) u=u.replace(m[i], encodeURIComponent(S.val(n)));
         }
         u += ((u.indexOf('?')>-1)?('&'):('?'))+'q='+encodeURIComponent(v);
     } else {
@@ -328,12 +328,12 @@ function datalistQuery(e)
     u+='ajax='+encodeURIComponent(x+'/'+v);
 
     o.setAttribute('data-datalist-q', v);
-    Z.ajax(u, null, datalistRender, Z.error, 'json', o, h);
+    S.ajax(u, null, datalistRender, S.error, 'json', o, h);
 }
 
 function datalistVal(o, v, fire)
 {
-    var s=o.getAttribute('data-datalist-multiple'), a=Z.val(o);
+    var s=o.getAttribute('data-datalist-multiple'), a=S.val(o);
     if(s) {
         if(s=='1' || s=='true') s=';';
         var si=a.split(s);
@@ -348,8 +348,8 @@ function datalistVal(o, v, fire)
     if(arguments.length>1) {
         var dtp=o.getAttribute('data-datalist-preserve');
         if(dtp && (dtp=='0'||dtp=='false'||dtp=='off')) dtp=null;
-        else if(dtp && Z.val(o)) return a;
-        Z.val(o, v, fire);
+        else if(dtp && S.val(o)) return a;
+        S.val(o, v, fire);
     }
     return a;
 }
@@ -366,7 +366,7 @@ function datalistBlurTimeout()
 function datalistBlur(e)
 {
     /*jshint validthis: true */
-    if(!this.getAttribute('data-datalist-visible') && document.activeElement && !Z.parentNode(document.activeElement, this.parentNode)) {
+    if(!this.getAttribute('data-datalist-visible') && document.activeElement && !S.parentNode(document.activeElement, this.parentNode)) {
         datalistClear.apply(this);
     }
 }
@@ -385,12 +385,12 @@ function datalistRender(d)
 {
     /*jshint validthis: true */
     var r=this.getAttribute('data-datalist-renderer');
-    if(r && (r in Z)) {
-        _D = Z[r].call(this, d, datalistOption);
+    if(r && (r in S)) {
+        _D = S[r].call(this, d, datalistOption);
         return _D;
     }
     var o=this, c=o.parentNode.querySelector('ul.s-datalist'), n, p;
-    if(!c) c=Z.element.call(o.parentNode,{e:'span',p:{className:'s-datalist-container'},c:[{e:'ul',p:{className:'s-datalist'},a:{'data-target':o.getAttribute('id')}}]}).children[0];
+    if(!c) c=S.element.call(o.parentNode,{e:'span',p:{className:'s-datalist-container'},c:[{e:'ul',p:{className:'s-datalist'},a:{'data-target':o.getAttribute('id')}}]}).children[0];
     else c.innerHTML=''; // remove child nodes
     var id=o.getAttribute('id'), prefix = o.getAttribute('data-prefix');
     _D[id]={};
@@ -423,12 +423,12 @@ function datalistRender(d)
 
             _D[id][p.a['data-value']]=d[n];
 
-            Z.element.call(c,p);
+            S.element.call(c,p);
         }
     }
     if(!p) {
-        p={e:'li',p:{className:'s-msg s-alert'},c:Z.t('Nothing')};
-        Z.element.call(c,p);
+        p={e:'li',p:{className:'s-msg s-alert'},c:S.t('Nothing')};
+        S.element.call(c,p);
     }
     return _D;
 }
@@ -503,37 +503,37 @@ function datalistOption()
     }
     datalistClear.call(o);
 }
-//Z.datalistOption = datalistOption;
+//S.datalistOption = datalistOption;
 
 var _Picker={}, _Pickerc=0, _PickerT=0, _P18n;
 function initDatepicker()
 {
     /*jshint validthis: true */
-    if(!('datepicker' in Z) && ('Pikaday' in window)) Z.datepicker = 'Pikaday';
-    if(!('datepicker' in Z) || this.getAttribute('data-datepicker')) return;
+    if(!('datepicker' in S) && ('Pikaday' in window)) S.datepicker = 'Pikaday';
+    if(!('datepicker' in S) || this.getAttribute('data-datepicker')) return;
 
     var id='p'+(_Pickerc++);
     this.setAttribute('data-datepicker', id);
     this.setAttribute('autocomplete', 'off');
 
-    if(Z.datepicker=='Pikaday') {
+    if(S.datepicker=='Pikaday') {
         if(!_P18n) _P18n = {
-            previousMonth:Z.t('previousMonth'),
-            nextMonth:Z.t('nextMonth'),
-            months:Z.t('months'),
-            weekdays:Z.t('weekdays'),
-            weekdaysShort:Z.t('weekdaysShort'),
-            midnight:Z.t('midnight'),
-            noon:Z.t('noon'),
-            dateFormat:Z.t('dateFormat'),
-            timeFormat:Z.t('timeFormat')
+            previousMonth:S.t('previousMonth'),
+            nextMonth:S.t('nextMonth'),
+            months:S.t('months'),
+            weekdays:S.t('weekdays'),
+            weekdaysShort:S.t('weekdaysShort'),
+            midnight:S.t('midnight'),
+            noon:S.t('noon'),
+            dateFormat:S.t('dateFormat'),
+            timeFormat:S.t('timeFormat')
         };
-        var t=this.getAttribute('data-type'), cfg={ field: this, i18n: _P18n, format:Z.t('dateFormat'), showTime: false }, D, d;
+        var t=this.getAttribute('data-type'), cfg={ field: this, i18n: _P18n, format:S.t('dateFormat'), showTime: false }, D, d;
         if(!t) t=this.getAttribute('type');
         if(t && t.search(/time/)>-1) {
             cfg.showTime = true;
             cfg.use24Hour = true;
-            cfg.format+= ' '+Z.t('timeFormat');
+            cfg.format+= ' '+S.t('timeFormat');
         }
         if(this.value) {
             if('moment' in window) {
@@ -572,7 +572,7 @@ function cleanupDatepicker()
 function initRequiredField(e)
 {
     /*jshint validthis: true */
-    var f=Z.parentNode(this, '.field');
+    var f=S.parentNode(this, '.field');
     if(f) {
         f.className += ' required';
     }
@@ -581,33 +581,33 @@ function initRequiredField(e)
 function initUploader(o)
 {
     /*jshint validthis: true */
-    var f=Z.node(this, o);
+    var f=S.node(this, o);
     if(f.getAttribute('type')!='file' || f.getAttribute('data-status') || !('FileReader' in window)) return;
     f.setAttribute('data-status','ready');
 
-    //Z.bind(f, 'input', preUpload);
-    Z.bind(f, 'change', preUpload);
+    //S.bind(f, 'input', preUpload);
+    S.bind(f, 'change', preUpload);
 }
 
 var _Uploads={};
 function preUpload(e)
 {
     /*jshint validthis: true */
-    Z.stopEvent(e);
+    S.stopEvent(e);
     if(this.getAttribute('data-status')!='ready') return;
     this.setAttribute('data-status','uploading');
     var i=this.files.length, U={target:this,size:0,loaded:0,url:this.form.action,id:'upl'+((new Date()).getTime())};
     _Uploads[this.id] = U;
 
     U.progress = this.parentNode.querySelector('.s-progress');
-    if(!U.progress) U.progress = Z.element({e:'div',p:{className:'s-progress'},c:[{e:'div',p:{className:'s-progress-bar'}}]}, null, this);
+    if(!U.progress) U.progress = S.element({e:'div',p:{className:'s-progress'},c:[{e:'div',p:{className:'s-progress-bar'}}]}, null, this);
     var s=this.getAttribute('data-size'),a=this.getAttribute('accept'),ff, err=[], valid;
     if(a) a=','+a+',';
     clearMsg(this.parentNode);
     while(i--) {
         // check file size and accepted formats
         if(s && s<this.files[i].size) {
-            err.push(Z.t('UploadSize').replace('%s', Z.formatBytes(s))+' ');
+            err.push(S.t('UploadSize').replace('%s', S.formatBytes(s))+' ');
         }
         if(a) {
             valid = false;
@@ -623,7 +623,7 @@ function preUpload(e)
                 valid = true;
             }
             if(!valid) {
-                err.push(Z.t('UploadInvalidFormat')+' ');
+                err.push(S.t('UploadInvalidFormat')+' ');
             }
         }
     }
@@ -640,7 +640,7 @@ function preUpload(e)
 
 function errorMsg(o, m)
 {
-    return Z.element.call(o, {e:'div',p:{className:'s-msg s-error'},c:m});
+    return S.element.call(o, {e:'div',p:{className:'s-msg s-error'},c:m});
 }
 
 function clearMsg(o)
@@ -693,31 +693,31 @@ function uploadFile(file, U)
         if('id' in d) {
             var b=el.parentNode.querySelector('span.text');
             if(!el.previousSibling || el.previousSibling.nodeName.toLowerCase()!='input') {
-                Z.element({e:'input',a:{type:'hidden',name:el.name,id:el.id,value:d.value}},el);
+                S.element({e:'input',a:{type:'hidden',name:el.name,id:el.id,value:d.value}},el);
             } else {
                 el.previousSibling.value = d.value;
             }
             var t={e:'a',p:{className:'s-upload s-auto-remove'},t:{click:removeUpload},c:d.file+' '};
             if(!b) {
-                b=Z.element({e:'span',p:{className:'text'},c:[t]},el.previousSibling);
+                b=S.element({e:'span',p:{className:'text'},c:[t]},el.previousSibling);
             } else {
-                Z.removeChildren(b, ':not(.s-upload)');
-                Z.element.call(b, t);
+                S.removeChildren(b, ':not(.s-upload)');
+                S.element.call(b, t);
             }
             b.className += ' s-f-file';
-            Z.init(b);
+            S.init(b);
             el.setAttribute('data-status', 'ready');
             el = clearFileInput(el);
-            Z.deleteNode(U.progress);
-            Z.enableForm(el.form);
+            S.deleteNode(U.progress);
+            S.enableForm(el.form);
             //var v=d.value;
         } else if(el.form.className.search(/\bs-disabled\b/)<0) {
-            Z.disableForm(el.form);
+            S.disableForm(el.form);
         }
 
         if(workers--) {
             if(ajax.length > 0) {
-                Z.ajax.apply(el, ajax.shift());
+                S.ajax.apply(el, ajax.shift());
             }
         }
     };
@@ -730,7 +730,7 @@ function uploadFile(file, U)
         var M=this.parentNode.querySelectorAll('.s-msg,.s-progress'), i=M.length, err=(d && ('message' in d)) ?d.message :'There was an error in the file upload.';
         if(err) {
             while(i--) M[i].parentNode.removeChild(M[i]);
-            Z.element({e:'div',p:{className:'s-msg s-error'},c:err}, null, this);
+            S.element({e:'div',p:{className:'s-msg s-error'},c:err}, null, this);
         }
 
         this.setAttribute('data-status', 'ready');
@@ -739,7 +739,7 @@ function uploadFile(file, U)
         } else {
             clearFileInput(this);
         }
-        if(this.form) Z.enableForm(this.form);
+        if(this.form) S.enableForm(this.form);
         //workers++;
     };
 
@@ -778,7 +778,7 @@ function uploadFile(file, U)
             d._upload.data = e.target.result;
             var data = JSON.stringify(d);
             d = null;
-            Z.ajax(url+'&_retry='+retries--, data, uploadProgress, uploadError, 'json', U.target, H);
+            S.ajax(url+'&_retry='+retries--, data, uploadProgress, uploadError, 'json', U.target, H);
         };
 
         var blob = file.slice(loaded,d._upload.end);
@@ -819,7 +819,7 @@ function uploadFile(file, U)
         else u+='?_index='+d._upload.index;
         d = null;
         if(workers) {
-            Z.ajax(u, data, uploadProgress, uploadError, 'json', U.target, H);
+            S.ajax(u, data, uploadProgress, uploadError, 'json', U.target, H);
             workers--;
         } else {
             ajax.push([u, data, uploadProgress, uploadError, 'json', U.target, H]);
@@ -845,9 +845,9 @@ function initFilters()
     /*jshint validthis: true */
     var t=this;
     if(this.className.search(/\bs-a-filters\b/)>-1) return;
-    //Z.bind(this, 'input', formFilters);
+    //S.bind(this, 'input', formFilters);
     var fn=(this.getAttribute('data-query-filter')) ?queryFilters :formFilters;
-    Z.bind(this, 'change', fn);
+    S.bind(this, 'change', fn);
     fn.call(this);
 }
 
@@ -906,7 +906,7 @@ function displayField(on)
     /*jshint validthis: true */
     var a=this.getAttribute('data-query-filter');
     if(!a) {
-        Z.log('[INFO] Nothing to be queried...');
+        S.log('[INFO] Nothing to be queried...');
         return;
     }
     var reset=(this.className.search(/\bs-a-filters\b/)<0);
@@ -914,14 +914,14 @@ function displayField(on)
 
     var b=this.getAttribute('data-query-filtered');
     var c = ':scope > '+b.replace(/,/g, ', :scope > ');
-    var P=(b) ?Z.parentNode(this, b) :null;
-    if(!P) P=Z.parentNode(this, Z.Form.fieldSelector);
+    var P=(b) ?S.parentNode(this, b) :null;
+    if(!P) P=S.parentNode(this, S.Form.fieldSelector);
     if(!P) {
-        Z.log('[ERROR] Could not find parent filtering node');
+        S.log('[ERROR] Could not find parent filtering node');
         return;
     }
 
-    var v=Z.val(this);
+    var v=S.val(this);
     if(typeof(v)=="string" && v) {
         v = v.split(/\s*\,\s*/g);
     } else if(typeof(v)!='object') {
@@ -957,7 +957,11 @@ function formFilters(e)
     if(reset) this.className += ' s-a-filters';
 
     var t=(a.indexOf(',')>-1)?(a.split(',')):([a]), i=t.length, nn=this.getAttribute('name'), fa=this.getAttribute('data-filter-action'),
-      tn, ltn, tp='', L, l, T, s, v=Z.val(this), tv, O,sel,A,fn,P, fid=(this.form.id)?(this.form.id + '.'):(''), fk, n, F=Z.parentNode(this, '.item', 'form');
+      tn, ltn, tp='', L, l, T, s, v=S.val(this), tv, O,sel,A,fn,P, fid=(this.form.id)?(this.form.id + '.'):(''), fk, n, F=S.parentNode(this, '.item,form');
+    if(!F) {
+        console.log('[INFO] Could not apply form filters on:', this);
+        return;
+    }
     if(v && this.getAttribute('data-filter-value')) {
         var av=this.getAttribute('data-filter-value').split(/\s*\,\s*/g), avi=av.length,avf;
         while(avi--) {
@@ -998,7 +1002,7 @@ function formFilters(e)
                             P[A[n].name]=A[n].value;
                         }
                     }
-                    P.label = L[l].label;//innerHTML;//Z.text(L[l]);
+                    P.label = L[l].label;//innerHTML;//S.text(L[l]);
                     _FF[fk].o.push(P);
                 }
             } else {
@@ -1026,10 +1030,10 @@ function formFilters(e)
                     }
                     if(tv) O.push({e:'option',a:L[l],p:{'selected':sel},c:L[l].label});
                 }
-                Z.removeChildren(T);
-                Z.element.call(T,O);
+                S.removeChildren(T);
+                S.element.call(T,O);
                 if(T.getAttribute('data-filters')) {
-                    Z.fire(T, 'change');
+                    S.fire(T, 'change');
                 }
             }
         } else if((T=F.querySelector('#f__'+tn.replace(/-/g, '_')))) {
@@ -1060,7 +1064,7 @@ function formFilters(e)
                             }
                         }
                     }
-                    if(!(Pn=Z.parentNode('label'))) {
+                    if(!(Pn=S.parentNode('label'))) {
                         Pn = E.parentNode;
                     }
                     if(tv) {
@@ -1079,7 +1083,7 @@ function formFilters(e)
                 }
                 /*
                 if(E.getAttribute('data-filters')) {
-                    Z.fire(E, 'change');
+                    S.fire(E, 'change');
                 }
                 */
             }
@@ -1094,7 +1098,7 @@ function formFilters(e)
 function initSubform(o)
 {
     /*jshint validthis: true */
-    if(!o || !Z.node(o)) o=this;
+    if(!o || !S.node(o)) o=this;
     var btns=[{e:'a',a:{title:'-','class':'s-button-del'},t:{click:subformDel}},{e:'a',a:{title:'+','class':'s-button-add'},t:{click:subformAdd}}];
 
     // items
@@ -1112,19 +1116,19 @@ function initSubform(o)
         L=o.querySelectorAll('#'+id+'>.item');
         i=L.length;
     }
-    Z.parentNode(o, Z.Form.fieldSelector).setAttribute('data-count', i);
+    S.parentNode(o, S.Form.fieldSelector).setAttribute('data-count', i);
 
     // buttons: add, add(contextual), remove(contextual)
     if(!fmax || fmax!=i || fmax!=fmin) {
         var b=o.parentNode.parentNode.querySelector('div.s-subform-buttons');
         if(!b) {
-            var t=Z.node(o.parentNode.parentNode.querySelector('dt,.label')), bd={e:'div',p:{className:'s-subform-buttons s-buttons'},c:[btns[1]]};
-            if(t) b = Z.element.call(t, bd);
-            else b = Z.element(bd, o.parentNode);
+            var t=S.node(o.parentNode.parentNode.querySelector('dt,.label')), bd={e:'div',p:{className:'s-subform-buttons s-buttons'},c:[btns[1]]};
+            if(t) b = S.element.call(t, bd);
+            else b = S.element(bd, o.parentNode);
         }
         while(i-- > 0) {
             if(fmax && i > fmax) {
-                Z.deleteNode(L[i]);
+                S.deleteNode(L[i]);
             } else if(!(cb=L[i].querySelector('.s-buttons')) || cb.parentNode!=L[i]) {
                 if(cb) {
                     // might be sub-subforms, check if there's the button
@@ -1139,7 +1143,7 @@ function initSubform(o)
                     if(cb) continue;
                 }
 
-                var xx=Z.element.call(L[i], {e:'div',p:{className:'s-buttons'},c:btns});
+                var xx=S.element.call(L[i], {e:'div',p:{className:'s-buttons'},c:btns});
             }
         }
     }
@@ -1156,16 +1160,16 @@ function subformAdd(e)
     /*jshint validthis: true */
     var el, o;
 
-    if((o=Z.node(e))) {
-        if(arguments.length>1) el=Z.node(arguments[1]);
+    if((o=S.node(e))) {
+        if(arguments.length>1) el=S.node(arguments[1]);
     } else {
-        Z.stopEvent(e);
-        Z.tg = this;
+        S.stopEvent(e);
+        S.tg = this;
 
-        if(el = Z.parentNode(this, Z.Form.fieldSelector)) {
+        if(el = S.parentNode(this, S.Form.fieldSelector)) {
             o = el.querySelector('.items[data-template]');
-            el = Z.parentNode(this, '.item');
-            if(el && Z.parentNode(el, '.items[data-template]')!=o) el=null;
+            el = S.parentNode(this, '.item');
+            if(el && S.parentNode(el, '.items[data-template]')!=o) el=null;
         }
     }
     if(!o) return false;
@@ -1212,7 +1216,7 @@ function subformAdd(e)
         if(c) {
             o.appendChild(c);
         }
-        Z.init(o.parentNode);
+        S.init(o.parentNode);
     }
     /*
     tdz.subform(o);
@@ -1224,11 +1228,11 @@ function subformAdd(e)
 function subformDel(e)
 {
     /*jshint validthis: true */
-    Z.stopEvent(e);
+    S.stopEvent(e);
     var el, o;
 
     /*
-    if(el = Z.parentNode(this, Z.Form.fieldSelector)) {
+    if(el = S.parentNode(this, S.Form.fieldSelector)) {
         o = el.querySelector('.items[data-template]');
         el = null;
     }
@@ -1247,10 +1251,10 @@ function subformDel(e)
         el.parentNode.removeChild(el);
         i--;
     }
-    Z.parentNode(o, Z.Form.fieldSelector).setAttribute('data-count', i);
+    S.parentNode(o, S.Form.fieldSelector).setAttribute('data-count', i);
 
 
-    //Z.subform(o);
+    //S.subform(o);
     return false;
 }
 
@@ -1258,14 +1262,14 @@ var _omnibar, _omnibarProperties={};
 function initOmnibar(o)
 {
     /*jshint validthis: true */
-    if(!o || !Z.node(o)) o=this;
+    if(!o || !S.node(o)) o=this;
     _omnibar = true;
 
     var id=o.getAttribute('data-omnibar'), L=o.form.querySelectorAll('input,select,textarea'), i=L.length, n, tag, N, nn;
     _omnibarProperties[id]={_default: id};
     while(i--) {
         if(!L[i].getAttribute('data-omnibar-alias') && !L[i].getAttribute('data-omnibar') && (n=L[i].getAttribute('name'))) {
-            L[i].setAttribute('data-omnibar-alias', Z.slug(n));
+            L[i].setAttribute('data-omnibar-alias', S.slug(n));
         }
         if(tag=L[i].getAttribute('data-omnibar-alias')) {
             _omnibarProperties[id][tag] = tag;
@@ -1273,21 +1277,21 @@ function initOmnibar(o)
                 _omnibarProperties[id][n] = tag;
             }
             nn = L[i].nodeName.toLowerCase();
-            if(!(nn==='input' && (L[i].type=='radio' || L[i].type=='checkbox')) && (N=Z.parentNode(L[i], 'label')) && (n=Z.text(N)) && n!=tag) {
+            if(!(nn==='input' && (L[i].type=='radio' || L[i].type=='checkbox')) && (N=S.parentNode(L[i], 'label')) && (n=S.text(N)) && n!=tag) {
                 _omnibarProperties[id][n.toLowerCase()] = tag;
             }
         }
     }
-    Z.bind(o, 'change', omnibarFormField);
-    Z.bind(o.form, 'change', omnibarForm);
+    S.bind(o, 'change', omnibarFormField);
+    S.bind(o.form, 'change', omnibarForm);
     omnibarForm.apply(o.form);
 }
 
 function omnibarForm(e)
 {
-    if(e) Z.stopEvent(e);
+    if(e) S.stopEvent(e);
     if(!_omnibar) return;
-    var d = Z.formData(this, false, true),
+    var d = S.formData(this, false, true),
         o=this.querySelector('input[data-omnibar]'),
         oid=(o) ?o.getAttribute('data-omnibar').split(/\s*\,\s*/g) :[],
         i=0,
@@ -1328,8 +1332,8 @@ function omnibarForm(e)
                 L = this.querySelectorAll('*[name="'+n+'"]:checked');
                 if(L.length>0) v=[];
                 for(i=0;i<L.length;i++) {
-                    if(el=Z.parentNode(L[i], 'label')) {
-                        v.push(Z.text(el));
+                    if(el=S.parentNode(L[i], 'label')) {
+                        v.push(S.text(el));
                     } else {
                         v.push(L[i].value);
                     }
@@ -1340,14 +1344,14 @@ function omnibarForm(e)
     }
     if(s) s+=' ';
 
-    Z.val(o, s);
+    S.val(o, s);
 }
 
 function omnibarValue(v, prop)
 {
     var s='';
     if(prop) {
-        prop=Z.slug(prop);
+        prop=S.slug(prop);
         if(typeof(v)=='object' && ('length' in v)) {
             var i=0;
             while(i < v.length) {
@@ -1370,11 +1374,11 @@ function omnibarValue(v, prop)
 
 function omnibarFormField(e)
 {
-    if(e) Z.stopEvent(e);
+    if(e) S.stopEvent(e);
     if(!_omnibar) return;
     _omnibar = false;
 
-    var s = Z.val(this).trim(), t={_default:this.getAttribute('data-omnibar')},
+    var s = S.val(this).trim(), t={_default:this.getAttribute('data-omnibar')},
         p=null,
         d='',
         tag,
@@ -1504,7 +1508,7 @@ function omnibarApply(v, prop, t, clear)
     while(i--) {
         nn=fo[i].nodeName.toLowerCase();
         if(nn==='textarea' || (nn==='input' && fo[i].type!=='checkbox' && fo[i].type!=='radio')) {
-            Z.val(fo[i], v);
+            S.val(fo[i], v);
         } else if(nn==='select') {
             L=fo[i].options;
             for(j=0;j<L.length;j++) {
@@ -1515,8 +1519,8 @@ function omnibarApply(v, prop, t, clear)
                 }
             }
         } else {
-            label=Z.parentNode(fo[i], 'label');
-            if(fo[i].value.toLowerCase()==lv || (label && Z.text(label).toLowerCase()==lv)) {
+            label=S.parentNode(fo[i], 'label');
+            if(fo[i].value.toLowerCase()==lv || (label && S.text(label).toLowerCase()==lv)) {
                 fo[i].checked = true;
             } else if(clear) {
                 fo[i].checked = false;
@@ -1530,16 +1534,16 @@ function initTypeToggler()
 {
     if(!this.getAttribute('data-toggler')) {
         this.setAttribute('data-toggler',1);
-        var T=Z.parentNode(this, Z.Form.fieldSelector);
+        var T=S.parentNode(this, S.Form.fieldSelector);
         if(T) T=T.querySelector('.label, dt, label');
         if(!T) T=this.parentNode;
-        Z.element.call(T, {e:'a',a:{'class':'s-type-toggler s-api--toggle','data-toggler-option':'0','data-toggler':'#'+this.id+'[data-alt-type]'},t:{click:toggleType},c:[{e:'i',p:{className:'s-api--'+this.getAttribute('type')+' i-toggler-0'}},{e:'i',p:{className:'s-api--'+this.getAttribute('data-alt-type')+' i-toggler-1'}}]});
+        S.element.call(T, {e:'a',a:{'class':'s-type-toggler s-api--toggle','data-toggler-option':'0','data-toggler':'#'+this.id+'[data-alt-type]'},t:{click:toggleType},c:[{e:'i',p:{className:'s-api--'+this.getAttribute('type')+' i-toggler-0'}},{e:'i',p:{className:'s-api--'+this.getAttribute('data-alt-type')+' i-toggler-1'}}]});
     }
 }
 
 function toggleType(e)
 {
-    if(e) Z.stopEvent(e);
+    if(e) S.stopEvent(e);
 
     var t=this.getAttribute('data-toggler'),T;
     if(T=this.previousElementSibling) {
@@ -1570,15 +1574,15 @@ function initHtmlEditor()
     this.setAttribute('data-html-editor', a);
 
     if (limit > 0) {
-        var elcounter = Z.element({e:'div',p:{id:'s-editor-counter-'+this.id, className:'s-html-editor-counter'}},null,this);
-        elcounter.innerHTML = '<p>'+Z.l[Z.language].EditorLimit.replace('[n]','<span id="s-editor-counter-length-'+this.id+'" class="s-html-editor-length">0</span>').replace('[t]',limit)+'</p>';
+        var elcounter = S.element({e:'div',p:{id:'s-editor-counter-'+this.id, className:'s-html-editor-counter'}},null,this);
+        elcounter.innerHTML = '<p>'+S.l[S.language].EditorLimit.replace('[n]','<span id="s-editor-counter-length-'+this.id+'" class="s-html-editor-length">0</span>').replace('[t]',limit)+'</p>';
 
         var elcounter_length = elcounter.querySelector('span#s-editor-counter-length-'+this.id);
     }
 
     var selfel = this;
-    elcontainer = Z.element({e:'div',p:{id:'s-editor-'+this.id, className:'s-html-editor'}}, this);
-    Z.debug(a);
+    elcontainer = S.element({e:'div',p:{id:'s-editor-'+this.id, className:'s-html-editor'}}, this);
+    S.debug(a);
 
     if(a=='pell') {
         Editor = pell.init({
@@ -1666,7 +1670,7 @@ function initHtmlEditor()
 function initChoicesJs()
 {
     if(!('Choices' in window)) return;
-    Z.debug('choices.js to ', this);
+    S.debug('choices.js to ', this);
     if(this.getAttribute('data-choices-js')) return;
     this.setAttribute('data-choices-js',1);
     new Choices(this, {
@@ -1709,33 +1713,27 @@ function initChoicesJs()
 function Form(o)
 {
     var q='Studio_Form';
-    if(!('initDatePicker' in Z)) Z.initDatepicker = initDatepicker;
-    if(q in Z.modules) {
-        delete(Z.modules[q]);
-        Z.load('s-form.css');
-        Z.addPlugin('Datepicker', initDatepicker, 'input[data-type^=date],input[type^=date],.s-datepicker');
-        Z.addPlugin('RequiredField', initRequiredField, '.field > .input > *[required]');
-        Z.addPlugin('Datalist', initDatalist, '*[data-datalist-api],*[data-datalist]');
-        Z.addPlugin('Uploader', initUploader, 'input[data-uploader]');
-        Z.addPlugin('TypeToggler', initTypeToggler, '.app-enable-type-toggler input[data-alt-type]');
-        Z.addPlugin('Filters', initFilters, 'input[data-filters],select[data-filters]');
-        Z.addPlugin('QueryFilters', initFilters, 'input[data-query-filter],select[data-query-filter]');
-        Z.addPlugin('Subform', initSubform, 'div.subform[data-template],div.items[data-template]');
-        Z.addPlugin('Cleanup', initCleanup, 'button.cleanup');
-        Z.addPlugin('Omnibar', initOmnibar, 'input[data-omnibar]');
-        Z.addPlugin('HtmlEditor', initHtmlEditor, 'textarea[data-format="html"]');
-        Z.addPlugin('choices.js', initChoicesJs, 'select.s-choices-js,.s-choices-js select');
-        Z.clearForm=clearForm;
+    if(!('initDatePicker' in S)) S.initDatepicker = initDatepicker;
+    if(q in S.modules) {
+        delete(S.modules[q]);
+        S.load('s-form.css');
+        S.addPlugin('Datepicker', initDatepicker, 'input[data-type^=date],input[type^=date],.s-datepicker');
+        S.addPlugin('RequiredField', initRequiredField, '.field > .input > *[required]');
+        S.addPlugin('Datalist', initDatalist, '*[data-datalist-api],*[data-datalist]');
+        S.addPlugin('Uploader', initUploader, 'input[data-uploader]');
+        S.addPlugin('TypeToggler', initTypeToggler, '.app-enable-type-toggler input[data-alt-type]');
+        S.addPlugin('Filters', initFilters, 'input[data-filters],select[data-filters]');
+        S.addPlugin('QueryFilters', initFilters, 'input[data-query-filter],select[data-query-filter]');
+        S.addPlugin('Subform', initSubform, 'div.subform[data-template],div.items[data-template]');
+        S.addPlugin('Cleanup', initCleanup, 'button.cleanup');
+        S.addPlugin('Omnibar', initOmnibar, 'input[data-omnibar]');
+        S.addPlugin('HtmlEditor', initHtmlEditor, 'textarea[data-format="html"]');
+        S.addPlugin('choices.js', initChoicesJs, 'select.s-choices-js,.s-choices-js select');
+        S.clearForm=clearForm;
     }
-    var n=Z.node(o, this);
-    if(n) Z.init(n);
+    var n=S.node(o, this);
+    if(n) S.init(n);
 }
-
-// new modules
-//if(!('ZModules' in window))window.ZModules={};
-//window.ZModules['*[data-datalist-api],*[data-datalist]'] = Datalist;
-
-// default modules loaded into Z
 
 window.Studio_Form = Form;
 window.Studio_Form_CheckLabel = initCheckLabel;

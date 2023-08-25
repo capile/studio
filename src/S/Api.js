@@ -1,8 +1,8 @@
-/*! capile/studio Api v1.0 | (c) 2022 Tecnodesign <ti@tecnodz.com> */
+/*! capile/studio Api v1.0 | (c) 2023 Tecnodesign <ti@tecnodz.com> */
 (function()
 {
     "use strict";
-    var Z,
+    var S,
         _is=false,
         _init,
         _cu='/',
@@ -25,24 +25,26 @@
     function startup(I)
     {
         /*jshint validthis: true */
-        //Z.debug('Interface.startup', I);
-        if(!('loadInterface' in Z)) {
-            Z.loadInterface = loadInterface;
-            Z.setInterface = setInterface;
+        if(!S) {
+            return init();
+        }
+        if(!('loadInterface' in S)) {
+            S.loadInterface = loadInterface;
+            S.setInterface = setInterface;
             // run once
-            Z.bind(window, 'hashchange', hashChange);
-            Z.resizeCallback(headerOverflow);
+            S.bind(window, 'hashchange', hashChange);
+            S.resizeCallback(headerOverflow);
         }
         _init = true;
-        var i, l;
-        if(arguments.length==0) {
-            if(!(I=Z.node(this))) {
+        var i, L, E, B, J, j, a, b, c;
+        if(arguments.length===0) {
+            if(!(I=S.node(this))) {
                 return startup(_root.querySelectorAll(_sel));
             }
         }
-        if(!Z.node(I) && ('length' in I)) {
-            if(I.length==0) return;
-            if(I.length==1) I=I[0];
+        if(!S.node(I) && ('length' in I)) {
+            if(I.length===0) return;
+            if(I.length===1) I=I[0];
             else {
                 for(i=0;i<I.length;i++) startup(I[i]);
                 return;
@@ -51,12 +53,11 @@
         if(I.getAttribute('data-startup')) return;
         I.setAttribute('data-startup', '1');
 
-        var b=Z.parentNode(I, '.s-api-box[base-url]');;
-        if(b) {
-            setRoot(b);
+        if(E=S.parentNode(I, '.s-api-box[base-url]')) {
+            setRoot(E);
+            E = null;
         }
-        b = null;
-        if(_init) Z.init(I);
+        if(_init) S.init(I);
         getBase();
         var base=I.getAttribute('data-base-url');
         if(!base && _base) {
@@ -64,69 +65,65 @@
         }
 
         // activate checkbox and radio buttons in lists
-        var active=(_reStandalone.test(I.className)), ui=(I.className.search(/\bs-api-app\b/)>-1)?(I.getAttribute('data-url')):(null), L=I.querySelector('.s-api-list');
-        if(L) {
+        var active=(_reStandalone.test(I.className));
+        if(E=I.querySelector('.s-api-list')) {
             active = true;
-            l=L.querySelectorAll('input[type=checkbox][value],.s-api-list input[type=radio][value]');
-            i=l.length;
-            while(i-- > 0) if(!l[i].getAttribute('data-no-callback')) Z.bind(l[i], 'change', updateInterfaceDelayed);
-            l=null;
+            L=E.querySelectorAll('input[type=checkbox][value],.s-api-list input[type=radio][value]');
+            i=L.length;
+            while(i-- > 0) if(!L[i].getAttribute('data-no-callback')) S.bind(L[i], 'change', updateInterfaceDelayed);
+            E = null;
+            L = null;
         }
 
         if(_reStandalone.test(I.className)) return true;
 
-        var B=Z.parentNode(I, '.s-api-body');
-
-        if(B && (b=B.querySelector(':scope > .s-api-nav')) && !b.getAttribute('data-startup')) {
-            b.setAttribute('data-startup', '1');
-            l=b.querySelectorAll('a[href]');
-            i=l.length;
-            while(i-- > 0) if(!l[i].getAttribute('target') && !l[i].getAttribute('download')) Z.bind(l[i], 'click', loadInterface);
-            l=null;
+        if((B=S.parentNode(I, '.s-api-body')) && (E=B.querySelector(':scope > .s-api-nav')) && !E.getAttribute('data-startup')) {
+            E.setAttribute('data-startup', '1');
+            L=E.querySelectorAll('a[href]');
+            i=L.length;
+            while(i-- > 0) if(!L[i].getAttribute('target') && !L[i].getAttribute('download')) S.bind(L[i], 'click', loadInterface);
+            L=null;
         }
+        B = null;
+        E = null;
 
         // bind links to Interface actions
-        l=I.querySelectorAll('a[href^="'+base+'"],.s-api-a,.s-api-link');
-        i=l.length;
-        while(i-- > 0) if(!l[i].getAttribute('target') && !l[i].getAttribute('download')) Z.bind(l[i], 'click', (l[i].getAttribute('data-inline-action'))?loadAction :loadInterface);
-        l=null;
+        L=I.querySelectorAll('a[href^="'+base+'"],.s-api-a,.s-api-link');
+        i=L.length;
+        while(i-- > 0) if(!L[i].getAttribute('target') && !L[i].getAttribute('download')) S.bind(L[i], 'click', (L[i].getAttribute('data-inline-action'))?loadAction :loadInterface);
+        L=null;
 
         // bind forms
-        l=I.querySelectorAll('form[action^="'+base+'"],.s-api-preview form');
-        i=l.length;
-        while(i-- > 0) Z.bind(l[i], 'submit', (l[i].parentNode.getAttribute('data-action-schema')) ?loadAction :loadInterface);
-        l=null;
-
+        L=I.querySelectorAll('form[action^="'+base+'"],.s-api-preview form');
+        i=L.length;
+        while(i-- > 0) S.bind(L[i], 'submit', (L[i].parentNode.getAttribute('data-action-schema')) ?loadAction :loadInterface);
         L=null;
 
         // bind other actions
-        var S=I.querySelectorAll('*[data-action-schema]');
-        if(S.length==0 && I.getAttribute('data-action-schema')) S=[I];
+        L=I.querySelectorAll('*[data-action-schema]');
+        if(L.length==0 && I.getAttribute('data-action-schema')) L=[I];
 
         var iurl = I.getAttribute('data-action');
         iurl = (!iurl)?(''):('&next='+encodeURIComponent(iurl));
-        i=S.length;
+        i=L.length;
         while(i-- > 0) {
-            var M = S[i].querySelectorAll('*[data-action-scope]'),
-                j=M.length, 
-                N, 
-                k=S[i].getAttribute('data-action-schema'), 
-                u=S[i].getAttribute('data-action-url'), 
-                bt, 
-                bu;
+            J = L[i].querySelectorAll('*[data-action-scope]');
+            j = J.length; 
+            a = L[i].getAttribute('data-action-schema');
+            b = L[i].getAttribute('data-action-url');
             while(j-- > 0) {
-                bu=M[j].getAttribute('data-action-scope');
-                if(M[j].querySelector('.s-api-app') || !bu || bu.substr(0, 1)=='_') continue;
-                M[j].removeAttribute('data-action-scope');
-                if(M[j].nodeName.toLowerCase()=='button') {
-                    M[j].setAttribute('data-url', u+'?scope='+bu+iurl);
-                    M[j].className = ((M[j].className)?(M[j].className+' '):(''))+'s-api--close';
-                    if(('form' in M[j])) {
-                        Z.bind(M[j], 'click', loadAction);
-                        if(M[j].form) {
-                            bt = M[j].form.parentNode;
-                        } else if(bt=Z.parentNode(M[j], 'form')) {
-                            bt = bt.parentNode;
+                if(c=J[j].getAttribute('data-action-scope')) J[j].removeAttribute('data-action-scope');
+                if(!c || c.substr(0, 1)=='_' || J[j].querySelector('.s-api-app')) {
+                    c = null;
+                    continue;
+                }
+                if(J[j].nodeName.toLowerCase()==='button') {
+                    J[j].setAttribute('data-url', b+'?scope='+c+iurl);
+                    J[j].className = ((J[j].className)?(J[j].className+' '):(''))+'s-api--close';
+                    if(('form' in J[j])) {
+                        S.bind(J[j], 'click', loadAction);
+                        if((E=J[j].form) || (E=S.parentNode(J[j], 'form'))) {
+                            E = E.parentNode;
                         } else {
                             continue;
                         }
@@ -134,28 +131,20 @@
                         continue;
                     }
                 } else {
-                    bt= M[j];
+                    E = J[j];
                 }
-                Z.element.call(bt, {e:'a',a:{href:u+'?scope='+bu+iurl,'class':'s-button s-api--'+k},t:{click:loadAction}});
-                bt=null;
+                S.element.call(E, {e:'a',a:{href:b+'?scope='+c+iurl,'class':'s-button s-api--'+a},t:{click:loadAction}});
+                E = null;
+                c = null;
             }
+            J = null;
+            j = null;
+            a = null;
+            b = null;
         }
-        /*
-        i=S.length;
-        while(i-- > 0) {
-            var M = S[i].querySelectorAll('*[data-action-item]'),j=M.length, N, k=S[i].getAttribute('data-action-schema'),u=S[i].getAttribute('data-action-url');
-            while(j-- > 0) {
-                N = document.createElement('a');
-                N.setAttribute('href', u+'?item='+M[j].getAttribute('data-action-item'));
-                N.className = 's-button s-i--'+k;
-                Z.bind(N, 'click', loadAction);
-                Z.bind(M[j], 'dblclick', loadAction);
-                M[j].appendChild(N);
-            }
-        }
-        */
+        L = null;
         // only full interfaces go beyond this point
-        if(!ui) {
+        if(I.className.search(/\bs-api-app\b/)===-1 || !I.getAttribute('data-url')) {
             return false;
         }
 
@@ -170,61 +159,59 @@
             }
         }
         if(!_toLoadTimeout) activeInterface(I);
-        l=_root.querySelectorAll('.s-api-header .s-api-title');
-        i=l.length;
+        L=_root.querySelectorAll('.s-api-header .s-api-title');
+        i=L.length;
         while(i-- > 0) {
-            if(!l[i].getAttribute('data-i')) {
-                l[i].setAttribute('data-i', 1);
-                Z.bind(l[i], 'click', activeInterface);
-                Z.bind(l[i], 'dblclick', loadInterface);
+            if(!L[i].getAttribute('data-i')) {
+                L[i].setAttribute('data-i', 1);
+                S.bind(L[i], 'click', activeInterface);
+                S.bind(L[i], 'dblclick', loadInterface);
             }
         }
-        l=null;
+        L = null;
+        i = null;
 
         if(_noH) {
             if(!loading()) _noH = false;
             else return;
         }
 
-        l=_root.querySelectorAll('.s-api-header .s-api-title.s-i-off');
-        i=l.length;
+        L = _root.querySelectorAll('.s-api-header .s-api-title.s-i-off');
+        i = L.length;
         /*
         while(i-- > 0) {
-            Z.debug('removing off: ', l[i]);
+            S.debug('removing off: ', l[i]);
             l[i].parentNode.removeChild(l[i]);
         }
         */
         parseHash(); // sets _H
 
-        var h;
         if(!_last) {
             // first run, doesn't need to reload current page if in hash
             // reduce _H with currently loaded interface
             i=_H.length;
             while(i-- > 0) {
-                h=_H[i];
-                if(h.substr(0,1)=='?') h=_base+h;
-                else if(h.substr(0,1)!='/') h = _base+'/'+h;
-                if(_root.querySelector('.s-api-app[data-url="'+h+'"]')) {
+                a=_H[i];
+                if(a.substr(0,1)=='?') a=_base+a;
+                else if(a.substr(0,1)!='/') a = _base+'/'+a;
+                if(_root.querySelector('.s-api-app[data-url="'+a+'"]')) {
                     _H.splice(i,1);
                 }
             }
         }
         if(!_is && _H.length>0) {
-            var hu,hq;
             _noH = true;
             for(i=0;i<_H.length;i++) {
-                h=_H[i];
-                if(h.substr(0,1)=='?') h=_base+h;
-                else if(h.substr(0,1)!='/') h = _base+'/'+h;
-                loadInterface(h, true);
-                _cu = h.replace(/\?.*/, '');
+                a=_H[i];
+                if(a.substr(0,1)=='?') a=_base+a;
+                else if(a.substr(0,1)!='/') a = _base+'/'+a;
+                loadInterface(a, true);
+                _cu = a.replace(/\?.*/, '');
             }
         } else {
             while(_q.length>0) {
-                var a=_q.shift();
-                var f=a.shift();
-                f.apply(I, a);
+                a=_q.shift();
+                a.shift().apply(I, a);
             }
             setHashLink();
             _is = true;
@@ -241,21 +228,21 @@
 
     function setRoot(el)
     {
-        var o=_root, b=el.getAttribute('base-url');
-        if(!b) {
-            if(el=Z.parentNode(el, '.s-api-box[base-url]')) {
-                b=el.getAttribute('base-url');
+        var A=_root, a=el.getAttribute('base-url');
+        if(!a) {
+            if(el=S.parentNode(el, '.s-api-box[base-url]')) {
+                a=el.getAttribute('base-url');
             } else {
                 return false;
             }
         }
-        if(b) {
+        if(a) {
             _root = el;
-            _base = b;
+            _base = a;
         }
-        b=null;
+        a=null;
 
-        return o;
+        return A;
     }
 
     function getBase()
@@ -301,8 +288,8 @@
             U[h]=i;
         }
 
-        //Z.debug('hashChange: hashes found: ', U);
-        //Z.debug('hashChange: interfaces found: ', L);
+        //S.debug('hashChange: hashes found: ', U);
+        //S.debug('hashChange: interfaces found: ', L);
          // why this shortcut?
 
         if(_H.length<=1 && L.length<=1) {
@@ -353,7 +340,7 @@
     function parseHash()
     {
         var h = window.location + '',p=h.indexOf('#!');
-        if(p<0 || h.length<p+2) {
+        if(p===-1 || h.length<p+2) {
             _H = [];
             return false;
         }
@@ -369,7 +356,7 @@
             if(!loading()) _noH = false;
             else return;
         }
-        //Z.debug('setHash', h);
+        //S.debug('setHash', h);
         // remove h from _H
         var update=false;
         if(h) {
@@ -415,7 +402,7 @@
     function reHash()
     {
         if(!_reHash) return;
-        //Z.debug('reHash');
+        //S.debug('reHash');
         var l=_root.querySelectorAll('.s-api-header .s-api-title[data-url]'), i=0,a,h,I, qs;
         _H=[];
         for(i=0;i<l.length;i++) {
@@ -436,7 +423,7 @@
     function setHashLink()
     {
         var i=_H.length, o, hr;
-        //Z.debug('setHashLink');
+        //S.debug('setHashLink');
         while(i-- > 0) {
             var pu=_H[i].replace(/\?.*/, '');
             if(pu.substr(0,1)!='/') pu=_base+'/'+pu;
@@ -451,9 +438,9 @@
 
     function unloadInterface(I, rehash, rI)
     {
-        //Z.debug('unloadInterface', I);
+        //S.debug('unloadInterface', I);
         var u=I.getAttribute('data-url'),
-            b=Z.parentNode(I, '.s-api-box');
+            b=S.parentNode(I, '.s-api-box');
         if(!b) b=document;
         var T=b.querySelector('.s-api-header .s-api-title[data-url="'+u+'"]');
         if(T) {
@@ -468,7 +455,7 @@
             B = I.previousSibling;
             I.parentNode.removeChild(I);
         }
-       Z.event(I, 'unloadInterface');
+       S.event(I, 'unloadInterface');
        I=null;
         if(!(I=b.querySelector('.s-api-active[data-url]'))) {
             if(!B) B=b.querySelector('.s-api-app[data-url]');
@@ -485,7 +472,7 @@
     function loadInterface(e, delayed)
     {
         /*jshint validthis: true */
-        //Z.debug('loadInterface', e, this);
+        //S.debug('loadInterface', e, this);
         _init = true;
         var I, m=false, t, q, urls=[], l, i,u,data,h={'x-studio-action':'api'}, ft, method='get',nav=false;
         if(Object.prototype.toString.call(e)=='[object Array]') {
@@ -493,13 +480,13 @@
         } else if(typeof(e)=='string') {
             urls.push(e);
         } else {
-            if(e) Z.stopEvent(e);
+            if(e) S.stopEvent(e);
             if(typeof(this)=='undefined') return false;
-            if((I=Z.parentNode(this, '.s-api-app'))) {
-            } else if ((I=Z.parentNode(this, '.s-api-title[data-url]'))) {
+            if((I=S.parentNode(this, '.s-api-app'))) {
+            } else if ((I=S.parentNode(this, '.s-api-title[data-url]'))) {
                 I = _root.querySelector('.s-api-app[data-url="'+I.getAttribute('data-url')+'"]');
                 if(!I) return true;
-            } else if(!Z.parentNode(this, '.s-api-nav')) return true;
+            } else if(!S.parentNode(this, '.s-api-nav')) return true;
             if(this.className.search(/\bs-api--close\b/)>-1) {
                 if((u=this.getAttribute('href'))) {
                     activeInterface(u);
@@ -522,9 +509,9 @@
                 }
                 if(!valid) {
                     if (m) {
-                        msg(Z.t('moreRecord'), 's-error');
+                        msg(S.t('moreRecord'), 's-error');
                     } else {
-                        msg(Z.t('noRecordSelected'), 's-error');
+                        msg(S.t('noRecordSelected'), 's-error');
                     }
                     return false;
                 }
@@ -562,23 +549,23 @@
                     } else {
                         h['Content-Type'] = enc;
                     }
-                    if(!data) data = Z.formData(this);
+                    if(!data) data = S.formData(this);
 
                     // set index interface to be reloaded
                     var iu = u.replace(/\/[^/]+\/[^/]+(\?.*)$/, ''),
-                        ib = Z.parentNode(this, '.s-api-box'),
+                        ib = S.parentNode(this, '.s-api-box'),
                         ih = (ib)?(ib.querySelector('.s-api-header .s-api--list[data-url^="'+iu+'"]')):(null);
                     if(ih) {
                         _reload[ih.getAttribute('data-url')]=true;
                     }
                     // set z-interface header to the tab interface
-                    if(ib=Z.parentNode(this, '.s-api-app[data-url]')) {
+                    if(ib=S.parentNode(this, '.s-api-app[data-url]')) {
                         iu = ib.getAttribute('data-url');
                         if(ib.getAttribute('data-qs')) iu += '?'+ib.getAttribute('data-qs');
                         h['x-studio-api'] = iu;
                     }
                 } else {
-                    t = t.replace(/\?(.*)$/, '')+'?'+Z.formData(this, false);
+                    t = t.replace(/\?(.*)$/, '')+'?'+S.formData(this, false);
                 }
                 urls.push(t);
             } else if((t=this.getAttribute('href'))) {
@@ -599,15 +586,15 @@
             } else {
                 o=_root.querySelector('.s-api-app[data-url="'+url+'"]');
                 if(!o) {
-                    o=Z.element.call(_root.querySelector('.s-api-body'), {e:'div',a:{'class':'s-api-app s-api-off','data-url':url}});
+                    o=S.element.call(_root.querySelector('.s-api-body'), {e:'div',a:{'class':'s-api-app s-api-off','data-url':url}});
                 }
                 if(!_root.querySelector('.s-api-title[data-url="'+url+'"]')) {
                     if(!H) H = _root.querySelector('.s-api-box .s-api-header');
                     if(H) {
-                        Z.element.call(H, {e:'a',a:{'class':'s-api-title s-api-off','data-url':url,href:urls[i]}});
+                        S.element.call(H, {e:'a',a:{'class':'s-api-title s-api-off','data-url':url,href:urls[i]}});
                     }
                 }
-                B = Z.parentNode(o, '.s-api-body');
+                B = S.parentNode(o, '.s-api-body');
             }
 
             if(delayed) {
@@ -615,8 +602,8 @@
                 continue;
             }
             loading(url, true);
-            Z.blur(B);
-            //Z.trace('loadInterface: ajax request');
+            S.blur(B);
+            //S.trace('loadInterface: ajax request');
             if(I) {
                 h['x-studio-referer'] = I.getAttribute('data-url');
                 if(I.getAttribute('data-qs')) h['x-studio-referer'] += '?'+ I.getAttribute('data-qs');
@@ -651,14 +638,14 @@
             _urls.push(arguments);
         } else {
             while(_urls.length>0) {
-                Z.ajax.apply(this, _urls.shift());
+                S.ajax.apply(this, _urls.shift());
             }
         }
     }
 
     function loadToLoad()
     {
-        //Z.debug('loadToLoad', _toLoad);
+        //S.debug('loadToLoad', _toLoad);
         if(_toLoadTimeout) clearTimeout(_toLoadTimeout);
         while(_toLoad.length>0) {
             loadInterface(_toLoad.shift());
@@ -690,145 +677,140 @@
     function loadAction(e)
     {
         /*jshint validthis: true */
-        var u,t;
+        var A, B, C, a, b, c, L, i;
         if(typeof(e)=='object' && ('stopPropagation' in e)) {
 
-            var nn=this.nodeName.toLowerCase(), data=null, method='get', h={'x-studio-action': 'api'};
+            var data=null, method='get', h={'x-studio-action': 'api'};
             e.stopPropagation();
             e.preventDefault();
+            c = this.nodeName.toLowerCase();
+            if(c==='form') {
+                A=S.node(S.parentNode(this, '.s-api-scope-block'), this.parentNode);
+                if(this.id) A.setAttribute('data-action-expects', 'form#'+S.slug(this.id));
+                a=this.getAttribute('action');
 
-            if(nn==='form') {
-                t=Z.node(Z.parentNode(this, '.s-api-scope-block'), this.parentNode);
-                if(this.id) t.setAttribute('data-action-expects', 'form#'+Z.slug(this.id));
-                u=this.getAttribute('action');
-
-                if(this.getAttribute('method').toLowerCase()=='post') {
+                if(this.getAttribute('method').toLowerCase()==='post') {
                     method = 'post';
-                    var enc=this.getAttribute('enctype');
-                    if(enc=='multipart/form-data') {
+                    b=this.getAttribute('enctype');
+                    if(b==='multipart/form-data') {
                         // usually file uploads
                         if('FormData' in window) {
                             data = new FormData(this);
                         }
                         h['Content-Type']=false;
                     } else {
-                        h['Content-Type'] = enc;
+                        h['Content-Type'] = b;
                     }
-                    if(!data) data = Z.formData(this);
-
-                    var pI=Z.parentNode(this, '.s-api-app[data-url]'), pu;
-                    if(pI) {
-                        pu=pI.getAttribute('data-url');
-                        if(pI.getAttribute('data-qs')) pu+='?'+pI.getAttribute('data-qs');
-                        h['x-studio-api'] = pu;
-                        pu=null;
-                        pI=null;
+                    b = null;
+                    if(!data) data = S.formData(this);
+                    if(B=S.parentNode(this, '.s-api-app[data-url]')) {
+                        b=B.getAttribute('data-url');
+                        if(B.getAttribute('data-qs')) b+='?'+B.getAttribute('data-qs');
+                        h['x-studio-api'] = b;
+                        b=null;
+                        B=null;
                     }
-
                 } else {
-                    u = u.replace(/\?(.*)$/, '')+'?'+Z.formData(this, false);
+                    a = a.replace(/\?(.*)$/, '')+'?'+S.formData(this, false);
                 }
-
-
-            } else if(nn=='button') {
-                t=Z.node(Z.parentNode(this.form, '.s-api-scope-block'), this.form.parentNode);
-                u=this.getAttribute('data-url');
+            } else if(c==='button') {
+                A = S.node(S.parentNode(this.form, '.s-api-scope-block'), this.form.parentNode);
+                a = this.getAttribute('data-url');
             } else if(this.getAttribute('data-action-item')) {
-                t=this;
-                u=this.children[this.children.length -1].getAttribute('href');
+                A = this;
+                a = this.children[this.children.length -1].getAttribute('href');
             } else {
-                t=Z.node(Z.parentNode(this.parentNode, '.s-api-scope-block'), this.parentNode);
+                A = S.node(S.parentNode(this.parentNode, '.s-api-scope-block'), this.parentNode);
                 var ss, sn;
-                if(this.href && (ss=this.href.match(/[\?\&](scope=[^\&]+)/)) && ss.length>0) {
-                    sn = new RegExp('\b'+ss[1].replace('=', '-')+'\b');
+                if(this.href && (L=this.href.match(/[\?\&](scope=[^\&]+)/)) && L.length>0) {
+                    b = new RegExp('\b'+L[1].replace('=', '-')+'\b');
                 }
-                if(!sn || t.className.search(sn)===false) {
-                    while(t && t.parentNode.className.search(/\bs-api-scope-block\b/)>-1) {
-                        t=t.parentNode;
-                        if(sn && t.className.search(sn)!==false) break;
+                if(!b || A.className.search(b)===-1) {
+                    while(A && A.parentNode.className.search(/\bs-api-scope-block\b/)!==-1) {
+                        A = A.parentNode;
+                        if(b && A.className.search(b)!==-1) break;
                     }
                 }
-                u=this.getAttribute('href');
+                b = null;
+                a = this.getAttribute('href');
             }
-            var a=new Date().getTime(), I=Z.parentNode('.s-api-app[data-url].s-api-active');
-            if(I) {
-                h['x-studio-referer'] = I.getAttribute('data-url');
-                if(I.getAttribute('data-qs')) h['x-studio-referer'] += '?'+ I.getAttribute('data-qs');
+            b = new Date().getTime();
+            if(B=S.parentNode(A, '.s-api-app[data-url].s-api-active')) {
+                h['x-studio-referer'] = B.getAttribute('data-url');
+                if(B.getAttribute('data-qs')) h['x-studio-referer'] += '?'+ B.getAttribute('data-qs');
             }
+            B = null;
 
-            u=(u.search(/\?/)>-1)?(u.replace(/\&+$/, '')+'&ajax='+a):(u+'?ajax='+a);
-            //Z.trace('loadAction: ajax request');
-            Z.blur(t);
-            Z.ajax(u, data, loadAction, interfaceError, 'html', t, h);
+            a=(a.search(/\?/)>-1)?(a.replace(/\&+$/, '')+'&ajax='+b):(a+'?ajax='+b);
+            //S.trace('loadAction: ajax request');
+            S.blur(A);
+            S.ajax(a, data, loadAction, interfaceError, 'html', A, h);
         } else {
-            //Z.trace('loadAction: ajax response start');
-            var f = document.createElement('div'), pI=Z.parentNode(this, '.s-api-app'), S, i, expects=this.getAttribute('data-action-expects'), expectsUrl=this.getAttribute('data-action-expects-url');
-            f.innerHTML = e;
+            //S.trace('loadAction: ajax response start');
+            A = document.createElement('div');
+            var expects=this.getAttribute('data-action-expects'), expectsUrl=this.getAttribute('data-action-expects-url');
+            A.innerHTML = e;
 
-            if(expects && !f.querySelector(expects)) {
-                return setInterface.apply(pI, arguments);
-            } else if(expectsUrl && !f.querySelector('.s-api-app[data-url="'+expectsUrl+'"]')) {
-                return setInterface.apply(pI, arguments);
+            if(expects && !A.querySelector(expects)) {
+                return setInterface.apply(B, arguments);
+            } else if(expectsUrl && !A.querySelector('.s-api-app[data-url="'+expectsUrl+'"]')) {
+                return setInterface.apply(B, arguments);
             }
 
-            runActions(f);
+            runActions(A);
 
-            var I = f.querySelector('.s-api-app[data-url] .s-api-preview'), del;
-            if(!I) I = f.querySelector('.s-api-app[data-url] .s-api-container');
-            if(!I) I = f.querySelector('.s-api-app[data-url]');
-
-            if(I) {
-
-                if(pI) {
-                    S=pI.querySelectorAll('.s-api-summary .s-msg,.s-msg[data-message],.s-api-msg[data-message]');
-                    i=S.length;
+            if((C = A.querySelector('.s-api-app[data-url] .s-api-preview'))
+                || (C = A.querySelector('.s-api-app[data-url] .s-api-container'))
+                || (C = A.querySelector('.s-api-app[data-url]'))) {
+                if(B = S.parentNode(this, '.s-api-app')) {
+                    L=B.querySelectorAll('.s-api-summary .s-msg,.s-msg[data-message],.s-api-msg[data-message]');
+                    B = null;
+                    i=L.length;
                     while(i--) {
-                        del = S[i];
-                        if(del.parentNode.className.search(/\b(td)?s-msg\b/)>-1) del = del.parentNode;
-                        Z.deleteNode(del);
+                        B = L[i];
+                        if(B.parentNode.className.search(/\b(td)?s-msg\b/)>-1) B = B.parentNode;
+                        S.deleteNode(B);
+                        B = null;
                     }
                 }
-
                 // get s-api-app only
-                if(I.children.length==1) {
-                    t=I.children[0];
-                    //while(t.children.length==1 && t.children[0].className.search(/\bs-api-scope-block\b/)>-1) {
-                    //    t=t.children[0];
-                    //}
-                    t.className=this.className;
-                    if(t.className.search(/\bs-api-scope-block\b/)<0) {
-                        t.className+=' s-api-scope-block';
+                if(C.children.length==1) {
+                    B=C.children[0];
+                    B.className=this.className;
+                    if(B.className.search(/\bs-api-scope-block\b/)===-1) {
+                        B.className+=' s-api-scope-block';
                     }
-                    this.parentNode.replaceChild(t, this);
+                    this.parentNode.replaceChild(B, this);
                 } else {
-                    t=this.parentNode.insertBefore(document.createElement('div'), this);
-                    t.className='s-api-scope-block';
+                    B=this.parentNode.insertBefore(document.createElement('div'), this);
+                    B.className='s-api-scope-block';
                     this.parentNode.removeChild(this);
                     i=0;
-                    while(i<I.children.length) {
-                        t.appendChild(I.children[i]);
+                    while(i<C.children.length) {
+                        B.appendChild(C.children[i]);
                         i++;
                     }
                 }
                 if(expectsUrl) t.setAttribute('data-action-expects-url', expectsUrl);
             }
-
-            S=f.querySelectorAll('.s-api-summary .s-msg');
-            i=S.length;
-            var rt=t;
-            while(i--) {
-                S[i].setAttribute('data-message', 1);
-                rt.parentNode.insertBefore(S[i], rt);
-                rt=S[i];
-                //Z.deleteNode(S[i]);
+            C = null;
+            if(B) {
+                L = A.querySelectorAll('.s-api-summary .s-msg');
+                i = L.length;
+                C=B;
+                while(i--) {
+                    L[i].setAttribute('data-message', 1);
+                    C.parentNode.insertBefore(L[i], C);
+                    C=L[i];
+                }
+                C = null;
+            } else {
+                B = S.node(this);
             }
-
-            if(!t) t = Z.node(this);
-
-            if(t) {
-                startup(t);
-                Z.focus(t);
-                t=null;
+            if(B) {
+                startup(B);
+                S.focus(B);
+                B = null;
             }
         }
 
@@ -839,7 +821,7 @@
     {
         /*jshint validthis: true */
         var u, qs, H;
-        if(!I || typeof(I)=='string' || !Z.isNode(I)) {
+        if(!I || typeof(I)=='string' || !S.isNode(I)) {
             if(typeof(I)=='string') {
                 u = I;
                 if(u.indexOf('?')) {
@@ -852,7 +834,7 @@
                     I.stopPropagation();
                     I.preventDefault();
                     // click events reload the interface
-                    I=Z.node(this);
+                    I=S.node(this);
                     if(I && (u=I.getAttribute('data-url')) && (u in _reload)) {
                         delete(_reload[u]);
                         qs = I.getAttribute('data-qs');
@@ -862,7 +844,7 @@
                         I=null;
                     }
                 } else {
-                    I=Z.node(this);
+                    I=S.node(this);
                 }
             }
         }
@@ -875,18 +857,18 @@
             // get u from hash?
             return false;
         } else if(!I) {
-            //Z.debug('activeInterface: '+u);
+            //S.debug('activeInterface: '+u);
             loadInterface((qs)?(u+'?'+qs):(u));
             return false;
         } else if(!_reStandalone.test(I.className)) {
-            if(!Z.isNode(Z.parentNode(I, '.s-api-body'))) {
-                //Z.debug('activeInterface(2): '+u);
+            if(!S.isNode(S.parentNode(I, '.s-api-body'))) {
+                //S.debug('activeInterface(2): '+u);
                 loadInterface((qs)?(u+'?'+qs):(u));
                 return false;
             }
-            if(I.className.search(/\bs-api-active\b/)<0) I.className += ' s-api-active';
+            if(I.className.search(/\bs-api-active\b/)===-1) I.className += ' s-api-active';
             if(H && H.className.search(/\bs-off\b/)>-1) H.className = H.className.replace(/\s*\bs-off\b/, '');
-            if(H && H.className.search(/\bs-api-title-active\b/)<0) H.className += ' s-api-title-active';
+            if(H && H.className.search(/\bs-api-title-active\b/)===-1) H.className += ' s-api-title-active';
             if(_is) {
                 reHash();
             }
@@ -895,16 +877,16 @@
                 if(R[i]==H || R[i]==I) continue;
                 R[i].className = R[i].className.replace(/\bs-api-(title-)?active\b\s*/g, '').trim();
             }
-            var txt = Z.text(H);
+            var txt = S.text(H);
             if(!txt) {
                 for(var i=1;i<3;i++) {
-                    if(txt=Z.text(I.querySelector('h'+i))) break;
+                    if(txt=S.text(I.querySelector('h'+i))) break;
                 }
             }
             if(txt && txt.trim()) document.title = txt;
         }
 
-        var N = Z.parentNode(I, '.s-api-body').querySelector(':scope > .s-api-nav'), nb;
+        var N = S.parentNode(I, '.s-api-body').querySelector(':scope > .s-api-nav'), nb;
         if(N && (nb = N.getAttribute('data-base-url'))) {
             R=N.querySelectorAll('a.s-current[href]');
             i=R.length;
@@ -922,7 +904,7 @@
 
         if(_root.querySelector('.s-api-box .s-api-header[data-overflow]')) headerOverflow(true);
         if(I.style) I.removeAttribute('style');
-        Z.resizeCallback();
+        S.resizeCallback();
 
         return false;
     }
@@ -933,7 +915,7 @@
         var He = _root.querySelector('.s-api-box .s-api-header[data-overflow]');
         if(!He) return;
 
-        var box=Z.parentNode(He, '.s-api-box'),
+        var box=S.parentNode(He, '.s-api-box'),
             Hs = box.querySelectorAll('.s-api-header > .s-api-title'),
             H =  box.querySelector('.s-api-header > .s-api-title.s-api-title-active'),
             ew, fw=0, ws={}, i, wmax, hw, el;
@@ -960,7 +942,7 @@
             i=Hs.length;
             // check length
             if(i>1 && fw > hw) {
-                if(He.className.search(/\bs-overflow\b/)<0) He.className += ' s-overflow';
+                if(He.className.search(/\bs-overflow\b/)===-1) He.className += ' s-overflow';
                 // flex:1 -- only the selected tab should be resized
                 el = H.querySelector('.s-text');
                 if(!el) el = H;
@@ -977,23 +959,23 @@
 
     function checkMessages(I)
     {
-        var S=(!I || !Z.isNode(I))?(_root.querySelector('.s-api-active .s-api-summary')):(I.querySelector('.s-api-summary'));
-        if(!S) return;
-        var i=_msgs.length, now=(new Date()).getTime(), next=0, L=S.querySelectorAll(':scope > .s-msg[data-created],:scope > .s-msg'), timeout=5000, last=(L.length>0)?(L[L.length-1]):(null), el;
+        var A=(!I || !S.isNode(I))?(_root.querySelector('.s-api-active .s-api-summary')):(I.querySelector('.s-api-summary'));
+        if(!A) return;
+        var i=_msgs.length, now=(new Date()).getTime(), next=0, L=A.querySelectorAll(':scope > .s-msg[data-created],:scope > .s-msg'), timeout=5000, last=(L.length>0)?(L[L.length-1]):(null), el;
         while(i--) {
             if(_msgs[i].e < now || !_msgs[i].n.parentNode) {
                 if(_msgs[i].n) {
                     el = _msgs[i].n;
                     if(el.parentNode && el.parentNode.className=='s-msg') el=el.parentNode;
-                    Z.deleteNode(el);
+                    S.deleteNode(el);
                 }
                 _msgs[i].n=null;
                 _msgs.splice(i, 1);
-            } else if(Z.parentNode(_msgs[i].n, '.s-api-summary')!=S) {
+            } else if(S.parentNode(_msgs[i].n, '.s-api-summary')!=A) {
                 if(last) {
-                    last = Z.element({e:'div',p:{className:'s-msg'},c:[_msgs[i].n]}, null, last);
+                    last = S.element({e:'div',p:{className:'s-msg'},c:[_msgs[i].n]}, null, last);
                 } else {
-                    last = Z.element.call(S, {e:'div',p:{className:'s-msg'},c:[_msgs[i].n]});
+                    last = S.element.call(A, {e:'div',p:{className:'s-msg'},c:[_msgs[i].n]});
                 }
                 if(!next || next>_msgs[i].e) next=_msgs[i].e;
             }
@@ -1020,8 +1002,8 @@
     function parseResponse(d, req)
     {
         var h=req.getAllResponseHeaders(), c=h.match(/content-type: [^\;]+;\s*charset=([^\s\n]+)/i);
-        if(c && c.length>1 && c[1].search(/^utf-?(8|16)$/i)<0) {
-            //Z.debug('decode from '+c[1], d, escape(d));
+        if(c && c.length>1 && c[1].search(/^utf-?(8|16)$/i)===-1) {
+            //S.debug('decode from '+c[1], d, escape(d));
             d =  decodeURIComponent(escape(d));
         }
         return d;
@@ -1037,7 +1019,7 @@
             if(arguments.length>=4 && arguments[1]==200) {
                 c=parseResponse(c, arguments[3]);
             }
-            var f = document.createElement('div'), O=Z.node(this),box=(O)?(Z.parentNode(O, '.s-api-box')):(null), ft, I;
+            var f = document.createElement('div'), O=S.node(this),box=(O)?(S.parentNode(O, '.s-api-box')):(null), ft, I;
             if(!box) box=_root;
 
             f.innerHTML = c;
@@ -1045,10 +1027,10 @@
             if(ft=O.getAttribute('data-target-id')) {
                 O.removeAttribute('data-target-id');
                 var from=document.getElementById(ft), to=f.querySelector('#'+ft), fromI;
-                if(from && to && (I=Z.parentNode(from, '.s-api-app'))) {
+                if(from && to && (I=S.parentNode(from, '.s-api-app'))) {
                     from.parentNode.replaceChild(to, from);
                     I.removeAttribute('data-startup');
-                    if(O.parentNode) Z.deleteNode(O);
+                    if(O.parentNode) S.deleteNode(O);
                     O=I;
                 }
             }
@@ -1059,7 +1041,7 @@
             if(!I) I = f.querySelector('.s-api-app');
             if(I && box && !box.querySelector('.s-api-body') && f.querySelector('.s-api-body')) {
                 // replace entire box and startup
-                Z.removeChildren(box);
+                S.removeChildren(box);
                 if(mv = f.querySelector('.s-api-header')) box.appendChild(mv);
                 mv = f.querySelector('.s-api-body');
 
@@ -1067,8 +1049,8 @@
 
                 parseHash();
                 startup(I);
-                Z.init(box);
-                Z.focus(mv);
+                S.init(box);
+                S.focus(mv);
                 return;
             } else if(!box.querySelector('.s-api-body .s-api-nav') && (mv=f.querySelector('.s-api-body .s-api-nav'))) {
                 //add nav
@@ -1078,12 +1060,12 @@
                 mv.setAttribute('data-startup', '1');
                 L=mv.querySelectorAll('a[href]');
                 i=L.length;
-                while(i-- > 0) if(!L[i].getAttribute('target') && !L[i].getAttribute('download')) Z.bind(L[i], 'click', loadInterface);
+                while(i-- > 0) if(!L[i].getAttribute('target') && !L[i].getAttribute('download')) S.bind(L[i], 'click', loadInterface);
                 L=null;
-                Z.initToggleActive(mv);
+                S.initToggleActive(mv);
                 L=mv.querySelectorAll('.s-toggle-active');
                 i=L.length;
-                while(i-- > 0) Z.initToggleActive(L[i]);
+                while(i-- > 0) S.initToggleActive(L[i]);
                 mv=f.querySelector('.s-api-header .s-spacer');
                 if(mv) {
                     B=box.querySelector('.s-api-header');
@@ -1094,20 +1076,20 @@
 
             if(!I) {
                 if(O) {
-                    Z.focus(box.querySelector('.s-api-body'));
+                    S.focus(box.querySelector('.s-api-body'));
                 } else {
-                    Z.focus(_root.querySelector('.s-api-body.s-blur'));
+                    S.focus(_root.querySelector('.s-api-body.s-blur'));
                 }
                 return false;
             }
 
-            var u = I.getAttribute('data-url'), cu=(O)?(O.getAttribute('data-url')):(null), S;
+            var u = I.getAttribute('data-url'), cu=(O)?(O.getAttribute('data-url')):(null), A;
 
-            if(S=O.querySelector('.s-api-summary')) {
-                r=S.querySelectorAll(':scope .s-msg');
+            if(A=O.querySelector('.s-api-summary')) {
+                r=A.querySelectorAll(':scope .s-msg');
                 i=r.length;
                 while(i--) {
-                    Z.deleteNode(r[i]);
+                    S.deleteNode(r[i]);
                 }
             }
 
@@ -1163,9 +1145,9 @@
                 while(i-- > 0) {
                     cu=Hs[i].getAttribute('data-url');
                     h=H.querySelector('.s-api-title[data-url="'+cu+'"]');
-                    //Z.bind(Hs[i], 'click', activeInterface);
+                    //S.bind(Hs[i], 'click', activeInterface);
                     if(!Hs[i].querySelector('*[data-action="close"]')) {
-                        Z.element.call(Hs[i], {e:'span',a:{'class':'s-api-a s-api--close','data-action':'close'},t:{click:loadInterface}});
+                        S.element.call(Hs[i], {e:'span',a:{'class':'s-api-a s-api--close','data-action':'close'},t:{click:loadInterface}});
                     }
                     if(h) H.replaceChild(Hs[i], h);
                     else if(cu==u) H.appendChild(Hs[i]);
@@ -1194,8 +1176,8 @@
             }
 
             startup(I);
-            Z.focus(Z.parentNode(I, '.s-api-body'));
-            Z.event(I, 'loadInterface');
+            S.focus(S.parentNode(I, '.s-api-body'));
+            S.event(I, 'loadInterface');
         }
         return false;
     }
@@ -1223,39 +1205,39 @@
             if(rn) rn.parentNode.removeChild(rn);
             rn = _root.querySelector('.s-api-box .s-api-body .s-api-app[data-url="'+ru+'"]');
             if(rn) rn.parentNode.removeChild(rn);
-            Z.event(rn, 'unloadInterface');
+            S.event(rn, 'unloadInterface');
         },
         status:function(o) {
             var pid = o.getAttribute('data-status');
             if(!pid) return;
             _bkg[pid] = {u:o.getAttribute('data-url'),m:o.getAttribute('data-message')};
             msg(_bkg[pid].m, null, true);
-            Z.delay(msg, 5000, 'msg');
-            Z.delay(checkBkg, 2000, 'checkBkg');
+            S.delay(msg, 5000, 'msg');
+            S.delay(checkBkg, 2000, 'checkBkg');
         },
         message:function(o) {
             if(o.getAttribute('data-message')) {
                 msg(o.getAttribute('data-message'), 's-msg', true);
-                Z.delay(msg, 10000, 'msg');
+                S.delay(msg, 10000, 'msg');
             }
         },
         success:function(o) {
             if(o.getAttribute('data-message')) {
                 msg(o.getAttribute('data-message'), 's-msg-success', true);
-                Z.delay(msg, 5000, 'msg');
+                S.delay(msg, 5000, 'msg');
             }
         },
         error:function(o) {
             if(o.getAttribute('data-message')) {
                 msg(o.getAttribute('data-message'), 's-msg-error', true);
-                Z.delay(msg, 5000, 'msg');
+                S.delay(msg, 5000, 'msg');
             }
-            Z.event(o, 'error');
+            S.event(o, 'error');
         },
         download:function(o) {
             if(o.getAttribute('data-message')) {
                 msg(o.getAttribute('data-message'), null, true);
-                Z.delay(msg, 5000, 'msg');
+                S.delay(msg, 5000, 'msg');
             }
             var u = o.getAttribute('data-url') || o.getAttribute('href');
             if(!u) return false;
@@ -1273,16 +1255,16 @@
         load:function(o) {
             if(o.getAttribute('data-message')) {
                 msg(o.getAttribute('data-message'), null, true);
-                Z.delay(msg, 5000, 'msg');
+                S.delay(msg, 5000, 'msg');
             }
             var u = o.getAttribute('data-url') || o.getAttribute('href');
             if(!u) return false;
-            Z.setInterface(u);
+            S.setInterface(u);
         },
         redirect:function(o) {
             if(o.getAttribute('data-message')) {
                 msg(o.getAttribute('data-message'), null, true);
-                Z.delay(msg, 5000, 'msg');
+                S.delay(msg, 5000, 'msg');
             }
             var u = o.getAttribute('data-url') || o.getAttribute('href');
             var su=window.location.pathname+window.location.search+window.location.hash;
@@ -1306,8 +1288,8 @@
             if(!I) I = _root.querySelector('.s-api-active .s-api-container');
             if(!I) I = _root.querySelector('.s-api-active');
             if(!I) return;
-            if(I.children.length>0) M=Z.element({e:'div',p:{className:'s-msg'}}, I.children[0]);
-            else M=Z.element.call(I, {e:'div',p:{className:'s-msg'}});
+            if(I.children.length>0) M=S.element({e:'div',p:{className:'s-msg'}}, I.children[0]);
+            else M=S.element.call(I, {e:'div',p:{className:'s-msg'}});
         }
         if(!c) c='';
         else c+=' ';
@@ -1324,8 +1306,8 @@
         } else {
             M.textContent=s;
         }
-        Z.init(M);
-        //Z.element.call(M, {c:s});
+        S.init(M);
+        //S.element.call(M, {c:s});
     }
 
     var _bkg={};
@@ -1333,7 +1315,7 @@
     {
         var n;
         for(n in _bkg) {
-            Z.ajax(_bkg[n].u, null, setInterface, interfaceError, 'html', _root.querySelector('.s-api-app.s-api-active'), {'x-studio-action':'api', 'x-studio-param':n});
+            S.ajax(_bkg[n].u, null, setInterface, interfaceError, 'html', _root.querySelector('.s-api-app.s-api-active'), {'x-studio-action':'api', 'x-studio-param':n});
             delete(_bkg[n]);
         }
 
@@ -1344,27 +1326,27 @@
         /*jshint validthis: true */
         var mid = 'Error';
         if(status) mid += String(status);
-        var m=Z.t(mid);
-        if(!m || m==mid) m=Z.t('Error');
-        Z.error.call(this, m);
+        var m=S.t(mid);
+        if(!m || m==mid) m=S.t('Error');
+        S.error.call(this, m);
         msg(m, 's-msg-error');
-        Z.delay(msg, 10000, 'msg');
-        Z.focus(_root.querySelector('.s-api-body.s-blur'));
-        if(this.className.search(/\bs-off\b/)>-1) Z.deleteNode(this);
+        S.delay(msg, 10000, 'msg');
+        S.focus(_root.querySelector('.s-api-body.s-blur'));
+        if(this.className.search(/\bs-off\b/)>-1) S.deleteNode(this);
     }
 
     function updateInterfaceDelayed(e)
     {
         /*jshint validthis: true */
         if(arguments.length>0) e.stopPropagation();
-        if(Z.isNode(this) && 'checked' in this) Z.checkInput(this, null, false);
-        Z.delay(updateInterface, 100);
+        if(S.isNode(this) && 'checked' in this) S.checkInput(this, null, false);
+        S.delay(updateInterface, 100);
 
     }
 
     function updateInterface(I)
     {
-        var ref=(arguments.length>0 && Z.isNode(I)),
+        var ref=(arguments.length>0 && S.isNode(I)),
             isel='.s-api-list input[name="uid[]"][value]:checked', 
             L,
             i,
@@ -1386,11 +1368,11 @@
             L = _root.querySelectorAll('.s-api-active'+_sel+' '+isel+', .s-api-standalone '+isel);
             i=L.length;
             while(i--) {
-                if(!(tI=Z.parentNode(L[i], '.s-api-app'))) continue;
+                if(!(tI=S.parentNode(L[i], '.s-api-app'))) continue;
                 id=tI.getAttribute('data-url');
                 if(!(id in _ids)) _ids[id] = [];
                 _ids[id].push(L[i].value);
-                if((tr=Z.parentNode(L[i], 'tr:not(.on)'))) {
+                if((tr=S.parentNode(L[i], 'tr:not(.on)'))) {
                     tr.className += ' on';
                 }
             }
@@ -1426,24 +1408,24 @@
     function initAutoRemove()
     {
         if(!this.querySelector('.s-api--close')) {
-            var el=Z.element.call(this, {e:'i',p:{className:'s-api--close s-api-a s-round'},t:{click:autoRemove}});
-            if(el.previousSibling.nodeName.toLowerCase()=='a' && !el.previousSibling.getAttribute('href')) Z.bind(el.previousSibling, 'click', autoRemove);
-            var P=Z.parentNode(this,'.s-api-field,.field');
+            var el=S.element.call(this, {e:'i',p:{className:'s-api--close s-api-a s-round'},t:{click:autoRemove}});
+            if(el.previousSibling.nodeName.toLowerCase()=='a' && !el.previousSibling.getAttribute('href')) S.bind(el.previousSibling, 'click', autoRemove);
+            var P=S.parentNode(this,'.s-api-field,.field');
             if(P) P.className+=' has-auto-remove';
         }
     }
 
     function autoRemove(e)
     {
-        if(e) Z.stopEvent(e);
-        var P=Z.parentNode(this, '.has-auto-remove');
+        if(e) S.stopEvent(e);
+        var P=S.parentNode(this, '.has-auto-remove');
         destroyParents.call(this);
         if(P) P.className = P.className.replace(/\s*\bhas-auto-remove\b/g, '');
     }
 
     function destroyParents(e)
     {
-        if(e) Z.stopEvent(e);
+        if(e) S.stopEvent(e);
         var P=this.parentNode.parentNode, nP;
         this.parentNode.parentNode.removeChild(this.parentNode);
         while(P && P.children.length==0) {
@@ -1456,16 +1438,15 @@
 
     function init()
     {
-        /*jshint validthis: true */
         if(!('Studio' in window)) {
             return setTimeout(init, 100);
         }
-        Studio.loadInterface = loadInterface;
-        Studio.setInterface = setInterface;
-        Studio.setInterfaceRoot = setRoot;
+        if(!S || S!==window.Studio) S=window.Studio;
+        S.loadInterface = loadInterface;
+        S.setInterface = setInterface;
+        S.setInterfaceRoot = setRoot;
         window.Studio_Api = startup;
         window.Studio_Api_AutoRemove = initAutoRemove;
-        if(!Z || Z!==Studio) Z=Studio;
     }
 
     init();
