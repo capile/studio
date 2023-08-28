@@ -750,6 +750,7 @@
             A = document.createElement('div');
             var expects=this.getAttribute('data-action-expects'), expectsUrl=this.getAttribute('data-action-expects-url');
             A.innerHTML = e;
+            B = S.parentNode(this, '.s-api-app');
 
             if(expects && !A.querySelector(expects)) {
                 return setInterface.apply(B, arguments);
@@ -762,7 +763,7 @@
             if((C = A.querySelector('.s-api-app[data-url] .s-api-preview'))
                 || (C = A.querySelector('.s-api-app[data-url] .s-api-container'))
                 || (C = A.querySelector('.s-api-app[data-url]'))) {
-                if(B = S.parentNode(this, '.s-api-app')) {
+                if(B) {
                     L=B.querySelectorAll('.s-api-summary .s-msg,.s-msg[data-message],.s-api-msg[data-message]');
                     B = null;
                     i=L.length;
@@ -1024,7 +1025,7 @@
 
             f.innerHTML = c;
 
-            if(ft=O.getAttribute('data-target-id')) {
+            if(O && (ft=O.getAttribute('data-target-id'))) {
                 O.removeAttribute('data-target-id');
                 var from=document.getElementById(ft), to=f.querySelector('#'+ft), fromI;
                 if(from && to && (I=S.parentNode(from, '.s-api-app'))) {
@@ -1085,7 +1086,7 @@
 
             var u = I.getAttribute('data-url'), cu=(O)?(O.getAttribute('data-url')):(null), A;
 
-            if(A=O.querySelector('.s-api-summary')) {
+            if(O && (A=O.querySelector('.s-api-summary'))) {
                 r=A.querySelectorAll(':scope .s-msg');
                 i=r.length;
                 while(i--) {
