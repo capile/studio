@@ -280,14 +280,23 @@ class Index extends Model
             $q['groupBy'] = $a['options']['group-by'];
         }
 
+        $count = null;
+        $R = $cn::query($q);
+        $indexQuery = null;
+        $indexCleanup = true;
+        if(method_exists($R, 'config')) {
+            $indexQuery = $R->config('indexQuery');
+            $indexCleanup = $R->config('indexCleanup');
+            if(is_null($indexCleanup)) $indexCleanup = true;
+        }
+        if($indexQuery && is_array($indexQuery)) $q += $indexQuery;
+
         if($scope && is_string($scope)) {
             $pscope = $cn::columns($scope, null, 3, true);
         } else {
             $pscope = $scope;
         }
 
-        $count = null;
-        $R = $cn::query($q);
         if($R) {
             $countable = (method_exists($R, 'config')) ?$R->config('countable') :true;
             $count = ($countable) ?$R->count() :10000;
@@ -396,7 +405,7 @@ class Index extends Model
 
         $total = $offset;
 
-        if($total && $lmod && ($R=static::find(['interface'=>$id, 'indexed<'=>preg_replace('/\.[0-9]+$/', '', S_TIMESTAMP)])) && $R->count()>0) {
+        if($indexCleanup && $total && $lmod && ($R=static::find(['interface'=>$id, 'indexed<'=>preg_replace('/\.[0-9]+$/', '', S_TIMESTAMP)])) && $R->count()>0) {
             $count = $R->count();
             $total += $count;
             if(!isset($limit)) $limit = $cn::$queryBatchLimit;

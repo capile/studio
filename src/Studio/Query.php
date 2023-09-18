@@ -303,7 +303,15 @@ class Query extends SchemaObject
                     }
                 } else if($db!=='studio' && Studio::config('enable_api_index')) {
                     if(($T = Tokens::find(['type'=>'server', 'id'=>$db],1)) && ($dsn=$T['options.api_endpoint'])) {
-                        S::$database[$db] = $r = ['dsn'=>$dsn, 'options'=>$T->asArray(Storage::$scopes['server'])];
+                        $r = ['dsn'=>$dsn, 'options'=>$T->asArray(Storage::$scopes['server'])];
+                        if(isset($r['options']['options'])) {
+                            $r['options'] += $r['options']['options'];
+                            unset($r['options']['options']);
+                        }
+                        if(isset($r['options']['className'])) {
+                            $r['class'] = $r['options']['className'];
+                        }
+                        S::$database[$db] = $r;
                     }
                 }
             }
