@@ -553,6 +553,12 @@ class Client extends SchemaObject
                     'state'=>$state,
                     'redirect_uri'=>$url,
                 ];
+                if($this->token_params) {
+                    if(!is_array($this->token_params)) $this->token_params = S::unserialize($this->token_params, 'json');
+                    if($this->token_params) {
+                        $data += $this->token_params;
+                    }
+                }
                 if($auth==='client_secret_basic') {
                     $H[] = 'authorization: Basic '.base64_encode(urlencode($this->client_id).':'.urlencode($this->client_secret));
                 }

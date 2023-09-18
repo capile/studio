@@ -100,6 +100,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
                 'authorization_endpoint'=>'options.authorization_endpoint',
                 'token_endpoint'=>'options.token_endpoint',
                 'token_options'=>'options.token_options',
+                'token_params'=>'options.token_params',
                 'userinfo_endpoint'=>'options.userinfo_endpoint',
                 'api_endpoint'=>'options.api_endpoint',
                 'api_options'=>'options.api_options',
