@@ -317,10 +317,10 @@ class Client extends SchemaObject
 
         if($p && ($p=implode('/', $p)) && isset($S[$p]) && isset($S[$p]['sign_in']) && $S[$p]['sign_in']) {
             $Server = new Client($S[$p]);
-            $Client = $Server->currentClient(['options.access_token'=>true, 'scope'=>$Server->scope]);
             if(isset($S[$p]['token_options'])) {
-                $Client->addAuthParam($S[$p]['token_options']);
+                $Server->addAuthParam($S[$p]['token_options']);
             }
+            $Client = $Server->currentClient(['options.access_token'=>true, 'scope'=>$Server->scope]);
             $User = null;
 
             try {
