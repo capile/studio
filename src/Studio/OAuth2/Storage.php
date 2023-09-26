@@ -51,7 +51,9 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
                 'user_id'=>'user',
                 'expires'=>'expires',
                 'redirect_uri'=>'options.redirect_uri',
-                'scope'=>'options.scope'
+                'scope'=>'options.scope',
+                'code_challenge' => 'options.code_challenge',
+                'code_challenge_method' => 'options.code_challenge_method',
             ],
             'access_token'=>[
                 'expires'=>'expires',
@@ -359,7 +361,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      *
      * @ingroup oauth2_section_4
      */
-    public function setAuthorizationCode($code, $client_id, $user_id, $redirect_uri, $expires, $scope = null, $id_token = null)
+    public function setAuthorizationCode($code, $client_id, $user_id, $redirect_uri, $expires, $scope = null, $id_token = null, $code_challenge = null, $code_challenge_method = null)
     {
         $r = [
             'id'=>$code,
@@ -374,6 +376,8 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
 
         if($scope) $r['options']['scope'] = $scope;
         if($id_token) $r['options']['token'] = $id_token;
+        if($code_challenge) $r['options']['code_challenge'] = $code_challenge;
+        if($code_challenge_method) $r['options']['code_challenge_method'] = $code_challenge_method;
 
         $Q = $this->tokenFinder;
         $Q::replace($r);
