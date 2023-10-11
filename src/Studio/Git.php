@@ -76,6 +76,43 @@ class Git
         return $this->run($cmd);
     }
 
+    public function pull($dest, $options=[])
+    {
+        $err = null;
+        $pwd = getcwd();
+        if(!is_dir($dest)) {
+            if(!is_dir($pd=dirname($dest))) $err = 'There\'s no path to the destination folder "'.$dest.'"';
+            else if(!is_writable($pd)) $err = 'Parent folder "'.$pd.'" is not writable.';
+        } else if(S::isEmptyDir($dest)) {
+            $err = 'Destination folder "'.$pd.'" is empty.';
+        } else if(!chdir($dest)) {
+            $err = 'Could not change to destination folder "'.$pd.'"';
+        }
+
+        if($err) {
+            S::log($err='[ERROR] Cannot git pull: '.$err);
+            if($this->config('throwExceptions')) throw new AppException($err);
+            return false;
+        }
+
+        $cmd = 'pull';
+        if($options) {
+            if(is_array($options)) {
+                foreach($options as $o) {
+                    $cmd .= ' '.escapeshellarg($o);
+                    unset($o);
+                }
+            } else {
+                $cmd .= ' '.escapeshellarg($options);
+            }
+        }
+
+        $r = $this->run($cmd);
+        chdir($pwd);
+
+        return $r;
+    }
+
     public function run($cmd)
     {
         $r = S::exec(['shell'=>$this->config('gitExecutable').' '.$cmd]);
@@ -85,7 +122,7 @@ class Git
             return false;
         }
 
-        if($r || S::$log) S::log('[INFO] Git '.$cmd.':', $r);
+        if($r && S::$log>1) S::log('[DEBUG] Git '.$cmd.': '.$r);
         return true;
     }
 }

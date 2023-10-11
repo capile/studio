@@ -82,6 +82,7 @@ class App
             $env = S_ENV;
         }
         $this->_env = $env;
+        $config = $s;
         if(is_array($s)) {
             array_unshift($s, $env);
             $this->_vars = S::staticCall('Studio', 'config', $s);
@@ -102,6 +103,39 @@ class App
             $base = S_APP_ROOT;
             $this->_vars['app']['apps-dir'] = $base;
         }
+        if(!isset($this->_vars['app']['data-dir'])) {
+            $this->_vars['app']['data-dir'] = S_VAR;
+        }
+        $dataDefaults = [
+            'cache'=> 'cache',
+            'config' => 'config',
+            'repo' => 'web-repos',
+            'templates' => 'templates',
+            'api' => 'api',
+            'schema' => 'schema',
+        ];
+        foreach($dataDefaults as $c=>$d) {
+            if(!isset($this->_vars['app'][$c.'-dir'])) $this->_vars['app'][$c.'-dir'] = $this->_vars['app']['data-dir'].'/'.$d;
+        }
+        if(!isset($this->_vars['app']['log-dir'])) {
+            $this->_vars['app']['log-dir'] = 'error_log';
+        }
+        if(!isset($this->_vars['app']['document-root'])) {
+            if(defined('TDZ_DOCUMENT_ROOT')) $d = TDZ_DOCUMENT_ROOT;
+            else if(!(isset($_SERVER['DOCUMENT_ROOT']) && ($d=$_SERVER['DOCUMENT_ROOT']))
+                && !is_dir($d=S_PROJECT_ROOT.'/htdocs')
+                && !is_dir($d=S_PROJECT_ROOT.'/www')
+                && !is_dir($d=S_PROJECT_ROOT.'/web')
+                && !is_dir($d=S_APP_ROOT.'/web')
+                && !is_dir($d=S_VAR.'/web')) {
+                $d = $this->_vars['app']['data-dir'].'/web';
+            }
+            $this->_vars['app']['document-root'] = $d;
+            unset($d);
+        }
+        if(!isset($this->_vars['app']['lib-dir'])) {
+            $this->_vars['app']['lib-dir'] = S::$lib;
+        }
         if(!isset($this->_vars['app']['controller-options'])) {
             $this->_vars['app']['controller-options']=self::$defaultController;
         } else {
@@ -117,7 +151,7 @@ class App
             $this->_vars['app']['routes']['.*']=$this->getRouteConfig($this->_vars['app']['default-route']);
         }
         foreach ($this->_vars['app'] as $name=>$value) {
-            if ((substr($name, -4)== 'root' || substr($name, -4)=='-dir') && !is_null($value) && (is_array($value) || (substr($value, 0, 1)!='/' && substr($value, 1, 1)!=':'))) {
+            if ((substr($name, -4)== 'root' || substr($name, -4)=='-dir') && $name!=='log-dir' && !is_null($value) && (is_array($value) || (substr($value, 0, 1)!='/' && substr($value, 1, 1)!=':'))) {
                 if(is_array($value)) {
                     foreach($value as $i=>$dvalue) {
                         if(substr($dvalue, 0, 1)!='/' && substr($dvalue, 1, 1)!=':') {
@@ -132,6 +166,7 @@ class App
             }
             unset($name, $value);
         }
+        $this->_vars['startup'] = ['config'=>$config, 'app'=>$siteMemKey, 'env'=>$env, 'time'=>S_TIMESTAMP];
         $this->cache();
         $this->start();
     }
@@ -210,35 +245,14 @@ class App
             S::$lang = $this->_vars['app']['language'];
         }
         if (!defined('S_DOCUMENT_ROOT')) {
-            if(defined('TDZ_DOCUMENT_ROOT')) define('S_DOCUMENT_ROOT', TDZ_DOCUMENT_ROOT);
-            else if((isset($this->_vars['app']['document-root']) && is_dir($d=$this->_vars['app']['document-root']))
-                || is_dir($d=S_PROJECT_ROOT.'/htdocs')
-                || is_dir($d=S_PROJECT_ROOT.'/www')
-                || is_dir($d=S_PROJECT_ROOT.'/web')
-                || is_dir($d=S_APP_ROOT.'/web')
-                || is_dir($d=S_VAR.'/web')
-                ) {
-                define('S_DOCUMENT_ROOT', realpath($d));
-            } else {
-                define('S_DOCUMENT_ROOT', $d);
-            }
-            unset($d);
+            define('S_DOCUMENT_ROOT', $this->_vars['app']['document-root']);
         }
         if(!isset($_SERVER['DOCUMENT_ROOT']) || S_DOCUMENT_ROOT!==$_SERVER['DOCUMENT_ROOT']) {
             $_SERVER['DOCUMENT_ROOT'] = S_DOCUMENT_ROOT;
         }
         if(!defined('S_REPO_ROOT')) {
-            if((isset($this->_vars['app']['repo-dir']) && is_dir($d=$this->_vars['app']['repo-dir']))
-                || is_dir($d=S_PROJECT_ROOT.'/www-contrib')
-                || is_dir($d=S_PROJECT_ROOT.'/web-repos')
-                || is_dir($d=S_APP_ROOT.'/www-contrib')
-                || is_dir($d=S_APP_ROOT.'/web-repos')
-                || is_dir($d=S_VAR.'/web-repos')
-            ) {
-            }
-            define('S_REPO_ROOT', realpath($d));
+            define('S_REPO_ROOT', $this->_vars['app']['repo-dir']);
         }
-
         /*
         if(isset($this->_vars['database']) && !S::$database) {
             S::$database = $this->_vars['database'];
@@ -574,52 +588,68 @@ class App
             if(!isset(self::$_response[$destination[$to]])) self::$_response[$destination[$to]]=array();
 
             $t = null;
-            $src=preg_split('/\s*\,\s*/', $component, -1, PREG_SPLIT_NO_EMPTY);
             $fmod = 0;
-            foreach($src as $i=>$n) {
-                $n0 = preg_replace('#[\.\/].*#', '', $n);
-                if(file_exists($f=S_DOCUMENT_ROOT.S::$assetsUrl.'/'.$to.'/'.str_replace('.', '/', $n).'.'.$from)
-                   || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'.'.$from)
-                   || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'.'.$to)
-                   || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$n.'.'.$from)
-                   || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$n.'.'.$to)
-                   || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$from.'/'.$n.'.'.$from)
-                   || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$to.'/'.$n.'.'.$to)
-                   || file_exists($f=S_ROOT.'/src/'.$n.'/'.$n.'.'.$from)
-                   || file_exists($f=S_ROOT.'/src/'.str_replace('.', '/', $n).'.'.$from)
-                   || file_exists($f=dirname(S_ROOT).'/'.$n0.'/'.str_replace('.', '/', $n).'.'.$from)
-                   || file_exists($f=dirname(S_ROOT).'/'.$n0.'/src/'.str_replace('.', '/', $n).'.'.$from)
-                   || file_exists($f=dirname(S_ROOT).'/'.$n0.'/dist/'.str_replace('.', '/', $n).'.'.$from)
-                   //|| file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/package.json')
-                ) {
-                    /*
-                    if(substr($f, -13)=='/package.json') {
-                        if(($pkg = json_decode(file_get_contents($f), true)) && isset($pkg['main']) && substr($pkg['main'], -1*strlen($to))==$to && file_exists($f2=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$pkg['main'])) {
-                            $f = $f2;
-                        } else {
-                            unset($src[$i], $f);
-                            continue;
-                        }
-                        unset($f2, $pkg);
+            if(strpos($component, '@')!==false) {
+                list($n, $cf) = explode('@', $component, 2);
+                $src=preg_split('/\s*\,\s*/', $cf, -1, PREG_SPLIT_NO_EMPTY);
+                foreach($src as $i=>$f) {
+                    if(substr($f, -1*(strlen($from)+1))==='.'.$from || ($from!==$to && substr($f, -1*(strlen($to)+1))==='.'.$to)) {
+                        if(($mod=filemtime($f)) && $mod > $fmod) $fmod = $mod;
+                    } else {
+                        unset($src[$i]);
                     }
-                    */
-
-                    $src[$i]=$f;
-                    if($t===null) {
-                        $t =  S::$assetsUrl.'/'.S::slug($n).'.'.$to;
-                        $tf =  S_DOCUMENT_ROOT.$t;
-                        if(!$force && in_array($t, self::$_response[$destination[$to]])) {
-                            $t = null;
-                            break;
-                        }
-                    }
-                    if(($mod=filemtime($f)) && $mod > $fmod) $fmod = $mod;
-                    unset($mod);
-                } else {
-                    if(S::$log>3) S::log('[DEBUG] Component '.$src[$i].' not found.');
-                    unset($src[$i]);
                 }
-                unset($f);
+                if($src) {
+                    $t = S::$assetsUrl.'/'.S::slug($n).'.'.$to;
+                    $tf =  S_DOCUMENT_ROOT.$t;
+                }
+            } else {
+                $src=preg_split('/\s*\,\s*/', $component, -1, PREG_SPLIT_NO_EMPTY);
+                foreach($src as $i=>$n) {
+                    $n0 = preg_replace('#[\.\/].*#', '', $n);
+                    if(file_exists($f=S_DOCUMENT_ROOT.S::$assetsUrl.'/'.$to.'/'.str_replace('.', '/', $n).'.'.$from)
+                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'.'.$from)
+                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'.'.$to)
+                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$n.'.'.$from)
+                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$n.'.'.$to)
+                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$from.'/'.$n.'.'.$from)
+                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$to.'/'.$n.'.'.$to)
+                       || file_exists($f=S_ROOT.'/src/'.$n.'/'.$n.'.'.$from)
+                       || file_exists($f=S_ROOT.'/src/'.str_replace('.', '/', $n).'.'.$from)
+                       || file_exists($f=dirname(S_ROOT).'/'.$n0.'/'.str_replace('.', '/', $n).'.'.$from)
+                       || file_exists($f=dirname(S_ROOT).'/'.$n0.'/src/'.str_replace('.', '/', $n).'.'.$from)
+                       || file_exists($f=dirname(S_ROOT).'/'.$n0.'/dist/'.str_replace('.', '/', $n).'.'.$from)
+                       //|| file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/package.json')
+                    ) {
+                        /*
+                        if(substr($f, -13)=='/package.json') {
+                            if(($pkg = json_decode(file_get_contents($f), true)) && isset($pkg['main']) && substr($pkg['main'], -1*strlen($to))==$to && file_exists($f2=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$pkg['main'])) {
+                                $f = $f2;
+                            } else {
+                                unset($src[$i], $f);
+                                continue;
+                            }
+                            unset($f2, $pkg);
+                        }
+                        */
+
+                        $src[$i]=$f;
+                        if($t===null) {
+                            $t =  S::$assetsUrl.'/'.S::slug($n).'.'.$to;
+                            $tf =  S_DOCUMENT_ROOT.$t;
+                            if(!$force && in_array($t, self::$_response[$destination[$to]])) {
+                                $t = null;
+                                break;
+                            }
+                        }
+                        if(($mod=filemtime($f)) && $mod > $fmod) $fmod = $mod;
+                        unset($mod);
+                    } else {
+                        if(S::$log>3) S::log('[DEBUG] Component '.$src[$i].' not found.');
+                        unset($src[$i]);
+                    }
+                    unset($f);
+                }
             }
             if($t) { // check and build
                 if(!$force && file_exists($tf) && filemtime($tf)>$fmod) {
@@ -646,6 +676,8 @@ class App
             }
             unset($t, $tf, $from, $to);
         }
+
+        if(strpos($component, '@')!==false) return;
 
         if($build && ($files = S::glob(S_ROOT.'/src/{'.str_replace('.', '/', $component).'}{-*,}.'.$copyExt))) {
             $p = strlen(S_ROOT.'/src/');

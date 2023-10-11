@@ -606,24 +606,94 @@ class Asset
     {
         $a = [];
         $force = null;
-        if(App::request('shell') && ($a = App::request('argv'))) {
-            $p = $m = null;
-            foreach($a as $i=>$o) {
-                if(substr($o, 0, 1)==='-') {
-                    if(preg_match('/^-(v+)$/', $o, $m)) {
-                        S::$log = strlen($m[1]);
-                    } else  if(substr($o, 1, 1)==='q') {
-                        S::$log = 0;
-                    } else  if(substr($o, 1, 1)==='f') {
-                        $force = true;
+        $image = null;
+        $publish = null;
+        $reconfig = null;
+        $git = [];
+        $assets = [];
+        if(App::request('shell')) {
+            if($a = App::request('argv')) {
+                $p = $m = null;
+                foreach($a as $i=>$o) {
+                    if(substr($o, 0, 1)==='-') {
+                        if(preg_match('/^-(v+)$/', $o, $m)) {
+                            S::$log = strlen($m[1]);
+                        } else  if(substr($o, 1)==='q') {
+                            S::$log = 0;
+                        } else  if(substr($o, 1)==='f') {
+                            $force = true;
+                        } else  if(substr($o, 1)==='i') {
+                            $image = true;
+                        } else  if(substr($o, 1)==='f') {
+                            $publish = true;
+                        }
+                    } else {
+                        $a[] = $o;
                     }
-                } else {
-                    $a[] = $o;
+                    unset($a[$i], $i, $o, $m);
                 }
-                unset($a[$i], $i, $o, $m);
             }
             if(S::$log>0) S::$logDir[] = 'cli';
+            if($image) {
+                return self::buildDockerImage($a, $publish);
+            }
+            $metakeys = ['script', 'style', 'assets'];
+            if(($repos=S::getApp()->config('app', 'web-repos')) && ($d=S::getApp()->config('app', 'repo-dir'))) {
+                $G = new Git();
+                foreach($repos as $r) {
+                    if(!isset($r['id']) || !isset($r['src'])) continue;
+                    $repo = $r['src'];
+                    $dest = $d.'/'.$r['id'];
+                    $branch = null;
+                    if(preg_match('/\#[.+]$/', $repo, $m)) {
+                        $branch = substr($m[0], 1);
+                        $repo = substr($repo, 0, strlen($repo) - strlen($m[0]));
+                        unset($m);
+                    }
+                    if(!file_exists($dest.'/.git')) {
+                        if(!is_dir($dest)) mkdir($dest, 0777, true);
+                        if($G->clone($repo, $dest, $branch)) {
+                            if(S::$log>0) S::log('[INFO] Cloned git repository '.$r['src']);
+                        } else {
+                            S::log('[ERROR] Could not clone git repository '.$r['src'].' on '.$dest);
+                        }
+                    } else {
+                        if($G->pull($dest, ['--ff-only'])) {
+                            if(S::$log>0) S::log('[INFO] Updated git repository '.$r['src']);
+                        } else {
+                            S::log('[ERROR] Could not update git repository '.$r['src'].' on '.$dest);
+                        }
+                    }
+                    if(file_exists($y=$dest.'/.meta')) {
+                        $Y = Yaml::loadFile($y);
+                        $fs = [];
+                        foreach($metakeys as $n) {
+                            if(isset($Y[$n])) {
+                                if(is_array($Y[$n])) {
+                                    $fs = array_merge_recursive($fs, $Y[$n]);
+                                } else {
+                                    $fs[] = $Y[$n];
+                                }
+                            }
+                        }
+                        $rdest = realpath($dest);
+                        foreach($fs as $n=>$files) {
+                            if(!is_array($files)) $files = [$files];
+                            foreach($files as $file) {
+                                $file = realpath($rdest.'/'.$file);
+                                if(!file_exists($file) || substr($file, 0, strlen($rdest)+1)!==$rdest.'/') continue;
+                                if(!isset($assets[$n])) $assets[$n] = [];
+                                $assets[$n][] = $file;
+                                unset($file);
+                            }
+                            unset($n, $files);
+                        }
+                        unset($fs, $Y, $y);
+                    }
+                }
+            }
         }
+
         if(!$a) {
             $a = S::getApp()->config('app', 'assets');
             if(!$a || !is_array($a)) $a = [];
@@ -643,6 +713,12 @@ class Asset
                 }
             }
         }
+        if($assets) {
+            foreach($assets as $n=>$fs) {
+                $a[] = $n.'@'.implode(',', $fs);
+                unset($assets[$n], $n, $fs);
+            }
+        }
         $a = array_unique($a);
         foreach($a as $component) {
             if(substr($component, 0, 1)=='!') $component = substr($component, 1);
@@ -653,7 +729,52 @@ class Asset
 
     public static function buildCheck()
     {
-        S::log('[INFO] Building static files...');
+        S::log('[INFO] Checking Studio build '.STUDIO_VERSION);
         Asset::check();
+    }
+
+    public static function buildDockerImage($a=[], $publish=false)
+    {
+        S::log('[INFO] Building images');
+        $fs = [];
+        $d = S_ROOT.'/data/deploy/';
+        $nocache = true;
+        $error = false;
+        foreach($a as $i=>$o) {
+            if(substr($o, -3)==='php') {
+                continue;
+            }
+            if(file_exists($f=$d.$o.'.dockerfile')) {
+                $fs[] = $f;
+            } else if($g=glob($d.'*-'.$o.'.dockerfile')) {
+                $fs = array_merge($fs, $g);
+            } else {
+                echo "- Invalid argument: $o\n";
+                $error = true;
+            }
+        }
+
+        if($error) exit(1);
+
+        if(!$fs) $fs = glob($d.'*.dockerfile');
+        chdir($d);
+
+        foreach($fs as $f) {
+            $ln = trim(preg_replace('/^\#+ */', '', file($f)[0]));
+            $tags = [$ln];
+            if(preg_match('/^([^\:]+:[^\-]+)-.*$/', $ln, $m)) $tags[] = $m[1];
+            else $tags[] = preg_replace('/\:.*/', ':latest', $ln);
+            $cmd = "docker build -f '{$f}' . -t ".implode(' -t ', $tags);
+            if($nocache) $cmd .= ' --no-cache';
+            echo "[INFO] Running: $cmd\n";
+            passthru($cmd);
+            if($publish) {
+                foreach($tags as $tag) {
+                    $cmd = "docker push {$tag}";
+                    echo "[INFO] Running: $cmd\n";
+                    passthru($cmd);
+                }
+            }
+        }
     }
 }

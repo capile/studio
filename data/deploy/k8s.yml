@@ -1,0 +1,79 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: studio
+  namespace: studio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: studio
+  template:
+    metadata:
+      labels:
+        app: studio
+    spec:
+      restartPolicy: Always
+      containers:
+      - name: studio
+        image: tecnodesign/studio:latest
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 9000
+            name: fastcgi
+        env:
+          - name: STUDIO_SITE_REPO
+            value: "https://github.com/capile/www.tecnodz.com.git"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: studio
+  namespace: studio
+spec:
+  selector:
+    app: studio
+  ports:
+  - name: fastcgi
+    protocol: TCP
+    port: 9000
+    targetPort: 9000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web
+  namespace: studio
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/backend-protocol: "FCGI"
+spec:
+  tls:
+  - hosts:
+    - tecnodz.com
+    - www.tecnodz.com
+    secretName: tls-certificates
+  ingressClassName: nginx
+  rules:
+    - host: tecnodz.com
+      http:
+        paths:
+          - pathType: Prefix
+            backend:
+              service:
+                name: studio
+                port:
+                  name: fastcgi
+            path: /
+    - host: www.tecnodz.com
+      http:
+        paths:
+          - pathType: Prefix
+            backend:
+              service:
+                name: studio
+                port:
+                  name: fastcgi
+            path: /

@@ -957,6 +957,8 @@ class Studio
         } else if(self::app()) {
             if(isset(self::$app->studio[$p])) {
                 return self::$app->studio[$p];
+            } else if(isset(self::$app->app[$p])) {
+                return self::$app->app[$p];
             } else if(property_exists(get_called_class(), $p=S::camelize($p))) {
                 return self::$$p;
             }

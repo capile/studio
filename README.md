@@ -17,11 +17,31 @@ cd studio && composer install
 
 ## Docker images
 
-Different purpose Docker images are available at <data/docker>, compatible with latest PHP/nodejs version or to PHP7. Images prefixed with `dev-` enable root access and some additional command-line tools.
+Different purpose Docker images are available at <data/deploy>, compatible with latest PHP/nodejs version.
 
 You can start using it directly with:
 ```
-docker run --rm -v studio-data:/data -p 9999:9999 tecnodesign/studio-app:alpine-latest
+docker run --rm -v studio-data:/opt/studio/data -p 9999:9999 tecnodesign/studio:latest
+```
+
+### Custom configuration
+
+App customization should use `*.yml` files mapped into the `/opt/studio/config` folder. For example, you can load an external git content repository by adding the configuration `web-repos`:
+
+```studio-config/studio.yml
+---
+all:
+  app:
+    web-repos:
+      - id: www
+        src: https://github.com/capile/www.tecnodz.com.git
+        mount: /
+        mount-src: ~
+```
+
+Then running:
+```
+docker run --rm -v studio-config:/opt/studio/config -v studio-data:/opt/studio/data -p 9999:9999 tecnodesign/studio:latest
 ```
 
 ### Running Docker with source code
@@ -30,10 +50,10 @@ If you'd like to work with studio code and repository, you can mount the source 
 ```
 git clone https://github.com/capile/studio.git studio
 cd studio
-docker run --rm -u $UID -e HOME=/tmp -v $PWD:/var/www/app tecnodesign/studio-app:latest composer install
+docker run --rm -u $UID -e HOME=/tmp -v $PWD:/var/www/studio tecnodesign/studio:latest composer install --no-dev
 find app.yml data/{cache,web*,config} -type f -uid $UID -print0 | xargs -0 chmod 666
 find data/{cache,web*,config} -type d -uid $UID -print0 | xargs -0 chmod 777
-docker run --rm -v studio-data:/data -v $PWD:/var/www/app -p 9999:9999 tecnodesign/studio-app:alpine-latest
+docker run --rm -v studio-data:/opt/studio/data -v $PWD:/var/www/studio --name studio -p 9999:9999 tecnodesign/studio:latest studio-server
 ```
 
 Or using docker-compose:
@@ -50,3 +70,14 @@ find data/{cache,web*,config} -type d -uid $UID -print0 | xargs -0 chmod 777
 ```
 
 Now access the demo studio on <http://127.0.0.1:9999/_studio>
+
+## Image/server environment variables
+
+|--------------|--------------------|------------------------------------------------------------------------------------------------------|
+|   Variable   |   Default value    |                                             Description                                              |
+|--------------|--------------------|------------------------------------------------------------------------------------------------------|
+| STUDIO_IP    | "0.0.0.0"          | IP address to bind to                                                                                |
+| STUDIO_PORT  | "9999"             | Port to bind                                                                                         |
+| STUDIO_DEBUG | ""                 | Set to "1" or `true` to enable debug mode                                                            |
+| STUDIO_MODE  | "app"              | `studio-server` php-fpm mode, either "daemon" (when running on a VM) or "app" (ideal for containers) |
+| STUDIO_DATA  | "/opt/studio/data" | Folder to store persistent data.                                                                     |

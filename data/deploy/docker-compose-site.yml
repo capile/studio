@@ -4,6 +4,8 @@ services:
     hostname: studio
     container_name: studio
     image: tecnodesign/studio-site:v1.0
+    environment:
+      STUDIO_SITE_REPO: https://github.com/capile/www.tecnodz.com.git
     #volumes:
     #  ## Use this if you already installed the composer dependencies and want the full folder loaded
     #  - ./:/var/www/studio/data/docker:Z

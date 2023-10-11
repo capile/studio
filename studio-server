@@ -1,23 +1,24 @@
 #!/bin/sh
 TAG=${TAG:="studio-server"}
-PIDFILE="${0%/*}/data/.$TAG.pid"
-PID=${PID:=""}
-if [ -s "$PIDFILE" ]; then PID=$(cat "$PIDFILE"); fi
-
-[ ! -z "$PID" ] && kill "$PID"
 
 STUDIO_IP=${STUDIO_IP:="127.0.0.1"}
 STUDIO_PORT=${STUDIO_PORT:="9999"}
 STUDIO_DEBUG=${STUDIO_DEBUG:=""}
 STUDIO_MODE=${STUDIO_MODE:="daemon"}
-STUDIO_DATA=${STUDIO_DATA:="/data"}
+STUDIO_DATA=${STUDIO_DATA:="${0%/*}/data"}
+PIDFILE="$STUDIO_DATA/.$TAG.pid"
+PID=${PID:=""}
+if [ -s "$PIDFILE" ]; then PID=$(cat "$PIDFILE"); fi
 
-LOG_DIR="${0%/*}/data/log"
+[ ! -z "$PID" ] && kill "$PID"
+
+LOG_DIR="$STUDIO_DATA/log"
 mkdir -p "$LOG_DIR"
 
 STUDIO_TAG=$TAG
 PHP="php -S $STUDIO_IP:$STUDIO_PORT \
   -q \
+  -d STUDIO_DATA=$STUDIO_DATA \
   -d memory_limit=16M \
   -d display_errors=Off \
   -d error_reporting=E_ALL \
@@ -41,6 +42,5 @@ if [ "$STUDIO_MODE" = "daemon" ]; then
     $PHP "${0%/*}/app.php" -s $TAG >> "$LOG_DIR/app.log" 2>&1 &
     echo $! > "$PIDFILE"
 else
-    "${0%/*}/studio" ":start"
     exec $PHP "${0%/*}/app.php" -s $TAG
 fi

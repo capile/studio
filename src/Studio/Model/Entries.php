@@ -667,7 +667,19 @@ class Entries extends Model
         if($rs = Studio::config('web-repos')) {
             foreach($rs as $rn=>$repo) {
                 if(isset($repo['id'])) $rn = $repo['id'];
-                if(!is_dir($d=S_REPO_ROOT.'/'.$rn)) continue;
+                if(!is_dir($d=S_REPO_ROOT.'/'.$rn.'/')) continue;
+                if(strpos($url, ':')) {
+                    if(substr($url, 0, strlen($rn)+1)===$rn.':') {
+                        $f = realpath($d.substr($url, strlen($rn)+1));
+                        if($check) {
+                            return (file_exists($f)) ?$f :null;
+                        } else {
+                            return [$f];
+                        }
+                    } else {
+                        continue;
+                    }
+                }
                 $mu = (isset($repo['mount'])) ?$repo['mount'] :'';
                 if($mu===false) continue;
                 $murl = $url;
@@ -691,12 +703,15 @@ class Entries extends Model
                             break;
                         }
                         if(!isset($mud)) continue;
-                    } else if($mu===$url) {
-                        $murl = '';
-                    } else if(substr($url, 0, strlen($mu)+1)===$mu.'/') {
-                        $murl = substr($url, strlen($mu));
                     } else {
-                        continue;
+                        $mus = (substr($mu, -1)!=='/') ?$mu.'/' :$mu;
+                        if($mu===$url) {
+                            $murl = '';
+                        } else if(substr($url, 0, strlen($mus))===$mus) {
+                            $murl = substr($url, strlen($mus));
+                        } else {
+                            continue;
+                        }
                     }
                 }
 
@@ -752,7 +767,7 @@ class Entries extends Model
         if(substr(basename($url),0,1)=='.') return;
         $P=null;
         if(!$multiview) {
-            if($pages = static::file(str_replace('.', '[-.]', $url), false)) {
+            if($pages = static::file(str_replace('.', '{-,.}', $url), false)) {
                 foreach($pages as $page) {
                     if($P=self::_checkPage($page, $url)) {
                         break;
@@ -764,9 +779,9 @@ class Entries extends Model
                 S::redirect($P->link);
             }
         } else if($url) {
-            if(in_array('php', Contents::$multiviewContentType) && is_file($f=static::file($url.'.php')))
+            if(in_array('php', Contents::$multiviewContentType) && ($f=static::file($url.'.php')) && is_file($f))
                 $P=self::_checkPage($f, $url, $multiview);
-            if(in_array('md', Contents::$multiviewContentType) && is_file($f=static::file($url.'.md')))
+            if(in_array('md', Contents::$multiviewContentType) && ($f=static::file($url.'.md')) && is_file($f))
                 $P=self::_checkPage($f, $url, $multiview);
         }
 

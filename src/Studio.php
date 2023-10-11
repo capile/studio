@@ -24,8 +24,8 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.0.34';
-    const VER = 1.0;
+    const VERSION = '1.1.0';
+    const VER = 1.1;
 
     protected static
     $_app = null,
@@ -3063,35 +3063,50 @@ class Studio
             return glob($pat);
         }
         $pat0 = $pat;
-        $p = array();
-        while(preg_match('/\{([^\}]+)\}/', $pat, $m)) {
-            $dosub = ($p);
-            $n = explode(',', $m[1]);
-            $p0 = $p;
-            $p = array();
-            foreach($n as $v) {
-                if(!$dosub) {
-                    $p[] = $pat;
-                    $p = str_replace($m[0], $v, $p);
-                } else {
-                    foreach($p0 as $np) {
-                        $p[] = str_replace($m[0], $v, $np);
-                        unset($np);
-                    }
-                }
-                unset($v);
+        $todo = [];
+        $p = [];
+        $i = 0;
+        while(preg_match_all('/\{([^\}\{]+)\}/', $pat, $m)) {
+            while($m[1]) {
+                $n = array_pop($m[1]);
+                $pos = strrpos($pat, '{'.$n.'}');
+                $pat = substr($pat, 0, $pos).'<'.$i.'!'.str_replace(',', '!'.$i.'!', $n).'!'.$i.'>'.substr($pat, $pos +strlen($n)+2);
+                $i++;
             }
-            $pat = $p[count($p)-1];
-            unset($p0, $n, $dosub);
+            unset($m);
         }
-        $r = array();
-        foreach($p as $i=>$o) {
+        $todo = [$pat];
+        while($i>-1) {
+            $r = [];
+            foreach($todo as $j=>$pat) {
+                $pos = strpos($pat, '<'.$i.'!');
+                if($pos!==false) {
+                    $end = strpos($pat, '!'.$i.'>', $pos);
+                    $pl = strlen('<'.$i.'!');
+                    $m = substr($pat, $pos + $pl, $end - $pos - $pl);
+                    $n = explode('!'.$i.'!', $m);
+                    $r[$j] = [$j];
+                    foreach($n as $v) {
+                        $r[$j][] = substr($pat, 0, $pos).$v.substr($pat, $end + $pl);
+                    }
+                    unset($m, $n, $end, $pl);
+                }
+            }
+            while($s=array_pop($r)) {
+                $j = array_shift($s);
+                array_splice($todo, $j, 1, $s);
+            }
+            $i--;
+        }
+        $r = [];
+        foreach($todo as $i=>$o) {
             $r = array_merge($r, glob($o));
         }
         if($r) {
             asort($r);
             $r = array_unique($r);
         }
+
         return $r;
     }
 
@@ -3213,6 +3228,8 @@ if (!defined('S_APP_ROOT')) {
 }
 if (!defined('S_VAR')) {
     if(defined('TDZ_VAR')) define('S_VAR', TDZ_VAR);
+    else if($d=get_cfg_var('STUDIO_DATA')) define('S_VAR', $d);
+    else if(isset($_SERVER['STUDIO_DATA']) && $_SERVER['STUDIO_DATA']) define('S_VAR', $_SERVER['STUDIO_DATA']);
     else if(is_dir($d='./data/Tecnodesign')
         || is_dir($d='./data')
         || is_dir($d=S_APP_ROOT.'/data/Tecnodesign')

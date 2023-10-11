@@ -1,7 +1,8 @@
-## tecnodesign/php-node:alpine-v1.0
+## tecnodesign/php-node:v1.1
 #
-# docker build -f data/docker/41-php-node-alpine.dockerfile  data/docker -t tecnodesign/php-node:alpine-v1.0
-# docker push tecnodesign/php-node:alpine-v1.0
+# docker build -f data/deploy/01-php-node-alpine.dockerfile data/deploy -t tecnodesign/php-node:latest -t tecnodesign/php-node:v1.1
+# docker push tecnodesign/php-node:latest
+# docker push tecnodesign/php-node:v1.1
 FROM php:8.2-fpm-alpine
 RUN apk --no-cache add \
     git \
@@ -42,7 +43,7 @@ RUN docker-php-ext-configure gd \
     simplexml \
     soap \
     zip
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2
 RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
     sed -e 's/expose_php = On/expose_php = Off/' \
         -e 's/max_execution_time = 30/max_execution_time = 10/' \
