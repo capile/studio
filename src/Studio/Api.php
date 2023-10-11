@@ -1454,7 +1454,7 @@ class Api extends SchemaObject
         if(!S::isempty($this->id)) {
             $w = $this->search;
             if(!S::isempty($this->id) && !S::isempty($this->key)) {
-                $w = [];
+                if(!is_array($w)) $w = [];
                 if(is_string($this->key)) {
                     $w[$this->key] = $this->id;
                 } else {
