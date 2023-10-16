@@ -633,7 +633,11 @@ class Asset
                     unset($a[$i], $i, $o, $m);
                 }
             }
-            if(S::$log>0) S::$logDir[] = 'cli';
+            if(S::$log>0) {
+                if(!S::$logDir || S::$logDir==='cli') S::$logDir = [];
+                else if(!is_array(S::$logDir)) S::$logDir = [S::$logDir];
+                S::$logDir[] = 'cli';
+            }
             if($image) {
                 return self::buildDockerImage($a, $publish);
             }
