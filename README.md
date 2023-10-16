@@ -73,11 +73,12 @@ Now access the demo studio on <http://127.0.0.1:9999/_studio>
 
 ## Image/server environment variables
 
-|--------------|--------------------|------------------------------------------------------------------------------------------------------|
-|   Variable   |   Default value    |                                             Description                                              |
-|--------------|--------------------|------------------------------------------------------------------------------------------------------|
-| STUDIO_IP    | "0.0.0.0"          | IP address to bind to                                                                                |
-| STUDIO_PORT  | "9999"             | Port to bind                                                                                         |
-| STUDIO_DEBUG | ""                 | Set to "1" or `true` to enable debug mode                                                            |
-| STUDIO_MODE  | "app"              | `studio-server` php-fpm mode, either "daemon" (when running on a VM) or "app" (ideal for containers) |
-| STUDIO_DATA  | "/opt/studio/data" | Folder to store persistent data.                                                                     |
+|---------------|---------------------------|------------------------------------------------------------------------------------------------------|
+|    Variable   |       Default value       |                                             Description                                              |
+|---------------|---------------------------|------------------------------------------------------------------------------------------------------|
+| STUDIO_IP     | "0.0.0.0"                 | IP address to bind to                                                                                |
+| STUDIO_PORT   | "9999"                    | Port to bind                                                                                         |
+| STUDIO_DEBUG  | ""                        | Set to "1" or `true` to enable debug mode                                                            |
+| STUDIO_MODE   | "app"                     | `studio-server` php-fpm mode, either "daemon" (when running on a VM) or "app" (ideal for containers) |
+| STUDIO_CONFIG | "/var/www/studio/app.yml" | Configuration file, default configuration file loads all `/opt/studio/config/*.yml` files            |
+| STUDIO_DATA   | "/opt/studio/data"        | Folder to store persistent data.                                                                     |

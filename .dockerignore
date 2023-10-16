@@ -1,0 +1,15 @@
+.appkey
+.svn
+._*
+.idea/
+vendor/
+node_modules/
+data/cache/*
+data/log/*
+data/web-repos/*
+data/studio*.db
+data/web/*
+data/.studio*
+*.lock
+package-lock.json
+yarn-error.log

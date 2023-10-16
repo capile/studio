@@ -142,7 +142,7 @@ class App
             $this->_vars['app']['controller-options']+=self::$defaultController;
         }
         if(!isset($this->_vars['app']['routes'])) {
-            $this->_vars['app']['routes']=array();
+            $this->_vars['app']['routes']=[];
         }
         foreach ($this->_vars['app']['routes'] as $url=>$route) {
             $this->_vars['app']['routes'][$url]=$this->getRouteConfig($route);

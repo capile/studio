@@ -1,8 +1,8 @@
-## tecnodesign/php-node:v1.1
+## tecnodesign/studio:v1.1
 #
-# docker build -f data/deploy/01-php-node-alpine.dockerfile data/deploy -t tecnodesign/php-node:latest -t tecnodesign/php-node:v1.1
-# docker push tecnodesign/php-node:latest
-# docker push tecnodesign/php-node:v1.1
+# docker build -f data/deploy/02-studio-alpine.dockerfile data/deploy -t tecnodesign/studio:latest -t tecnodesign/studio:v1.1
+# docker push tecnodesign/studio:latest
+# docker push tecnodesign/studio:v1.1
 FROM php:8.2-fpm-alpine
 RUN apk --no-cache add \
     git \
@@ -24,6 +24,7 @@ RUN apk --no-cache add \
     nodejs \
     npm \
     yarn \
+    openssh-client \
     zip
 RUN docker-php-ext-configure gd \
     --enable-gd \
@@ -44,6 +45,8 @@ RUN docker-php-ext-configure gd \
     soap \
     zip
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2
+COPY . /var/www/studio
+WORKDIR /var/www/studio
 RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
     sed -e 's/expose_php = On/expose_php = Off/' \
         -e 's/max_execution_time = 30/max_execution_time = 10/' \
@@ -73,22 +76,39 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
     sed -e 's/^error_log.*/error_log = \/dev\/stderr/' \
         -i /usr/local/etc/php-fpm.conf && \
     mkdir -p \
-      /var/www/studio \
       /var/www/.cache \
       /var/www/.composer \
       /var/www/.npm \
-      /data && \
+      /opt/studio/data \
+      /opt/studio/config && \
     chown 1000:www-data \
       /var/www/studio \
       /var/www/.cache \
       /var/www/.composer \
       /var/www/.npm \
-      /data && \
+      /opt/studio/data \
+      /opt/studio/config && \
     chmod 775 \
       /var/www/studio \
       /var/www/.cache \
       /var/www/.composer \
       /var/www/.npm \
-      /data
+      /opt/studio/data/web \
+      /opt/studio/config && \
+    rm -rf /var/www/studio/data/web && \
+    ln -s "/opt/studio/data/web" /var/www/studio/data/web && \
+    composer install --no-dev -n && \
+    composer clear-cache && \
+    rm -rf ~/.composer/cache
 USER www-data
-WORKDIR /var/www
+ENV PATH="${PATH}:/var/www/studio"
+ENV STUDIO_IP="0.0.0.0"
+ENV STUDIO_PORT="9999"
+ENV STUDIO_DEBUG=""
+ENV STUDIO_MODE="app"
+ENV STUDIO_DATA=/opt/studio/data
+ENV STUDIO_CONFIG=/var/www/studio/app.yml
+VOLUME /opt/studio/data
+VOLUME /opt/studio/config
+ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]
+CMD ["php-fpm"]

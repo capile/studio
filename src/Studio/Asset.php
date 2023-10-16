@@ -740,27 +740,13 @@ class Asset
     public static function buildDockerImage($a=[], $publish=false)
     {
         S::log('[INFO] Building images');
-        $fs = [];
+        $fs = [S_ROOT.'/Dockerfile'];
         $d = S_ROOT.'/data/deploy/';
         $nocache = true;
         $error = false;
-        foreach($a as $i=>$o) {
-            if(substr($o, -3)==='php') {
-                continue;
-            }
-            if(file_exists($f=$d.$o.'.dockerfile')) {
-                $fs[] = $f;
-            } else if($g=glob($d.'*-'.$o.'.dockerfile')) {
-                $fs = array_merge($fs, $g);
-            } else {
-                echo "- Invalid argument: $o\n";
-                $error = true;
-            }
-        }
 
         if($error) exit(1);
 
-        if(!$fs) $fs = glob($d.'*.dockerfile');
         chdir($d);
 
         foreach($fs as $f) {

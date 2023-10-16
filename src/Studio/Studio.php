@@ -161,7 +161,7 @@ class Studio
             if(isset(self::$app->studio['connection'])) {
                 self::$connection = self::$app->studio['connection'];
             }
-            if(self::$connection && self::$connection!='studio' && !Query::database('studio')) {
+            if(is_string(self::$connection) && self::$connection!=='studio' && !Query::database('studio') && isset(S::$database[self::$connection])) {
                 S::$database['studio'] = S::$database[self::$connection];
             }
         }
