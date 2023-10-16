@@ -21,6 +21,7 @@ class Git
 {
     public static 
         $gitExecutable='git',
+        $sshKey,
         $throwExceptions;
     public $config=[];
 
@@ -115,9 +116,13 @@ class Git
 
     public function run($cmd)
     {
-        $r = S::exec(['shell'=>$this->config('gitExecutable').' '.$cmd]);
+        $options = '';
+        if(($k=$this->config('sshKey')) && file_exists(realpath($k)) && ($k=escapeshellarg($k))) {
+            $options = " -c core.sshCommand=\"ssh -i {$k} -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new\"";
+        }
+        $r = S::exec(['shell'=>$this->config('gitExecutable').$options.' '.$cmd]);
         if(S::$variables['execResult']!==0) {
-            S::log($err='[ERROR] Error executing git '.$cmd, $r);
+            S::log($err='[ERROR] Error executing git'.$options.' '.$cmd, $r);
             if($this->config('throwExceptions')) throw new AppException($err);
             return false;
         }

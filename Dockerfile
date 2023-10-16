@@ -45,8 +45,8 @@ RUN docker-php-ext-configure gd \
     soap \
     zip
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2
-COPY . /var/www/studio
 WORKDIR /var/www/studio
+COPY . .
 RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
     sed -e 's/expose_php = On/expose_php = Off/' \
         -e 's/max_execution_time = 30/max_execution_time = 10/' \
@@ -79,7 +79,9 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
       /var/www/.cache \
       /var/www/.composer \
       /var/www/.npm \
+      /var/www/studio/data \
       /opt/studio/data \
+      /opt/studio/data/web \
       /opt/studio/config && \
     chown 1000:www-data \
       /var/www/studio \
@@ -87,20 +89,23 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
       /var/www/.composer \
       /var/www/.npm \
       /opt/studio/data \
+      /opt/studio/data/web \
       /opt/studio/config && \
     chmod 775 \
       /var/www/studio \
       /var/www/.cache \
       /var/www/.composer \
       /var/www/.npm \
+      /opt/studio/data \
       /opt/studio/data/web \
       /opt/studio/config && \
     rm -rf /var/www/studio/data/web && \
-    ln -s "/opt/studio/data/web" /var/www/studio/data/web && \
-    composer install --no-dev -n && \
+    ln -s "/opt/studio/data/web" /var/www/studio/data/web
+USER www-data
+WORKDIR /var/www/studio
+RUN composer install --no-dev -n && \
     composer clear-cache && \
     rm -rf ~/.composer/cache
-USER www-data
 ENV PATH="${PATH}:/var/www/studio"
 ENV STUDIO_IP="0.0.0.0"
 ENV STUDIO_PORT="9999"

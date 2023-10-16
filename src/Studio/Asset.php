@@ -643,7 +643,9 @@ class Asset
             }
             $metakeys = ['script', 'style', 'assets'];
             if(($repos=S::getApp()->config('app', 'web-repos')) && ($d=S::getApp()->config('app', 'repo-dir'))) {
-                $G = new Git();
+                $gitOptions = S::getApp()->config('app', 'git-config');
+                if(!$gitOptions) $gitOptions = [];
+                $G = new Git($gitOptions);
                 foreach($repos as $r) {
                     if(!isset($r['id']) || !isset($r['src'])) continue;
                     $repo = $r['src'];
@@ -741,8 +743,8 @@ class Asset
     {
         S::log('[INFO] Building images');
         $fs = [S_ROOT.'/Dockerfile'];
-        $d = S_ROOT.'/data/deploy/';
-        $nocache = true;
+        $d = S_ROOT;
+        $nocache = false;
         $error = false;
 
         if($error) exit(1);
