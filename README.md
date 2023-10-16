@@ -82,3 +82,4 @@ Now access the demo studio on <http://127.0.0.1:9999/_studio>
 | STUDIO_MODE   | "app"                     | `studio-server` php-fpm mode, either "daemon" (when running on a VM) or "app" (ideal for containers) |
 | STUDIO_CONFIG | "/var/www/studio/app.yml" | Configuration file, default configuration file loads all `/opt/studio/config/*.yml` files            |
 | STUDIO_DATA   | "/opt/studio/data"        | Folder to store persistent data.                                                                     |
+| STUDIO_ENV    | "prod"                    | Current environment (`prod|stage|dev|test`)                                                          |

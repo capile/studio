@@ -247,7 +247,7 @@ class App
         if (!defined('S_DOCUMENT_ROOT')) {
             define('S_DOCUMENT_ROOT', $this->_vars['app']['document-root']);
         }
-        if(!isset($_SERVER['DOCUMENT_ROOT']) || S_DOCUMENT_ROOT!==$_SERVER['DOCUMENT_ROOT']) {
+        if(!isset($_SERVER['DOCUMENT_ROOT']) || !$_SERVER['DOCUMENT_ROOT'] || S_DOCUMENT_ROOT!==$_SERVER['DOCUMENT_ROOT']) {
             $_SERVER['DOCUMENT_ROOT'] = S_DOCUMENT_ROOT;
         }
         if(!defined('S_REPO_ROOT')) {

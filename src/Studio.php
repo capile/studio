@@ -179,7 +179,7 @@ class Studio
             self::$_app = $siteMemKey;
             self::$_env = $env;
             Cache::siteKey($siteMemKey);
-            if (!is_array($s) && file_exists($s)) {
+            if (false && !is_array($s) && file_exists($s)) {
                 $timeout = filemtime($s);
                 $cache = App::getInstance($siteMemKey, $env, $timeout);
                 if ($cache) {
@@ -2244,6 +2244,7 @@ class Studio
     {
         if(is_null(self::$_env)) {
             if(defined('S_ENV')) self::$_env = S_ENV;
+            else if(isset($_SERVER['STUDIO_ENV']) && $_SERVER['STUDIO_ENV']) self::$_env = $_SERVER['STUDIO_ENV'];
             else if(defined('TDZ_ENV')) self::$_env = TDZ_ENV;
             else self::$_env = 'prod';
         }
@@ -3222,7 +3223,7 @@ if (!defined('S_ROOT')) {
 }
 if (!defined('S_APP_ROOT')) {
     if(defined('TDZ_APP_ROOT')) define('S_APP_ROOT', TDZ_APP_ROOT);
-    else if(isset($_SERVER['APP_ROOT']) && is_dir($_SERVER['APP_ROOT'])) define('S_APP_ROOT', realpath($_SERVER['APP_ROOT']));
+    else if(isset($_SERVER['STUDIO_APP_ROOT']) && is_dir($_SERVER['STUDIO_APP_ROOT'])) define('S_APP_ROOT', realpath($_SERVER['STUDIO_APP_ROOT']));
     else if(strrpos(S_ROOT, '/lib/')!==false) define('S_APP_ROOT', substr(S_ROOT, 0, strrpos(S_ROOT, '/lib/')));
     else define('S_APP_ROOT', S_ROOT);
 }
@@ -3242,7 +3243,8 @@ if (!defined('S_VAR')) {
     unset($d);
 }
 if(!defined('S_PROJECT_ROOT')) {
-    define('S_PROJECT_ROOT', file_exists(S_APP_ROOT.'/composer.json') ?S_APP_ROOT :dirname(S_APP_ROOT));
+    if(isset($_SERVER['STUDIO_APP_ROOT']) && is_dir($_SERVER['STUDIO_APP_ROOT'])) define('S_PROJECT_ROOT', realpath($_SERVER['STUDIO_APP_ROOT']));
+    else define('S_PROJECT_ROOT', file_exists(S_APP_ROOT.'/composer.json') ?S_APP_ROOT :dirname(S_APP_ROOT));
 }
 if(!defined('S_BACKGROUND')) {
     define('S_BACKGROUND', (isset($_SERVER['S_BACKGROUND']) && $_SERVER['S_BACKGROUND']));

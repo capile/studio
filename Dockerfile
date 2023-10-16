@@ -103,16 +103,20 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
     ln -s "/opt/studio/data/web" /var/www/studio/data/web
 USER www-data
 WORKDIR /var/www/studio
+ENV HOME=/var/www
 RUN composer install --no-dev -n && \
     composer clear-cache && \
-    rm -rf ~/.composer/cache
+    rm -rf ~/.composer/cache && \
+    git config --global --add safe.directory '*'
 ENV PATH="${PATH}:/var/www/studio"
 ENV STUDIO_IP="0.0.0.0"
 ENV STUDIO_PORT="9999"
 ENV STUDIO_DEBUG=""
 ENV STUDIO_MODE="app"
+ENV STUDIO_APP_ROOT=/opt/studio
 ENV STUDIO_DATA=/opt/studio/data
 ENV STUDIO_CONFIG=/var/www/studio/app.yml
+ENV STUDIO_ENV="prod"
 VOLUME /opt/studio/data
 VOLUME /opt/studio/config
 ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]

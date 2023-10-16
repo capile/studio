@@ -394,7 +394,6 @@ class Asset
         if($root===false) {
             $root = S_DOCUMENT_ROOT;
         }
-
         $assets = array(); // assets to optimize
         $r = ''; // other metadata not to messed with (unparseable code)
         $f = (!is_array($src))?(array($src)):($src);
@@ -465,7 +464,9 @@ class Asset
                     'root'=>$root,
                 ));
 
-                if(!is_dir($d=dirname($outputFile))) mkdir($d, 0777, true);
+                if(!is_dir($d=dirname($outputFile)) && !mkdir($d, 0777, true)) {
+                    S::log('[ERROR] Could not create minification output folder '.$d);
+                }
                 unset($d);
                 $add = $A->render(false);
                 unset($A);
@@ -630,7 +631,7 @@ class Asset
                     } else {
                         $a[] = $o;
                     }
-                    unset($a[$i], $i, $o, $m);
+                    unset($i, $o, $m);
                 }
             }
             if(S::$log>0) {
@@ -648,10 +649,11 @@ class Asset
                 $G = new Git($gitOptions);
                 foreach($repos as $r) {
                     if(!isset($r['id']) || !isset($r['src'])) continue;
+                    S::log('[INFO] Checking web repository '.$r['id']);
                     $repo = $r['src'];
                     $dest = $d.'/'.$r['id'];
                     $branch = null;
-                    if(preg_match('/\#[.+]$/', $repo, $m)) {
+                    if(preg_match('/\#.+$/', $repo, $m)) {
                         $branch = substr($m[0], 1);
                         $repo = substr($repo, 0, strlen($repo) - strlen($m[0]));
                         unset($m);
@@ -739,12 +741,13 @@ class Asset
         Asset::check();
     }
 
-    public static function buildDockerImage($a=[], $publish=false)
+    public static function buildDockerImage($a=[], $publish=null)
     {
         S::log('[INFO] Building images');
         $fs = [S_ROOT.'/Dockerfile'];
         $d = S_ROOT;
-        $nocache = false;
+        $nocache = (in_array('-c', $a));
+        if(is_null($publish) && in_array('-f', $a)) $publish = true;
         $error = false;
 
         if($error) exit(1);

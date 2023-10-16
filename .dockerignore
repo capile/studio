@@ -1,5 +1,5 @@
 .appkey
-.svn
+.git
 ._*
 .idea/
 vendor/

@@ -685,9 +685,12 @@ class Entries extends Model
                 $murl = $url;
                 if($mu) {
                     if(is_array($mu) && $mu) {
-                        foreach($mu as $mud) {
-                            $mum = null;
-                            if(strpos($mud, ':')) list($mud, $mum) = explode(':', $mud);
+                        foreach($mu as $mud=>$mum) {
+                            if(is_int($mud)) {
+                                $mud = $mum;
+                                $mum = null;
+                                if(strpos($mud, ':')) list($mud, $mum) = explode(':', $mud);
+                            }
                             if($mud===$url) {
                                 $murl = '';
                             } else if(substr($url, 0, strlen($mud)+1)===$mud.'/') {
