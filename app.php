@@ -20,7 +20,7 @@ if(isset($_SERVER['STUDIO_CONFIG']) && $_SERVER['STUDIO_CONFIG'] && ($configFile
    if(!isset($configFile[1])) $configFile = array_shift($configFile);
 } else if(!file_exists($configFile=S_PROJECT_ROOT.'/'.basename(S_PROJECT_ROOT).'.yml') &&
    !file_exists($configFile=S_APP_ROOT.'/'.basename(S_APP_ROOT).'.yml')) {
-    $configFile = __DIR__.'/app.yml!';
+    $configFile = __DIR__.'/app.yml';
 }
 Studio::app($configFile, $appMemoryNamespace, Studio::env())->run();
 if(Studio::$perfmon) {
