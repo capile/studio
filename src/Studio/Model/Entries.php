@@ -658,6 +658,7 @@ class Entries extends Model
     public static function file($url, $check=true, $pat=null)
     {
         static $pat0;
+
         if(!$check && !$pat && is_null($pat0)) {
             $pat0 = '{,.'.S::$lang.'}{,.'.implode(',.',array_keys(Contents::$contentType)).'}';
         }
@@ -725,20 +726,24 @@ class Entries extends Model
                 }
 
                 $f = $d.$murl;
+                if(is_dir($f)) {
+                    $f = self::indexFile($f);
+                }
                 if($check) {
                     if(file_exists($f)) return $f;
                     continue;
                 }
-                if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
                 $src[] = $f;
                 unset($f, $d, $murl, $mu);
             }
         }
         $f = S_DOCUMENT_ROOT . ((substr($url, 0, 1)!='/') ?'/' :'').$url;
+        if(is_dir($f)) {
+            $f = self::indexFile($f);
+        }
         if($check) {
             return (file_exists($f)) ?$f :null;
         }
-        if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
 
         if($src) {
             $src[] = $f;
@@ -782,9 +787,9 @@ class Entries extends Model
                 S::redirect($P->link);
             }
         } else if($url) {
-            if(in_array('php', Contents::$multiviewContentType) && ($f=static::file($url.'.php')) && is_file($f))
+            if(in_array('php', Contents::$multiviewContentType) && ($f=static::file($url.'.php')))
                 $P=self::_checkPage($f, $url, $multiview);
-            if(in_array('md', Contents::$multiviewContentType) && ($f=static::file($url.'.md')) && is_file($f))
+            if(in_array('md', Contents::$multiviewContentType) && ($f=static::file($url.'.md')))
                 $P=self::_checkPage($f, $url, $multiview);
         }
 
@@ -934,8 +939,8 @@ class Entries extends Model
             unset($m);
         }
         $d=$url;
-        $p=preg_replace('#/'.static::$indexFile.'.[a-z]+$#', '', $page);
-        while(strrpos($d, '/')!==false) {
+        $p=preg_replace('#/'.static::$indexFile.'\.[a-z]+$#', '', $page);
+        while($d) {
             if(file_exists($mf=$p.'/.meta')) {
                 $m = Yaml::load($mf);
                 if(is_array($m)) {
@@ -953,7 +958,8 @@ class Entries extends Model
                 unset($m);
             }
             unset($mf);
-            $d = substr($d, 0, strrpos($d, '/'));
+            $dp=strrpos($d, '/');
+            $d = (($dp===false || $dp===0) && $d!=='/') ?'/' :substr($d, 0, $dp);
             $p = substr($p, 0, strrpos($p, '/'));
         }
         unset($d, $p);
@@ -1043,8 +1049,9 @@ class Entries extends Model
                 $pt = self::file($tup, false, '*');
                 if($pt) $pages = array_merge($pages, $pt);
                 unset($pt);
-                if(Studio::$templateRoot) {
-                    $pt = S::glob(Studio::$templateRoot.$tup.'*');
+                if($tpld=S::templateDir()) {
+                    $tpld = (count($tpld)===1) ?$tpld[0] :'{'.implode(',', $tpld).'}';
+                    $pt = S::glob($tpld.$tup.'*');
                     if($pt) $pages = array_merge($pages, $pt);
                     unset($pt);
                 }
@@ -1337,7 +1344,7 @@ class Entries extends Model
 
         if(!$master) {
             $master = [];
-            $g = Studio::templateDir();
+            $g = S::templateDir();
             while($g) {
                 $d = array_shift($g);
                 if(is_dir($d) && ($nd=glob($d.'/*'))) {
@@ -1484,6 +1491,18 @@ class Entries extends Model
     public static function fromFile($file, $attr=[])
     {
         return self::_checkPage($file, true, false, $attr);
+    }
+
+    public static function indexFile($file)
+    {
+        $f = preg_replace('#/+$#', '/', $file) . static::$indexFile;
+        foreach(Contents::$previewContentType as $ext) {
+            if(is_file($f.'.'.$ext)) {
+                return $f.'.'.$ext;
+            }
+        }
+
+        return $file;
     }
 
 }

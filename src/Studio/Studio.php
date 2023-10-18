@@ -62,7 +62,7 @@ class Studio
         ),
         $assetsOptimizeUrl,
         $status,
-        $templateRoot='web',
+        $templateRoot,      // deprecated, use Studio::templateDir() or app.templates-dir cfg option
         $contentClassName,
         $languages=array(),
         $ignore=array('.meta', '.less', '.md', '.yml'),
@@ -98,11 +98,6 @@ class Studio
      */
     public function __construct($config, $env='prod')
     {
-    }
-
-    public static function documentRoot()
-    {
-        return S_DOCUMENT_ROOT;
     }
 
     public static function app()
@@ -423,9 +418,27 @@ class Studio
         } else if(strpos($page, S_REPO_ROOT.'/')===0) {
             $source = preg_replace('#^/?([^/]+)/(.+)$#', '$1:/$2', substr($page, strlen(S_REPO_ROOT)+1));
         } else {
-            if(is_null($root)) $root = self::documentRoot();
-            if((substr($page, 0, strlen($root))!==$root && substr($page, 0, strlen(static::$templateRoot))!==static::$templateRoot)) return;
-            $source = substr($page, strlen(self::documentRoot()));
+            if(is_null($root)) $root = S_DOCUMENT_ROOT;
+            if(substr($page, 0, strlen($root))!==$root) {
+                $tpld = null;
+                if($tplds = S::templateDir()) {
+                    foreach($tplds as $tpld) {
+                        if($tpld) {
+                            if(substr($page, 0, strlen($tpld))===$tpld) {
+                                break;
+                            }
+                        }
+                        $tpld = null;
+                    }
+                }
+                if($tpld) {
+                    $source = substr($page, strlen($tpld));
+                } else {
+                    return;
+                }
+            } else {
+                $source = substr($page, strlen($root));
+            }
         }
 
         $slotname = Entries::$slot;
@@ -1158,7 +1171,19 @@ class Studio
             $murl = substr($src, $p+1);
             $f = $d.'/'.$mu.$murl;
         } else {
-            $f = Studio::documentRoot() . ((substr($src, 0, 1)!='/') ?'/' :'').$src;
+            $sep = ((substr($src, 0, 1)!='/') ?'/' :'');
+            $f = S_DOCUMENT_ROOT . $sep .$src;
+            if($check && !file_exists($f) && ($tplds = S::templateDir())) {
+                foreach($tplds as $tpld) {
+                    if($tpld) {
+                        if(file_exists($f=$tpld.$sep.$src)) {
+                            return $f;
+                        }
+                    }
+                    unset($tpld);
+                }
+                unset($tplds);
+            }
         }
 
         if($check) {

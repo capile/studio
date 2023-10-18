@@ -2879,15 +2879,15 @@ class Studio
     }
 
 
-    public static function templateDir()
+    public static function templateDir($asArray=true)
     {
         if(is_null(self::$tplDir)) {
             $cfg = self::getApp()->config('app', 'templates-dir');
-            if(!is_array($cfg)) $cfg = [$cfg];
+            if(!is_array($cfg)) $cfg = ($cfg) ?[$cfg] :[];
             self::$tplDir = $cfg;
             unset($cfg);
         }
-        return self::$tplDir;
+        return ($asArray) ?self::$tplDir :self::$tplDir[0];
     }
 
     /**

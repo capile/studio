@@ -135,7 +135,7 @@ class Asset
             }
             if($shell) {
                 $cmd = sprintf(S::$minifier[$this->format], implode(' ',$files), $tempnam);
-                if(!preg_match('#^(/|[A-Z]:)#i', $cmd)) $cmd = S_PROJECT_ROOT.'/'.$cmd;
+                self::execRoot($cmd);
                 exec($cmd, $cmdoutput, $ret);
                 if($ret>0) @unlink($tempnam);
             } else {
@@ -271,8 +271,7 @@ class Asset
 
                 $cmd = preg_replace('/^(node_modules\/.bin\/)?lessc /', '$1lessc '.implode(' ', $args).' ', $cmd);
             }
-
-            if(!preg_match('#^(/|[A-Z]:)#i', $cmd)) $cmd = S_PROJECT_ROOT.'/'.$cmd;
+            self::execRoot($cmd);
             $r = S::exec(['shell'=>$cmd]);
             if(!file_exists($outputFile)) {
                 S::log('[WARN] Less parsing failed: '.$cmd, $r);
@@ -608,6 +607,7 @@ class Asset
         $a = [];
         $force = null;
         $image = null;
+        $gitp  = null;
         $publish = null;
         $reconfig = null;
         $git = [];
@@ -627,9 +627,10 @@ class Asset
                             $image = true;
                         } else  if(substr($o, 1)==='f') {
                             $publish = true;
+                        } else  if(substr($o, 1)==='g') {
+                            $gitp = true;
                         }
-                    } else {
-                        $a[] = $o;
+                        unset($a[$i]);
                     }
                     unset($i, $o, $m);
                 }
@@ -643,13 +644,13 @@ class Asset
                 return self::buildDockerImage($a, $publish);
             }
             $metakeys = ['script', 'style', 'assets'];
-            if(($repos=S::getApp()->config('app', 'web-repos')) && ($d=S::getApp()->config('app', 'repo-dir'))) {
+            if($gitp && ($repos=S::getApp()->config('app', 'web-repos')) && ($d=S::getApp()->config('app', 'repo-dir'))) {
                 $gitOptions = S::getApp()->config('app', 'git-config');
                 if(!$gitOptions) $gitOptions = [];
                 $G = new Git($gitOptions);
                 foreach($repos as $r) {
                     if(!isset($r['id']) || !isset($r['src'])) continue;
-                    S::log('[INFO] Checking web repository '.$r['id']);
+                    if(S::$log>0) S::log('[INFO] Checking web repository '.$r['id']);
                     $repo = $r['src'];
                     $dest = $d.'/'.$r['id'];
                     $branch = null;
@@ -771,5 +772,24 @@ class Asset
                 }
             }
         }
+    }
+
+    public static function execRoot(&$cmd)
+    {
+        if(preg_match('#^(/|[A-Z]:)#i', $cmd, $m)) {
+            return;
+        }
+        $w = '/'.preg_replace('#^([^\s]+).*#', '$1', $cmd);
+        if(file_exists(($d=getcwd()).$w)
+              || file_exists(($d=S_APP_ROOT).$w)
+              || file_exists(($d=S_PROJECT_ROOT).$w)
+              || file_exists(($d=S_ROOT).$w)
+          ) {
+                $cmd = $d.'/'.$cmd;
+        } else {
+            $d = null;
+        }
+
+        return $d;
     }
 }

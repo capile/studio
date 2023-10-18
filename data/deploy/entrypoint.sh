@@ -7,6 +7,6 @@ set -e
 #    fi
 #fi
 
-studio :build
+studio :build $STUDIO_INIT
 
 exec "$@"
