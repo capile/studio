@@ -75,6 +75,8 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
         -i /usr/local/etc/php-fpm.d/www.conf && \
     sed -e 's/^error_log.*/error_log = \/dev\/stderr/' \
         -i /usr/local/etc/php-fpm.conf && \
+    echo -e "[safe]\n\tdirectory = *" > /var/www/.gitconfig && \
+    chown www-data:www-data /var/www/.gitconfig && \
     mkdir -p \
       /var/www/.cache \
       /var/www/.composer \
@@ -106,8 +108,7 @@ WORKDIR /var/www/studio
 ENV HOME=/var/www
 RUN composer install --no-dev -n && \
     composer clear-cache && \
-    rm -rf ~/.composer/cache && \
-    git config --global --add safe.directory '*'
+    rm -rf ~/.composer/cache
 ENV PATH="${PATH}:/var/www/studio"
 ENV STUDIO_IP="0.0.0.0"
 ENV STUDIO_PORT="9999"
