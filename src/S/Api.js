@@ -536,7 +536,7 @@
                 }
             } else if((t=this.getAttribute('action'))) {
                 u=t;
-                if(this.id) ft=this.id;
+                if(this.getAttribute('id')) ft=this.getAttribute('id');
                 if(this.getAttribute('method').toLowerCase()=='post') {
                     method = 'post';
                     var enc=this.getAttribute('enctype');
@@ -677,7 +677,7 @@
     function loadAction(e)
     {
         /*jshint validthis: true */
-        var A, B, C, a, b, c, L, i;
+        var A, B, C, a, b, c, L, i, s;
         if(typeof(e)=='object' && ('stopPropagation' in e)) {
 
             var data=null, method='get', h={'x-studio-action': 'api'};
@@ -686,7 +686,7 @@
             c = this.nodeName.toLowerCase();
             if(c==='form') {
                 A=S.node(S.parentNode(this, '.s-api-scope-block'), this.parentNode);
-                if(this.id) A.setAttribute('data-action-expects', 'form#'+S.slug(this.id));
+                if(s=this.getAttribute('id')) A.setAttribute('data-action-expects', 'form#'+S.slug(s));
                 a=this.getAttribute('action');
 
                 if(this.getAttribute('method').toLowerCase()==='post') {
@@ -1165,10 +1165,10 @@
                 }
             } else {
                 // copy elements from summary
-                if(S && (r=f.querySelectorAll('.s-api-app .s-api-summary .s-msg'))) {
+                if(A && (r=f.querySelectorAll('.s-api-app .s-api-summary .s-msg'))) {
                     i=r.length;
                     while(i--) {
-                        S.appendChild(r[i]);
+                        A.appendChild(r[i]);
                     }
                 }
                 if(!I.parentNode && box) {
