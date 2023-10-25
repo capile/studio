@@ -1132,17 +1132,19 @@ class Api
         $esc = $this->config('csvEscape');
         if(!$esc) $esc = '\\';
 
+        if(substr($s,0,3)==chr(hexdec('EF')).chr(hexdec('BB')).chr(hexdec('BF'))) $s = substr($s,3);
         $d = str_getcsv($s, "\n", $enc, $esc);
+        unset($s);
         $r = [];
         $keys = null;
         while($line=array_shift($d)) {
             if(substr(trim($line), 0, 1)==='#') continue; // comment
-
             if(!$keys) {
                 $keys = str_getcsv($line, $sep, $enc, $esc);
             } else {
                 $r[] = array_combine($keys, str_getcsv($line, $sep, $enc, $esc));
             }
+            unset($line);
         }
 
         return $r;

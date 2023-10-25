@@ -73,6 +73,8 @@ class Index extends Model
                         $indexFiles = false;
                     } else if($o==='-d' || $o==='--dir') {
                         $indexApi = false;
+                    } else if(preg_match('/^-m([0-9]+)$/', $o, $m)) {
+                        S::tune(null, (int)$m[1], (int)$m[1]);
                     }
                 } else if($p=strpos($o, '=')) {
                     $q[substr($o, 0, $p)] = substr($o, $p);

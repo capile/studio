@@ -42,8 +42,7 @@ class Interfaces extends Model
                 $f = $d.'/'.$cn.'.php';
                 if(!isset($this->updated) && $this->id) $this->refresh(['updated']);
                 $lmod = ($this->updated) ?S::strtotime($this->updated) :null;
-
-                if(!file_exists($f) || ($lmod && filemtime($f)<$lmod)) {
+                if(!file_exists($f) || !$lmod || filemtime($f)<$lmod) {
                     $fns = ($S->properties) ?array_keys($S->properties) :[];
                     if($S->relations) $fns = array_merge($fns, array_keys($S->relations));
                     $pf = ($fns) ?'protected $'.implode(', $', $fns).';' :'';
