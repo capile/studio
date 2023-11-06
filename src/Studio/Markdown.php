@@ -66,6 +66,19 @@ class Markdown extends Parsedown
         if(static::$allBreaksEnabled) $this->breaksEnabled = true;
     }
 
+    public function innerText($text)
+    {
+        $dd = $this->DefinitionData;
+        $markup = $this->text($text);
+        if($this->DefinitionData) {
+            $this->DefinitionData = array_merge_recursive($dd, $this->DefinitionData);
+        } else {
+            $this->DefinitionData = $dd;
+        }
+
+        return $markup;
+    }
+
     public function text($text)
     {
         $level = @error_reporting(E_ALL & ~E_NOTICE);
@@ -609,7 +622,7 @@ class Markdown extends Parsedown
     {
         $s = '';
         if (preg_match('/^!([a-z0-9\-\/]+) *(\(.*\))?/i', $Block['text'], $m)) {
-            if(is_null(static::$R)) static::$R = S::getApp()->tecnodesign['routes'];
+            if(is_null(static::$R)) static::$R = S::getApp()->app['routes'];
             if(isset(static::$R[$rurl='markdown:'.$m[1]]) || (isset(static::$R[$rurl=$m[1]]['markdown']) && static::$R[$rurl]['markdown'])) {
                 $r = static::$R[$rurl];
                 $r['url']=S::scriptName(true);
@@ -661,7 +674,7 @@ class Markdown extends Parsedown
                     }
 
                     if(isset($Element['text']) && substr($Element['name'], 0, 1)==='h') {
-                        $indexTxt = static::$indexPrefix.S::slug(strip_tags($this->text($Element['text'])), '_-', true);
+                        $indexTxt = static::$indexPrefix.S::slug(strip_tags($this->innerText($Element['text'])), '_-', true);
                         if(isset(static::$index[$Element['name']][$index])) {
                             $indexTxt .= '_'.$index;
                         }
@@ -848,7 +861,7 @@ class Markdown extends Parsedown
     protected function blockVariableComplete($Block)
     {
         if(isset($Block['id'])) {
-            $this->variables[$Block['id']] = $this->text($Block['markup']);
+            $this->variables[$Block['id']] = $this->innerText($Block['markup']);
             $Block['markup']='';
         }
         return $Block;
@@ -1011,7 +1024,7 @@ class Markdown extends Parsedown
         $s = '';
         foreach($a as $i=>$Block) {
             if(is_string($Block)) {
-                if(strpos($Block, "\n")!==false) $s.= $this->text($Block);
+                if(strpos($Block, "\n")!==false) $s.= $this->innerText($Block);
                 else $s.= $this->line($Block);
             } else if(isset($Block['handler'])) {
                 $h = $Block['handler'];
@@ -1050,36 +1063,40 @@ class Markdown extends Parsedown
         # http://stackoverflow.com/q/1148928/200145
         libxml_use_internal_errors(true);
 
-        $D = new DOMDocument;
+        $D = new DOMDocument('1.0', 'UTF-8');
 
-        $D->loadHTML(S::encode($elementMarkup), LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD|LIBXML_NOXMLDECL);
-
+        $D->loadHTML('<html><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />'.S::encode($elementMarkup).'</html>', LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD|LIBXML_NOXMLDECL|LIBXML_NONET);
         $elementText = '';
-
-        if ($D->documentElement->getAttribute('markdown') === '1') {
-            foreach ($D->documentElement->childNodes as $Node) {
-                $elementText .= $D->saveHTML($Node);
-            }
-            $D->documentElement->removeAttribute('markdown');
-            $elementText = "\n".$this->text($elementText)."\n";
-        } else {
-            foreach ($D->documentElement->childNodes as $Node) {
-                $nodeMarkup = $D->saveHTML($Node);
-
-                if ($Node instanceof DOMElement and ! in_array($Node->nodeName, $this->textLevelElements)) {
-                    $elementText .= $this->processTag($nodeMarkup);
+        $r = null;
+        foreach($D->documentElement->childNodes as $i=>$E) {
+            if($i>=1) {
+                if ($E->getAttribute('markdown') === '1') {
+                    foreach ($E->childNodes as $Node) {
+                        $elementText .= $D->saveHTML($Node);
+                    }
+                    $E->removeAttribute('markdown');
+                    $elementText = "\n".$this->innerText($elementText)."\n";
                 } else {
-                    $elementText .= $nodeMarkup;
+                    foreach ($E->childNodes as $Node) {
+                        $nodeMarkup = $D->saveHTML($Node);
+
+                        if ($Node instanceof DOMElement and ! in_array($Node->nodeName, $this->textLevelElements)) {
+                            $elementText .= $this->processTag($nodeMarkup);
+                        } else {
+                            $elementText .= $nodeMarkup;
+                        }
+                    }
                 }
+                # because we don't want for markup to get encoded
+                $E->nodeValue = 'placeholder\x1A';
+                $markup = $D->saveHTML($E);
+                $markup = str_replace('placeholder\x1A', $elementText, $markup);
+                $r .= $markup;  
             }
+            unset($i, $E);
         }
 
-        # because we don't want for markup to get encoded
-        $D->documentElement->nodeValue = 'placeholder\x1A';
-        $markup = $D->saveHTML($D->documentElement);
-        $markup = str_replace('placeholder\x1A', $elementText, $markup);
-
-        return $markup;
+        return $r;
     }
 
     # ~

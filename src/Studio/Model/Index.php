@@ -317,12 +317,17 @@ class Index extends Model
             $pkid = $cn::pk();
             $ppk = ['id', 'uid', 'uuid'];
             while($count > $offset) {
-                $L = $R->fetch($offset, $limit);
+                if($offset!==0 || $count===0 || !($L=$R->response())) {
+                    $L = $R->fetch($offset, $limit);
+                }
                 if(!$L) break;
 
                 foreach($L as $i=>$o) {
                     $offset++;
                     try {
+                        if(is_array($o)) {
+                            $o = new $cn($o);
+                        }
                         if(!$pkid) {
                             foreach($ppk as $pkid) {
                                 if($pk=$o->$pkid) {
