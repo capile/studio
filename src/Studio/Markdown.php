@@ -933,6 +933,7 @@ class Markdown extends Parsedown
         if (isset($Block['complete'])) return;
 
         if (isset($Block['interrupted'])) {
+            $Block['element']['text'] .= "\n";
             unset($Block['interrupted']);
         }
 
@@ -940,7 +941,8 @@ class Markdown extends Parsedown
             $Block['complete'] = true;
             return $Block;
         }
-        $Block['element']['text'] .= "\n".$Line['body'];
+        $Block['element']['text'] .= "\n".$Line['text'];
+
 
         return $Block;
     }
