@@ -726,30 +726,41 @@ class Entries extends Model
                 }
 
                 $f = $d.$murl;
-                if(is_dir($f)) {
-                    $f = self::indexFile($f);
-                }
                 if($check) {
+                    if(is_dir($f)) {
+                        $f = self::indexFile($f);
+                    }
                     if(file_exists($f)) return $f;
                     continue;
                 }
-                $src[] = $f;
+                $fa = (strpos($f, '{')!==false) ?S::glob($f) :[$f];
+                foreach($fa as $f) {
+                    if(is_dir($f)) {
+                        $f = self::indexFile($f);
+                    }
+                    $src[] = $f;
+                }
                 unset($f, $d, $murl, $mu);
             }
         }
         $f = S_DOCUMENT_ROOT . ((substr($url, 0, 1)!='/') ?'/' :'').$url;
-        if(is_dir($f)) {
-            $f = self::indexFile($f);
-        }
         if($check) {
+            if(is_dir($f)) {
+                $f = self::indexFile($f);
+            }
             return (file_exists($f)) ?$f :null;
         }
-
-        if($src) {
+        $fa = (strpos($f, '{')!==false) ?S::glob($f) :[$f];
+        foreach($fa as $f) {
+            if(is_dir($f)) {
+                $f = self::indexFile($f);
+            }
             $src[] = $f;
+        }
+        if(count($src)>1) {
             $glob = '{'.implode(',',$src).'}';
         } else {
-            $glob = $f;
+            $glob = array_shift($src);
         }
 
         return S::glob($glob.$pat);
@@ -1032,7 +1043,7 @@ class Entries extends Model
             $pat = '{,.*}{,.'.S::$lang.'}{.'.implode(',.',array_keys(Contents::$contentType)).'}';
         }
 
-        if(strpos($u, '.')) $u = str_replace('.', '[-.]', $u);
+        if(strpos($u, '.')) $u = str_replace('.', '{-,.}', $u);
         if(!($pages = self::file($u, false, $pat))) {
             $pages = [];
         }
