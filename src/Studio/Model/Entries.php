@@ -711,22 +711,30 @@ class Entries extends Model
                     if(file_exists($f)) return $f;
                     continue;
                 }
-                if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
-                $src[] = $f;
-                unset($f, $d, $murl, $mu);
+                $fa = (strpos($f, '{')!==false) ?S::glob($f) :[$f];
+                foreach($fa as $f) {
+                    if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
+                    $src[] = $f;
+                    unset($f);
+                }
+                unset($fa, $d, $murl, $mu);
             }
         }
         $f = S_DOCUMENT_ROOT . ((substr($url, 0, 1)!='/') ?'/' :'').$url;
         if($check) {
             return (file_exists($f)) ?$f :null;
         }
-        if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
-
-        if($src) {
+        $fa = (strpos($f, '{')!==false) ?S::glob($f) :[$f];
+        foreach($fa as $f) {
+            if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
             $src[] = $f;
+            unset($f);
+        }
+
+        if(count($src)>1) {
             $glob = '{'.implode(',',$src).'}';
         } else {
-            $glob = $f;
+            $glob = array_shift($src);
         }
 
         return S::glob($glob.$pat);
@@ -752,7 +760,7 @@ class Entries extends Model
         if(substr(basename($url),0,1)=='.') return;
         $P=null;
         if(!$multiview) {
-            if($pages = static::file(str_replace('.', '[-.]', $url), false)) {
+            if($pages = static::file(str_replace('.', '{-,.}', $url), false)) {
                 foreach($pages as $page) {
                     if($P=self::_checkPage($page, $url)) {
                         break;
@@ -1008,7 +1016,7 @@ class Entries extends Model
             $pat = '{,.*}{,.'.S::$lang.'}{.'.implode(',.',array_keys(Contents::$contentType)).'}';
         }
 
-        if(strpos($u, '.')) $u = str_replace('.', '[-.]', $u);
+        if(strpos($u, '.')) $u = str_replace('.', '{-,.}', $u);
         if(!($pages = self::file($u, false, $pat))) {
             $pages = [];
         }
