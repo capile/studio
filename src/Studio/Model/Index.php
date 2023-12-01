@@ -73,6 +73,8 @@ class Index extends Model
                         $indexFiles = false;
                     } else if($o==='-d' || $o==='--dir') {
                         $indexApi = false;
+                    } else if(preg_match('/^-m([0-9]+)$/', $o, $m)) {
+                        S::tune(null, (int)$m[1], (int)$m[1]);
                     }
                 } else if($p=strpos($o, '=')) {
                     $q[substr($o, 0, $p)] = substr($o, $p);
@@ -315,12 +317,17 @@ class Index extends Model
             $pkid = $cn::pk();
             $ppk = ['id', 'uid', 'uuid'];
             while($count > $offset) {
-                $L = $R->fetch($offset, $limit);
+                if($offset!==0 || $count===0 || !($L=$R->response())) {
+                    $L = $R->fetch($offset, $limit);
+                }
                 if(!$L) break;
 
                 foreach($L as $i=>$o) {
                     $offset++;
                     try {
+                        if(is_array($o)) {
+                            $o = new $cn($o);
+                        }
                         if(!$pkid) {
                             foreach($ppk as $pkid) {
                                 if($pk=$o->$pkid) {

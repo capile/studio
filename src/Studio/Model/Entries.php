@@ -658,7 +658,6 @@ class Entries extends Model
     public static function file($url, $check=true, $pat=null)
     {
         static $pat0;
-
         if(!$check && !$pat && is_null($pat0)) {
             $pat0 = '{,.'.S::$lang.'}{,.'.implode(',.',array_keys(Contents::$contentType)).'}';
         }
@@ -668,30 +667,15 @@ class Entries extends Model
         if($rs = Studio::config('web-repos')) {
             foreach($rs as $rn=>$repo) {
                 if(isset($repo['id'])) $rn = $repo['id'];
-                if(!is_dir($d=S_REPO_ROOT.'/'.$rn.'/')) continue;
-                if(strpos($url, ':')) {
-                    if(substr($url, 0, strlen($rn)+1)===$rn.':') {
-                        $f = realpath($d.substr($url, strlen($rn)+1));
-                        if($check) {
-                            return (file_exists($f)) ?$f :null;
-                        } else {
-                            return [$f];
-                        }
-                    } else {
-                        continue;
-                    }
-                }
+                if(!is_dir($d=S_REPO_ROOT.'/'.$rn)) continue;
                 $mu = (isset($repo['mount'])) ?$repo['mount'] :'';
                 if($mu===false) continue;
                 $murl = $url;
                 if($mu) {
                     if(is_array($mu) && $mu) {
-                        foreach($mu as $mud=>$mum) {
-                            if(is_int($mud)) {
-                                $mud = $mum;
-                                $mum = null;
-                                if(strpos($mud, ':')) list($mud, $mum) = explode(':', $mud);
-                            }
+                        foreach($mu as $mud) {
+                            $mum = null;
+                            if(strpos($mud, ':')) list($mud, $mum) = explode(':', $mud);
                             if($mud===$url) {
                                 $murl = '';
                             } else if(substr($url, 0, strlen($mud)+1)===$mud.'/') {
@@ -707,15 +691,12 @@ class Entries extends Model
                             break;
                         }
                         if(!isset($mud)) continue;
+                    } else if($mu===$url) {
+                        $murl = '';
+                    } else if(substr($url, 0, strlen($mu)+1)===$mu.'/') {
+                        $murl = substr($url, strlen($mu));
                     } else {
-                        $mus = (substr($mu, -1)!=='/') ?$mu.'/' :$mu;
-                        if($mu===$url) {
-                            $murl = '';
-                        } else if(substr($url, 0, strlen($mus))===$mus) {
-                            $murl = substr($url, strlen($mus));
-                        } else {
-                            continue;
-                        }
+                        continue;
                     }
                 }
 
@@ -727,36 +708,29 @@ class Entries extends Model
 
                 $f = $d.$murl;
                 if($check) {
-                    if(is_dir($f)) {
-                        $f = self::indexFile($f);
-                    }
                     if(file_exists($f)) return $f;
                     continue;
                 }
                 $fa = (strpos($f, '{')!==false) ?S::glob($f) :[$f];
                 foreach($fa as $f) {
-                    if(is_dir($f)) {
-                        $f = self::indexFile($f);
-                    }
+                    if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
                     $src[] = $f;
+                    unset($f);
                 }
-                unset($f, $d, $murl, $mu);
+                unset($fa, $d, $murl, $mu);
             }
         }
         $f = S_DOCUMENT_ROOT . ((substr($url, 0, 1)!='/') ?'/' :'').$url;
         if($check) {
-            if(is_dir($f)) {
-                $f = self::indexFile($f);
-            }
             return (file_exists($f)) ?$f :null;
         }
         $fa = (strpos($f, '{')!==false) ?S::glob($f) :[$f];
         foreach($fa as $f) {
-            if(is_dir($f)) {
-                $f = self::indexFile($f);
-            }
+            if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
             $src[] = $f;
+            unset($f);
         }
+
         if(count($src)>1) {
             $glob = '{'.implode(',',$src).'}';
         } else {
@@ -798,9 +772,9 @@ class Entries extends Model
                 S::redirect($P->link);
             }
         } else if($url) {
-            if(in_array('php', Contents::$multiviewContentType) && ($f=static::file($url.'.php')))
+            if(in_array('php', Contents::$multiviewContentType) && is_file($f=static::file($url.'.php')))
                 $P=self::_checkPage($f, $url, $multiview);
-            if(in_array('md', Contents::$multiviewContentType) && ($f=static::file($url.'.md')))
+            if(in_array('md', Contents::$multiviewContentType) && is_file($f=static::file($url.'.md')))
                 $P=self::_checkPage($f, $url, $multiview);
         }
 
@@ -950,8 +924,8 @@ class Entries extends Model
             unset($m);
         }
         $d=$url;
-        $p=preg_replace('#/'.static::$indexFile.'\.[a-z]+$#', '', $page);
-        while($d) {
+        $p=preg_replace('#/'.static::$indexFile.'.[a-z]+$#', '', $page);
+        while(strrpos($d, '/')!==false) {
             if(file_exists($mf=$p.'/.meta')) {
                 $m = Yaml::load($mf);
                 if(is_array($m)) {
@@ -969,8 +943,7 @@ class Entries extends Model
                 unset($m);
             }
             unset($mf);
-            $dp=strrpos($d, '/');
-            $d = (($dp===false || $dp===0) && $d!=='/') ?'/' :substr($d, 0, $dp);
+            $d = substr($d, 0, strrpos($d, '/'));
             $p = substr($p, 0, strrpos($p, '/'));
         }
         unset($d, $p);
@@ -1060,9 +1033,8 @@ class Entries extends Model
                 $pt = self::file($tup, false, '*');
                 if($pt) $pages = array_merge($pages, $pt);
                 unset($pt);
-                if($tpld=S::templateDir()) {
-                    $tpld = (count($tpld)===1) ?$tpld[0] :'{'.implode(',', $tpld).'}';
-                    $pt = S::glob($tpld.$tup.'*');
+                if(Studio::$templateRoot) {
+                    $pt = S::glob(Studio::$templateRoot.$tup.'*');
                     if($pt) $pages = array_merge($pages, $pt);
                     unset($pt);
                 }
@@ -1355,7 +1327,7 @@ class Entries extends Model
 
         if(!$master) {
             $master = [];
-            $g = S::templateDir();
+            $g = Studio::templateDir();
             while($g) {
                 $d = array_shift($g);
                 if(is_dir($d) && ($nd=glob($d.'/*'))) {
@@ -1502,18 +1474,6 @@ class Entries extends Model
     public static function fromFile($file, $attr=[])
     {
         return self::_checkPage($file, true, false, $attr);
-    }
-
-    public static function indexFile($file)
-    {
-        $f = preg_replace('#/+$#', '/', $file) . static::$indexFile;
-        foreach(Contents::$previewContentType as $ext) {
-            if(is_file($f.'.'.$ext)) {
-                return $f.'.'.$ext;
-            }
-        }
-
-        return $file;
     }
 
 }

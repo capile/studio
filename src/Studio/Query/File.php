@@ -19,7 +19,7 @@ use Studio\Schema;
 use Studio\Yaml;
 use Exception;
 
-class File
+class File extends Api
 {
     const TYPE='file', DRIVER='file';
 
@@ -67,7 +67,7 @@ class File
         return (string) $this->buildQuery();
     }
 
-    public static function connect($n='', $exception=true)
+    public function connect($n='', $exception=true, $tries = 1)
     {
         if(!isset(static::$conn[$n]) || !static::$conn[$n]) {
             try {
@@ -101,7 +101,7 @@ class File
         return static::$conn[$n];
     }
 
-    public static function disconnect($n='')
+    public function disconnect($n='')
     {
         if(isset(static::$conn[$n])) {
             unset(static::$conn[$n]);
@@ -233,7 +233,7 @@ class File
         return $this->_last;
     }
 
-    public function fetch($o=null, $l=null, $cn=true)
+    public function fetch($o=null, $l=null, $scope = null, $callback = null, $args = null) // @TODO: updated for compatibility, need to adjust $scope = null, $callback = null, $args = null
     {
         if(!$this->_schema) return false;
         if(!$this->_last) {
@@ -256,45 +256,80 @@ class File
         } else {
             $res = $this->_last;
         }
-
         if($res) {
             $db = ($this->_conn) ?$this->_conn :$this->connect($this->schema('database'));
             $cn=$this->schema('className');
             $parser0 = (isset($db['format']) && $db['format'] && $db['format']!='file') ?$db['format'] :'yaml';
             $create = (isset($db['options']['create']) && $db['options']['create']);
             $ext = (isset($db['options']['extension'])) ?'.'.$db['options']['extension'] :null;
+            $decode=$this->config('decode');
+            $decodeMap = [
+                'js'=>'json',
+                'yml'=>'yaml',
+                'gz'=>'gzip',
+            ];
+            if(!$decode) {
+                if(isset($db['format']) && $db['format'] && $db['format']!='file') {
+                    $decode = [((isset($decodeMap[$db['format']])) ?$decodeMap[$db['format']] :$db['format'])];
+                } else {
+                    $decode = [];
+                }
+            }
+            if(is_string($decode)) {
+                $decode = preg_split('/\s*[\,\|]+\s*/', $decode, -1, PREG_SPLIT_NO_EMPTY);
+            }
+            $body = [];
 
             foreach($res as $i=>$f) {
 
                 $prop = $prop0;
-                $prop['__uid'] = basename($f, $ext);
+                $prop['__source_uid'] = basename($f, $ext);
                 $prop['__src'] = $f;
-                if(preg_match('/\.(ya?ml|js(on)?)$/', $f, $m)) {
-                    $parser = (substr($m[1], 0, 1)=='y') ?'yaml' :'json';
-                } else {
-                    $parser = $parser0;
+                $fext = $f;
+                while(preg_match('/\.([a-z]+)$/', $fext, $m)) {
+                    $dm = (isset($decodeMap[$m[1]])) ?$decodeMap[$m[1]] :$m[1];
+                    if(!in_array($dm, $decode)) $decode[] = $dm;
+                    $fext = substr($fext, 0, strlen($fext) - strlen($m[0]));
                 }
-                $prop['__serialize'] = $parser;
+                $prop['__serialize'] = implode(',',$decode);
                 if(!file_exists($f) && $create) {
                     $prop['_new'] = true;
-                    $d = [];
                 } else {
                     $prop['_new'] = false;
-
-                    if($parser == 'yaml') {
-                        $d = Yaml::load($f);
+                    if($decode && file_exists($f)) {
+                        foreach($decode as $dn) {
+                            if(method_exists($this, $dm = 'decode'.S::camelize($dn, true))) {
+                                if(isset($f)) {
+                                    $body = $this->$dm(file_get_contents($f));
+                                    unset($f);
+                                } else {
+                                    $body = $this->$dm($body);
+                                }
+                                unset($dm);
+                                if(is_null($body) || $body===false) break;
+                            }
+                            unset($dn);
+                        }
                     } else {
-                        $d = S::unserialize(file_get_contents($f), $parser);
+                        $body = file_get_contents($f);
+                        unset($f);
                     }
-                    if($d) {
-
+                    if($body) {
                         if(isset($db['options']['root']) && $db['options']['root']) {
-                            if(isset($d[$db['options']['root']])) $d = $d[$db['options']['root']];
+                            if(isset($body[$db['options']['root']])) $body = $body[$db['options']['root']];
                             else continue;
                         }
                     }
                 }
-                $r[] = ($cn)?(new $cn($prop+$d)):($d);
+                if($cn) {
+                    foreach($body as $i=>$o) {
+                        $r[] = new $cn($prop+$o);
+                        unset($body[$i], $i, $o);
+                    }
+                } else {
+                    $r = $body;
+                }
+                unset($body);
             }
         }
 
@@ -306,7 +341,7 @@ class File
         return $this->fetch($o, $l, false);
     }
 
-    public function count()
+    public function count($column = '1') // @TODO: compatibility updates
     {
         if(!$this->_schema) return false;
         if(!$this->_last) {
@@ -360,19 +395,19 @@ class File
         return $this->_last;
     }
 
-    public function run($q)
+    public function run($q, $conn = null, $enablePaging = true, $keepAlive = null, $cn = null, $defaults = null, $callback = null, $args = []) // @TODO: compatibility for , $conn = null, $enablePaging = true, $keepAlive = null, $cn = null, $defaults = null, $callback = null, $args = [])
     {
         return $this->exec($q);
     }
 
-    public function query($q, $p=null)
+    public function query($q, $as = 'array', $cn = null, $prop = null, $callback = null, $args = null) // @TODO: compatibility for $as = 'array', $cn = null, $prop = null, $callback = null, $args = null)
     {
         try {
             $this->exec($q);
-            if (is_null($p)) {
+            if ($as==='array') {
                 return $this->fetchArray();
             } else {
-                return $this->fetch(null, null, array_shift($arg));
+                return $this->fetch(null, null, $as);
             }
         } catch(Exception $e) {
             if(isset($this::$errorCallback) && $this::$errorCallback) {
@@ -389,7 +424,7 @@ class File
     }
 
 
-    public static function escape($str)
+    public static function escape($str, $enclose = true) // @TODO: do we need $enclose?
     {
         if(is_array($str)) {
             foreach($str as $k=>$v){

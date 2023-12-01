@@ -2368,7 +2368,7 @@ class Model implements ArrayAccess, Iterator, Countable
         }
         if(!is_array($link)) {
             if($link!==false || $checkbox) {
-                $uid = (isset($o['key'])) ?$this[$o['key']] :$this->getPk();//str_replace('-', ',', $this->getPk());
+                $uid = (isset($o['key'])) ?$this[$o['key']] :$this->getPk();
                 if(isset($o['link-encode']) && $o['link-encode']) {
                     $uid = rawurlencode($uid);
                 }
