@@ -662,7 +662,7 @@ class Entries extends Model
         if(!$check && !$pat) $pat = $pat0;
 
         $src = [];
-        if($rs = Studio::config('web-repos')) {
+        if(S_REPO_ROOT && ($rs = Studio::config('web-repos'))) {
             foreach($rs as $rn=>$repo) {
                 if(isset($repo['id'])) $rn = $repo['id'];
                 if(!is_dir($d=S_REPO_ROOT.'/'.$rn)) continue;
@@ -709,7 +709,7 @@ class Entries extends Model
                     if(file_exists($f)) return $f;
                     continue;
                 }
-                $fa = (strpos($f, '{')!==false) ?S::glob($f) :[$f];
+                if(strpos($f, '{')===false || !($fa = S::glob($f))) $fa = [$f];
                 foreach($fa as $f) {
                     if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
                     $src[] = $f;
@@ -722,7 +722,7 @@ class Entries extends Model
         if($check) {
             return (file_exists($f)) ?$f :null;
         }
-        $fa = (strpos($f, '{')!==false) ?S::glob($f) :[$f];
+        if(strpos($f, '{')===false || !($fa = S::glob($f))) $fa = [$f];
         foreach($fa as $f) {
             if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
             $src[] = $f;

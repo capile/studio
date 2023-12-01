@@ -21,6 +21,7 @@ use Studio\App;
 use Studio\Cache;
 use Studio\Exception\AppException;
 use DOMDocument;
+use DOMElement;
 use Parsedown;
 
 class Markdown extends Parsedown
@@ -1072,7 +1073,7 @@ class Markdown extends Parsedown
         $r = null;
         foreach($D->documentElement->childNodes as $i=>$E) {
             if($i>=1) {
-                if ($E->getAttribute('markdown') === '1') {
+                if (($E instanceof DOMElement) && $E->getAttribute('markdown') === '1') {
                     foreach ($E->childNodes as $Node) {
                         $elementText .= $D->saveHTML($Node);
                     }
@@ -1082,7 +1083,7 @@ class Markdown extends Parsedown
                     foreach ($E->childNodes as $Node) {
                         $nodeMarkup = $D->saveHTML($Node);
 
-                        if ($Node instanceof DOMElement and ! in_array($Node->nodeName, $this->textLevelElements)) {
+                        if (($Node instanceof DOMElement) && !in_array($Node->nodeName, $this->textLevelElements)) {
                             $elementText .= $this->processTag($nodeMarkup);
                         } else {
                             $elementText .= $nodeMarkup;

@@ -763,7 +763,7 @@ class Contents extends Model
 
             S::save($f, (($C) ?"<!--\n".Yaml::dump($C)."...\n-->\n" :'') . $a);
 
-            if(strpos($f, S_REPO_ROOT)===0) {
+            if(S_REPO_ROOT && strpos($f, S_REPO_ROOT)===0) {
                 // update reposiroty
                 $rn = preg_replace('#^/*([^/]+)/.*#', '$1', substr($f, strlen(S_REPO_ROOT)+1));
                 S::log('[INFO] Update repository: '.$rn);

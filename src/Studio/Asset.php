@@ -507,7 +507,7 @@ class Asset
             }
         }
         unset($p);
-        if(is_null($root)) $root = Studio::$app->tecnodesign['document-root'];
+        if(is_null($root)) $root = S_DOCUMENT_ROOT;
         if(file_exists($file=$root.$url)) {
             unset($root);
             return $file;
@@ -519,7 +519,7 @@ class Asset
     {
         if(Studio::$cacheTimeout) S::cacheControl('public', Studio::$staticCache);
         if(is_null($url)) $url = S::scriptName();
-        if(is_null($root)) $root = Studio::$app->tecnodesign['document-root'];
+        if(is_null($root)) $root = S_DOCUMENT_ROOT;
         if(is_file($root.$url)) {
             S::download($root.$url, S::fileFormat($url), null, 0, false, false, false);
             Studio::$app->end();
