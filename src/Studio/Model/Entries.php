@@ -304,14 +304,12 @@ class Entries extends Model
         $a['variables']['meta'] .= S::meta();
 
         // in App::runTemplate
-        $app = get_class(Studio::$app);
-        if($app::$assets) {
-            foreach($app::$assets as $i=>$n) {
-                $app::asset($n);
-                unset($app::$assets[$i], $i, $n);
+        if(App::$assets) {
+            foreach(App::$assets as $i=>$n) {
+                App::asset($n);
+                unset(App::$assets[$i], $i, $n);
             }
         }
-        unset($app);
         if(Studio::$private) {
             Studio::$private = array_unique(Studio::$private);
             $cch = 'private';
@@ -342,7 +340,7 @@ class Entries extends Model
             } else if(!(($file=static::file($f)) && file_exists($file))
                 && !file_exists($file=S_VAR.'/'.$f)
                 && !file_exists($file=S_DOCUMENT_ROOT.'/'.$f)
-                && !file_exists($file=Studio::$app->tecnodesign['document-root'].'/'.$f)
+                && !file_exists($file=App::config('app', 'document-root').'/'.$f)
             ) {
                 $file = null;
             }
@@ -381,7 +379,7 @@ class Entries extends Model
         $fname = basename($link);
         if($optimize) {
             $ext = strtolower(preg_replace('/.*\.([a-z0-9]{1,5})$/i','$1',basename($file)));
-            $actions=Studio::$app->studio['assets_optimize_actions'];
+            $actions=App::config('studio', 'assets_optimize_actions');
             $cache=S_VAR.'/optimize/'.md5_file($file);
             if(isset($actions[$optimize]) && in_array(strtolower($ext),$actions[$optimize]['extensions'])) {
                 $options=$actions[$optimize];
@@ -834,7 +832,7 @@ class Entries extends Model
 
         if($extAttr) {
             $source = ((isset($extAttr['src'])) ?$extAttr['src'] :'').substr($page, strlen($extAttr['file']));
-        } else if(strpos($page, S_REPO_ROOT.'/')===0) {
+        } else if(S_REPO_ROOT && strpos($page, S_REPO_ROOT.'/')===0) {
             $source = preg_replace('#^/?([^/]+)/(.+)$#', '$1:/$2', substr($page, strlen(S_REPO_ROOT)+1));
         } else {
             $source = substr($page, strlen(S_DOCUMENT_ROOT));

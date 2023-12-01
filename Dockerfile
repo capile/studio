@@ -1,6 +1,6 @@
 ## tecnodesign/studio:v1.1
 #
-# docker build -f data/deploy/02-studio-alpine.dockerfile data/deploy -t tecnodesign/studio:latest -t tecnodesign/studio:v1.1
+# docker build -t tecnodesign/studio:latest -t tecnodesign/studio:v1.1 .
 # docker push tecnodesign/studio:latest
 # docker push tecnodesign/studio:v1.1
 FROM php:8.2-fpm-alpine
@@ -54,7 +54,7 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
         -e '/catch_workers_output/s/^;//'  \
         -e 's/^error_log.*/error_log = \/dev\/stderr/' \
         -e 's/^;error_log.*/error_log = \/dev\/stderr/' \
-        -e 's/^memory_limit.*/memory_limit = 16M/' \
+        -e 's/^memory_limit.*/memory_limit = 32M/' \
         -e 's/post_max_size = 8M/post_max_size = 4M/' \
         -e 's/;default_charset = "UTF-8"/default_charset = "UTF-8"/' \
         -e 's/;max_input_vars = 1000/max_input_vars = 10000/' \

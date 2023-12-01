@@ -234,7 +234,7 @@ class Query extends SchemaObject
             }
 
             if(!S::$database) {
-                $cfgDir = (isset($app->app['config-dir'])) ?$app->app['config-dir'] :S_APP_ROOT.'/config';
+                if(!($cfgDir = App::config('app', 'config-dir'))) $cfgDir = S_APP_ROOT.'/config';
                 if(file_exists($f=$cfgDir.'/databases.yml')) {
                     $C = Yaml::load($f);
                     S::$database = array();
