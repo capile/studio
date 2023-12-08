@@ -122,7 +122,8 @@ class App
         }
         if(!isset($this->_vars['app']['document-root'])) {
             if(defined('TDZ_DOCUMENT_ROOT')) $d = TDZ_DOCUMENT_ROOT;
-            else if(!(isset($_SERVER['DOCUMENT_ROOT']) && ($d=$_SERVER['DOCUMENT_ROOT']))
+            else if(!(isset($_SERVER['STUDIO_DOCUMENT_ROOT']) && ($d=$_SERVER['STUDIO_DOCUMENT_ROOT']))
+                && !(isset($_SERVER['DOCUMENT_ROOT']) && ($d=$_SERVER['DOCUMENT_ROOT']))
                 && !is_dir($d=S_PROJECT_ROOT.'/htdocs')
                 && !is_dir($d=S_PROJECT_ROOT.'/www')
                 && !is_dir($d=S_PROJECT_ROOT.'/web')

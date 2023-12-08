@@ -1097,6 +1097,11 @@ class Api
         return $r;
     }
 
+    public function decodeYaml($s)
+    {
+        return ($s && is_string($s)) ?S::unserialize($s, 'yaml') :$s;
+    }
+
     public function decodeGzip($s)
     {
         // Perform GZIP decompression:

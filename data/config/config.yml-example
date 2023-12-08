@@ -16,6 +16,7 @@ all:
         mount-src: ~
   app:
     api-dir: [ data/api-config ]
+    asset-build-strategy: auto
     languages:
       English: en
       Português: pt
@@ -32,6 +33,10 @@ all:
         options:
           hosts:
             127.0.0.1:
+              id: admin
+              username: Administrator
+              credentials: [ Administrators ]
+            172.27.0.1:
               id: admin
               username: Administrator
               credentials: [ Administrators ]
