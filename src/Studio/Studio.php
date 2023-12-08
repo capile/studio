@@ -745,9 +745,9 @@ class Studio
         }
         if(!$E && ($E=Entries::findPage($url, false, true))) {
             unset($f, $published);
-        } else if(preg_match('/('.str_replace('.', '\.', implode('|',self::$allowedExtensions)).')$/', $url, $m) && ($E=Entries::findPage(substr($url,0,strlen($url)-strlen($m[1])), false, true))) {
-            $url = substr($url,0,strlen($url)-strlen($m[1]));
-            unset($f, $published);
+        } else if(preg_match('/('.str_replace('.', '\.', implode('|',self::$allowedExtensions)).')$/', $url, $m) && ($E=Entries::findPage($nurl=substr($url,0,strlen($url)-strlen($m[1])), false, true))) {
+            $url = $nurl;
+            unset($f, $published, $nurl);
         }
         if(!$E && !$exact && substr($url, 0, 1)=='/' && strlen($url)>1) {
             $f['Contents.content_type']=Contents::$multiviewContentType;

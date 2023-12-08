@@ -3103,7 +3103,7 @@ class Studio
             $used = ceil(memory_get_peak_usage() * 0.000001);
             if($m===true) $m=$used;
             if($used + $m > $mem) {
-                $mem = ($used + $m);
+                $mem = ceil($used + $m);
                 ini_set('memory_limit', $mem.'M');
                 if($s) {
                     $s .= "\tincreased memory limit to ".$mem.'M';
