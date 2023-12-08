@@ -7,14 +7,27 @@ services:
     volumes:
       - studio-config:/opt/studio/config:Z
       - studio-data:/opt/studio/data:Z
-    #deploy:
-    #  mode: replicated
-    #  replicas: 5
-    #  endpoint_mode: vip
+    ## Uncommennt the following lines to enable dev environment
+    #  - .:/var/www/studio:Z
+    #environment:
+    #  - STUDIO_ENV=dev
+    #  - STUDIO_APP_ROOT=/var/www/studio
+    #  - STUDIO_DATA=/var/www/studio/data
+  db.studio:
+    hostname: db.studio
+    container_name: db.studio
+    image: mongo:latest
+    volumes:
+      - studio-db:/data/db:Z
   web.studio:
     hostname: web.studio
+    container_name: web.studio
     image: nginx:alpine
     volumes:
-      - data/deploy/web.conf:/etc/nginx/conf.d/default.conf:Z
+      - ./data/deploy/nginx:/etc/nginx/conf.d:Z
     ports:
       - 9999:9999
+volumes:
+  studio-config:
+  studio-data:
+  studio-db:

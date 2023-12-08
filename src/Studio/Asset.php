@@ -395,10 +395,10 @@ class Asset
         }
         $assets = array(); // assets to optimize
         $r = ''; // other metadata not to messed with (unparseable code)
-        $f = (!is_array($src))?(array($src)):($src);
+        $files = (!is_array($src))?([$src]):($src);
         $s = '';
 
-        foreach($f as $i=>$url) {
+        foreach($files as $i=>$url) {
             if(is_array($url)) {
                 $r .= static::minify($url, $root, $compress, $before, $raw, (!is_numeric($i)) ?$i :false, $force);
             } else if(strpos($url, '<')!==false) {
@@ -424,16 +424,17 @@ class Asset
                 else if (isset(static::$optimizeTemplates[$m[1]])) $ext = $m[1];
                 else continue;
 
-                if((isset($m[2]) && $m[2]) || preg_match('#^(http:)?//#', $url) || !(file_exists($f=$root.$url) || (file_exists($f=$url) && (substr($url, 0, strlen($root))==$root || substr($url, 0, strlen(S_PROJECT_ROOT))==S_PROJECT_ROOT )) )) {
+                if((isset($m[2]) && $m[2]) || preg_match('#^(https?:)?//#', $url) || !(file_exists($f=$root.$url) || (file_exists($f=$url) && (substr($url, 0, strlen($root)+1)===$root.'/' || substr($url, 0, strlen(S_ROOT)+1)===S_ROOT.'/' )) )) {
                     // not to be compressed, just add to output
                     $r .= sprintf(static::$optimizeTemplates[$ext], S::xml($url));
                 } else {
                     if(!isset($assets[$ext])) $assets[$ext]=array();
                     $assets[$ext][$f] = filemtime($f);
                 }
-                unset($f, $m);
+                unset($m);
             }
         }
+        unset($files);
         $updated = true;
         foreach($assets as $ext=>$fs) {
             if(is_string($output)) {

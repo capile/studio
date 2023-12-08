@@ -658,9 +658,11 @@ class App
                     $build = true;
                 }
                 if($src) {
+                    if(!is_dir(dirname($tf))) @mkdir(dirname($tf), 0777, true);
+                    S::$log = 1;
                     Asset::minify($src, S_DOCUMENT_ROOT, true, true, false, $t, $force);
-                    if(!file_exists($tf)) {// && !copy($f, $tf)
-                        S::log('[ERROR] Could not build component '.$component.': '.$tf.' from ', $src);
+                    if(!file_exists($tf)) {
+                        S::log('[ERROR] Could not build component '.$component.': '.$tf.' from '.S::serialize($src));
                     }
                 }
 

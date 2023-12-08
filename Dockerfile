@@ -32,6 +32,8 @@ RUN docker-php-ext-configure gd \
     --with-jpeg \
     --with-webp && \
     docker-php-ext-configure ldap && \
+    git clone --branch v1.17 --depth 1 https://github.com/mongodb/mongo-php-driver.git /usr/src/php/ext/mongodb && \
+       cd /usr/src/php/ext/mongodb && git submodule update --init && cd && \
     docker-php-ext-install \
     ctype \
     dom \
@@ -39,11 +41,13 @@ RUN docker-php-ext-configure gd \
     gd \
     ldap \
     mbstring \
+    mongodb \
     pdo \
     pdo_mysql \
     simplexml \
     soap \
-    zip
+    zip && \
+    rm -rf /usr/src/*
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2
 WORKDIR /var/www/studio
 COPY . .
