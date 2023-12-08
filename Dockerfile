@@ -122,6 +122,7 @@ ENV STUDIO_APP_ROOT=/opt/studio
 ENV STUDIO_DATA=/opt/studio/data
 ENV STUDIO_CONFIG=/var/www/studio/app.yml
 ENV STUDIO_ENV="prod"
+ENV STUDIO_INIT=""
 VOLUME /opt/studio/data
 VOLUME /opt/studio/config
 ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]
