@@ -705,37 +705,65 @@ class Entries extends Model
                 }
 
                 $f = $d.$murl;
+                if(is_dir($f)) {
+                    if($r = self::indexFile($f, $pat)) {
+                        $src = array_merge($src, $r);
+                    }
+                } else if(!preg_match('/\.[a-z0-9]+$/', $f)) {
+                    $f .= $pat;
+                    $src[] = $f;
+                } else {
+                    $src[] = $f;
+                }
                 if($check) {
-                    if(file_exists($f)) return $f;
+                    if($src) {
+                        if(isset($src[1])) {
+                            $f = '{'.implode(',',$src).'}';
+                        } else {
+                            $f = $src[0];
+                        }
+                        if(strpos($f, '{')!==false) {
+                            if($r=S::glob($f)) {
+                                return $r[0];
+                            }
+                        } else if(file_exists($f)) {
+                            return $f;
+                        }
+                        $src = [];
+                    }
                     continue;
                 }
-                if(strpos($f, '{')===false || !($fa = S::glob($f))) $fa = [$f];
-                foreach($fa as $f) {
-                    if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
-                    $src[] = $f;
-                    unset($f);
-                }
-                unset($fa, $d, $murl, $mu);
+                unset($f, $d, $murl, $mu);
             }
         }
         $f = S_DOCUMENT_ROOT . ((substr($url, 0, 1)!='/') ?'/' :'').$url;
-        if($check) {
-            return (file_exists($f)) ?$f :null;
-        }
-        if(strpos($f, '{')===false || !($fa = S::glob($f))) $fa = [$f];
-        foreach($fa as $f) {
-            if(is_dir($f)) $f .= ((substr($f, -1)=='/') ?'' :'/') . static::$indexFile;
+        if(is_dir($f)) {
+            if($r = self::indexFile($f, $pat)) {
+                $src = array_merge($src, $r);
+            }
+        } else if(!preg_match('/\.[a-z0-9]+$/', $f)) {
+            $f .= $pat;
             $src[] = $f;
-            unset($f);
-        }
-
-        if(count($src)>1) {
-            $glob = '{'.implode(',',$src).'}';
         } else {
-            $glob = array_shift($src);
+            $src[] = $f;
         }
 
-        return S::glob($glob.$pat);
+        if($src) {
+            if(isset($src[1])) {
+                $f = '{'.implode(',',$src).'}';
+            } else {
+                $f = $src[0];
+            }
+            if(strpos($f, '{')!==false) {
+                if($r=S::glob($f)) {
+                    return ($check) ?$r[0] :$r;
+                }
+            } else if(file_exists($f)) {
+                return ($check) ?$f :[$f];
+            }
+        }
+
+        return ($check) ?null :[];
     }
 
     public static function meta(&$p)
@@ -1018,7 +1046,6 @@ class Entries extends Model
         if(!($pages = self::file($u, false, $pat))) {
             $pages = [];
         }
-
         if($checkTemplate) {
             $tu = [];
             while(strrpos($u, '/')!==false) {
@@ -1031,8 +1058,9 @@ class Entries extends Model
                 $pt = self::file($tup, false, '*');
                 if($pt) $pages = array_merge($pages, $pt);
                 unset($pt);
-                if(Studio::$templateRoot) {
-                    $pt = S::glob(Studio::$templateRoot.$tup.'*');
+                if($tpld=Studio::templateDir()) {
+                    $tpld = (count($tpld)===1) ?$tpld[0] :'{'.implode(',', $tpld).'}';
+                    $pt = S::glob($tpld.$tup.'*');
                     if($pt) $pages = array_merge($pages, $pt);
                     unset($pt);
                 }
@@ -1474,4 +1502,17 @@ class Entries extends Model
         return self::_checkPage($file, true, false, $attr);
     }
 
+    public static function indexFile($file, $pat=null)
+    {
+        static $pat0;
+
+        $f = preg_replace('#/+$#', '/', $file) . static::$indexFile;
+
+        if(!$pat && is_null($pat0)) {
+            $pat0 = '{,.'.S::$lang.'}{,.'.implode(',.',array_keys(Contents::$contentType)).'}';
+        }
+        if(is_null($pat)) $pat = $pat0;
+
+        return S::glob($f.$pat);
+    }
 }

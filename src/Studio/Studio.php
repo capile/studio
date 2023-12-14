@@ -62,7 +62,7 @@ class Studio
         ),
         $assetsOptimizeUrl,
         $status,
-        $templateRoot,      // deprecated, use Studio::templateDir() or app.templates-dir cfg option
+        $templateSub,
         $contentClassName,
         $languages=array(),
         $ignore=array('.meta', '.less', '.md', '.yml'),
@@ -421,7 +421,7 @@ class Studio
             if(is_null($root)) $root = S_DOCUMENT_ROOT;
             if(substr($page, 0, strlen($root))!==$root) {
                 $tpld = null;
-                if($tplds = S::templateDir()) {
+                if($tplds = self::templateDir()) {
                     foreach($tplds as $tpld) {
                         if($tpld) {
                             if(substr($page, 0, strlen($tpld))===$tpld) {
@@ -817,18 +817,6 @@ class Studio
         return $tpl;
     }
 
-    public static function templateDir()
-    {
-        static $d = S_ROOT.'/data/templates';
-        if(is_null(S::$tplDir)) {
-            S::templateDir();
-        }
-        if(!in_array($d, S::$tplDir)) {
-            S::$tplDir[] = $d;
-        }
-        return S::$tplDir;
-    }
-
     public static function error($code=500)
     {
         if(!self::$app) self::$app = S::getApp();
@@ -1173,7 +1161,7 @@ class Studio
         } else {
             $sep = ((substr($src, 0, 1)!='/') ?'/' :'');
             $f = S_DOCUMENT_ROOT . $sep .$src;
-            if($check && !file_exists($f) && ($tplds = S::templateDir())) {
+            if($check && !file_exists($f) && ($tplds = self::templateDir())) {
                 foreach($tplds as $tpld) {
                     if($tpld) {
                         if(file_exists($f=$tpld.$sep.$src)) {
@@ -1197,5 +1185,29 @@ class Studio
     {
         putenv('STUDIO_MODE=app');
         Config::standaloneConfig();
+    }
+
+
+    public static function templateDir($asArray=true)
+    {
+        static $d;
+
+        if(is_null($d)) {
+            if(is_null(S::$tplDir)) {
+                S::templateDir();
+            }
+            $d = S::$tplDir;
+            if($s=self::config('template-sub')) {
+                if(substr($s, 0, 1)==='/') $s = substr($s, 1);
+                foreach($d as $i=>$o) {
+                    $d[$i] = $o . ((substr($o, -1)!=='/') ?'/' :'') . $s;
+                }
+            }
+            if(!in_array($s=S_ROOT.'/data/templates', S::$tplDir)) {
+                S::$tplDir[] = $s;
+            }
+        }
+
+        return ($asArray) ?$d :$d[0];
     }
 }
