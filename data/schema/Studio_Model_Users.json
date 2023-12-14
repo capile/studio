@@ -4,7 +4,7 @@
     "className": "Studio\\Model\\Users",
     "tableName": "studio_users",
     "properties": {
-        "id": { "type": "int", "min": 0, "increment": "auto", "primary": true, "required": true },
+        "id": { "type": "string", "size": 24, "primary": true, "required": true },
         "username": { "type": "string", "size": 100, "required": true, "index": [ "idx_s_users__username_idx" ] },
         "login": { "alias": "username" },
         "name": { "type": "string", "size": 200 },
@@ -15,7 +15,6 @@
         "created": { "format": "datetime", "type": "string", "required": true },
         "updated": { "format": "datetime", "type": "string", "required": true },
         "expired": { "format": "datetime", "type": "string", "index": [ "idx_s_users__expired_idx" ] }
-
     },
     "relations": {
         "Credentials": { "local": "id", "foreign": "user", "type": "many", "className": "Studio\\Model\\Credentials" }
@@ -30,7 +29,7 @@
         "active-records": "`expired` is null"
     },
     "actAs": {
-        "before-insert": { "auto-increment": [ "id" ], "timestampable": [ "created", "updated" ] },
+        "before-insert": { "identity": [ "id" ], "timestampable": [ "created", "updated" ] },
         "before-update": { "timestampable": [ "updated" ] },
         "before-delete": { "timestampable": [ "updated" ], "soft-delete": [ "expired" ] }
     },

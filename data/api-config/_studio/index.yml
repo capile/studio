@@ -27,7 +27,20 @@ all:
         "*Set Admin Password":
           bind: _admin_password
           format: password
-          class: i1s1
+          class: i1s2
+        "*Database (leave empty to assign none)":
+          bind: database.studio.dsn
+          format: text
+          class: i1s2
+          default: mongo://db.studio:27017/studio
+        "*Database User":
+          bind: database.studio.user
+          format: text
+          class: i1s2
+        "*Database Password":
+          bind: database.studio.password
+          format: password
+          class: i1s2
         "*Enable Management Interface":
           bind: studio.enable_apis
           format: bool

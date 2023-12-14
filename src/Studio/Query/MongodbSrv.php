@@ -14,6 +14,6 @@ namespace Studio\Query;
 
 use Studio\Query\Mongodb;
 
-class Mongo extends Mongodb
+class MongodbSrv extends Mongodb
 {
 }

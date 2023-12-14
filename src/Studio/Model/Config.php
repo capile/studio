@@ -28,7 +28,7 @@ class Config extends Model
 {
     public static $schema, $webRepoClient=['ssh'=>'*SSH using public keys', 'http'=>'*HTTP using token'];
 
-    protected $app, $studio, $user;
+    protected $app, $studio, $database, $user;
 
     public function choicesStudioVersion()
     {
@@ -55,7 +55,7 @@ class Config extends Model
 
     public function renderTitle()
     {
-        $title = $this->__uid;
+        $title = (isset($this->__source_uid)) ?$this->__source_uid :(string)$this;
         if(($tt = S::t('title', 'model-'.$title)) && $tt!=='title') $title = $tt;
         unset($tt);
 

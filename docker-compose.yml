@@ -13,12 +13,15 @@ services:
     #  - STUDIO_ENV=dev
     #  - STUDIO_APP_ROOT=/var/www/studio
     #  - STUDIO_DATA=/var/www/studio/data
+    #  - STUDIO_DOCUMENT_ROOT=/var/www/studio/data/web
   db.studio:
     hostname: db.studio
     container_name: db.studio
     image: mongo:latest
     volumes:
       - studio-db:/data/db:Z
+    ports:
+      - 27017:27017
   web.studio:
     hostname: web.studio
     container_name: web.studio

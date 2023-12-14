@@ -27,4 +27,4 @@ all:
     default-route: run
   database:
     studio:
-      dsn: sqlite:data/studio.db
+      dsn: sqlite:studio.db

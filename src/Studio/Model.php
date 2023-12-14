@@ -757,6 +757,9 @@ class Model implements ArrayAccess, Iterator, Countable
     {
         $cn = get_class($this);
         $Q = static::queryHandler();
+        if(!($Q instanceof \Studio\Query\Sql)) {
+            return $this->identityTrigger($fields, $conn);
+        }
         $schema = $cn::$schema;
         $scope = $cn::pk();
         foreach($fields as $fn) {
@@ -2811,7 +2814,7 @@ class Model implements ArrayAccess, Iterator, Countable
             $firstName = $name;
         }
         if (method_exists($this, $m)) {
-            $ret = $this->$m();
+            return $this->$m();
         } else if(!isset(static::$schema->properties[$firstName]) && strstr('ABCDEFGHIJKLMNOPQRSTUVWXYZ!', substr($name, 0, 1))) {
             if($dot && isset($this->$firstName)) {
                 if(is_object($this->$firstName)) return $this->$firstName->$ref;
@@ -2823,7 +2826,15 @@ class Model implements ArrayAccess, Iterator, Countable
             } else if(isset(static::$schema->relations[$name])) {
                 return $this->getRelation($name);
             }
-        } else if (isset($this->$name)) {
+        }
+        if(isset(static::$schema->properties[$firstName]->alias)) {
+            $alias = static::$schema->properties[$firstName]->alias;
+            if($name!==$firstName && $ref) $name = $alias.'.'.$ref;
+            else $name = $alias;
+            $firstName = $alias;
+            unset($alias);
+        }
+        if (isset($this->$name)) {
             $ret = $this->$name;
         } else if($dot && $firstName && $ref && (isset($this->$firstName) || method_exists($this, $m='get'.S::camelize($firstName, true)))) {
             if(method_exists($this, $m='get'.S::camelize($firstName, true))) {

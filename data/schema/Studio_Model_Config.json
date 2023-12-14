@@ -6,6 +6,7 @@
     "properties": {
         "studio": { "type": "object" },
         "app": { "type": "object" },
+        "database": { "type": "object" },
         "user": { "type": "object" }
     },
     "scope": {

@@ -4,7 +4,7 @@
     "tableName": "studio_groups",
     "className": "Studio\\Model\\Groups",
     "properties": {
-        "id": { "type": "int", "increment": "auto", "required": true, "primary": true },
+        "id": { "type": "string", "size": 24, "required": true, "primary": true },
         "name": { "type": "string", "size": 200, "required": true },
         "description": { "type": "string", "size": 500 },
         "priority": { "type": "int", "required": true },
@@ -23,7 +23,7 @@
         "active-records": "`expired` is null"
     },
     "actAs": {
-        "before-insert": { "auto-increment": [ "id" ], "timestampable": [ "created", "updated" ] },
+        "before-insert": { "identity": [ "id" ], "timestampable": [ "created", "updated" ] },
         "before-update": { "timestampable": [ "updated" ] },
         "before-delete": { "timestampable": [ "updated" ], "soft-delete": [ "expired" ] }
     },
