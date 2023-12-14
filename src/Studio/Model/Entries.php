@@ -1506,8 +1506,7 @@ class Entries extends Model
     {
         static $pat0;
 
-        $f = preg_replace('#/+$#', '/', $file) . static::$indexFile;
-
+        $f = preg_replace('#/+$#', '', $file) . '/' . static::$indexFile;
         if(!$pat && is_null($pat0)) {
             $pat0 = '{,.'.S::$lang.'}{,.'.implode(',.',array_keys(Contents::$contentType)).'}';
         }
