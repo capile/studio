@@ -308,6 +308,10 @@ class Query extends SchemaObject
                             $r['options'] += $r['options']['options'];
                             unset($r['options']['options']);
                         }
+                        if(isset($r['options']['api_options'])) {
+                            $r['options'] += $r['options']['api_options'];
+                            unset($r['options']['api_options']);
+                        }
                         if(isset($r['options']['className'])) {
                             $r['class'] = $r['options']['className'];
                         }
