@@ -17,7 +17,9 @@ use Studio\App;
 use Studio\Cache;
 use Studio\Exception\AppException;
 use Studio\Model;
+use Studio\Model\Tokens;
 use Studio\Query;
+use Studio\Studio;
 use Studio\Yaml;
 use Exception;
 
@@ -281,7 +283,26 @@ class Api
         if(!($url=$this->config('token_endpoint')) || !isset(self::$C[$n]) || !($conn = curl_copy_handle(self::$C[$n]))) return false;
         $ckey .= '-'.sha1($url);
 
-        if(!(($R=Cache::get($ckey, 0, 'file')) && isset($R['access_token']) && isset($R['expires']) && $R['expires']>time())) {
+        $R = Cache::get($ckey, 0);
+        $tokenId = null;
+        if(!$R && Studio::config('enable_api_index') && ($T=Tokens::find(['type'=>'authorization', 'token'=>$n],1,['options', 'updated', 'id']))) {
+            $R = $T->options;
+            if(is_string($R)) $R = S::unserialize($R, 'json');
+            if(!isset($R['expires']) && isset($R['expires_in'])) $R['expires'] = S::strtotime($T->updated) + (int)$R['expires_in'] -5;
+            $R['token_id'] = $T->id;
+            $tokenId = $T->id;
+            unset($T);
+        }
+        if($R && isset($R['access_token'])) {
+            if(isset($R['expires']) && $R['expires']<time()) {
+                if(isset($R['refresh_token'])) {
+                    $R = $this->refreshToken($n, $R, $exception);
+                } else {
+                    $R = null;
+                }
+            }
+        }
+        if(!$R) {
             // try to fetch a new access_token based on the refresh token
             $d = [
                 'grant_type' => ($c=$this->config('grant_type')) ?$c :'client_credentials',
@@ -295,7 +316,6 @@ class Api
             } else {
                 $data = http_build_query($d);
                 if(!$ct) $ct = 'application/x-www-form-urlencoded';
-
             }
             $method = 'POST';
             $headers = array(
@@ -315,6 +335,11 @@ class Api
                 if(isset($R['expires_in'])) $expires = $R['expires_in'] -5;
                 $R['expires'] = time()+$expires;
                 Cache::set($ckey, $R, 0);
+                if($tokenId && ($T=Tokens::find(['type'=>'authorization', 'token'=>$n, 'id'=>$tokenId],1,null))) {
+                    $T->options = $R;
+                    $T->save();
+                    unset($T);
+                }
             } else {
                 S::log('[WARNING] Could not retrieve '.$n.' tokens!', $R, $d);
                 return false;
@@ -322,6 +347,53 @@ class Api
         }
 
         $this->authorizationHeader('Bearer',  $R['access_token']);
+    }
+
+    public function refreshToken($n='zoom-api', $R=null, $exception=true)
+    {
+        $ckey = $n.'/req-token';
+        if(!($url=$this->config('token_endpoint')) || !isset(self::$C[$n]) || !($conn = curl_copy_handle(self::$C[$n]))) return false;
+        $ckey .= '-'.sha1($url);
+
+        $tokenId = (isset($R['token_id'])) ?$R['token_id'] :null;
+        $d = ['grant_type'=>'refresh_token', 'refresh_token'=>$R['refresh_token']];
+        if(($ct = (string)$this->config('contentType')) && substr($c, -4)==='json') {
+            $data = S::serialize($d, 'json');
+        } else {
+            $data = http_build_query($d);
+            if(!$ct) $ct = 'application/x-www-form-urlencoded';
+        }
+        $method = 'POST';
+        $headers = array(
+            'accept: application/json',
+            'authorization: Basic '.base64_encode($this->config('client_id').':'.$this->config('client_secret')),
+            'content-type: '.$ct,
+        );
+        //curl_setopt($conn, CURLOPT_HEADER, false);
+        curl_setopt($conn, CURLOPT_URL, $url);
+        curl_setopt($conn, CURLOPT_POST, true);
+        curl_setopt($conn, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($conn, CURLOPT_HTTPHEADER, $headers);
+        $R = $this->_exec($conn, 'json');
+        curl_close($conn);
+        if($R && isset($R['access_token'])) {
+            if(!isset($R['expires'])) {
+                $expires = 100;
+                if(isset($R['expires_in'])) $expires = $R['expires_in'] -5;
+                $R['expires'] = time()+$expires;
+            }
+            Cache::set($ckey, $R, 0);
+            if($tokenId && Studio::config('enable_api_index') && ($T=Tokens::find(['type'=>'authorization', 'token'=>$n, 'id'=>$tokenId],1,null))) {
+                $T->options = $R;
+                $T->save();
+                unset($T);
+            }
+        } else {
+            if(S::$log>0) S::log('[INFO] Could not refresh '.$n.' tokens');
+            $R = false;
+        }
+
+        return $R;
     }
 
     public function authorizationHeader($type, $credentials=null)
