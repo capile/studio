@@ -655,115 +655,90 @@ class Entries extends Model
 
     public static function file($url, $check=true, $pat=null)
     {
-        static $pat0;
+        static $pat0, $repod, $repos;
         if(!$check && !$pat && is_null($pat0)) {
             $pat0 = '{,.'.S::$lang.'}{,.'.implode(',.',array_keys(Contents::$contentType)).'}';
         }
         if(!$check && !$pat) $pat = $pat0;
-
-        $src = [];
-        if(S_REPO_ROOT && ($rs = Studio::config('web-repos'))) {
-            foreach($rs as $rn=>$repo) {
-                if(isset($repo['id'])) $rn = $repo['id'];
-                if(!is_dir($d=S_REPO_ROOT.'/'.$rn)) continue;
-                $mu = (isset($repo['mount'])) ?$repo['mount'] :'';
-                if($mu===false) continue;
-                $murl = $url;
-                if($mu) {
-                    if(is_array($mu) && $mu) {
-                        foreach($mu as $mud) {
-                            $mum = null;
-                            if(strpos($mud, ':')) list($mud, $mum) = explode(':', $mud);
-                            if($mud===$url) {
-                                $murl = '';
-                            } else if(substr($url, 0, strlen($mud)+1)===$mud.'/') {
-                                $murl = substr($url, strlen($mud));
-                            } else {
-                                unset($mud);
-                                continue;
+        if(is_null($repos)) {
+            $repos = [];
+            $repod = [];
+            if(S_REPO_ROOT && ($rs = Studio::config('web-repos'))) {
+                foreach($rs as $i=>$repo) {
+                    $rn = (isset($repo['id']) && $repo['id']) ?$repo['id'] :$i;
+                    if(is_dir($d=S_REPO_ROOT.'/'.$rn)) {
+                        if(isset($repo['mount-src']) && ($msrc=preg_replace('#^([^\:]+\:|/+)#', '', $repo['mount-src'])) && !preg_match('#/\.\./#', $msrc) && !in_array($msrc, ['.', '/'])) $d .= '/'.$msrc;
+                        $repos[$rn]=$d;
+                        $mu = (isset($repo['mount'])) ?$repo['mount'] :'';
+                        if($mu==='/') $mu='';
+                        if(is_array($mu)) {
+                            foreach($mu as $local=>$mud) {
+                                if(substr($mud, 0, 1)!=='/') $mud = '/'.$mud;
+                                if(!isset($repod[$mud])) {
+                                    if(is_int($local)) {
+                                        $repod[$mud] = $d;
+                                    } else {
+                                        if($local && substr($local, 0, 1)!=='/') $local='/'.$local;
+                                        if(is_dir($d.$local)) $repod[$mud] = $d.$local;
+                                    }
+                                }
+                                unset($mu[$local], $local, $mud);
                             }
-                            if($mum && $mum!=='.' && $mum!=='/') {
-                                $d .= '/'.$mum;
-                            }
-                            if(isset($repo['mount-src'])) unset($repo['mount-src']);
-                            break;
+                        } else if(!isset($repod[$mu])) {
+                            $repod[$mu] = $d;
                         }
-                        if(!isset($mud)) continue;
-                    } else if($mu===$url) {
-                        $murl = '';
-                    } else if(substr($url, 0, strlen($mu)+1)===$mu.'/') {
-                        $murl = substr($url, strlen($mu));
-                    } else {
-                        continue;
+                        unset($mu);
                     }
+                    unset($rs[$i], $repo, $i, $d);
                 }
-
-                if(isset($repo['mount-src']) && ($msrc=preg_replace('/([^\:]+\:)/', '', $repo['mount-src'])) && !preg_match('#/\.\./#', $repo['mount-src'])) {
-                    if($msrc!='.' && $msrc!='/') {
-                        $d .= '/'.$msrc;
-                    }
-                }
-
-                $f = $d.$murl;
-                if(is_dir($f)) {
-                    if($r = self::indexFile($f, $pat)) {
-                        $src = array_merge($src, $r);
-                    }
-                } else if(!preg_match('/\.[a-z0-9]+$/', $f)) {
-                    $f .= $pat;
-                    $src[] = $f;
-                } else {
-                    $src[] = $f;
-                }
-                if($check) {
-                    if($src) {
-                        if(isset($src[1])) {
-                            $f = '{'.implode(',',$src).'}';
-                        } else {
-                            $f = $src[0];
-                        }
-                        if(strpos($f, '{')!==false) {
-                            if($r=S::glob($f)) {
-                                return $r[0];
-                            }
-                        } else if(file_exists($f)) {
-                            return $f;
-                        }
-                        $src = [];
-                    }
-                    continue;
-                }
-                unset($f, $d, $murl, $mu);
+                unset($rs);
+            }
+            if(!isset($repod[''])) {
+                $repod[''] = S_DOCUMENT_ROOT;
             }
         }
-        $f = S_DOCUMENT_ROOT . ((substr($url, 0, 1)!='/') ?'/' :'').$url;
-        if(is_dir($f)) {
-            if($r = self::indexFile($f, $pat)) {
-                $src = array_merge($src, $r);
-            }
-        } else if(!preg_match('/\.[a-z0-9]+$/', $f)) {
-            $f .= $pat;
-            $src[] = $f;
-        } else {
-            $src[] = $f;
-        }
 
-        if($src) {
-            if(isset($src[1])) {
-                $f = '{'.implode(',',$src).'}';
+        $urlp = ($url && $url!=='/') ?preg_replace('#/+$#', '', $url) :'';
+        $d = null;
+        if($repos && $urlp) {
+            if(($sp=strpos($urlp, ':')) && ($urld=substr($urlp, 0, $sp))) {
+                if(isset($repos[$urld])) {
+                    $d = $repos[$urld];
+                    $urlp = substr($urlp, $sp+1);
+                }
             } else {
-                $f = $src[0];
-            }
-            if(strpos($f, '{')!==false) {
-                if($r=S::glob($f)) {
-                    return ($check) ?$r[0] :$r;
+                $urld = $urlp;
+                while($urld) {
+                    if($urld==='/') $urld='';
+                    if(isset($repod[$urld])) {
+                        $d = $repod[$urld];
+                        $urlp = substr($urlp, strlen($urld));
+                        break;
+                    }
+                    $urld = (strpos($urld, '/')!==false) ?preg_replace('#/[^/]*$#', '', $urld) :'';
                 }
-            } else if(file_exists($f)) {
-                return ($check) ?$f :[$f];
             }
+            unset($urld);
+        }
+        if(is_null($d)) {
+            $d = $repod[''];
         }
 
-        return ($check) ?null :[];
+        $r = [];
+        $f   = $d.$urlp;
+        if(!preg_match('/\.[a-z0-9]+$/', $urlp) && ($fs = self::indexFile($f, $pat))) {
+            $r = $fs;
+            unset($fs);
+        } else if(file_exists($f)) {
+            $r[] = $f;
+        } else {
+            $r = S::glob(($check) ?$f :$f.$pat);
+        }
+        if($check && $r) {
+            return $r[0];
+        }
+
+        return ($check) ?null :$r;
     }
 
     public static function meta(&$p)
@@ -1048,22 +1023,30 @@ class Entries extends Model
         }
         if($checkTemplate) {
             $tu = [];
+            $tpld=Studio::templateDir();
+            $tpld = (count($tpld)===1) ?$tpld[0] :'{'.implode(',', $tpld).'}';
             while(strrpos($u, '/')!==false) {
                 $u = substr($u, 0, strrpos($u, '/'));
-                $tu[] = $u.'/_tpl_.';
+                if($found = self::file($u.'/_tpl_.', false, '*')) {
+                    foreach($found as $fp) {
+                        $bfp = basename($fp);
+                        if(!isset($tu[$bfp])) $tu[$bfp] = $fp;
+                        unset($bfp, $fp);
+                    }
+                }
+                $found=null;
+                if($found = S::glob($tpld.$u.'/_tpl_.*')) {
+                    foreach($found as $fp) {
+                        $bfp = basename($fp);
+                        if(!isset($tu[$bfp])) $tu[$bfp] = $fp;
+                        unset($bfp, $fp);
+                    }
+                }
+                $found=null;
             }
 
             if($tu) {
-                $tup = (count($tu)==1)?$tu[0] :'{'.implode(',',$tu).'}';
-                $pt = self::file($tup, false, '*');
-                if($pt) $pages = array_merge($pages, $pt);
-                unset($pt);
-                if($tpld=Studio::templateDir()) {
-                    $tpld = (count($tpld)===1) ?$tpld[0] :'{'.implode(',', $tpld).'}';
-                    $pt = S::glob($tpld.$tup.'*');
-                    if($pt) $pages = array_merge($pages, $pt);
-                    unset($pt);
-                }
+                $pages = array_merge($pages, array_values($tu));
             }
             unset($tu);
         }

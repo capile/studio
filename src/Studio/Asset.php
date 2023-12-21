@@ -18,6 +18,7 @@ use Studio as S;
 use Studio\App;
 use Studio\Cache;
 use Studio\Studio;
+use Studio\Model\Entries;
 use ArrayObject;
 
 class Asset
@@ -406,7 +407,7 @@ class Asset
                 foreach(static::$optimizePatterns as $re=>$ext) {
                     if(preg_match_all($re, $url, $m) && $m[0]) {
                         foreach($m[1] as $i=>$o) {
-                            if(file_exists($f=$root.$o)) {
+                            if(($f=Entries::file($o, true)) || file_exists($f=$root.$o)) {
                                 if(!isset($assets[$ext])) $assets[$ext]=array();
                                 $assets[$ext][$f] = filemtime($f);
                                 if($url===$m[0][$i]) $url = '';
@@ -424,7 +425,7 @@ class Asset
                 else if (isset(static::$optimizeTemplates[$m[1]])) $ext = $m[1];
                 else continue;
 
-                if((isset($m[2]) && $m[2]) || preg_match('#^(https?:)?//#', $url) || !(file_exists($f=$root.$url) || (file_exists($f=$url) && (substr($url, 0, strlen($root)+1)===$root.'/' || substr($url, 0, strlen(S_ROOT)+1)===S_ROOT.'/' )) )) {
+                if((isset($m[2]) && $m[2]) || preg_match('#^(https?:)?//#', $url) || !(($f=Entries::file($url)) || file_exists($f=$root.$url) || (file_exists($f=$url) && (substr($url, 0, strlen($root)+1)===$root.'/' || substr($url, 0, strlen(S_ROOT)+1)===S_ROOT.'/' )) )) {
                     // not to be compressed, just add to output
                     $r .= sprintf(static::$optimizeTemplates[$ext], S::xml($url));
                 } else {
