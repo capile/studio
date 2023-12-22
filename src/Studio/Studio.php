@@ -1210,4 +1210,9 @@ class Studio
 
         return ($asArray) ?$d :$d[0];
     }
+
+    public static function realpath($url, $check=false, $pattern=true)
+    {
+        return Entries::file($url, $check, $pattern);
+    }
 }

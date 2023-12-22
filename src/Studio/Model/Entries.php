@@ -653,6 +653,7 @@ class Entries extends Model
         return $v;
     }
 
+    // use $pat===true to return the probable file location  (doesn't need to exist)
     public static function file($url, $check=true, $pat=null)
     {
         static $pat0, $repod, $repos;
@@ -726,19 +727,22 @@ class Entries extends Model
 
         $r = [];
         $f   = $d.$urlp;
+        $g = (strpos($urlp, '{')===false);
         if(!preg_match('/\.[a-z0-9]+$/', $urlp) && ($fs = self::indexFile($f, $pat))) {
             $r = $fs;
             unset($fs);
-        } else if(file_exists($f)) {
-            $r[] = $f;
+        } else if($g) {
+            if($pat===true || file_exists($f)) $r[] = $f;
+        } else if($pat===true) {
+            $r = S::glob(($check) ?$f :$f.$pat0, true);
         } else {
             $r = S::glob(($check) ?$f :$f.$pat);
         }
-        if($check && $r) {
-            return $r[0];
+        if($check || $pat===true) {
+            return ($r) ?$r[0] :null;
         }
 
-        return ($check) ?null :$r;
+        return $r;
     }
 
     public static function meta(&$p)
@@ -1485,16 +1489,21 @@ class Entries extends Model
         return self::_checkPage($file, true, false, $attr);
     }
 
+    // use $pat===true to return the probable file location  (doesn't need to exist)
     public static function indexFile($file, $pat=null)
     {
         static $pat0;
 
         $f = preg_replace('#/+$#', '', $file) . '/' . static::$indexFile;
-        if(!$pat && is_null($pat0)) {
+        if((!$pat || $pat===true) && is_null($pat0)) {
             $pat0 = '{,.'.S::$lang.'}{,.'.implode(',.',array_keys(Contents::$contentType)).'}';
         }
         if(is_null($pat)) $pat = $pat0;
 
-        return S::glob($f.$pat);
+        if($pat===true) {
+            return S::glob($f.$pat0, true);
+        } else {
+            return S::glob($f.$pat);
+        }
     }
 }

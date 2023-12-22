@@ -3056,12 +3056,12 @@ class Studio
         }
     }
 
-    public static function glob($pat)
+    public static function glob($pat, $showPossibilities=null)
     {
-        if(defined('GLOB_BRACE')) {
+        if(defined('GLOB_BRACE') && !$showPossibilities) {
             return glob($pat, GLOB_BRACE);
         } else if (strpos($pat, '{')===false) {
-            return glob($pat);
+            return ($showPossibilities) ?[$pat] :glob($pat);
         }
         $pat0 = $pat;
         $todo = [];
@@ -3100,6 +3100,9 @@ class Studio
             $i--;
         }
         $r = [];
+
+        if($showPossibilities) return $todo;
+
         foreach($todo as $i=>$o) {
             $r = array_merge($r, glob($o));
         }
