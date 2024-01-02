@@ -1,6 +1,6 @@
 ## tecnodesign/studio:v1.1
 #
-# docker build -t tecnodesign/studio:latest -t tecnodesign/studio:v1.1 .
+# docker build -t tecnodesign/studio:latest -t tecnodesign/studio:v1.1 "git@github.com:capile/studio.git#main"
 # docker push tecnodesign/studio:latest
 # docker push tecnodesign/studio:v1.1
 FROM php:8.2-fpm-alpine

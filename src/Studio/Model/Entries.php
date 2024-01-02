@@ -733,6 +733,7 @@ class Entries extends Model
             unset($fs);
         } else if($g) {
             if($pat===true || file_exists($f)) $r[] = $f;
+            else if(!$check) $r = S::glob($f.$pat);
         } else if($pat===true) {
             $r = S::glob(($check) ?$f :$f.$pat0, true);
         } else {
