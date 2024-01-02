@@ -342,6 +342,7 @@ class Api
                 }
             } else {
                 S::log('[WARNING] Could not retrieve '.$n.' tokens!', $R, $d);
+                if($exception) throw new AppException('Could not retrieve '.$n.' tokens!');
                 return false;
             }
         }
@@ -390,6 +391,7 @@ class Api
             }
         } else {
             if(S::$log>0) S::log('[INFO] Could not refresh '.$n.' tokens');
+            if($exception) throw new AppException('Could not retrieve '.$n.' tokens!');
             $R = false;
         }
 
