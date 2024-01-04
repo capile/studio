@@ -123,7 +123,6 @@ ENV STUDIO_DATA=/opt/studio/data
 ENV STUDIO_CONFIG=/var/www/studio/app.yml
 ENV STUDIO_ENV="prod"
 ENV STUDIO_INIT=""
-VOLUME /opt/studio/data
-VOLUME /opt/studio/config
+VOLUME /opt/studio
 ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]
 CMD ["php-fpm"]
