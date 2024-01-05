@@ -758,7 +758,7 @@ class Studio
         }
         if(!$E && ($E=Entries::findPage($url, false, true))) {
             unset($f, $published);
-        } else if(preg_match('/('.str_replace('.', '\.', implode('|',self::$allowedExtensions)).')$/', $url, $m) && ($E=Entries::findPage($nurl=substr($url,0,strlen($url)-strlen($m[1])), false, true))) {
+        } else if(preg_match('/('.str_replace('.', '\.', implode('|',self::$allowedExtensions)).')$/', $url, $m) && ($nurl=substr($url,0,strlen($url)-strlen($m[1]))) && ($E=Entries::findPage($nurl, false, true))) {
             $url = $nurl;
             unset($f, $published, $nurl);
         }
