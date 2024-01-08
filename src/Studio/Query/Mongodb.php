@@ -313,6 +313,16 @@ class Mongodb
         return $r;
     }
 
+    public static function buildFilter(&$q)
+    {
+        $r = [];
+        if(isset($q['where'])) {
+
+        }
+
+        return $r;
+    }
+
     public function scope($s=null)
     {
         if(($cn=$this->_schema) && ($properties=$cn::columns($s, null, 0, true))) {
@@ -570,7 +580,7 @@ class Mongodb
                 $action = $q['action'];
             }
             if(isset($q['where'])) {
-                $filter = $q['where'];
+                $filter = static::buildFilter($q);
             }
             if(isset($q['options']) && is_array($q['options'])) {
                 $options = $q['options'];
@@ -592,9 +602,14 @@ class Mongodb
         }
 
         $C = self::connect($n);
-        $stmt = $C->$action($filter, $options);
-        if(!$stmt) {
-            throw new Exception('Statement failed! '.$q);
+        $stmt = null;
+        try {
+            $stmt = $C->$action($filter, $options);
+        } catch(Exception $e) {
+            S::log("[WARNING] Could not {$action} on {$n}: ".$e);
+        }
+        if($stmt===false || is_null($stmt)) {
+            throw new Exception('Statement failed! '.S::serialize($q, 'json')."\nfilter: ".S::serialize($filter, 'json')."\noptions: ".S::serialize($options, 'json').var_export($stmt, true));
         }
         return $stmt;
     }
@@ -761,5 +776,19 @@ class Mongodb
     {
         if(S::$log>1) S::log('[DEBUG] Define: '.__METHOD__);
     }
+
+    public function count()
+    {
+        if(is_null($this->_count)) {
+            if(!$this->_schema) return false;
+            $q = $this->buildQuery((bool)$this->config('countable'));
+            $q['action'] = 'count';
+            $this->_count = $this->run($q);
+            S::log(__METHOD__, $q, var_export($this, true));
+        }
+
+        return $this->_count;
+    }
+
 
 }
