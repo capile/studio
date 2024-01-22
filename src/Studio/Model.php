@@ -737,12 +737,13 @@ class Model implements ArrayAccess, Iterator, Countable
                         $result = eval($fn);
                     }
                     if (!$result) {
+                        if(S::$log<=0) return false;
                         throw new Exception("{$fn} ({$e}) failed on [".static::$schema['tableName'].']');
                     }
                     unset($eo[$i], $i, $fn);
                 }
             } catch (Exception $e) {
-                S::log('[INFO] '.get_called_class().'::runEvent(), '.$e->getLine().": {$fn}\nerror: ".$e->getMessage());
+                if(S::$log>0) S::log('[INFO] '.get_called_class().'::runEvent(), '.$e->getLine().": {$fn}\nMessage: ".$e->getMessage());
                 return false;
             }
         }

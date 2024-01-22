@@ -410,7 +410,7 @@ class Index extends Model
                         S::log('[ERROR] There were a few problems while indexing '.$cn.': '.$e->getMessage());
                     }
                 }
-                if(S::$log > 0 && $count > $offset) S::log('[INFO] Ongoing index offset for '.$cn.': '.$offset);
+                if(S::$log > 0 && $count > $offset) S::log('[INFO] Ongoing index offset for '.$cn.': '.$offset.' / '.$count);
             }
             unset($R, $L);
         }
