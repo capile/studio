@@ -299,6 +299,7 @@ class Index extends Model
         } else {
             $pscope = $scope;
         }
+        $continue = true;
 
         if($R) {
             $countable = (method_exists($R, 'config')) ?$R->config('countable') :true;
@@ -316,7 +317,7 @@ class Index extends Model
             if(!$limit) $limit = 1000;
             $pkid = $cn::pk();
             $ppk = ['id', 'uid', 'uuid'];
-            while($count > $offset) {
+            while($continue && $count > $offset) {
                 if($offset!==0 || $count===0 || !($L=$R->response())) {
                     $L = $R->fetch($offset, $limit);
                 }
@@ -388,7 +389,14 @@ class Index extends Model
                             }
                         }
                         $P = [];
-                        $o->runEvent('index');
+                        if(!$o->runEvent('index')) {
+                            if(method_exists($R, 'config') && $R->config('indexStopOnError')) {
+                                $continue = false;
+                                break;
+                            } else {
+                                continue;
+                            }
+                        }
                         if($preview=$o->asArray($pscope, $keyFormat, $valueFormat, $serialize)) {
                             foreach($preview as $n=>$v) {
                                 if(!S::isempty($n)) {
