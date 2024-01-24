@@ -604,6 +604,12 @@ class Client extends SchemaObject
             $U = S::getUser();
             $state = S::salt(10);
             $url = S::buildUrl(S::scriptName(true));
+            if($L=Storage::find(['type'=>'authorization', 'token'=>$this->id, 'id!='=>$U->getSessionId()],null,null,false)) {
+                foreach($L as $i=>$o) {
+                    $o->delete();
+                    unset($L[$i], $i, $o);
+                }
+            }
             $Client = Storage::replace([
                 'type'=>'authorization',
                 'id'=>$U->getSessionId(),

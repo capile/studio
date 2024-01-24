@@ -285,7 +285,7 @@ class Api
 
         $R = Cache::get($ckey, 0);
         $tokenId = null;
-        if(!$R && Studio::config('enable_api_index') && ($T=Tokens::find(['type'=>'authorization', 'token'=>$n],1,['options', 'updated', 'id']))) {
+        if(Studio::config('enable_api_index') && ($T=Tokens::find(['type'=>'authorization', 'token'=>$n],1,['options', 'updated', 'id']))) {
             $R = $T->options;
             if(is_string($R)) $R = S::unserialize($R, 'json');
             if(!isset($R['expires']) && isset($R['expires_in'])) $R['expires'] = S::strtotime($T->updated) + (int)$R['expires_in'] -5;
@@ -334,12 +334,12 @@ class Api
                 $expires = 100;
                 if(isset($R['expires_in'])) $expires = $R['expires_in'] -5;
                 $R['expires'] = time()+$expires;
-                Cache::set($ckey, $R, 0);
                 if($tokenId && ($T=Tokens::find(['type'=>'authorization', 'token'=>$n, 'id'=>$tokenId],1,null))) {
                     $T->options = $R;
                     $T->save();
                     unset($T);
                 }
+                Cache::set($ckey, $R, 0);
             } else {
                 S::log('[WARNING] Could not retrieve '.$n.' tokens!', $R, $d);
                 if($exception) throw new AppException('Could not retrieve '.$n.' tokens!');
