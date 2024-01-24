@@ -572,7 +572,7 @@ class Client extends SchemaObject
                     }
                 }
                 if($enc!=='json') {
-                    $data = http_build_query($data, null, '&');
+                    $data = http_build_query($data, '', '&');
                     $H[] = 'content-type: '.$enc;
                 }
                 $R = QueryApi::runStatic($this->token_endpoint, $this->issuer, $data, 'POST', $H, 'json', true);
