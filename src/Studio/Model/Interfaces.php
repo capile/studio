@@ -170,6 +170,7 @@ class Interfaces extends Model
                 'key'=>'id',
                 'options'=>[
                     'scope'=>['uid'=>'id'],
+                    'link-encode'=>true,
                 ]
             ]];
             $addParent = true;
