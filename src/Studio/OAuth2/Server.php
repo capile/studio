@@ -42,7 +42,7 @@ class Server extends \OAuth2\Server
         'always_issue_new_refresh_token'    => false,
         'unset_refresh_token_after_use'     => true,
         'default_scope'                     => 'basic openid',
-        'supported_scopes'                  => [ 'basic', 'openid' ],
+        'supported_scopes'                  => [ 'openid' ],
         'grant_types'                       => [ 'authorization_code', 'client_credentials', 'jwt_bearer', 'refresh_token', 'user_credentials' ],
         'response_types'                    => [ 'code', 'code id_token', 'id_token', 'id_token token', 'token' ],
         'storages'                          => [ 'access_token', 'authorization_code', 'client_credentials', 'client', 'refresh_token', 'user_credentials', 'user_claims', 'public_key', 'jwt_bearer', 'scope' ],
@@ -110,7 +110,7 @@ class Server extends \OAuth2\Server
                 $cn = get_called_class();
                 static::$instance = new $cn($S, $cfg, $grantTypes, $responseTypes, $tokenType, $Scope);
             } catch(\Exception $e) {
-                S::log(__METHOD__, var_export($e, true));
+                S::log('[ERROR] While fetching Oauth2 Server: '.$e->getMessage());
             }
         }
 
@@ -215,7 +215,7 @@ class Server extends \OAuth2\Server
                 $M['grant_types_supported'] = ['authorization_code', 'implicit'];
             }
 
-            $M['scopes_supported'] = ['openid'];
+            $M['scopes_supported'] = self::config('supported_scopes');
           
             $M['subject_types_supported'] = ['public'];
             $M['id_token_signing_alg_values_supported']=['RS256'];

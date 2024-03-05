@@ -301,10 +301,28 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      *     );
      * @endcode
      */
-    public function getUserDetails($username)
+    public function getUserDetails($username, $scope=null)
     {
         if($U = S::user($username)) {
-            return [ 'user_id' => $username, ] + $U->asArray();
+            $r = [];
+            if($scope) {
+                $O = (!property_exists($U, 'schema')) ?$U->getObject() :$U;
+                $scopes = Server::config('supported_scopes');
+                if(property_exists($O, 'schema')) {
+                    $claims = preg_split('/[\s\,]+/', $scope, -1, PREG_SPLIT_NO_EMPTY);
+                    if(!method_exists($O, $m='renderClaim')) $m = 'asArray';
+                    foreach($claims as $c) {
+                        if(in_array($c, $scopes) && ($m!=='asArray' || isset($O::$schema->scope[$c]))) {
+                            if(($a = $O->$m($c)) && is_array($a)) {
+                                $r += $a;
+                            }
+                        }
+                    }
+                }
+            } else {
+                $r = $U->asArray();
+            }
+            return [ 'user_id' => $username, ] + $r;
         }
 
         return false;
@@ -702,17 +720,6 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
         return $this->setAuthorizationCode($code, $client_id, $user_id, $redirect_uri, $expires, $scope, $id_token);
     }
 
-    /*
-    // valid scope values to pass into the user claims API call
-    const VALID_CLAIMS = 'profile email address phone';
-
-    // fields returned for the claims above
-    const PROFILE_CLAIM_VALUES  = 'name family_name given_name middle_name nickname preferred_username profile picture website gender birthdate zoneinfo locale updated_at';
-    const EMAIL_CLAIM_VALUES    = 'email email_verified';
-    const ADDRESS_CLAIM_VALUES  = 'formatted street_address locality region postal_code country';
-    const PHONE_CLAIM_VALUES    = 'phone_number phone_number_verified';
-    */
-
     /**
      * Return claims about the provided user id.
      *
@@ -729,51 +736,11 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      */
     public function getUserClaims($user_id, $claims)
     {
-        if (!$userDetails = $this->getUserDetails($user_id)) {
+        if (!$userDetails = $this->getUserDetails($user_id, $claims)) {
             return [];
         }
 
-        $claims = explode(' ', trim($claims));
-
-        if(in_array('openid', $claims)) {
-            return $userDetails;
-        }
-
-        // @TODO: move claims to model queries
-        $userClaims = array();
-
-        // for each requested claim, if the user has the claim, set it in the response
-        $validClaims = explode(' ', self::VALID_CLAIMS);
-        foreach ($validClaims as $validClaim) {
-            if (in_array($validClaim, $claims)) {
-                if ($validClaim == 'address') {
-                    // address is an object with subfields
-                    $userClaims['address'] = $this->getUserClaim($validClaim, $userDetails['address'] ?: $userDetails);
-                } else {
-                    $userClaims = array_merge($userClaims, $this->getUserClaim($validClaim, $userDetails));
-                }
-            }
-        }
-
-        return $userClaims;
-    }
-
-    /**
-     * @param string $claim
-     * @param array  $userDetails
-     * @return array
-     */
-    protected function getUserClaim($claim, $userDetails)
-    {
-        $userClaims = array();
-        $claimValuesString = constant(sprintf('self::%s_CLAIM_VALUES', strtoupper($claim)));
-        $claimValues = explode(' ', $claimValuesString);
-
-        foreach ($claimValues as $value) {
-            $userClaims[$value] = isset($userDetails[$value]) ? $userDetails[$value] : null;
-        }
-
-        return $userClaims;
+        return $userDetails;
     }
 
     /**

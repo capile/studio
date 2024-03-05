@@ -64,7 +64,7 @@ class App
         ],
         $result,
         $http2push=false,
-        $requestIpHeader='REMOTE_ADDR',
+        $requestIpHeader='HTTP_X_FORWARDED_FOR',
         $link;
     protected static $configMap = ['tecnodesign'=>'app'];
     protected $_o=null;
@@ -936,7 +936,13 @@ class App
             self::$_request['method']=(!self::$_request['shell'])?(strtolower($_SERVER['REQUEST_METHOD'])):('get');
             self::$_request['ajax']=(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=='XMLHttpRequest');
             if (!self::$_request['shell']) {
-                self::$_request['ip'] = (isset($_SERVER[static::$requestIpHeader])) ?$_SERVER[static::$requestIpHeader] :$_SERVER['REMOTE_ADDR'];
+                $ip = (isset($_SERVER[static::$requestIpHeader])) ?$_SERVER[static::$requestIpHeader] :$_SERVER['REMOTE_ADDR'];
+                if($p=strpos($ip, ',')) {
+                    $ip = substr($ip, 0, $p);
+                    if(!isset($_SERVER['REMOTE_ADDR']) || $_SERVER['REMOTE_ADDR']!==$ip) $_SERVER['REMOTE_ADDR'] = $ip;
+                }
+                self::$_request['ip'] = $ip;
+                unset($ip, $p);
                 self::$_request['hostname']=preg_replace('/([\s\n\;]+|\:[0-9]+$)/', '', $_SERVER['HTTP_HOST']);
                 self::$_request['https']=(isset($_SERVER['HTTPS']));
                 if(isset($_SERVER['REQUEST_SCHEME'])) {
