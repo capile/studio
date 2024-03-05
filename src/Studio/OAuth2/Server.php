@@ -44,7 +44,7 @@ class Server extends \OAuth2\Server
         'allow_public_clients'              => false,
         'always_issue_new_refresh_token'    => false,
         'unset_refresh_token_after_use'     => true,
-        'default_scope'                     => 'basic openid',
+        'default_scope'                     => 'openid',
         'supported_scopes'                  => [ 'openid' ],
         'grant_types'                       => [ 'authorization_code', 'client_credentials', 'jwt_bearer', 'refresh_token', 'user_credentials' ],
         'response_types'                    => [ 'code', 'code id_token', 'id_token', 'id_token token', 'token' ],
@@ -225,7 +225,7 @@ class Server extends \OAuth2\Server
             } else if(self::config('use_openid_connect')) {
                 $M['grant_types_supported'] = ['authorization_code', 'implicit'];
             }
-
+            $M['token_endpoint_auth_methods_supported'] = ['client_secret_post'];
             $M['scopes_supported'] = self::config('supported_scopes');
           
             $M['subject_types_supported'] = ['public'];
