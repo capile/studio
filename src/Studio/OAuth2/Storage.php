@@ -52,6 +52,8 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
                 'expires'=>'expires',
                 'redirect_uri'=>'options.redirect_uri',
                 'scope'=>'options.scope',
+                'state'=>'options.state',
+                'nonce'=>'options.nonce',
                 'code_challenge' => 'options.code_challenge',
                 'code_challenge_method' => 'options.code_challenge_method',
             ],

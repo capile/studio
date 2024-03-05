@@ -32,7 +32,10 @@ class Server extends \OAuth2\Server
         'id_lifetime'                       => 3600,
         'access_lifetime'                   => 3600,
         'www_realm'                         => 'Service',
+        'update_routes'                     => false,
         'token_param_name'                  => 'access_token',
+        'authorize_param_name'              => 'authorize',
+        'userinfo_param_name'               => 'userinfo',
         'token_bearer_header_name'          => 'Bearer',
         'enforce_state'                     => true,
         'require_exact_redirect_uri'        => true,
@@ -129,6 +132,14 @@ class Server extends \OAuth2\Server
     {
         if(($route=App::response('route')) && isset($route['url'])) {
             S::scriptName($route['url']);
+        }
+
+        if(self::config('update_routes')) {
+            static::$routes = [
+                self::config('token_param_name')=>'executeTokenRequest',
+                self::config('authorize_param_name')=>'executeAuthorize',
+                self::config('userinfo_param_name')=>'executeUserInfo'
+            ] + static::$routes;
         }
 
         if(($p = implode('/', S::urlParams())) && isset(static::$routes[$p])) {
@@ -309,6 +320,9 @@ class Server extends \OAuth2\Server
             $is_authorized = ($_POST['authorized'] === 'yes');
         }
         */
+        if($nonce=$request->query('nonce')) {
+            $response->setParameter('nonce', $nonce);
+        }
 
         $is_authorized = true;
         $this->handleAuthorizeRequest($request, $response, $is_authorized, $U->uid());
