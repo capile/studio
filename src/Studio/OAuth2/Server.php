@@ -96,6 +96,7 @@ class Server extends \OAuth2\Server
                     }
                 }
             }
+            /*
             if($r=self::config('response_types')) {
                 $multi = [];
                 foreach($r as $i=>$o) {
@@ -124,7 +125,7 @@ class Server extends \OAuth2\Server
                     unset($multi[$o], $o, $cn);
                 }
                 unset($r, $multi);
-            }
+            }*/
 
             // move this to the storage
             $tokenType=null;
