@@ -19,6 +19,9 @@ use Studio\Cache;
 use Studio\Studio;
 use OAuth2\Request;
 use OAuth2\Response;
+use OAuth2\Controller\AuthorizeController;
+use Studio\OAuth2\OpenID\AuthorizeController as OpenIDAuthorizeController;
+
 
 class Server extends \OAuth2\Server
 {
@@ -361,5 +364,33 @@ class Server extends \OAuth2\Server
         if(S::$log > 1) S::log('[DEBUG] OAuth2 Authorize request: '.S::requestUri()."\n{$response}");
 
         $response->send();
+    }
+
+    /**
+     * @return AuthorizeControllerInterface
+     * @throws LogicException
+     */
+    protected function createDefaultAuthorizeController()
+    {
+        if (!isset($this->storages['client'])) {
+            throw new \LogicException('You must supply a storage object implementing \OAuth2\Storage\ClientInterface to use the authorize server');
+        }
+        if (0 == count($this->responseTypes)) {
+            $this->responseTypes = $this->getDefaultResponseTypes();
+        }
+        if ($this->config['use_openid_connect'] && !isset($this->responseTypes['id_token'])) {
+            $this->responseTypes['id_token'] = $this->createDefaultIdTokenResponseType();
+            if ($this->config['allow_implicit']) {
+                $this->responseTypes['id_token token'] = $this->createDefaultIdTokenTokenResponseType();
+            }
+        }
+
+        $config = array_intersect_key($this->config, array_flip(explode(' ', 'allow_implicit enforce_state require_exact_redirect_uri')));
+
+        if ($this->config['use_openid_connect']) {
+            return new OpenIDAuthorizeController($this->storages['client'], $this->responseTypes, $config, $this->getScopeUtil());
+        }
+
+        return new AuthorizeController($this->storages['client'], $this->responseTypes, $config, $this->getScopeUtil());
     }
 }

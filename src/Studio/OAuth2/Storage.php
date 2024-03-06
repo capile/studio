@@ -54,6 +54,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
                 'scope'=>'options.scope',
                 'state'=>'options.state',
                 'nonce'=>'options.nonce',
+                'id_token' => 'options.id_token',
                 'code_challenge' => 'options.code_challenge',
                 'code_challenge_method' => 'options.code_challenge_method',
             ],
@@ -395,7 +396,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
         ];
 
         if($scope) $r['options']['scope'] = $scope;
-        if($id_token) $r['options']['token'] = $id_token;
+        if($id_token) $r['options']['id_token'] = $id_token;
         if($code_challenge) $r['options']['code_challenge'] = $code_challenge;
         if($code_challenge_method) $r['options']['code_challenge_method'] = $code_challenge_method;
 
