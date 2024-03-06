@@ -97,11 +97,33 @@ class Server extends \OAuth2\Server
                 }
             }
             if($r=self::config('response_types')) {
+                $multi = [];
                 foreach($r as $i=>$o) {
-                    if(class_exists($cn = 'OAuth2\\ResponseType\\'.S::camelize($o, true))) {
-                        $responseTypes[$o] = new $cn($storage);
+                    if($o==='token') $O = 'AccessToken';
+                    else if($o==='code') $O = 'AuthorizationCode';
+                    else $O = S::camelize($o, true);
+                    if(($oidc && class_exists($cn = 'OAuth2\\OpenID\\ResponseType\\'.$O)) || class_exists($cn = 'OAuth2\\ResponseType\\'.$O)) {
+                        if($o==='id_token') {
+                            $responseTypes[$o] = new $cn($storage, $storage, $cfg);
+                        } else if($o==='token') {
+                            $responseTypes[$o] = new $cn($storage, null, $cfg);
+                        } else if(strpos($o, ' ')) {
+                            $multi[$o] = $cn;
+                        } else {
+                            $responseTypes[$o] = new $cn($storage, $cfg);
+                        }
                     }
+                    unset($r[$i], $i, $o);
                 }
+                foreach($multi as $o=>$cn) {
+                    if($o==='code id_token' && isset($responseTypes['code']) && isset($responseTypes['id_token'])) {
+                        $responseTypes[$o] = new $cn($responseTypes['code'], $responseTypes['id_token']);
+                    } else if($o==='id_token token' && isset($responseTypes['token']) && isset($responseTypes['id_token'])) {
+                        $responseTypes[$o] = new $cn($responseTypes['token'], $responseTypes['id_token']);
+                    }
+                    unset($multi[$o], $o, $cn);
+                }
+                unset($r, $multi);
             }
 
             // move this to the storage
@@ -320,13 +342,23 @@ class Server extends \OAuth2\Server
             $is_authorized = ($_POST['authorized'] === 'yes');
         }
         */
-        if($nonce=$request->query('nonce')) {
-            $response->setParameter('nonce', $nonce);
+        if(self::config('use_openid_connect') && self::config('allow_implicit') && $request->query('response_type')==='code') {
+            // switch authorization_code for code + id_token
+            $query = App::request('get');
+            $query['response_type'] = 'code id_token';
+            $cn = get_class($request);
+            $cookie = App::request('cookie');
+            foreach($cookie as $i=>$o) {
+                $cookie[$i] = array_shift($o);
+                unset($i, $o);
+            }
+            $request = new $cn($query, App::request('post'), [], $cookie, [], $_SERVER);
         }
 
         $is_authorized = true;
         $this->handleAuthorizeRequest($request, $response, $is_authorized, $U->uid());
         if(S::$log > 1) S::log('[DEBUG] OAuth2 Authorize request: '.S::requestUri()."\n{$response}");
+
         $response->send();
     }
 }
