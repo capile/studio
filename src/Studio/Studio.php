@@ -89,7 +89,7 @@ class Studio
             'app'=>['Studio\\Studio','standaloneApp'],
             'cleanup'=>['Studio\\Cache', 'cleanup'],
         ];
-    const VERSION = 1.0;    // should match the development branch 
+    const VERSION = 1.1;    // should match the development branch 
 
     /**
      * This is a App, the constructor is loaded once and then cached (until configuration changes)
