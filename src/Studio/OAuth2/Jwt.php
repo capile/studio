@@ -30,7 +30,12 @@ class Jwt extends BaseJwt
     {
         $header = $this->generateJwtHeader($payload, $algo);
         if(($K=openssl_pkey_get_private($key)) && ($K=openssl_pkey_get_details($K))) {
-        	$header['kid']=S::compress64(md5(preg_replace('/[\s\n\r]+/', '', $K['key'])));
+            $header['kid']=S::compress64(md5(preg_replace('/[\s\n\r]+/', '', $K['key'])));
+            if($k=array_search('executeJwksUri', Server::$routes)) {
+                $uri = S::buildUrl(S::scriptName());
+                if(!preg_match('#^(https?:|/)#', $k)) $k = $uri.'/'.urlencode($k);
+                $header['jku']=$k;
+            }
         }
 
         $segments = array(
