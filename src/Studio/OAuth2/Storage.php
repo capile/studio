@@ -92,6 +92,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
                 'user_id'=>'user',
                 'public_key'=>'options.public_key',
                 'private_key'=>'options.private_key',
+                'key_id'=>'options.key_id',
                 'encryption_algorithm'=>'options.encryption_algorithm',
                 'expires'=>'expires',
             ],

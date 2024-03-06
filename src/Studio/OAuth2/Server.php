@@ -20,7 +20,9 @@ use Studio\Studio;
 use OAuth2\Request;
 use OAuth2\Response;
 use OAuth2\Controller\AuthorizeController;
+use OAuth2\OpenID\ResponseType\IdToken;
 use Studio\OAuth2\OpenID\AuthorizeController as OpenIDAuthorizeController;
+use OAuth2\ResponseType\JwtAccessToken;
 
 
 class Server extends \OAuth2\Server
@@ -39,6 +41,7 @@ class Server extends \OAuth2\Server
         'token_param_name'                  => 'access_token',
         'authorize_param_name'              => 'authorize',
         'userinfo_param_name'               => 'userinfo',
+        'jwks_param_name'                   => 'jwks',
         'token_bearer_header_name'          => 'Bearer',
         'enforce_state'                     => true,
         'require_exact_redirect_uri'        => true,
@@ -151,7 +154,8 @@ class Server extends \OAuth2\Server
         'auth'=>'executeAuth',
         'authorize'=>'executeAuthorize',
         '.well-known/openid-configuration'=>'executeMetadata',
-        'userinfo'=>'executeUserInfo'
+        'userinfo'=>'executeUserInfo',
+        'jwks'=>'executeJwksUri',
     ];
 
     public static function app()
@@ -164,7 +168,8 @@ class Server extends \OAuth2\Server
             static::$routes = [
                 self::config('token_param_name')=>'executeTokenRequest',
                 self::config('authorize_param_name')=>'executeAuthorize',
-                self::config('userinfo_param_name')=>'executeUserInfo'
+                self::config('userinfo_param_name')=>'executeUserInfo',
+                self::config('jwks_param_name')=>'executeJwksUri',
             ] + static::$routes;
         }
 
@@ -236,6 +241,10 @@ class Server extends \OAuth2\Server
             if($k=array_search('executeUserInfo', static::$routes)) {
                 if(!preg_match('#^(https?:|/)#', $k)) $k = $uri.'/'.urlencode($k);
                 $M['userinfo_endpoint']=$k;
+            }
+            if($k=array_search('executeJwksUri', static::$routes)) {
+                if(!preg_match('#^(https?:|/)#', $k)) $k = $uri.'/'.urlencode($k);
+                $M['jwks_uri']=$k;
             }
 
             if($r=self::config('response_types')) {
@@ -392,5 +401,98 @@ class Server extends \OAuth2\Server
         }
 
         return new AuthorizeController($this->storages['client'], $this->responseTypes, $config, $this->getScopeUtil());
+    }
+
+    public function executeJwksUri()
+    {
+        static $ktypes=['rsa'=>'RSA', 'dsa'=>'DSA','dh'=>'DH', 'ec'=>'ECDSA'];
+        $r = [];
+        if($L = Storage::find('public_key')) {
+            foreach($L as $i=>$o) {
+                $d = [];
+                if(($K=openssl_pkey_get_public($o['public_key'])) && ($K=openssl_pkey_get_details($K))) {
+                    foreach($ktypes as $type=>$T) {
+                        if(isset($K[$type])) break;
+                        unset($type, $T);
+                    }
+                    if(!isset($type)) continue;
+                    $d['kty']=$T;
+                    if(isset($o['encryption_algorithm'])) $d['alg'] = $o['encryption_algorithm'];
+                    $d['use']='sig';
+                    //$d['kid']=(isset($o['key_id'])) ?$o['key_id'] :S::compress64(md5(preg_replace('/[\s\n\r]+/', '', $o['public_key'])));
+                    $d['kid']=S::compress64(md5(preg_replace('/[\s\n\r]+/', '', $o['public_key'])));
+                    foreach($K[$type] as $k=>$v) {
+                        if(strlen($k)>4) continue;
+                        $d[$k]=base64_encode($v);
+                    }
+                    $r[] = $d;
+                }
+            }
+        }
+        S::output(json_encode(['keys'=>$r],JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), 'json');
+    }
+
+    /**
+     * For Resource Controller
+     *
+     * @return JwtAccessTokenStorage
+     * @throws LogicException
+     */
+    protected function createDefaultJwtAccessTokenStorage()
+    {
+        if (!isset($this->storages['public_key'])) {
+            throw new \LogicException('You must supply a storage object implementing OAuth2\Storage\PublicKeyInterface to use crypto tokens');
+        }
+        $tokenStorage = null;
+        if (!empty($this->config['store_encrypted_token_string']) && isset($this->storages['access_token'])) {
+            $tokenStorage = $this->storages['access_token'];
+        }
+        // wrap the access token storage as required.
+        return new Jwt($this->storages['public_key'], $tokenStorage);
+    }
+
+    /**
+     * @return IdToken
+     * @throws LogicException
+     */
+    protected function createDefaultIdTokenResponseType()
+    {
+        if (!isset($this->storages['user_claims'])) {
+            throw new LogicException("You must supply a storage object implementing OAuth2\OpenID\Storage\UserClaimsInterface to use openid connect");
+        }
+        if (!isset($this->storages['public_key'])) {
+            throw new LogicException("You must supply a storage object implementing OAuth2\Storage\PublicKeyInterface to use openid connect");
+        }
+
+        $config = array_intersect_key($this->config, array_flip(explode(' ', 'issuer id_lifetime')));
+
+        return new IdToken($this->storages['user_claims'], $this->storages['public_key'], $config, new Jwt());
+    }
+
+    /**
+     * For Authorize and Token Controllers
+     *
+     * @return JwtAccessToken
+     * @throws LogicException
+     */
+    protected function createDefaultJwtAccessTokenResponseType()
+    {
+        if (!isset($this->storages['public_key'])) {
+            throw new \LogicException('You must supply a storage object implementing OAuth2\Storage\PublicKeyInterface to use crypto tokens');
+        }
+
+        $tokenStorage = null;
+        if (isset($this->storages['access_token'])) {
+            $tokenStorage = $this->storages['access_token'];
+        }
+
+        $refreshStorage = null;
+        if (isset($this->storages['refresh_token'])) {
+            $refreshStorage = $this->storages['refresh_token'];
+        }
+
+        $config = array_intersect_key($this->config, array_flip(explode(' ', 'store_encrypted_token_string issuer access_lifetime refresh_token_lifetime jwt_extra_payload_callable')));
+
+        return new JwtAccessToken($this->storages['public_key'], $tokenStorage, $refreshStorage, $config, new Jwt());
     }
 }
