@@ -391,8 +391,28 @@ class Asset
      */
     public static function minify($src, $root=false, $compress=true, $before=true, $raw=false, $output=false, $force=null)
     {
+        static $vroot;
         if($root===false) {
             $root = S_DOCUMENT_ROOT;
+        }
+        if(is_null($vroot)) {
+            $vroot = S_ROOT;
+            if(strlen(S_PROJECT_ROOT)<strlen($vroot) && substr($vroot, 0, strlen(S_PROJECT_ROOT)+1)===S_PROJECT_ROOT.'/') {
+                $vroot = S_PROJECT_ROOT;
+            }
+            if(strlen(S_APP_ROOT)<strlen($vroot) && substr($vroot, 0, strlen(S_APP_ROOT)+1)===S_APP_ROOT.'/') {
+                $vroot = S_APP_ROOT;
+            }
+            if($vroot!==S_ROOT && strpos(S_ROOT, $vroot)!==0) {// studio and app code are under different paths, use the deepest common folder
+                $a = explode('/', $vroot);
+                $vroot = array_shift($a);
+                while($a) {
+                    $b = array_shift($a);
+                    if(strpos(S_ROOT, $vroot.'/'.$b)!==0) break;
+                    $vroot .= '/'.$b;
+                }
+                unset($a, $b);
+            }
         }
         $assets = array(); // assets to optimize
         $r = ''; // other metadata not to messed with (unparseable code)
@@ -425,7 +445,7 @@ class Asset
                 else if (isset(static::$optimizeTemplates[$m[1]])) $ext = $m[1];
                 else continue;
 
-                if((isset($m[2]) && $m[2]) || preg_match('#^(https?:)?//#', $url) || !(($f=Entries::file($url)) || file_exists($f=$root.$url) || (file_exists($f=$url) && (substr($url, 0, strlen($root)+1)===$root.'/' || substr($url, 0, strlen(S_ROOT)+1)===S_ROOT.'/' )) )) {
+                if((isset($m[2]) && $m[2]) || preg_match('#^(https?:)?//#', $url) || !(($f=Entries::file($url)) || file_exists($f=$root.$url) || (file_exists($f=$url) && (substr($url, 0, strlen($root)+1)===$root.'/' || substr($url, 0, strlen($vroot)+1)===$vroot.'/' )) )) {
                     // not to be compressed, just add to output
                     $r .= sprintf(static::$optimizeTemplates[$ext], S::xml($url));
                 } else {
