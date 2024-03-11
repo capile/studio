@@ -24,7 +24,7 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.1.5';
+    const VERSION = '1.1.6';
     const VER = 1.1;
 
     protected static
@@ -161,7 +161,8 @@ class Studio
         $log,
         $logDir,
         $sqlUnicode,
-        $noeval
+        $noeval,
+        $translit
         ;
 
     /**
@@ -1909,8 +1910,16 @@ class Studio
     public static function slug($s, $accept='_', $anycase=null)
     {
         $acceptPat = ($accept) ?preg_quote($accept, '/') :'';
-        $r = preg_replace('/[^\pL\d'.$acceptPat.']+/u', '-', (string) $s);
+        $r0 = $r = preg_replace('/[^\pL\d'.$acceptPat.']+/u', '-', (string) $s);
         $r = @iconv('UTF-8', 'ASCII//TRANSLIT', $r);
+        if(ICONV_IMPL==='libiconv') { // non glibc iconv returns accents with translit
+            $r = preg_replace('/[^\-\pL\d'.$acceptPat.']+/u', '', $r);
+        } else if(strpos($r, '?')!==false && strpos($acceptPat, '?')===false) { // outdated libiconv won't have all translit chars, rebuilding from source ref
+            if(!isset(self::$translit)) {
+                require_once S_ROOT.'/data/translate/translit.php';
+            }
+            $r = @iconv('UTF-8', 'ASCII//TRANSLIT', strtr($r0, self::$translit));
+        }
         $r = preg_replace('/[^0-9a-z'.$acceptPat.']+/i', '-', $r);
         $r = trim($r, '-');
         return ($anycase)?($r):(strtolower($r));
