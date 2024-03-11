@@ -1,5 +1,5 @@
 <?php
-Studio::$translit = = [
+Studio::$translit = [
   '¢' => 'c',
   //'£' => 'lb',
   //'¥' => 'yen',
