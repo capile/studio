@@ -22,6 +22,8 @@ use Studio\Model\Migration;
 use Studio\Model\Interfaces;
 use Studio\Query;
 use Studio\Studio;
+use Studio\Exception\AppException;
+use Exception;
 
 class Index extends Model
 {
@@ -247,6 +249,13 @@ class Index extends Model
         if(!$cn || !$id) return;
         $t0 = microtime(true);
 
+        if(isset($a['schema_data']) && $a['schema_data'] && property_exists($cn, 'schema')) {
+            $d = $a['schema_data'];
+            if(is_string($d)) $d = S::unserialize($d, 'json');
+            if($d) $cn::$schema->batchSet($d);
+            unset($d);
+        }
+
         if(S::$log>0) S::log('[INFO] Indexing: '.$id.' (time: '.S::number($t0-S_TIME, 5).', mem: '.S::bytes(memory_get_peak_usage(true)).')');
 
         if(!$II) $II = Interfaces::find(['id'=>$id],1);
@@ -346,7 +355,7 @@ class Index extends Model
                             $pk = $o->getPk();
                         }
                         if(is_null($pk) || $pk==='' || $pk===false) {
-                            throw new \Exception('No primary key to index.');
+                            throw new AppException('No primary key to index.');
                         }
                         $b = ['interface'=>$id,'id'=>$pk];
                         $d = [
@@ -406,7 +415,7 @@ class Index extends Model
                         }
                         static::replace($d);
                         unset($P);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         S::log('[ERROR] There were a few problems while indexing '.$cn.': '.$e->getMessage());
                     }
                 }
@@ -573,7 +582,7 @@ class Index extends Model
                             }
                         }
                     }
-                } catch(\Exception $e) {
+                } catch(Exception $e) {
                     S::log('[WARNING] Error while creating table: '.$e->getMessage(), $H[$dbn]->lastQuery());
                 }
             }
@@ -600,7 +609,7 @@ class Index extends Model
                             }
                         }
                     }
-                } catch(\Exception $e) {
+                } catch(Exception $e) {
                     S::log('[WARNING] Error while creating table: '.$e->getMessage(), $H[$dbn]->lastQuery());
                 }
                 $cn::$schema->tableName = substr($cn::$schema->tableName, 0, strlen($cn::$schema->tableName) - 8);
