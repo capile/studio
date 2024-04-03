@@ -561,7 +561,10 @@ class App
         }
 
         $c0 = $component;
-
+        if(($areq = static::config('app', 'asset-requirements')) && is_array($areq)) {
+            static::$assetRequirements += $areq;
+            unset($areq);
+        }
         if(isset(static::$assetRequirements[$c0])) {
             $component .= ','.static::$assetRequirements[$c0];
         } else if(strpos($c0, '/') && isset(static::$assetRequirements[$c1 = str_replace('/', '.', $c0)])) {
