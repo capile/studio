@@ -1435,8 +1435,13 @@ class Api extends SchemaObject
     {
         $r = array();
         if(isset(static::$headers)) {
+            if($I=static::current()) {
+                $doNotEnvelope = $I->config('doNotEnvelope');
+            } else {
+                $doNotEnvelope = static::$doNotEnvelope;
+            }
             foreach(static::$headers as $k=>$v) {
-                if(static::$doNotEnvelope && in_array($k, static::$doNotEnvelope)) continue;
+                if($doNotEnvelope && in_array($k, $doNotEnvelope)) continue;
                 $r[$k]=$v;
                 unset($k, $v);
             }
@@ -2036,11 +2041,24 @@ class Api extends SchemaObject
     public static function headers()
     {
         $r = array();
-        $headers = ($I=static::current()) ? $I->config('headers') : static::$headers;
+        $headers = [];
+        $notEnvelope = static::$doNotEnvelope;
+        if($I=static::current()) {
+            $headers = $I->config('headers');
+            $notEnvelope = $I->config('doNotEnvelope');
+        }
+        if(static::$headers) {
+            foreach($notEnvelope as $h) {
+                if(!isset($headers[$h]) && isset(static::$headers[$h])) {
+                    $headers[$h] = static::$headers[$h];
+                }
+                unset($h);
+            }
+        }
         foreach($headers as $k=>$v) {
             $k = S::slug($k);
             $x = true;
-            if($k===static::H_LAST_MODIFIED || $k==='location' || $k==='access-control-allow-origin') {
+            if($k===static::H_LAST_MODIFIED || $k==='location' || in_array($k, $notEnvelope)) {
                 header($k.': '.$v);
                 if($x = defined($c='static::H_'.strtoupper(str_replace('-', '_', $k)))) {
                     $k=constant($c);
