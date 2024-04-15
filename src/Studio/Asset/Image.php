@@ -230,8 +230,7 @@ class Image {
         }
 
         // We don't want to run out of memory
-        if(is_null($this->originalMemoryLimit))
-            $this->originalMemoryLimit = ini_set('memory_limit', '100M');
+        S::tune('[INFO] Tuning for image optimization', 100);
 
         // Set up a blank canvas for our resized image (destination)
         $new=false;
@@ -412,11 +411,6 @@ class Image {
             // Clean up the memory
             ImageDestroy($this->img);
             $this->img=null;
-
-            if(!is_null($this->originalMemoryLimit)) {
-                ini_set('memory_limit', $this->originalMemoryLimit);
-                $this->originalMemoryLimit=null;
-            }
         }
         return $this->data;
     }
@@ -465,7 +459,8 @@ class Image {
                     $this->srcX=0;
                     $this->srcY=0;
                     if(function_exists($fn='imagecreatefrom'.$this->srcType)) {
-                        S::tune(null, filesize($src)*48/1024/1024, null);
+                        $msg = (S::$log>0) ?'[INFO] Tuning for image optimization' :null;
+                        S::tune($msg, filesize($src)*48/1024/1024);
                         $this->src=$fn($src);
                     }
                 }

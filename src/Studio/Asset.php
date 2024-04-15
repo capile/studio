@@ -284,7 +284,8 @@ class Asset
 
 
         // inspect memory usage by this component
-        S::tune(null, 32, 10);
+        $msg = (S::$log>0) ?'[INFO] Tuning for less parsing' :null;
+        S::tune($msg, 32, 10);
         if(!class_exists($compiler)) {
             return $this->build($fs, $outputFile);
         }

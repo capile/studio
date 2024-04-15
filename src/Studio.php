@@ -24,7 +24,7 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.1.8';
+    const VERSION = '1.1.9';
     const VER = 1.1;
 
     protected static
@@ -3123,20 +3123,21 @@ class Studio
         return $r;
     }
 
-    public static function tune($s=null,$m=20, $t=20)
+    public static function tune($s=null,$m=20, $t=20, $allowLessMemory=false)
     {
         if($m) {
-            static $mem;
-            if(is_null($mem)) $mem = (int) substr(ini_get('memory_limit'), 0, strlen(ini_get('memory_limit'))-1);
+            $mem = (int) substr(ini_get('memory_limit'), 0, strlen(ini_get('memory_limit'))-1);
             $used = ceil(memory_get_peak_usage() * 0.000001);
             if($m===true) $m=$used;
-            if($used + $m > $mem) {
+            if($allowLessMemory || $used + $m > $mem) {
                 $mem = ceil($used + $m);
                 ini_set('memory_limit', $mem.'M');
                 if($s) {
                     $s .= "\tincreased memory limit to ".$mem.'M';
                     gc_collect_cycles();
                 }
+            } else if($s) {
+                $s .= "\tkept current memory limit of ".$mem.'M';
             }
             $mem = $used;
             unset($used);
