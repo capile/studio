@@ -921,7 +921,24 @@ class User
     public function __toString()
     {
         if($this->_me) {
-            return (string) $this->_me;
+            if(is_string($this->_me) || ($this->_me instanceof Model)) {
+                return (string) $this->_me;
+            } else {
+                $v = "";
+                if($scope = $this->nsConfig('export', $this->nsConfig('properties'))) {
+                    foreach($scope as $n=>$t) {
+                        if(is_object($this->_me)) {
+                            $v = (isset($this->_me->$t)) ?$this->_me->$t :null;
+                        } else {
+                            $v = (isset($this->_me[$t])) ?$this->_me[$t] :null;
+                        }
+                        if(!is_null($v)) {
+                            break;
+                        }
+                    }
+                }
+                return (string) $v;
+            }
         }
         return '';
     }
@@ -1103,7 +1120,7 @@ class User
             } else {
                 return '<p>'
                   . S::t('You\'re currently signed in as:', 'user')
-                  . ' <strong>'.S::xml((string)$this->_me).'</strong></p>'
+                  . ' <strong>'.S::xml($this->__toString()).'</strong></p>'
                   . ((isset(static::$actions['signout'])) ?'<p class="ui-buttons"><a href="'.S::xml(static::$actions['signout']).'" class="button">'.S::t('Sign Out', 'user').'</a></p>' :'')
                   ;
             }
@@ -1438,7 +1455,7 @@ class User
                 }
                 return $r;
             } else {
-                return array('username'=>(string) $this->_me);
+                return array('username'=>(string) $this);
             }
         }
         return array();
