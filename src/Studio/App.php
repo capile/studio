@@ -823,7 +823,7 @@ class App
         if(isset($options['credentials']) && $options['credentials']) {
             $user = S::getUser();
             $forbidden = false;
-            if(!$user) {
+            if(!$user || !$user->isAuthenticated()) {
                 $forbidden = true;
             } else if(is_array($options['credentials']) && !$user->hasCredential($options['credentials'])) {
                 $forbidden = true;

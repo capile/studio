@@ -130,7 +130,6 @@ class Entries extends Model
         }
         if(is_null($c) && $this->credential) $c = $this->credential;
         else if($c==='*') $c = false;
-
         if($c && !(($U=S::getUser()) && $U->hasCredential($c, false))) {
             Studio::error($U->isAuthenticated() ?403 :401);
             return false;

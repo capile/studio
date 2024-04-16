@@ -627,7 +627,6 @@ class Studio
         }
 
         $U = S::getUser();
-
         if($U) {
             $r = $U->asArray();
             if(self::$webInterface && (($U->isAuthenticated() && ($U->isSuperAdmin()) || (($ec= self::credential('studio')) && $U->hasCredential($ec, false))))) {

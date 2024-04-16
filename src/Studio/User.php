@@ -1428,6 +1428,15 @@ class User
                     $d = $r;
                 }
                 return $d;
+            } else if(is_object($this->_me) && is_array($scope)) {
+                $r = [];
+                foreach($scope as $n=>$t) {
+                    $v = (isset($this->_me->$t)) ?$this->_me->$t :null;
+                    if(!is_null($v)) {
+                        $r[$n] = $v;
+                    }
+                }
+                return $r;
             } else {
                 return array('username'=>(string) $this->_me);
             }

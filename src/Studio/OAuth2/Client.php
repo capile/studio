@@ -134,11 +134,13 @@ class Client extends SchemaObject
         if($options) {
             static::$cfg = $options; 
         }
-
         $s = null;
         if($S=static::config('servers')) {
             foreach($S as $n=>$o) {
                 if(isset($o['sign_in']) && $o['sign_in']) {
+                    if(isset($o['options']['redirect_sign_in']) && $o['options']['redirect_sign_in']) {
+                        S::redirect(static::$signInRoute.'/'.$n);
+                    }
                     $s .= '<a class="z-i-button" href="'.S::xml(static::$signInRoute.'/'.$n).'?ref=1">'.S::xml($o['button']).'</a>';
                 }
             }
@@ -309,12 +311,10 @@ class Client extends SchemaObject
             S::scriptName($route['url']);
             $p = S::urlParams();
         }
-
         if(App::request('get', 'ref') && (($ref=App::request('headers', 'referer')) && substr($ref, 0, strlen(S::scriptName()))!=S::scriptName())) {
             $U = S::getUser();
             $U->setAttribute('authorize-source', $ref);
         }
-
         if($p && ($p=implode('/', $p)) && isset($S[$p]) && isset($S[$p]['sign_in']) && $S[$p]['sign_in']) {
             $Server = new Client($S[$p]);
             $Client = $Server->currentClient(['options.access_token'=>true, 'scope'=>$Server->scope]);
@@ -333,7 +333,7 @@ class Client extends SchemaObject
 
                 if(!$User && $Client && $Client['options.access_token']) {
                     $User = $Server->requestUserinfo($Client);
-                    if(S::$log>0) S::log('[INFO] Userinfo (end): '.var_Export($User, true));
+                    if(S::$log>0) S::log('[INFO] Userinfo (end): '.var_export($User, true));
                 }
 
                 if($User) {
@@ -364,6 +364,7 @@ class Client extends SchemaObject
                 }
             } catch(Exception $e) {
                 $err = $e->getMessage();
+                if(S::$log>0) S::log('[INFO] Authentication error: '.$e);
             }
 
             if(!isset($U)) $U = S::getUser();
@@ -378,7 +379,7 @@ class Client extends SchemaObject
             S::redirect($ref);
         }
 
-        return Studio::error(404);
+        return Studio::error(401);
     }
 
     public function requestUserinfo($Client=null)
