@@ -113,7 +113,7 @@ if(isset($list) && is_array($list)) {
             if($o>=$l) break;
             if(!$flush) {
                 $Api::headers();
-                header('content-type: '.$format.';charset=utf8');
+                header('content-type: '.$format.'; charset=utf-8');
                 $flush = true;
             }
             echo $r;

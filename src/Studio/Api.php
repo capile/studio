@@ -2099,7 +2099,7 @@ class Api extends SchemaObject
             $if = strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE']);
             if($if >= $lmod) {
                 if(static::$format!='html') {
-                    header('content-type: application/'.static::$format.'; charset=UTF-8');
+                    header('content-type: application/'.static::$format.'; charset=utf-8');
                 }
                 App::end('', 304);
             }

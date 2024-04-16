@@ -575,7 +575,7 @@ class Studio
         }
 
         if($r && is_array($r)) {
-            if(!isset($r['h']['Content-Type'])) $r['h']['Content-Type']='text/html;charset=UTF8';
+            if(!isset($r['h']['Content-Type'])) $r['h']['Content-Type']='text/html; charset=utf-8';
             if(is_array($r['c'])) {
                 Cache::delete($ckey);
                 return false;

@@ -1277,7 +1277,7 @@ S.ajax=function(url, data, success, error, dataType, context, headers)
     }
     if(m=='post') {
         if(!ct) {
-            _ajax[url].r.setRequestHeader('content-type', 'application/x-www-form-urlencoded;charset=UTF-8');
+            _ajax[url].r.setRequestHeader('content-type', 'application/x-www-form-urlencoded; charset=utf-8');
         }
         //if(typeof(data)=='string' || 'length' in data) _ajax[url].r.setRequestHeader('Content-Length', data.length);
         //_ajax[url].r.setRequestHeader('Connection', 'close');

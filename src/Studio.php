@@ -1448,13 +1448,13 @@ class Studio
             if(!is_string($s)) {
                 $s = json_encode($s, JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
             }
-            $format = 'application/json; charset=UTF8';
+            $format = 'application/json; charset=utf-8';
         }
 
         if ($format != '') {
             @header('content-type: ' . $format);
         } else {
-            @header('content-type: text/html; charset=UTF8');
+            @header('content-type: text/html; charset=utf-8');
         }
         @header('content-length: ' . strlen($s));
         echo $s;
@@ -1738,7 +1738,7 @@ class Studio
     {
         $arg = func_get_args();
         if (!headers_sent())
-            @header('content-type: text/plain;charset=UTF-8');
+            @header('content-type: text/plain;charset=utf-8');
         foreach ($arg as $k => $v) {
             if ($v === false)
                 return false;
