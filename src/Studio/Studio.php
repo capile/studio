@@ -725,16 +725,6 @@ class Studio
                 $published = true;
             }
         }
-        /*
-        if(self::$cacheTimeout && ($E=Cache::get('e-url'.$url, self::$cacheTimeout))) {
-            if($published && (!$E->published || strtotime($E->published)>time())) {
-                unset($E);
-            } else {
-                return $E;
-            }
-        }
-        */
-
         if($published) {
             $f['published<'] = date('Y-m-d\TH:i:s');
         }
