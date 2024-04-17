@@ -628,6 +628,7 @@ class Asset
     public static function check()
     {
         $a = [];
+        $asset = true;
         $force = null;
         $image = null;
         $gitp  = null;
@@ -650,8 +651,16 @@ class Asset
                             $image = true;
                         } else  if(substr($o, 1)==='f') {
                             $publish = true;
-                        } else  if(substr($o, 1)==='g') {
+                        } else  if(substr($o, 1, 1)==='g' && preg_match('/^\-g(=[a-z0-9\-\_\.]+)?$/', $o, $m)) {
                             $gitp = true;
+                            if($m[1]) {
+                                $git[] = substr($m[1], 1);
+                            }
+                            unset($m);
+                        } else  if(substr($o, 1, 1)==='a' && preg_match('/^\-a(=[a-z0-9\-\_\.]+)?$/', $o, $m)) {
+                            $v = substr($m[1],1);
+                            $asset = ($v || (is_numeric($v) && $v>0) || strtolower($v)==='true');
+                            unset($v, $m);
                         }
                         unset($a[$i]);
                     }
@@ -672,7 +681,7 @@ class Asset
                 if(!$gitOptions) $gitOptions = [];
                 $G = new Git($gitOptions);
                 foreach($repos as $r) {
-                    if(!isset($r['id']) || !isset($r['src'])) continue;
+                    if(!isset($r['id']) || !isset($r['src']) || ($git && !in_array($r['id'], $git))) continue;
                     if(S::$log>0) S::log('[INFO] Checking web repository '.$r['id']);
                     $repo = $r['src'];
                     $dest = $d.'/'.$r['id'];
@@ -725,37 +734,38 @@ class Asset
                 }
             }
         }
-
-        if(!$a) {
-            $a = S::getApp()->config('app', 'assets');
-            if(!$a || !is_array($a)) $a = [];
-            if(App::$assets) {
-                if(Studio::config('enable_apis')) {
-                    Api::loadAssets();
-                    App::$assets[] = 'S.Studio';
-                }
-                $a = ($a) ?array_merge($a, App::$assets) :App::$assets;
-            }
-            if($a && ($b=S::getApp()->config('app', 'asset-requirements'))) {
-                foreach($b as $i=>$o) {
-                    if(in_array($i, $a)) {
-                        App::$assetRequirements[$i] = $o;
+        if($asset) {
+            if(!$a) {
+                $a = S::getApp()->config('app', 'assets');
+                if(!$a || !is_array($a)) $a = [];
+                if(App::$assets) {
+                    if(Studio::config('enable_apis')) {
+                        Api::loadAssets();
+                        App::$assets[] = 'S.Studio';
                     }
-                    unset($i, $o);
+                    $a = ($a) ?array_merge($a, App::$assets) :App::$assets;
+                }
+                if($a && ($b=S::getApp()->config('app', 'asset-requirements'))) {
+                    foreach($b as $i=>$o) {
+                        if(in_array($i, $a)) {
+                            App::$assetRequirements[$i] = $o;
+                        }
+                        unset($i, $o);
+                    }
                 }
             }
-        }
-        if($assets) {
-            foreach($assets as $n=>$fs) {
-                $a[] = $n.'@'.implode(',', $fs);
-                unset($assets[$n], $n, $fs);
+            if($assets) {
+                foreach($assets as $n=>$fs) {
+                    $a[] = $n.'@'.implode(',', $fs);
+                    unset($assets[$n], $n, $fs);
+                }
             }
-        }
-        $a = array_unique($a);
-        foreach($a as $component) {
-            if(substr($component, 0, 1)=='!') $component = substr($component, 1);
-            if(S::$log) S::log('[INFO] Building component: '.$component);
-            App::asset('!'.$component, $force);
+            $a = array_unique($a);
+            foreach($a as $component) {
+                if(substr($component, 0, 1)=='!') $component = substr($component, 1);
+                if(S::$log) S::log('[INFO] Building component: '.$component);
+                App::asset('!'.$component, $force);
+            }
         }
     }
 
