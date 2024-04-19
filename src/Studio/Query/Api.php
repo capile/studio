@@ -1286,7 +1286,8 @@ class Api
         if(strpos($dataAttribute, '|')!==false) {
             $da = explode('|', $dataAttribute);
             foreach($da as $i=>$o) {
-                if($R=$this->_getResponseAttribute($o)) {
+                $R=$this->_getResponseAttribute($o);
+                if(!is_null($R)) {
                     return $R;
                 }
                 unset($da[$i], $i, $o);
