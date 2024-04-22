@@ -1,5 +1,5 @@
-/*! capile/studio v1.0 | (c) 2023 Tecnodesign <ti@tecnodz.com> */
-if(!('Studio' in window))window.Z=window.Studio={version:1.0, host:null, altHost:null,uid:'/_me',timeout:0,headers:{},env:'prod',timestamp:null,xhrCredentials:true};
+/*! capile/studio v1.1 | (c) 2024 Tecnodesign <ti@tecnodz.com> */
+if(!('Studio' in window))window.Z=window.Studio={version:1.0, host:null, altHost:null,uid:'/_me',timeout:0,headers:{},env:'prod',timestamp:null,xhrCredentials:true,xhrHeaders:{'x-requested-with':'XMLHttpRequest'}};
 (function(S) {
 "use strict";
 var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl, _assets={}, _wm,
@@ -1244,7 +1244,8 @@ S.ajax=function(url, data, success, error, dataType, context, headers)
         type: dataType
     };
     var qs = (data===true)?(((url.indexOf('?')>-1)?('&'):('?'))+(new Date().getTime())):(''),
-        m = (data && data!==true)?('post'):('get');
+        m = (data && data!==true)?('post'):('get'),
+        h;
 
     // make post!!!
     _ajax[url].r.onreadystatechange = ajaxProbe;
@@ -1253,7 +1254,7 @@ S.ajax=function(url, data, success, error, dataType, context, headers)
     }
     //_ajax[url].r.onload = ajaxOnload;
     _ajax[url].r.open(m, url+qs, true);
-    _ajax[url].r.setRequestHeader('x-requested-with', 'XMLHttpRequest');
+    for(h in S.xhrHeaders) _ajax[url].r.setRequestHeader(h, S.xhrHeaders[h]);
     _ajax[url].r.withCredentials = S.xhrCredentials;
     var n, ct;
     if('headers' in S) {
