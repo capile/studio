@@ -13,6 +13,8 @@
 
 namespace Studio\OAuth2\OpenID;
 
+use Studio as S;
+use Studio\OAuth2\Storage;
 use OAuth2\OpenID\Controller\AuthorizeController as BaseAuthorizeController;
 
 /**
@@ -51,4 +53,14 @@ class AuthorizeController extends BaseAuthorizeController
         return $params;
     }
 
+    public function getOptions($n=null)
+    {
+        if($O = Storage::fetch('client_credentials', $this->getClientId())) {
+            if($n) {
+                return (isset($O[$n])) ?$O[$n] :null;
+            }
+
+            return $O;
+        }
+    }
 }

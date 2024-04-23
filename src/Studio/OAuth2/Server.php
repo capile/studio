@@ -22,6 +22,7 @@ use OAuth2\Response;
 use OAuth2\Controller\AuthorizeController;
 use OAuth2\OpenID\ResponseType\IdToken;
 use Studio\OAuth2\OpenID\AuthorizeController as OpenIDAuthorizeController;
+use OAuth2\Storage\JwtAccessToken as JwtAccessTokenStorage;
 use OAuth2\ResponseType\JwtAccessToken;
 
 
@@ -283,10 +284,19 @@ class Server extends \OAuth2\Server
     public function executeTokenRequest()
     {
         try {
+            if(self::config('allow_credentials_in_request_body') && isset($_SERVER['PHP_AUTH_PW']) && $_SERVER['PHP_AUTH_PW']) {
+                // bugfix urlencoded credentials
+                if($d = urldecode($_SERVER['PHP_AUTH_USER'])) {
+                    $_SERVER['PHP_AUTH_USER'] = $d;
+                }
+                if($d = urldecode($_SERVER['PHP_AUTH_PW'])) {
+                    $_SERVER['PHP_AUTH_PW'] = $d;
+                }
+            }
             $request = Request::createFromGlobals();
             $R = $this->handleTokenRequest($request);
         } catch(\Exception $e) {
-            S::log(__METHOD__, var_export($e, true));
+            S::log('[WARNING] Failed token request: '.$e->getMessage());
         }
         if(S::$log > 1)S::log('[DEBUG] OAuth2 token request: '.S::requestUri(), "\n{$R}");
         $R->send();
@@ -336,6 +346,8 @@ class Server extends \OAuth2\Server
                 S::redirect($url);
             }
             // show error 400 with proper response
+        } else if(($c=$this->authorizeController->getOptions('auth_credentials')) && !$U->hasCredentials($c, false)) {
+            return Studio::error(403);
         }
 
         // check if client requires authorization (new scopes)
@@ -365,6 +377,7 @@ class Server extends \OAuth2\Server
                 $cookie[$i] = array_shift($o);
                 unset($i, $o);
             }
+
             $request = new $cn($query, App::request('post'), [], $cookie, [], $_SERVER);
         }
 
@@ -448,7 +461,7 @@ class Server extends \OAuth2\Server
             $tokenStorage = $this->storages['access_token'];
         }
         // wrap the access token storage as required.
-        return new Jwt($this->storages['public_key'], $tokenStorage);
+        return new JwtAccessTokenStorage($this->storages['public_key'], $tokenStorage, new Jwt);
     }
 
     /**

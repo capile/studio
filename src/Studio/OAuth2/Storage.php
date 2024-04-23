@@ -38,6 +38,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
                 'grant_types'=>'options.grant_types',
                 'scope'=>'options.scope',
                 'user_id'=>'user',
+                'auth_credentials'=>'options.auth_credentials',
             ],
             'access_token'=>[
                 'expires'=>'expires',

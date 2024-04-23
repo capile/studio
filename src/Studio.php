@@ -24,7 +24,7 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.1.10';
+    const VERSION = '1.1.11';
     const VER = 1.1;
 
     protected static
@@ -2782,41 +2782,63 @@ class Studio
         }
     }
 
-    protected static $chars='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.';
+    const Z64='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.';
+    const Z85='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#';
     public static function compress64($s)
     {
-    	if(strlen($s)>8) {
-    		$ns = '';
-    		while(strlen($s)>0) {
-    			$ns .= self::compress64(substr($s, 0, 8));
-				$s = substr($s, 8);
-    		}
-			return $ns;
-    	}
+        return self::compress($s, self::Z64);
+    }
+    public static function compress85($s)
+    {
+        return self::compress($s, self::Z85);
+    }
+
+    public static function compress($s, $chars=null)
+    {
+        if(!$chars) $chars = self::Z64;
+        $s = (string)$s;
+        if(strlen($s)>8) {
+            $ns = '';
+            while(strlen($s)>0) {
+                $ns .= self::compress(substr($s, 0, 8), $chars);
+                $s = substr($s, 8);
+            }
+            return $ns;
+        }
         $num=@hexdec($s);
-        $b=64;
+        $b=strlen($chars);
         $i=1;
         $ns='';
         while ($num>=1.0) {
             $r=$num%$b;
-            $num = (($num - $r)/64);
-            $ns = substr(self::$chars,$r,1).$ns;
+            $num = (($num - $r)/$b);
+            $ns = substr($chars,$r,1).$ns;
         }
         return $ns;
     }
 
     public static function expand64($s)
     {
+        return self::expand($s, self::Z64);
+    }
+    public static function expand85($s)
+    {
+        return self::expand($s, self::Z85);
+    }
+    public static function expand($s, $chars=null)
+    {
+        if(!$chars) $chars = self::Z64;
         $ns='';
-        $re='/^['.str_replace(array('.','-'),array('\.','\-'), self::$chars).']+$/';
-        if(!preg_match($re, $s))return false;
+        $re='/^['.preg_replace('/[^a-z0-9]/i', '\\\$0', $chars).']+$/';
+        if(!preg_match($re, $s)) return false;
         $i=0;
         $num=0;
+        $b=strlen($chars);
         while ($s!='') {
             $char=substr($s,-1);
             $s=substr($s,0,strlen($s) -1);
-            $pos=strpos(self::$chars,$char);
-            $num = $num + ($pos*pow(64, $i++));
+            $pos=strpos($chars,$char);
+            $num = $num + ($pos*pow($b, $i++));
         }
         $ns=dechex($num);
         return $ns;
