@@ -379,7 +379,16 @@ class Client extends SchemaObject
             S::redirect($ref);
         }
 
-        return Studio::error(401);
+        if($p && preg_match('/^error40[0-9]$/', $p)) {
+            $code = (int) substr($p, 5);
+        } else if($p) {
+            $code = 404;
+        } else {
+            if(!isset($U)) $U = S::getUser();
+            $code = ($U->isAuthenticated()) ?403 :401;
+        }
+
+        return Studio::error($code);
     }
 
     public function requestUserinfo($Client=null)
@@ -411,7 +420,10 @@ class Client extends SchemaObject
                 if($R && ($idk=S::extractValue($R, $key))) {
                     $idk = $this->id.':'.$idk;
                     $q = ['type'=>'identity','token'=>$this->issuer,'id'=>$idk];
-                    if(!(list($I)=Storage::find($q, false))) {
+                    if($L=Storage::find($q, false)) {
+                        $I = array_shift($L);
+                        unset($L);
+                    } else {
                         $I = Storage::replace($q+['options'=>$R]);
                     }
                 }
