@@ -2249,15 +2249,93 @@ class Studio
         exit('<html><title>401 Unauthorized</title><body><h1>Forbidden</h1><p>Restricted access, please provide your credentials.</p></body></html>');
     }
 
-    public static function env()
+    public static function env($asArray=null)
     {
         if(is_null(self::$_env)) {
             if(defined('S_ENV')) self::$_env = S_ENV;
-            else if(isset($_SERVER['STUDIO_ENV']) && $_SERVER['STUDIO_ENV']) self::$_env = $_SERVER['STUDIO_ENV'];
-            else if(defined('TDZ_ENV')) self::$_env = TDZ_ENV;
-            else self::$_env = 'prod';
+            else {
+                if(isset($_SERVER['STUDIO_ENV']) && $_SERVER['STUDIO_ENV']) self::$_env = $_SERVER['STUDIO_ENV'];
+                else if(defined('TDZ_ENV')) self::$_env = TDZ_ENV;
+                else self::$_env = 'prod';
+                define('S_ENV', self::$_env);
+            }
+            // initialize environment variables and constants
+            $locale = setlocale(LC_ALL, '0');
+            if(strpos($locale, '.')===false) {
+                setlocale(LC_ALL, $locale.'.UTF-8');
+            } else if(strpos($locale, '_')!==false) {
+                setlocale(LC_ALL, 'en_US.UTF-8');
+            }
+            unset($locale);
+            define('STUDIO_VERSION', Studio::VERSION);
+            if(!defined('S_CLI')) {
+                if(defined('TDZ_CLI')) define('S_CLI', TDZ_CLI);
+                else define('S_CLI', (!isset($_SERVER['HTTP_HOST']) && isset($_SERVER['SHELL'])));
+            }
+            define('S_TIME', (isset($_SERVER['REQUEST_TIME_FLOAT'])) ?$_SERVER['REQUEST_TIME_FLOAT'] :microtime(true));
+            @list($u, $t) = explode('.', (string) S_TIME);
+            define('S_TIMESTAMP', date('Y-m-d\TH:i:s.', (int)$u).substr($t.'000000',0,6));
+            unset($u, $t);
+            if (!defined('S_ROOT')) {
+                define('S_ROOT', str_replace('\\', '/', dirname(dirname(__FILE__))));
+            }
+            if (!defined('S_APP_ROOT')) {
+                if(defined('TDZ_APP_ROOT')) define('S_APP_ROOT', TDZ_APP_ROOT);
+                else if(isset($_SERVER['STUDIO_APP_ROOT']) && is_dir($_SERVER['STUDIO_APP_ROOT'])) define('S_APP_ROOT', realpath($_SERVER['STUDIO_APP_ROOT']));
+                else if(strrpos(S_ROOT, '/lib/')!==false) define('S_APP_ROOT', substr(S_ROOT, 0, strrpos(S_ROOT, '/lib/')));
+                else define('S_APP_ROOT', S_ROOT);
+            }
+            if (!defined('S_VAR')) {
+                if(defined('TDZ_VAR')) define('S_VAR', TDZ_VAR);
+                else if($d=get_cfg_var('STUDIO_DATA')) define('S_VAR', $d);
+                else if(isset($_SERVER['STUDIO_DATA']) && $_SERVER['STUDIO_DATA']) define('S_VAR', $_SERVER['STUDIO_DATA']);
+                else if(is_dir($d='./data/Tecnodesign')
+                    || is_dir($d='./data')
+                    || is_dir($d=S_APP_ROOT.'/data/Tecnodesign')
+                    || is_dir($d=S_APP_ROOT.'/data')
+                    ) {
+                    define('S_VAR', realpath($d));
+                } else {
+                    define('S_VAR', $d);
+                }
+                unset($d);
+            }
+            if(!defined('S_PROJECT_ROOT')) {
+                if(isset($_SERVER['STUDIO_APP_ROOT']) && is_dir($_SERVER['STUDIO_APP_ROOT'])) define('S_PROJECT_ROOT', realpath($_SERVER['STUDIO_APP_ROOT']));
+                else define('S_PROJECT_ROOT', file_exists(S_APP_ROOT.'/composer.json') ?S_APP_ROOT :dirname(S_APP_ROOT));
+            }
+            if(!defined('S_BACKGROUND')) {
+                define('S_BACKGROUND', (isset($_SERVER['S_BACKGROUND']) && $_SERVER['S_BACKGROUND']));
+            }
+            spl_autoload_register('Studio::autoload', true, true);
+            if(is_null(Studio::$lib)) {
+                Studio::$lib = [];
+                if(S_ROOT!=S_APP_ROOT && is_dir($d=S_APP_ROOT.'/lib')) {
+                    Studio::$lib[]=$d;
+                }
+                if(is_dir($d=S_PROJECT_ROOT.'/vendor')) {
+                    Studio::$lib[] = $d;
+                }
+            }
+            Studio::autoloadParams('Studio');
         }
-        return self::$_env;
+
+        return ($asArray) 
+            ?[
+                'S_ENV' => S_ENV,
+                'LC_ALL'=> setlocale(LC_ALL, '0'),
+                'STUDIO_VERSION'=>STUDIO_VERSION,
+                'S_CLI'=>S_CLI,
+                'S_TIME'=>S_TIME,
+                'S_TIMESTAMP'=>S_TIMESTAMP,
+                'S_ROOT'=>S_ROOT,
+                'S_APP_ROOT'=>S_APP_ROOT,
+                'S_VAR'=>S_VAR,
+                'S_PROJECT_ROOT'=>S_PROJECT_ROOT,
+                'S_BACKGROUND'=>S_BACKGROUND,
+                'S_LIB'=>self::$lib,
+            ]
+            :self::$_env;
     }
 
     /**
@@ -3234,64 +3312,5 @@ class Studio
         $r += self::$defangR;
         return strtr($s, array_flip($r));
     }
-}
 
-$locale = setlocale(LC_ALL, '0');
-if(strpos($locale, '.')===false) {
-    setlocale(LC_ALL, $locale.'.UTF-8');
-} else if(strpos($locale, '_')!==false) {
-    setlocale(LC_ALL, 'en_US.UTF-8');
 }
-unset($locale);
-define('STUDIO_VERSION', Studio::VERSION);
-if(!defined('S_CLI')) {
-    if(defined('TDZ_CLI')) define('S_CLI', TDZ_CLI);
-    else define('S_CLI', (!isset($_SERVER['HTTP_HOST']) && isset($_SERVER['SHELL'])));
-}
-define('S_TIME', microtime(true));
-@list($u, $t) = explode('.', (string) S_TIME);
-define('S_TIMESTAMP', date('Y-m-d\TH:i:s.', (int)$u).substr($t.'000000',0,6));
-unset($u, $t);
-if (!defined('S_ROOT')) {
-    define('S_ROOT', str_replace('\\', '/', dirname(dirname(__FILE__))));
-    //set_include_path(get_include_path().PATH_SEPARATOR.S_ROOT.'/src');
-}
-if (!defined('S_APP_ROOT')) {
-    if(defined('TDZ_APP_ROOT')) define('S_APP_ROOT', TDZ_APP_ROOT);
-    else if(isset($_SERVER['STUDIO_APP_ROOT']) && is_dir($_SERVER['STUDIO_APP_ROOT'])) define('S_APP_ROOT', realpath($_SERVER['STUDIO_APP_ROOT']));
-    else if(strrpos(S_ROOT, '/lib/')!==false) define('S_APP_ROOT', substr(S_ROOT, 0, strrpos(S_ROOT, '/lib/')));
-    else define('S_APP_ROOT', S_ROOT);
-}
-if (!defined('S_VAR')) {
-    if(defined('TDZ_VAR')) define('S_VAR', TDZ_VAR);
-    else if($d=get_cfg_var('STUDIO_DATA')) define('S_VAR', $d);
-    else if(isset($_SERVER['STUDIO_DATA']) && $_SERVER['STUDIO_DATA']) define('S_VAR', $_SERVER['STUDIO_DATA']);
-    else if(is_dir($d='./data/Tecnodesign')
-        || is_dir($d='./data')
-        || is_dir($d=S_APP_ROOT.'/data/Tecnodesign')
-        || is_dir($d=S_APP_ROOT.'/data')
-        ) {
-        define('S_VAR', realpath($d));
-    } else {
-        define('S_VAR', $d);
-    }
-    unset($d);
-}
-if(!defined('S_PROJECT_ROOT')) {
-    if(isset($_SERVER['STUDIO_APP_ROOT']) && is_dir($_SERVER['STUDIO_APP_ROOT'])) define('S_PROJECT_ROOT', realpath($_SERVER['STUDIO_APP_ROOT']));
-    else define('S_PROJECT_ROOT', file_exists(S_APP_ROOT.'/composer.json') ?S_APP_ROOT :dirname(S_APP_ROOT));
-}
-if(!defined('S_BACKGROUND')) {
-    define('S_BACKGROUND', (isset($_SERVER['S_BACKGROUND']) && $_SERVER['S_BACKGROUND']));
-}
-spl_autoload_register('Studio::autoload', true, true);
-if(is_null(Studio::$lib)) {
-    Studio::$lib = [];
-    if(S_ROOT!=S_APP_ROOT && is_dir($d=S_APP_ROOT.'/lib')) {
-        Studio::$lib[]=$d;
-    }
-    if(is_dir($d=S_PROJECT_ROOT.'/vendor')) {
-        Studio::$lib[] = $d;
-    }
-}
-Studio::autoloadParams('Studio');
