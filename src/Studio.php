@@ -143,6 +143,7 @@ class Studio
         $paths=array(
             'cat'=>'/bin/cat',
             'java'=>'/usr/bin/java',
+            'composer'=>'/usr/bin/composer --no-dev',
         ),
         $dateFormat='d/m/Y',
         $timeFormat='H:i',
@@ -2249,7 +2250,7 @@ class Studio
         exit('<html><title>401 Unauthorized</title><body><h1>Forbidden</h1><p>Restricted access, please provide your credentials.</p></body></html>');
     }
 
-    public static function env($asArray=null)
+    public static function env($asArray=null, $output=null)
     {
         if(is_null(self::$_env)) {
             if(defined('S_ENV')) self::$_env = S_ENV;
@@ -2320,22 +2321,25 @@ class Studio
             Studio::autoloadParams('Studio');
         }
 
-        return ($asArray) 
+        $r = ($asArray) 
             ?[
-                'S_ENV' => S_ENV,
                 'LC_ALL'=> setlocale(LC_ALL, '0'),
-                'STUDIO_VERSION'=>STUDIO_VERSION,
+                'S_APP_ROOT'=>S_APP_ROOT,
+                'S_BACKGROUND'=>S_BACKGROUND,
                 'S_CLI'=>S_CLI,
+                'S_ENV' => S_ENV,
+                'S_PROJECT_ROOT'=>S_PROJECT_ROOT,
+                'S_ROOT'=>S_ROOT,
                 'S_TIME'=>S_TIME,
                 'S_TIMESTAMP'=>S_TIMESTAMP,
-                'S_ROOT'=>S_ROOT,
-                'S_APP_ROOT'=>S_APP_ROOT,
                 'S_VAR'=>S_VAR,
-                'S_PROJECT_ROOT'=>S_PROJECT_ROOT,
-                'S_BACKGROUND'=>S_BACKGROUND,
-                'S_LIB'=>self::$lib,
+                'STUDIO_VERSION'=>STUDIO_VERSION,
             ]
             :self::$_env;
+
+        if($output) self::debug($r);
+
+        return $r;
     }
 
     /**

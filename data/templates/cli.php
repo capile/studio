@@ -10,6 +10,5 @@
  * @link      https://tecnodz.com
  * @version   1.0
  */
-
 if(isset($response)) echo $response;
 echo $data;

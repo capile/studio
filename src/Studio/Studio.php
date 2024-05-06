@@ -78,16 +78,17 @@ class Studio
         ],
         $headersTemplate,
         $cliApps=[
-            'start'=>['Studio\\Model\\Config','standaloneConfig'],
-            'reset'=>['Studio\\Model\\Config','resetStudio'],
-            'check'=>['Studio\\Model\\Index', 'checkConnection'],
-            'index'=>['Studio\\Model\\Index','reindex'],
-            'import'=>['Studio\\Query','import'],
-            'task'=>['Studio\\Model\\Tasks', 'check'],
+            'app'=>['Studio\\Studio','standaloneApp'],
             'assets'=>['Studio\\Asset','check'],
             'build'=>['Studio\\Asset','buildCheck'],
-            'app'=>['Studio\\Studio','standaloneApp'],
+            'check'=>['Studio\\Model\\Index', 'checkConnection'],
             'cleanup'=>['Studio\\Cache', 'cleanup'],
+            'import'=>['Studio\\Query','import'],
+            'index'=>['Studio\\Model\\Index','reindex'],
+            'reset'=>['Studio\\Model\\Config','resetStudio'],
+            'start'=>['Studio\\Model\\Config','standaloneConfig'],
+            'task'=>['Studio\\Model\\Tasks', 'check'],
+            'version'=>['Studio', 'env', [true, true]],
         ];
     const VERSION = 1.1;    // should match the development branch 
 
@@ -188,8 +189,11 @@ class Studio
             S::$variables['template'] = 'cli';
             App::response('layout', 'cli');
             if(isset(self::$cliApps[$sn])) {
-                list($cn, $m) = self::$cliApps[$sn];
-                return $cn::$m();
+                $a = null;
+                if(isset(self::$cliApps[$sn][2])) list($cn, $m, $a) = self::$cliApps[$sn];
+                else list($cn, $m) = self::$cliApps[$sn];
+
+                return (!is_null($a)) ?call_user_func_array([$cn, $m], (!is_array($a)) ?[$a] :$a) :$cn::$m();
             }
             self::error(404);
         } else if(App::request('headers', 'x-studio-slots') || $sn==self::$uid) {

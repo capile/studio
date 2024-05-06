@@ -634,6 +634,7 @@ class Asset
         $gitp  = null;
         $publish = null;
         $reconfig = null;
+        $composer = null;
         $git = [];
         $assets = [];
         if(App::request('shell')) {
@@ -651,6 +652,8 @@ class Asset
                             $image = true;
                         } else  if(substr($o, 1)==='f') {
                             $publish = true;
+                        } else  if(substr($o, 1)==='c' && file_exists(S_PROJECT_ROOT.'/composer.json') && isset(S::$paths['composer'])) {
+                            $composer = true;
                         } else  if(substr($o, 1, 1)==='g' && preg_match('/^\-g(=[a-z0-9\-\_\.]+)?$/', $o, $m)) {
                             $gitp = true;
                             if($m[1]) {
@@ -671,6 +674,9 @@ class Asset
                 if(!S::$logDir || S::$logDir==='cli') S::$logDir = [];
                 else if(!is_array(S::$logDir)) S::$logDir = [S::$logDir];
                 S::$logDir[] = 'cli';
+            }
+            if($composer) {
+                return S::exec(['shell'=>S::$paths['composer'].' install -n -v -d '.escapeshellarg(S_PROJECT_ROOT)]);
             }
             if($image) {
                 return self::buildDockerImage($a, $publish);
