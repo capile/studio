@@ -2302,7 +2302,8 @@ class Studio
                 unset($d);
             }
             if(!defined('S_PROJECT_ROOT')) {
-                if(isset($_SERVER['STUDIO_APP_ROOT']) && is_dir($_SERVER['STUDIO_APP_ROOT'])) define('S_PROJECT_ROOT', realpath($_SERVER['STUDIO_APP_ROOT']));
+                if(isset($_SERVER['STUDIO_PROJECT_ROOT']) && is_dir($_SERVER['STUDIO_PROJECT_ROOT'])) define('S_PROJECT_ROOT', realpath($_SERVER['STUDIO_PROJECT_ROOT']));
+                else if(isset($_SERVER['STUDIO_APP_ROOT']) && is_dir($_SERVER['STUDIO_APP_ROOT'])) define('S_PROJECT_ROOT', realpath($_SERVER['STUDIO_APP_ROOT']));
                 else define('S_PROJECT_ROOT', file_exists(S_APP_ROOT.'/composer.json') ?S_APP_ROOT :dirname(S_APP_ROOT));
             }
             if(!defined('S_BACKGROUND')) {

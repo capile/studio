@@ -665,6 +665,7 @@ class Entries extends Model
             $repod = [];
             if(S_REPO_ROOT && ($rs = Studio::config('web-repos'))) {
                 foreach($rs as $i=>$repo) {
+                    if(isset($repo['enabled']) && !$repo['enabled']) continue;
                     $rn = (isset($repo['id']) && $repo['id']) ?$repo['id'] :$i;
                     if(is_dir($d=S_REPO_ROOT.'/'.$rn)) {
                         if(isset($repo['mount-src']) && ($msrc=preg_replace('#^([^\:]+\:|/+)#', '', $repo['mount-src'])) && !preg_match('#/\.\./#', $msrc) && !in_array($msrc, ['.', '/'])) $d .= '/'.$msrc;

@@ -119,6 +119,7 @@ ENV STUDIO_PORT="9999"
 ENV STUDIO_DEBUG=""
 ENV STUDIO_MODE="app"
 ENV STUDIO_APP_ROOT=/opt/studio
+ENV STUDIO_PROJECT_ROOT=/opt/studio
 ENV STUDIO_DATA=/opt/studio/data
 ENV STUDIO_CONFIG=/var/www/studio/app.yml
 ENV STUDIO_AUTOLOAD=/var/www/studio/vendor/autoload.php
