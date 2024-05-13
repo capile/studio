@@ -50,7 +50,7 @@ class App
         $assets = [ 'S' ],
         $assetRequirements=[
             'S.Form'=>'moment,pikaday-time/pikaday,pikaday-time/css/pikaday,pell/dist/pell.min',
-            'S.Graph'=>'d3/dist/d3.min,c3/c3.min',
+            'S.Graph'=>'d3/dist/d3.min,billboard.js',
         ],
         $assetsOptional=[
             'S.Form'=>[
