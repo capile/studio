@@ -137,8 +137,8 @@ class Studio
         $variables = array(),
         $minifier = array(
             'js'=>'node_modules/.bin/uglifyjs --compress --mangle -- %s > %s',
-            'less'=>'node_modules/.bin/lessc --sass2less %s %s',
-            'scss'=>'node_modules/.bin/lessc --sass2less %s %s',
+            'less'=>'node_modules/.bin/lessc %s %s',
+            'scss'=>'node_modules/.bin/sass %s %s',
         ),
         $paths=array(
             'cat'=>'/bin/cat',
