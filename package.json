@@ -1,13 +1,13 @@
 {
     "name": "Studio",
-    "version": "1.1.11",
+    "version": "1.1.12",
     "description": "Own your data!",
     "main": "studio.js",
     "author": "Guilherme Capilé",
     "dependencies": {
         "@fortawesome/fontawesome-free": "5.*",
-        "c3": "0.7.*",
-        "d3": "5.*",
+        "billboard": "*",
+        "d3": "*",
         "less": "*",
         "moment": "^2.29.3",
         "node-ipc": "^9.1.4",

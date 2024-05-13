@@ -48,7 +48,7 @@ function buildGraph(id)
     	if(!('tick' in D.axis.y)) D.axis.y.tick={};
     	D.axis.y.tick.format = d3.format(D.format);
     }
-    _G[id]=c3.generate(D);
+    _G[id]=bb.generate(D);
     if(!_c) {
         Z.resizeCallback(checkGraph);
         _c = true;

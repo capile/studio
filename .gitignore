@@ -1,5 +1,7 @@
 .appkey
 .svn
+.npm
+.composer
 ._*
 .idea/
 vendor/
