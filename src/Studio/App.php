@@ -572,9 +572,13 @@ class App
             unset($c1);
         }
 
-        if(isset(static::$assetsOptional[$c0])) {
+        if(!is_dir($nmd = S_PROJECT_ROOT.'/node_modules/') &&
+           !is_dir($nmd = S_APP_ROOT.'/node_modules/') &&
+           !is_dir($nmd = S_ROOT.'/node_modules/')
+        ) $nmd = null;
+        if($nmd && isset(static::$assetsOptional[$c0])) {
             foreach(static::$assetsOptional[$c0] as $n=>$c1) {
-                if(file_exists(S_PROJECT_ROOT.'/node_modules/'.$n)) {
+                if(file_exists($nmd.$n)) {
                     $component .= ','.$c1;
                 }
                 unset($n, $c1);
@@ -610,9 +614,9 @@ class App
             } else {
                 $src=preg_split('/\s*\,\s*/', $component, -1, PREG_SPLIT_NO_EMPTY);
                 ;
-                if(!is_dir($nmd = S_PROJECT_ROOT.'/node_modules/') && 
-                   !is_dir($nmd = S_APP_ROOT.'/node_modules/') && 
-                   !is_dir($nmd = S_ROOT.'/node_modules/') 
+                if(!is_dir($nmd = S_PROJECT_ROOT.'/node_modules/') &&
+                   !is_dir($nmd = S_APP_ROOT.'/node_modules/') &&
+                   !is_dir($nmd = S_ROOT.'/node_modules/')
                 ) $nmd = null;
                 foreach($src as $i=>$n) {
                     $n0 = preg_replace('#[\.\/].*#', '', $n);
@@ -703,7 +707,7 @@ class App
             }
             unset($files);
         }
-        if($build && isset(static::$copyNodeAssets[$c0]) && ($files = S::glob($projectRoot.'/node_modules/'.static::$copyNodeAssets[$c0]))) {
+        if($build && $nmd && isset(static::$copyNodeAssets[$c0]) && ($files = S::glob($nmd.static::$copyNodeAssets[$c0]))) {
             foreach($files as $source) {
                 $dest = S_DOCUMENT_ROOT.S::$assetsUrl.'/'.basename($source);
                 if($force || !file_exists($dest) || filemtime($dest)<filemtime($source)) {

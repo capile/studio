@@ -4,6 +4,7 @@
 .idea/
 vendor/
 node_modules/
+data/config/config.yml
 data/cache/*
 data/log/*
 data/web-repos/*
