@@ -609,20 +609,28 @@ class App
                 }
             } else {
                 $src=preg_split('/\s*\,\s*/', $component, -1, PREG_SPLIT_NO_EMPTY);
+                ;
+                if(!is_dir($nmd = S_PROJECT_ROOT.'/node_modules/') && 
+                   !is_dir($nmd = S_APP_ROOT.'/node_modules/') && 
+                   !is_dir($nmd = S_ROOT.'/node_modules/') 
+                ) $nmd = null;
                 foreach($src as $i=>$n) {
                     $n0 = preg_replace('#[\.\/].*#', '', $n);
-                    if(file_exists($f=S_DOCUMENT_ROOT.S::$assetsUrl.'/'.$to.'/'.str_replace('.', '/', $n).'.'.$from)
-                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'.'.$from)
-                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'.'.$to)
-                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$n.'.'.$from)
-                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$n.'.'.$to)
-                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$from.'/'.$n.'.'.$from)
-                       || file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/'.$to.'/'.$n.'.'.$to)
+                    if(file_exists($f=S_DOCUMENT_ROOT.'/'.$n.'.'.$from)
+                       || file_exists($f=S_DOCUMENT_ROOT.S::$assetsUrl.'/'.$to.'/'.str_replace('.', '/', $n).'.'.$from)
+                       || ($nmd && (
+                              file_exists($f=$nmd.$n.'.'.$from)
+                           || file_exists($f=$nmd.$n.'.'.$to)
+                           || file_exists($f=$nmd.$n.'/'.$n.'.'.$from)
+                           || file_exists($f=$nmd.$n.'/'.$n.'.'.$to)
+                           || file_exists($f=$nmd.$n.'/'.$from.'/'.$n.'.'.$from)
+                           || file_exists($f=$nmd.$n.'/'.$to.'/'.$n.'.'.$to)
+                       ))
                        || file_exists($f=S_ROOT.'/src/'.$n.'/'.$n.'.'.$from)
                        || file_exists($f=S_ROOT.'/src/'.str_replace('.', '/', $n).'.'.$from)
-                       || file_exists($f=dirname(S_ROOT).'/'.$n0.'/'.str_replace('.', '/', $n).'.'.$from)
-                       || file_exists($f=dirname(S_ROOT).'/'.$n0.'/src/'.str_replace('.', '/', $n).'.'.$from)
-                       || file_exists($f=dirname(S_ROOT).'/'.$n0.'/dist/'.str_replace('.', '/', $n).'.'.$from)
+                       //|| file_exists($f=dirname(S_ROOT).'/'.$n0.'/'.str_replace('.', '/', $n).'.'.$from)
+                       //|| file_exists($f=dirname(S_ROOT).'/'.$n0.'/src/'.str_replace('.', '/', $n).'.'.$from)
+                       //|| file_exists($f=dirname(S_ROOT).'/'.$n0.'/dist/'.str_replace('.', '/', $n).'.'.$from)
                        //|| file_exists($f=S_PROJECT_ROOT.'/node_modules/'.$n.'/package.json')
                     ) {
                         /*
