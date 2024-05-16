@@ -576,6 +576,7 @@ class App
            !is_dir($nmd = S_APP_ROOT.'/node_modules/') &&
            !is_dir($nmd = S_ROOT.'/node_modules/')
         ) $nmd = null;
+        if(S::$log > 2) S::log('[DEBUG] Checking dependencies on node_modules dir: '.$nmd);
         if($nmd && isset(static::$assetsOptional[$c0])) {
             foreach(static::$assetsOptional[$c0] as $n=>$c1) {
                 if(file_exists($nmd.$n)) {
@@ -661,7 +662,7 @@ class App
                         if(($mod=filemtime($f)) && $mod > $fmod) $fmod = $mod;
                         unset($mod);
                     } else {
-                        if(S::$log>3) S::log('[DEBUG] Component '.$src[$i].' not found.');
+                        if(S::$log>2) S::log("[DEBUG] Component {$src[$i]} . {$from}|{$to} not found.");
                         unset($src[$i]);
                     }
                     unset($f);
@@ -669,16 +670,19 @@ class App
             }
             if($t) { // check and build
                 if(!$force && file_exists($tf) && filemtime($tf)>$fmod) {
+                    if(S::$log > 2) S::log('[DEBUG] Not enforcing an update from: '.implode(', ', $src));
                     $src = null;
                 } else {
                     $build = true;
                 }
                 if($src) {
+                    if(S::$log > 2) S::log('[DEBUG] Updating '.$t.' from: '.implode(', ', $src));
                     if(!is_dir(dirname($tf))) @mkdir(dirname($tf), 0777, true);
-                    S::$log = 1;
                     Asset::minify($src, S_DOCUMENT_ROOT, true, true, false, $t, $force);
                     if(!file_exists($tf)) {
                         S::log('[ERROR] Could not build component '.$component.': '.$tf.' from '.S::serialize($src));
+                    } else if(S::$log>2) {
+                        S::log('[DEBUG] Destination file '.$tf.' updated on '.S::date(filemtime($tf), true).' with '.S::bytes(filesize($tf)));
                     }
                 }
 
@@ -699,6 +703,7 @@ class App
 
         if($build && ($files = S::glob(S_ROOT.'/src/{'.str_replace('.', '/', $component).'}{-*,}.'.$copyExt))) {
             $p = strlen(S_ROOT.'/src/');
+            if(S::$log > 2) S::log('[DEBUG] Copying source files: '.implode(', ', $files));
             foreach($files as $source) {
                 $dest = S_DOCUMENT_ROOT.S::$assetsUrl.'/'.S::slug(substr($source, $p),'.');
                 if($force || !file_exists($dest) || filemtime($dest)<filemtime($source)) {
@@ -708,6 +713,7 @@ class App
             unset($files);
         }
         if($build && $nmd && isset(static::$copyNodeAssets[$c0]) && ($files = S::glob($nmd.static::$copyNodeAssets[$c0]))) {
+            if(S::$log > 2) S::log('[DEBUG] Copying asset files: '.implode(', ', $files));
             foreach($files as $source) {
                 $dest = S_DOCUMENT_ROOT.S::$assetsUrl.'/'.basename($source);
                 if($force || !file_exists($dest) || filemtime($dest)<filemtime($source)) {

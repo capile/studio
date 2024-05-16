@@ -670,7 +670,7 @@ class Asset
                     unset($i, $o, $m);
                 }
             }
-            if(S::$log>0) {
+            if(S::$log>0 && !file_exists('/.dockerenv')) {
                 if(!S::$logDir || S::$logDir==='cli') S::$logDir = [];
                 else if(!is_array(S::$logDir)) S::$logDir = [S::$logDir];
                 S::$logDir[] = 'cli';
