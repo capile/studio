@@ -628,6 +628,8 @@ class App
                            || file_exists($f=$nmd.$n.'.'.$to)
                            || file_exists($f=$nmd.$n.'/'.$n.'.'.$from)
                            || file_exists($f=$nmd.$n.'/'.$n.'.'.$to)
+                           || file_exists($f=$nmd.$n.'/dist/'.$n.'.min.'.$to)
+                           || file_exists($f=$nmd.$n.'/dist/'.$n.'.'.$to)
                            || file_exists($f=$nmd.$n.'/'.$from.'/'.$n.'.'.$from)
                            || file_exists($f=$nmd.$n.'/'.$to.'/'.$n.'.'.$to)
                        ))
