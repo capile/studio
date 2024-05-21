@@ -400,7 +400,7 @@ class Contents extends Model
             unset($attr[$n], $n, $v);
         }
         unset($attr);
-        if($tpl=S::templateFile('tdz-contents-'.$type)) {
+        if($tpl=S::templateFile('studio-contents-'.$type)) {
             if(!isset($code['txt']) && isset($code[0])) {
                 $code['txt']=$code[0];
                 unset($code[0]);
@@ -452,6 +452,10 @@ class Contents extends Model
 
     public static function renderMedia($code=null, $e=null)
     {
+        if(!isset($code['src']) && isset($code['txt']) && is_string($code['txt'])) {// unserialize
+            $code += S::unserialize($code['txt'], (substr($code['txt'], 0, 1)==='{')?'json' :'yaml');
+        }
+
         if(!isset($code['src'])||$code['src']=='') {
             return '';
         }
@@ -466,7 +470,7 @@ class Contents extends Model
         }
         $code['format'] = $f;
         foreach($code as $k=>$v) if($v===null || $v==='') unset($code[$k]);
-        $tpl = Studio::templateFile('tdz_media_'.$f, 'tdz_media');
+        $tpl = Studio::templateFile('studio_media_'.$f, 'studio_media');
 
         return S::exec(array('script'=>$tpl, 'variables'=>$code));
     }
