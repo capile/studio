@@ -1016,12 +1016,14 @@ class Entries extends Model
         }
 
         // get file-based page definitions
-        $u = $this->link;
         static $pat;
         if(is_null($pat)) {
             $pat = '{,.*}{,.'.S::$lang.'}{.'.implode(',.',array_keys(Contents::$contentType)).'}';
         }
-
+        $u = $this->link;
+        if(preg_match('/\.[a-z0-9]+$/i', $u, $m) && in_array($m[0], Studio::config('allowedExtensions'))) {
+            $u = substr($u, 0, strlen($u) - strlen($m[0]));
+        }
         if(strpos($u, '.')) $u = str_replace('.', '{-,.}', $u);
         if(!($pages = self::file($u, false, $pat))) {
             $pages = [];
