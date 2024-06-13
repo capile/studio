@@ -26,8 +26,9 @@ function initStudio(d)
 {
     S.lang();
 
-    if(document.querySelector('html[data-studio-config]')) {
-        var zh = document.querySelector('html'), zc=zh.getAttribute('data-studio-config'), cfg=JSON.parse(zc.indexOf('{')<0 ?atob(zc) :zc), cn;
+    var zh=document.querySelector('*[data-studio-config]');
+    if(zh) {
+        var zc=zh.getAttribute('data-studio-config'), cfg=JSON.parse(zc.indexOf('{')<0 ?atob(zc) :zc), cn;
         zh.removeAttribute('data-studio-config');
         if(cfg) {
             for(cn in cfg) if((cn in S) && (typeof(S[cn])!='function')) S[cn] = cfg[cn];

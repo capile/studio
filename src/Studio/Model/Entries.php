@@ -774,7 +774,7 @@ class Entries extends Model
                 }
             }
             // redirect rules: if it's a folder, S::scriptName() must end with / otherwise, can't end with /
-            if($P && $redirect && $P->link!==S::scriptName()) {
+            if($P && $redirect && $P->link!==App::request('script-name')) {
                 S::redirect($P->link);
             }
         } else if($url) {

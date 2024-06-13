@@ -14,7 +14,10 @@
  */
 if(file_exists($a=__DIR__.'/vendor/autoload.php') || file_exists($a=__DIR__.'/../../autoload.php')) require $a;
 unset($a);
-require_once __DIR__.'/src/Studio.php';
+
+use Studio as S;
+
+$env = S::env();
 $appMemoryNamespace = file_exists(S_APP_ROOT.'/.appkey') ? Studio::slug(file_get_contents(S_APP_ROOT.'/.appkey')) : 'app';
 if(isset($_SERVER['STUDIO_CONFIG']) && $_SERVER['STUDIO_CONFIG'] && ($configFile=Studio::glob($_SERVER['STUDIO_CONFIG']))) {
    if(!isset($configFile[1])) $configFile = array_shift($configFile);
