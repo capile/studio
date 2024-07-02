@@ -25,6 +25,7 @@ RUN apk --no-cache add \
     npm \
     yarn \
     openssh-client \
+    ffmpeg \
     zip
 RUN docker-php-ext-configure gd \
     --enable-gd \
