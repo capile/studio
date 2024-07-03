@@ -254,6 +254,10 @@ class Collection implements ArrayAccess, Countable, Iterator
             $xls->setRowHeight(1, 20);
             $c=0;
             foreach ($header as $label=>$fn) {
+                if(is_array($fn)) {
+                    $fn = (isset($fn['bind'])) ?preg_replace('/.* ([^ ]+)$/', '$1', $fn['bind']) :$label;
+                    $header[$label] = $fn;
+                }
                 if(is_numeric($label)) $label = S::t(ucwords(str_replace('_', ' ', $fn)), 'model-'.$cn::$schema['tableName']);
                 else if(substr($label,0,1)=='*') $label = S::t(substr($label,1), 'model-'.$cn::$schema['tableName']);
 

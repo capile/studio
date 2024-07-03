@@ -18,10 +18,12 @@ use PDO;
 
 class Mysql extends Sql
 {
-    const DRIVER='mysql', INITIALIZE_CMD='set names utf8mb4';
+    const DRIVER='mysql', INITIALIZE_CMD='set names utf8mb4 collate utf8mb4_unicode_ci';
     public static $options=array(
         PDO::ATTR_PERSISTENT => false,
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::MYSQL_ATTR_SSL_CA => true,
+        PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
     ),
     $tableAutoIncrement='auto_increment',
     $tableDefault='ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';

@@ -120,6 +120,7 @@ class Sql
                     unset($db['options']['command']);
                 } else if(isset($db['options']['initialize'])) {
                     $cmd = $db['options']['initialize'];
+                    unset($db['options']['initialize']);
                 } else {
                     $cmd = static::INITIALIZE_CMD;
                 }
