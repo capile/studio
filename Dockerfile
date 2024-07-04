@@ -3,53 +3,70 @@
 # docker build -t tecnodesign/studio:latest -t tecnodesign/studio:v1.1 "git@github.com:capile/studio.git#main"
 # docker push tecnodesign/studio:latest
 # docker push tecnodesign/studio:v1.1
-FROM php:8.2-fpm-alpine
-RUN apk --no-cache add \
-    git \
-    gnupg \
-    freetype-dev \
-    libdrm-dev \
-    libpng-dev \
-    libjpeg-turbo-dev \
-    libwebp-dev \
-    libxcomposite-dev \
-    libxdamage-dev \
-    libxkbcommon-dev \
-    libxml2-dev \
-    libxrandr-dev \
-    libxshmfence-dev \
-    libzip-dev \
-    ldb-dev libldap openldap-dev \
-    oniguruma-dev \
-    nodejs \
-    npm \
-    yarn \
-    openssh-client \
-    ffmpeg \
-    zip
-RUN docker-php-ext-configure gd \
-    --enable-gd \
-    --with-freetype \
-    --with-jpeg \
-    --with-webp && \
+FROM php:8.3-fpm-alpine
+RUN apk add --no-cache --update \
+      ffmpeg \
+      git \
+      gnupg \
+      libldap \
+      libmemcached-libs \
+      nodejs \
+      npm \
+      openssh-client \
+      libzip-dev \
+      yarn \
+      zip \
+      zlib
+RUN apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
+      cyrus-sasl-dev \
+      freetype-dev \
+      ldb-dev \
+      libdrm-dev \
+      libjpeg-turbo-dev \
+      libmemcached-dev \
+      libpng-dev \
+      libwebp-dev \
+      libxcomposite-dev \
+      libxdamage-dev \
+      libxkbcommon-dev \
+      libxml2-dev \
+      libxrandr-dev \
+      libxshmfence-dev \
+      oniguruma-dev \
+      openldap-dev \
+      zlib-dev && \
+    pecl install mongodb igbinary && \
+    ( \
+        pecl install --nobuild memcached && \
+        cd "$(pecl config-get temp_dir)/memcached" && \
+        phpize && \
+        ./configure --enable-memcached-igbinary && \
+        make -j$(nproc) && \
+        make install && \
+        cd /tmp/ \
+    ) && \
+    docker-php-ext-configure gd \
+      --enable-gd \
+      --with-freetype \
+      --with-jpeg \
+      --with-webp && \
     docker-php-ext-configure ldap && \
-    git clone --branch v1.17 --depth 1 https://github.com/mongodb/mongo-php-driver.git /usr/src/php/ext/mongodb && \
-       cd /usr/src/php/ext/mongodb && git submodule update --init && cd && \
     docker-php-ext-install \
-    ctype \
-    dom \
-    fileinfo \
-    gd \
-    ldap \
-    mbstring \
-    mongodb \
-    pdo \
-    pdo_mysql \
-    simplexml \
-    soap \
-    zip && \
-    rm -rf /usr/src/*
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2
+      ctype \
+      dom \
+      fileinfo \
+      gd \
+      ldap \
+      mbstring \
+      pdo \
+      pdo_mysql \
+      simplexml \
+      soap \
+      zip && \
+    docker-php-ext-enable igbinary memcached mongodb && \
+    rm -rf /tmp/* && \
+    apk del .deps && \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2
 WORKDIR /var/www/studio
 COPY . .
 RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
