@@ -8,7 +8,7 @@
  * @author    Tecnodesign <ti@tecnodz.com>
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
- * @version   1.0
+ * @version   1.2
  */
 use Studio\App as App;
 use Studio\Asset;
@@ -24,8 +24,8 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.1.12';
-    const VER = 1.1;
+    const VERSION = '1.2.0';
+    const VER = 1.2;
 
     protected static
     $_app = null,
