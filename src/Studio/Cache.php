@@ -170,10 +170,11 @@ class Cache
      */
     public static function siteKey($s=null)
     {
-        if (!is_null($s)) {
+        if (!is_null($s) && is_null(self::$_siteKey)) {
             self::$_siteKey = $s;
         } else if (is_null(self::$_siteKey)) {
-            self::$_siteKey = false;
+            if(defined('S_CACHE_KEY')) self::$_siteKey = S_CACHE_KEY;
+            else self::$_siteKey = false;
         }
         unset($s);
         return self::$_siteKey;

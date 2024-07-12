@@ -181,7 +181,7 @@ class Studio
             self::$_app = $siteMemKey;
             self::$_env = $env;
             Cache::siteKey($siteMemKey);
-            if (false && !is_array($s) && file_exists($s)) {
+            if (!is_array($s) && file_exists($s)) {
                 $timeout = filemtime($s);
                 $cache = App::getInstance($siteMemKey, $env, $timeout);
                 if ($cache) {
@@ -2269,6 +2269,10 @@ class Studio
             }
             unset($locale);
             define('STUDIO_VERSION', Studio::VERSION);
+            if(!defined('S_CACHE_KEY')) {
+                if(isset($_SERVER['STUDIO_CACHE_KEY'])) define('S_CACHE_KEY', $_SERVER['STUDIO_CACHE_KEY']);
+                else define('S_CACHE_KEY', 'studio');
+            }
             if(!defined('S_CLI')) {
                 if(defined('TDZ_CLI')) define('S_CLI', TDZ_CLI);
                 else define('S_CLI', (!isset($_SERVER['HTTP_HOST']) && isset($_SERVER['SHELL'])));

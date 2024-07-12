@@ -15,7 +15,7 @@
 namespace Studio\Cache;
 
 use Studio as S;
-use Redis;
+use Redis as RedisServer;
 use RedisException;
 use Studio\Cache;
 use Studio\Cache\File;
@@ -23,7 +23,7 @@ use Studio\Cache\File;
 class Redis
 {
     public static $options = [
-        Redis::OPT_SERIALIZER => Redis::SERIALIZER_JSON,
+        RedisServer::OPT_SERIALIZER => RedisServer::SERIALIZER_PHP,
     ];
     private static $_server;
 
@@ -36,13 +36,15 @@ class Redis
                 if(substr($s, 0, 6)==='redis:') {
                     try {
                         parse_str(str_replace(';', '&', substr($s, 6)), $db);
-                        self::$_server = new Redis($db);
+                        if(isset($db['port'])) $db['port'] = (int)$db['port'];
+                        if(isset($db['connectTimeout'])) $db['connectTimeout'] = (float)$db['connectTimeout'];
+                        self::$_server = new RedisServer($db);
                         foreach(self::$options as $k=>$v) {
                             self::$_server->setOption($k, $v);
                             unset($k, $v);
                         }
-                        if(!isset(self::$options[Redis::OPT_PREFIX])) {
-                            self::$_server->setOption(Redis::OPT_PREFIX, Cache::siteKey().':');
+                        if(!isset(self::$options[RedisServer::OPT_PREFIX])) {
+                            self::$_server->setOption(RedisServer::OPT_PREFIX, Cache::siteKey().':');
                         }
                         break;
                     } catch(RedisException $e) {
@@ -127,11 +129,12 @@ class Redis
         if($expires<0) return false;
         $meta = ['modified'=>$t, 'size'=>((is_object($value)||is_array($value))?(1):(strlen((string)$value)))];
         if($expires) {
+            if(!is_integer($expires)) $expires = (int)$expires;
             if(!$S->setEx($key.'.meta', $expires, $meta) || !$S->setEx($key, $expires, $value)) {
                 return false;
             }
         } else {
-            if(!$S->set($key.'.meta', $meta) || !$S->setEx($key, $value)) {
+            if(!$S->set($key.'.meta', $meta) || !$S->set($key, $value)) {
                 return false;
             }
         }
@@ -145,7 +148,7 @@ class Redis
         if(!($S = self::redis())) {
             return File::delete($key);
         }
-        $ret = ($S->delete($key.'.meta') && $S->delete($key));
+        $ret = ($S->del($key.'.meta') && $S->del($key));
         unset($S);
 
         return $ret;
