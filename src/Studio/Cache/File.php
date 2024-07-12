@@ -48,6 +48,7 @@ class File
         } else if (is_null(self::$_cacheDir)) {
             self::$_cacheDir = S_VAR.'/cache/'.Cache::siteKey();
         }
+
         return self::$_cacheDir;
     }
 

@@ -19,10 +19,11 @@ use Studio\Cache\Apc;
 use Studio\Cache\File;
 use Studio\Cache\Memcache;
 use Studio\Cache\Memcached;
+use Studio\Cache\Redis;
 
 class Cache
 {
-    public static $expires=0, $memcachedServers=array(), $storage, $preferredStorage=['memcached', 'memcache', 'file', 'apc'];
+    public static $expires=0, $servers=[], $memcachedServers=[], $storage, $preferredStorage=['redis', 'memcached', 'memcache', 'file', 'apc'];
     /**
      * Cache key used for storing this site information in memory, must be a 
      * unique string.

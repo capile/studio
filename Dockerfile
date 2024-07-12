@@ -35,7 +35,7 @@ RUN apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
       oniguruma-dev \
       openldap-dev \
       zlib-dev && \
-    pecl install mongodb igbinary && \
+    pecl install mongodb igbinary redis && \
     ( \
         pecl install --nobuild memcached && \
         cd "$(pecl config-get temp_dir)/memcached" && \
@@ -63,7 +63,7 @@ RUN apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
       simplexml \
       soap \
       zip && \
-    docker-php-ext-enable igbinary memcached mongodb && \
+    docker-php-ext-enable igbinary memcached mongodb redis && \
     rm -rf /tmp/* && \
     apk del .deps && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2
