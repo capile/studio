@@ -61,7 +61,8 @@ class Asset
             'icon-font-size' => '1.6em',
             */
         ],
-        $importDir = [];
+        $importDir = [],
+        $lockKey='studio/asset';
 
 
     protected $source, $output, $root, $format, $optimize=true;
@@ -778,8 +779,15 @@ class Asset
 
     public static function buildCheck()
     {
-        S::log('[INFO] Checking Studio build '.STUDIO_VERSION);
-        Asset::check();
+        static $ckey=self::$lockKey.'Build';
+        if(!($r=Cache::get($ckey, 30))) {
+            Cache::set($ckey, S_TIMESTAMP, 30);
+            S::log('[INFO] Checking Studio build '.STUDIO_VERSION);
+            Asset::check();
+            Cache::delete($ckey);
+        } else {
+            S::log('[INFO] Studio is already being built on '.$r);
+        }
     }
 
     public static function buildDockerImage($a=[], $publish=null)

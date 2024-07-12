@@ -178,6 +178,8 @@ class Studio
     public static function app($s, $siteMemKey=false, $env='prod')
     {
         if ($siteMemKey) {
+            if(!isset($_SERVER['STUDIO_CACHE_KEY']) || $_SERVER['STUDIO_CACHE_KEY']!=$siteMemKey) $_SERVER['STUDIO_CACHE_KEY']=$siteMemKey;
+            self::env();
             self::$_app = $siteMemKey;
             self::$_env = $env;
             Cache::siteKey($siteMemKey);
@@ -2338,6 +2340,7 @@ class Studio
                 'S_TIME'=>S_TIME,
                 'S_TIMESTAMP'=>S_TIMESTAMP,
                 'S_VAR'=>S_VAR,
+                'S_CACHE_KEY'=>S_CACHE_KEY,
                 'STUDIO_VERSION'=>STUDIO_VERSION,
             ]
             :self::$_env;
