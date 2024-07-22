@@ -2557,7 +2557,7 @@ class Studio
     }
     public static function date($t, $showtime=true)
     {
-        $s = self::$dateFormat.(($showtime)?(' '.self::$timeFormat):(''));
+        $s = (is_string($showtime) && !is_numeric($showtime)) ?$showtime :self::$dateFormat.(($showtime)?(' '.self::$timeFormat):(''));
         if(!is_int($t)) {
             $t = strtotime($t);
         }

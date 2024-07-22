@@ -16,16 +16,18 @@ namespace Studio;
 
 use Studio as S;
 use Studio\App;
+use Studio\Cache;
+use Studio\Calendar;
+use Studio\Exception\AppException;
 use Studio\Exception\EndException;
+use Studio\Form;
 use Studio\Model;
 use Studio\Model\Interfaces;
 use Studio\Schema;
 use Studio\Studio;
-use Studio\Cache;
 use Studio\Yaml;
-use Studio\Form;
-use Studio\Exception\AppException;
 use ArrayAccess;
+use DateTime;
 
 class Api extends SchemaObject
 {
@@ -503,6 +505,7 @@ class Api extends SchemaObject
         App::$assets[] = 'S.Api';
         App::$assets[] = '!'.Form::$assets;
         App::$assets[] = '!S.Graph';
+        App::$assets[] = '!S.Calendar';
     }
 
     public static function action()
@@ -2229,7 +2232,7 @@ class Api extends SchemaObject
                 'expires' => [
                     'label' => '*Expire Date',
                     'type' => 'date',
-                    'value' => (new \DateTime('30 days'))->format('Y-m-d')
+                    'value' => (new DateTime('30 days'))->format('Y-m-d')
                 ],
             ],
         ];
@@ -2569,7 +2572,83 @@ class Api extends SchemaObject
             $g['id'] = S::slug($this->url).'-'.S::slug($n);
             if($this->search) $g['where'] = (isset($g['where'])) ?$this->search + $g['where'] :$this->search;
             if(!isset($g['scope'])) $g['scope'] = $n;
-            $s .= static::graph($g, $n);
+            if(isset($g['type']) && method_exists($this, $m='renderGraph'.S::camelize($g['type'], true))) {
+                $s .= $this->$m($g, $n);
+            } else {
+                $s .= static::graph($g, $n);
+            }
+        }
+
+        return $s;
+    }
+
+    public function renderGraphCalendar($g, $n=null)
+    {
+        $s = null;
+        App::$assets[] = 'S.Calendar';
+        $cn = $g['model'];
+        $G=(isset($g['options']))?($g['options']) :[];
+        $G['data']=[];
+        $q = (isset($g['where'])) ?$g['where'] :[];
+        $orderBy = (isset($g['order-by'])) ?$g['order-by'] :null;
+        $groupBy = null;
+        $label = (isset($g['label'])) ?$g['label'] :null;
+        if(isset($g['group-by'])) {
+            $groupBy = $g['group-by'];
+        }
+        $scope = (isset($g['scope'])) ?$g['scope'] :$n;
+        $di = [];
+        if($R=$cn::find($q,null,$scope,false,$orderBy,$groupBy)) {
+            $d = (isset($g['options']) && is_array($g['options'])) ?$g['options'] :[];
+            $d += ['events'=>[]];//, 'selected'=>[]
+            $pk = $cn::pk();
+            foreach($R as $i=>$o) {
+                $dt = $o->asArray($scope);
+                if(isset($dt['start'])) {
+                    if(isset($dt[$pk])) {
+                        $dt['url'] = $this->link('preview', $dt[$pk]);
+                        $dt['class'] = 's-api-a s-api-link';
+                    }
+                    $d['events'][] = $dt;
+                    $t0 = S::strtotime($dt['start']);
+                    //$d['selected'][] = date('Y-m-d');
+                    if(!isset($di[0]) || $di[0]>$t0) $di[0] = $t0;
+                    $t1 = (isset($dt['end'])) ?S::strtotime($dt['end']) :$t0;
+                    if(!isset($di[1]) || $di[1]<$t1) $di[1] = $t1;
+                }
+                unset($dt, $t0, $t1, $R[$i], $i, $o);
+            }
+            $label = (isset($g['label'])) ?$g['label'] :null;
+
+            $a = [
+                'id'=>'s-graph-'.S::slug($g['id']),
+                'class'=>'s-graph s-graph--'.$n,
+                'data-type'=>(isset($g['type'])) ?$g['type'] :'line',
+                'data-label'=>$label,
+            ];
+            if(isset($g['class'])) $a['class'] .= ' '.$g['class'];
+            if(isset($g['start'])) $di[0] = (is_int($g['start'])) ?$g['start'] :S::strtotime($g['start']);
+            else $g['start'] = $di[0];
+            $t0 = date('Ym', $di[0]);
+            if(isset($g['end'])) $di[1] = (is_int($g['end'])) ?$g['end'] :S::strtotime($g['end']);
+            else $g['end'] = $di[1];
+            $t1 = date('Ym', $di[1]);
+            $ms = [$t0];
+            while($t0++ < $t1) {
+                if(substr($t0, -2)>12) $t0 += 88;
+                $ms[] = $t0;
+            }
+            $c = '';
+            if(isset($g['offset']) && ($o=S::strtotime($g['offset'])) && in_array($o=date('Ym', $o), $ms)) $d['offset'] = 'm'.$o;
+
+            $C = new Calendar($d);
+            $s .= '<div';
+            foreach($a as $an=>$av) $s .= ' '.$an.'="'.S::xml($av).'"';
+            $s .= '>'
+                . '<h3>'.$label.'</h3>'
+                . $C->renderMonth($ms)
+                . '</div>';
+            unset($a, $R, $G);
         }
 
         return $s;

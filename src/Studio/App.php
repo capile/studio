@@ -47,7 +47,7 @@ class App
             'credentials'=>false,
         ),
         $assetsBuildStrategy='manual',
-        $assets = [ 'S' ],
+        $assets = [ 'S', '!S.Form', '!S.Api', '!S.Graph', '!S.Calendar' ],
         $assetRequirements=[
             'S.Form'=>'moment,pikaday-time/pikaday,pikaday-time/css/pikaday,pell/dist/pell.min',
             'S.Graph'=>'d3/dist/d3.min,billboard.js/dist/billboard.min',

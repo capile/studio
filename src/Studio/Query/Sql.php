@@ -37,26 +37,27 @@ class Sql
         $connectionCallback,
         $errorCallback;
     protected static 
-        $options, 
-        $conn=array(), 
+        $options,
+        $conn=[],
         $tableDefault,
         $tableAutoIncrement;
     protected 
         $_schema,
         $_database,
-        $_scope, 
-        $_select, 
-        $_distinct, 
-        $_selectDistinct, 
-        $_from, 
-        $_where, 
-        $_groupBy, 
-        $_orderBy, 
-        $_limit, 
-        $_offset, 
-        $_alias, 
-        $_classAlias, 
-        $_transaction, 
+        $_scope,
+        $_select,
+        $_distinct,
+        $_selectDistinct,
+        $_from,
+        $_from_other,
+        $_where,
+        $_groupBy,
+        $_orderBy,
+        $_limit,
+        $_offset,
+        $_alias,
+        $_classAlias,
+        $_transaction,
         $_last,
         $_query;
 
@@ -169,6 +170,7 @@ class Sql
         $this->_selectDistinct = null;
         $this->_scope = null;
         $this->_from = null;
+        $this->_from_other = null;
         $this->_where = null;
         $this->_orderBy = null;
         $this->_limit = null;
@@ -240,7 +242,7 @@ class Sql
             $this->_from .= " as {$quote[0]}a{$quote[1]}";
             $sc = null;
         }
-        return $this->_from;
+        return $this->_from.$this->_from_other;
     }
 
     public function filter($options=array())
@@ -645,63 +647,69 @@ class Sql
                         }
 
                         if(isset($rsc->view) && $rsc->view) {
-                            $jtn = (strpos($rsc->view, ' '))?('('.$rsc->view.')'):((string)$rsc->view);
+                            $jtn = (strpos($rsc->view, ' ') && !preg_match('/^[a-z0-9\_]*\(.*\)$/', $rsc->view))?('('.$rsc->view.')'):((string)$rsc->view);
                         } else if(isset($rsc->database) && $rsc->database!=$this->schema('database')) {
                             $jtn = $this->getDatabaseName($rsc->database).'.'.$rsc->tableName;
                         } else {
                             $jtn = $rsc->tableName;
                         }
-                        if(!is_array($rel['foreign'])) {
-                            $rfn = $this->getAlias($rel['foreign'], $rnf, true);
-                            $lfn = $this->getAlias($rel['local'], $ref, true);
-                            $this->_from .= " left outer join {$jtn} as {$quote[0]}{$an}{$quote[1]} on {$lfn}={$rfn}";
-                        } else {
+                        if(isset($rel['foreign']) && isset($rel['local'])) {
                             $this->_from .= " left outer join {$jtn} as {$quote[0]}{$an}{$quote[1]} on";
-                            foreach($rel['foreign'] as $rk=>$rv) {
-                                $rfn = $this->getAlias($rv, $rnf, true);
-                                $lfn = $this->getAlias($rel['local'][$rk], $ref, true);
-                                $this->_from .= (($rk>0)?(' and'):(''))." {$lfn}={$rfn}";
-                            }
-                        }
-                        if(isset($rel['on'])) {
-                            if(!is_array($rel['on'])) $rel['on']=array($rel['on']); 
-                            foreach($rel['on'] as $rfn) {
-                                @list($rfn,$fnc)=explode(' ', $rfn, 2);
-                                if(substr($rfn,0,strlen($rn))==$rn) {
-                                    $this->_from .= " and {$an}".substr($rfn,strlen($rn))." {$fnc} ";
-                                } else {
-                                    $this->_from .= ' and '.$this->getAlias($rfn, $rnf, true).' '.$fnc;
-                                }
-                                unset($rfn, $fnc);
-                            }
-                        }
-                        if(isset($rel['params']) && is_array($rel['params'])) {
-                            $this->_from .= ' and '.$this->getWhere($rel['params'], 'and', $rnf);
-                        }
-
-                        if(isset($rsc->events['active-records']) && $rsc->events['active-records']) {
-                            $ar = $rsc->events['active-records'];
-                            unset($rsc->events['active-records']);
-                            if(is_array($ar)) {
-                                foreach($ar as $r=>$v) {
-                                    if(is_int($r)) {
-                                        $this->_from .= ' and '.$this->getAlias($v, $rnf, $noalias);
-                                    } else {
-                                        $this->_from .= ' and '.$this->getWhere(array($r=>$v), 'and', $rnf);
-                                    }
-                                    unset($r, $v);
-                                }
+                            if(!is_array($rel['foreign'])) {
+                                $rfn = $this->getAlias($rel['foreign'], $rnf, true);
+                                $lfn = $this->getAlias($rel['local'], $ref, true);
+                                $this->_from .= " {$lfn}={$rfn}";
                             } else {
-                                if(strpos($ar, '`')!==false || strpos($ar, '[')!==false) {
-                                    $this->_from .= ' and '.$this->getAlias($ar, $rnf, $noalias);
-                                } else if(preg_match('/^([a-z0-9\_]+)[\s\<\>\!\=]/', $ar, $m)) {
-                                    $this->_from .= ' and '.$this->getAlias($m[1], $rnf, $noalias).substr($ar, strlen($m[1]));
-                                } else {
-                                    $this->_from .= ' and '.$ar;
+                                foreach($rel['foreign'] as $rk=>$rv) {
+                                    $rfn = $this->getAlias($rv, $rnf, true);
+                                    $lfn = $this->getAlias($rel['local'][$rk], $ref, true);
+                                    $this->_from .= (($rk>0)?(' and'):(''))." {$lfn}={$rfn}";
                                 }
                             }
-                            $rsc->events['active-records'] = $ar;
-                            unset($ar);
+                            if(isset($rel['on'])) {
+                                if(!is_array($rel['on'])) $rel['on']=array($rel['on']); 
+                                foreach($rel['on'] as $rfn) {
+                                    $this->_from .= ' and ';
+                                    @list($rfn,$fnc)=explode(' ', $rfn, 2);
+                                    if(substr($rfn,0,strlen($rn))==$rn) {
+                                        $this->_from .= "{$an}".substr($rfn,strlen($rn))." {$fnc} ";
+                                    } else {
+                                        $this->_from .= $this->getAlias($rfn, $rnf, true).' '.$fnc;
+                                    }
+                                    unset($rfn, $fnc);
+                                }
+                            }
+                            if(isset($rel['params']) && is_array($rel['params'])) {
+                                $this->_from .= ' and '.$this->getWhere($rel['params'], 'and', $rnf);
+                            }
+                            if(isset($rsc->events['active-records']) && $rsc->events['active-records']) {
+                                $ar = $rsc->events['active-records'];
+                                unset($rsc->events['active-records']);
+                                if(is_array($ar)) {
+                                    foreach($ar as $r=>$v) {
+                                        $this->_from .= ' and ';
+                                        if(is_int($r)) {
+                                            $this->_from .= $this->getAlias($v, $rnf, $noalias);
+                                        } else {
+                                            $this->_from .= $this->getWhere(array($r=>$v), 'and', $rnf);
+                                        }
+                                        unset($r, $v);
+                                    }
+                                } else {
+                                    $this->_from .= ' and ';
+                                    if(strpos($ar, '`')!==false || strpos($ar, '[')!==false) {
+                                        $this->_from .= $this->getAlias($ar, $rnf, $noalias);
+                                    } else if(preg_match('/^([a-z0-9\_]+)[\s\<\>\!\=]/', $ar, $m)) {
+                                        $this->_from .= $this->getAlias($m[1], $rnf, $noalias).substr($ar, strlen($m[1]));
+                                    } else {
+                                        $this->_from .= $ar;
+                                    }
+                                }
+                                $rsc->events['active-records'] = $ar;
+                                unset($ar);
+                            }
+                        } else {
+                            $this->_from_other .= ", {$jtn} as {$quote[0]}{$an}{$quote[1]}";
                         }
                     }
                     unset($rn, $rsc, $rel);
