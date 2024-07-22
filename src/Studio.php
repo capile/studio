@@ -1291,7 +1291,7 @@ class Studio
         exit();
     }
 
-    public static function redirect($url='', $temporary=false)
+    public static function redirect($url='', $temporary=false, $cache=null)
     {
         $url = ($url == '') ? (self::scriptName()) : ($url);
         $status = ($temporary)?(302):(301);
@@ -1304,8 +1304,16 @@ class Studio
 
         App::status($status);
         @header('location: '.$url, true, $status);
-        @header('cache-control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
         @header('content-length: '.strlen($str));
+        if($cache) {
+            $cachei = 3600;
+            $caches = 'public';
+            if(is_string($cache)) $caches = $cache;
+            else if(is_int($cache)) $cachei = $cache;
+            self::cacheControl($caches, $cachei);
+        } else {
+            self::cacheControl('private, no-cache, no-store, must-revalidate', 0);
+        }
 
         @ob_end_clean();
         echo $str;
