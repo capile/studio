@@ -58,6 +58,7 @@ RUN apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
       gd \
       ldap \
       mbstring \
+      opcache \
       pdo \
       pdo_mysql \
       simplexml \
@@ -70,6 +71,7 @@ RUN apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
 WORKDIR /var/www/studio
 COPY . .
 RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini && \
+    cp /var/www/studio/data/deploy/opcache.ini /usr/local/etc/php/conf.d/opcache.ini && \
     sed -e 's/expose_php = On/expose_php = Off/' \
         -e 's/max_execution_time = 30/max_execution_time = 10/' \
         -e 's/max_input_time = 60/max_input_time = 5/' \
