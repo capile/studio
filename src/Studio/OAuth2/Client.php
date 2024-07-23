@@ -307,11 +307,16 @@ class Client extends SchemaObject
     public static function authorizeSignIn($options=[])
     {
         $S = static::config('servers');
-        if(!($p=S::urlParams()) && ($route = App::response('route'))) {
+        if(isset($options['server']) && $options['server']) {
+            $p = [$options['server']];
+        } else if(!($p=S::urlParams()) && ($route = App::response('route'))) {
             S::scriptName($route['url']);
             $p = S::urlParams();
         }
-        if(App::request('get', 'ref') && (($ref=App::request('headers', 'referer')) && substr($ref, 0, strlen(S::scriptName()))!=S::scriptName())) {
+
+        $ref = null;
+        if(isset($options['target']) && $options['target']) $ref = $options['target'];
+        if($ref || (App::request('get', 'ref') && (($ref=App::request('headers', 'referer')) && substr($ref, 0, strlen(S::scriptName()))!=S::scriptName()))) {
             $U = S::getUser();
             $U->setAttribute('authorize-source', $ref);
         }
@@ -327,7 +332,7 @@ class Client extends SchemaObject
                     $Client = $Server->requestToken($code);
                     if(S::$log>0) S::log('[INFO] Client Token: '.$Client);
                 } else {
-                    $Client = $Server->requestAuthorization();
+                    $Client = $Server->requestAuthorization($options);
                     if(S::$log>0) S::log('[INFO] Authorization: '.$Client);
                 }
 
@@ -357,6 +362,9 @@ class Client extends SchemaObject
                         $ref = S::scriptName();
                     }
                     $U->store();
+                    if(isset($options['success-message']) && $options['success-message']) {
+                        $U->setMessage('<div class="s-msg s-msg-success">'.sprintf($options['success-message'], S::xml((string)$U)).'</div>');
+                    }
 
                     return S::redirect($ref);
                 } else {
@@ -413,7 +421,6 @@ class Client extends SchemaObject
                     $H[] = 'authorization: '.$tt.' '.$o['access_token'];
                 }
                 $R = QueryApi::runStatic($this->userinfo_endpoint, $this->issuer, null, 'GET', $H, 'json', true);
-
                 $User = null;
                 $I = null;
                 $key = ($this->identity_key) ?$this->identity_key :'sub';
@@ -610,13 +617,13 @@ class Client extends SchemaObject
         return $Client;
     }
 
-    public function requestAuthorization()
+    public function requestAuthorization($options=[])
     {
         $Client = null;
         if($this->authorization_endpoint) {
             $U = S::getUser();
             $state = S::salt(10);
-            $url = S::buildUrl(S::scriptName(true));
+            $url = S::buildUrl((isset($options['redirect_uri'])) ?$options['redirect_uri'] :S::scriptName(true));
             if($L=Storage::find(['type'=>'authorization', 'token'=>$this->id, 'id!='=>$U->getSessionId()],null,null,false)) {
                 foreach($L as $i=>$o) {
                     $o->delete();
@@ -640,6 +647,9 @@ class Client extends SchemaObject
             if($this->authorization_params) {
                 $p = (is_string($this->authorization_params)) ?S::unserialize($this->authorization_params, 'json') :$this->authorization_params;
                 if($p) $args += $p;
+            }
+            if(isset($options['authorization_params']) && ($p=$options['authorization_params'])) {
+                $args += $p;
             }
 
             if(isset($this->issuer)) {

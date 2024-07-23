@@ -349,6 +349,10 @@ class User
                 $nso = static::$cfg['ns'][$nso];
             }
         }
+        if($me instanceof self && ($O=$me->getObject())) {
+            $me = $O;
+            unset($O);
+        }
         $this->_me = (object) $me;
         if($nso) {
             $this->_ns = $nso;
