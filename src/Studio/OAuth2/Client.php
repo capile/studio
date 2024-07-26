@@ -333,14 +333,12 @@ class Client extends SchemaObject
                     if(S::$log>0) S::log('[INFO] Client Token: '.$Client);
                 } else {
                     $Client = $Server->requestAuthorization($options);
-                    if(S::$log>0) S::log('[INFO] Authorization: '.$Client);
+                    if(S::$log>0) S::log('[INFO] Authorization: '.$Client, var_export($options, true), var_export($Server, true));
                 }
-
                 if(!$User && $Client && $Client['options.access_token']) {
                     $User = $Server->requestUserinfo($Client);
                     if(S::$log>0) S::log('[INFO] Userinfo (end): '.var_export($User, true));
                 }
-
                 if($User) {
                     if(!isset($U)) $U = S::getUser();
                     if($nss = $U::config('ns')) {
@@ -360,6 +358,11 @@ class Client extends SchemaObject
                         $ref = $nso['redirect-success'];
                     } else {
                         $ref = S::scriptName();
+                    }
+                    if($ns && ($sid=$U->getSessionId()) && ($R=Storage::find(['type'=>'authorization', 'token'=>$ns, 'id='=>$sid,'user'=>''],false))) {
+                        $R[0]->user = $U->uid();
+                        $R[0]->save();
+                        unset($R);
                     }
                     $U->store();
                     if(isset($options['success-message']) && $options['success-message']) {
@@ -468,14 +471,20 @@ class Client extends SchemaObject
                     if($R) {
                         // fetch user to authenticate
                         if(S::$log) S::log('[DEBUG] find user '.S::serialize($q, 'json'));
-                        if($User = S::user($q)) {
-                            $User = $User->getObject();
-                            $I->user = $User->getPk();
+                        $User = S::user($q);
+                    }
+                }
+
+                if($User) {
+                    $User = $User->getObject();
+                    $uid = $User->getPk();
+                    if($uid) {
+                        if(!$I->user) {
+                            $I->user = $uid;
                             $I->save();
                         }
                     }
                 }
-
                 if(!$User && $this->user_create) {
                     // create user
                     if($this->user_map) {
@@ -516,18 +525,35 @@ class Client extends SchemaObject
     {
         $token = null;
         if($this->token_endpoint) {
-
-            $url = S::buildUrl(S::scriptName(true));
+            $auth = (Client::config('allow_credentials_in_request_body')) ?'client_secret_post' :'client_secret_basic';
             $data = [
-                'client_id'=>$this->client_id,
-                'client_secret'=>$this->client_secret,
                 'grant_type'=>'refresh_token',
                 'refresh_token'=>$refreshToken,
+                'client_id'=>$this->client_id,
             ];
-
             $H = static::$requestHeaders;
+            if($auth==='client_secret_basic') {
+                $H[] = 'authorization: Basic '.base64_encode(urlencode($this->client_id).':'.urlencode($this->client_secret));
+            } else {
+                $data['client_secret'] = $this->client_secret;
+            }
+            if(static::$tokenHeaders) {
+                $H = array_merge($H, static::$tokenHeaders);
+            }
+            if($this->token_params) {
+                if(!is_array($this->token_params)) $this->token_params = S::unserialize($this->token_params, 'json');
+                if($this->token_params) {
+                    $data += $this->token_params;
+                }
+            }
+            $enc  = ($this->token_encoding) ?$this->token_encoding :'application/x-www-form-urlencoded';
+            $H[] = 'content-type: '.$enc;
+            if($enc==='application/x-www-form-urlencoded') {
+                $data = S::serialize($data, 'query');
+            } else {
+                $data = S::serialize($data, 'json');
+            }
             $R = QueryApi::runStatic($this->token_endpoint, $this->issuer, $data, 'POST', $H, 'json', true);
-
             if($R) {
                 if($Client) {
                     $o = $R;
@@ -641,7 +667,6 @@ class Client extends SchemaObject
                     'scope'=>$this->scope,
                 ],
             ]);
-
             $args = ['client_id'=>$this->client_id, 'state'=>$state, 'redirect_uri'=>$url];
             if($this->scope) $args['scope'] = $this->scope;
             if($this->authorization_params) {
@@ -651,12 +676,10 @@ class Client extends SchemaObject
             if(isset($options['authorization_params']) && ($p=$options['authorization_params'])) {
                 $args += $p;
             }
-
             if(isset($this->issuer)) {
                 // oidc requires scope
                 if(!$this->scope) $args['scope'] = 'openid';
             }
-
             if(isset($this->response_types_supported)) {
                 //$args['response_type'] = (in_array('code', $this->response_types_supported)) ?'code' :array_values($this->response_types_supported)[0];
                 $args['response_type'] = 'code';

@@ -105,6 +105,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
                 'grant_type' => 'options.grant_type',
                 'metadata'=>'options.metadata',
                 'authorization_endpoint'=>'options.authorization_endpoint',
+                'authorization_params'=>'options.authorization_params',
                 'token_endpoint'=>'options.token_endpoint',
                 'token_options'=>'options.token_options',
                 'token_params'=>'options.token_params',
