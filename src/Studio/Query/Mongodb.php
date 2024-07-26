@@ -126,10 +126,14 @@ class Mongodb
                         throw new AppException('Could not connect to ' . $database);
                     return false;
                 }
-                if (!$database && is_array($db))
+                if (!$database && is_array($db)) {
                     $db = array_shift($db);
+                }
+                if(isset($db['password-file']) && !isset($db['password'])) {
+                    $db['password'] = trim(file_get_contents($db['password-file']));
+                    unset($db['password-file']);
+                }
                 $db += array('username' => null, 'password' => null);
-
                 if (isset($db['options']['command'])) {
                     $cmd = $db['options']['command'];
                     unset($db['options']['command']);
@@ -139,7 +143,17 @@ class Mongodb
 
                 $level = 'connect';
                 $options = (isset($db['options'])) ?$db['options'] :[];
+
                 $dsn = preg_replace('@^mongo(db|db\+srv)?:/*@', 'mongodb://', $db['dsn']);
+                if($db['username'] || isset($dn['options'])) {
+                    $parts = [];
+                    if($db['username']) $parts['user'] = $db['username'];
+                    if($db['password']) $parts['pass'] = $db['password'];
+                    if(isset($db['database']) && $db['database']) $parts['path'] = $db['database'];
+                    if(isset($db['port']) && $db['port']) $parts['port'] = $db['port'];
+                    $params = (isset($db['options']) && is_array($db['options'])) ?$db['options'] :[];
+                    $dsn = S::buildUrl($dsn, $parts, $params);
+                }
 
                 static::$conn[$database] = new Client($dsn, $options);
             }
@@ -388,7 +402,9 @@ class Mongodb
             foreach($w as $fn=>$v) {
                 $fn = $this->getAlias($fn);
                 // add rules for arrays/objects
-                if(isset($this->_keys[$fn])) $v = new ObjectId($v);
+                if(isset($this->_keys[$fn])) {
+                    $v = ($v) ?new ObjectId($v) :null;
+                }
                 $r[$fn] = $v;
                 unset($fn, $v);
             }

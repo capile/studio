@@ -18,6 +18,7 @@ RUN apk add --no-cache --update \
       zip \
       zlib
 RUN apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
+      curl-dev \
       cyrus-sasl-dev \
       freetype-dev \
       ldb-dev \
@@ -34,6 +35,7 @@ RUN apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
       libxshmfence-dev \
       oniguruma-dev \
       openldap-dev \
+      openssl-dev \
       zlib-dev && \
     pecl install mongodb igbinary redis && \
     ( \

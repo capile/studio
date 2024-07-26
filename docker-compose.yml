@@ -14,6 +14,11 @@ services:
     #  - STUDIO_APP_ROOT=/var/www/studio
     #  - STUDIO_DATA=/var/www/studio/data
     #  - STUDIO_DOCUMENT_ROOT=/var/www/studio/data/web
+   healthcheck:
+      test: ["CMD", "curl", "-f", "http://web.studio:9999/_me"]
+      interval: 5s
+      timeout: 30s
+      retries: 10
   db.studio:
     hostname: db.studio
     container_name: db.studio
