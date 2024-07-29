@@ -665,7 +665,7 @@ class Studio
                 $qs = null;
             }
             while($x=strpos($p, '/../')) {
-                $p = preg_replace('#([^/]*$#', '', substr($p, 0, $x)).substr($p, $x+3);
+                $p = preg_replace('#([^/]*)$#', '', substr($p, 0, $x)).substr($p, $x+3);
             }
             $p = preg_replace('#(/?)(\.\.?/)+#', '$1', $p);
             $s = $p.((!is_null($qs)) ?'?'.$qs :'');
