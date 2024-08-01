@@ -63,10 +63,17 @@ function checkGraph()
             if(I.className.search(/\bs-api-active\b/)>-1) {
                 _G[n].flush();
             }
+            /*
         } else if(_G[n]) {
-            _G[n].destroy();
-            if(el) Z.deleteNode(el);
+            try {
+                console.log('destroying,,,', _G[n]);
+                _G[n].destroy();
+            } catch(error) {
+                console.log(error);
+            }
+            if(el || (el=_G[n].element)) Z.deleteNode(el);
             delete(_G[n]);
+            */
         }
     }
 }
