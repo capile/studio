@@ -225,7 +225,7 @@ class Api
 
     public function disconnect($n='')
     {
-        if($c=$this->config('cookieJar') && is_string($c)) {
+        if(($c=$this->config('cookieJar')) && is_string($c)) {
             if(file_exists($c)) @unlink($c);
             $this->config('cookieJar', true);
         }
