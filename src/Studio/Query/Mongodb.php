@@ -21,7 +21,7 @@ use Studio\Exception\AppException;
 use MongoDB\Client;
 use MongoDB\Collection;
 use MongoDB\Database;
-use MongoDB\BSON\ObjectId;
+use MongoDB\BSON\{ObjectId,UTCDateTime};
 use Exception;
 
 class Mongodb
@@ -41,6 +41,7 @@ class Mongodb
         $microseconds = 6,
         $datetimeSize = 6,
         $enableOffset = true,
+        $unserializeStrings = true,
         $typeMap = ['float' => 'decimal', 'number' => 'decimal'],
         $textToVarchar,
         $logSlowQuery,
@@ -232,6 +233,7 @@ class Mongodb
             'queryCallback',
             'connectionCallback',
             'errorCallback',
+            'unserializeStrings',
         ];
         if($n) {
             $r = null;
@@ -327,12 +329,125 @@ class Mongodb
         return $r;
     }
 
-    public static function buildFilter(&$q)
+    public static function buildFilter(&$q, $xor='and', $ref=null)
     {
         $r = [];
-        if(isset($q['where'])) {
+        if(!isset($q['where'])) return $r;
 
+        $sc = null;
+        $cn = null;
+        if ($ref) {
+            $cn = (is_string($ref)) ?$ref :get_class($ref);
+            $sc = $cn::$schema;
         }
+
+        /*
+        $e = (isset($sc->events))?($sc->events):(null);
+        $add=array();
+        $ar = null;
+        if(!$r && $e && isset($e['active-records']) && $e['active-records']) {
+            if(is_array($e['active-records'])) {
+                $add=$e['active-records'];
+            } else {
+                if(strpos($e['active-records'], '`')!==false || strpos($e['active-records'], '[')!==false) {
+                    $ar = $this->getAlias($e['active-records'], $ref, true);
+                } else {
+                    $ar = $e['active-records'];
+                }
+            }
+        }
+        */
+
+        if(!is_array($q['where'])) {
+            // must get from primary key or first column
+            $pk = $cn::pk();
+            if(!$pk) return '';
+            else if(!is_array($pk)) {
+                $q['where'] = [ $pk => $w ];
+            } else {
+                $v = preg_split('/\s*[\,\;]\s*/', $q['where'], count($pk));
+                $q['where'] = [];
+                foreach($v as $i=>$k) {
+                    $q['where'][$pk[$i]] = $k;
+                    unset($i, $k);
+                }
+                unset($v);
+            }
+        }
+        /*
+        if($add) {
+            $w += $add;
+        }
+        */
+        $op = '$eq';
+        $xor= '$and';
+        $not = false;
+        static $ops = ['='=>'$eq', '>=' => '$gte', '<=' => '$lte', '<>' => '$ne', '!' => '$ne', '!=' => '$ne', '>' => '$gt', '<' => '$lt', 'in' => '$in', 'not in'=>'$nin', 'not'=>'$ne'];
+        static $opre = '/\s*([\<\>\!]\=?|\<\>|\=)$/';
+        static $like = array('%', '$', '^', '*', '~');
+        static $xors = array('and'=>'$and', '&'=>'$and', 'or'=>'$or', '|'=>'$or', 'and not'=>'$not', '!&'=>'$not', 'or not'=>'$nor', '!|'=>'$nor');
+        static $xorre = '/^(and\b|\&|or\b|\||and not\b|\!\&|or not\b|\!\")/i';
+        foreach($q['where'] as $k=>$v) {
+            if(is_int($k)) {
+                if(is_array($v)) {
+                    if($v = static::buildFilter($v, $xor, $ref)) {
+                        $a = array_intersect_key($r, $v);
+                        if($xor==='$and') {
+                            if(!$a) $r += $a;
+                            else $r = array_merge_recursive($r, $v);
+                        } else {
+                            if(isset($r['$or'])) $r['$or'] = array_merge_recursive($r['$or'], $v);
+                            else $r['$or'] = $v;
+                        }
+                    }
+                } else {
+                    if(isset($xors[$v])) {
+                        $xor = $xors[$v];
+                    }
+                }
+            } else {
+                $k=trim($k);
+                $cop = $op;
+                $pxor = (isset($cxor))?($cxor):(null);
+                $cxor = $xor;
+
+                if(preg_match($xorre, $k, $m)) {
+                    $cxor = $xors[$m[1]];
+                    $k = trim(substr($k, strlen($m[0])));
+                    unset($m);
+                }
+                /*
+                if($pxor && $pxor=='or' && $pxor!=$cxor) {
+                    $r = ' ('.trim($r).')';
+                }
+                */
+                if(preg_match($opre, $k, $m) && $m[1]) {
+                    // operators: <=  >= < > ^= $=
+                    $cop = $ops[trim($m[1])];
+                    $k = trim(substr($k, 0, strlen($k) - strlen($m[0])));
+                    unset($m);
+                }
+                $fn = $k; //$this->getAlias($k, $ref, true);
+                if($fn) {
+                    //$cn = (isset($sc['className']))?($sc['className']):($this->_schema);
+                    if(is_array($v)) {
+                        if($cop==='$ne' || $cxor==='$not') $cop = '$nin';
+                        else $cop = '$in';
+                    }
+
+                    if(isset($r[$fn][$cop]) || $cxor!=='$and') $r[$cxor][$fn][$cop] = $v;
+                    else $r[$fn][$cop] = $v;
+                }
+                unset($cop, $cnot);
+            }
+            unset($k, $fn, $v);
+        }
+
+        /*
+        if($ar) {
+            $r = ($r)?('('.trim($r).") and ({$ar})"):($ar);
+        }
+        */
 
         return $r;
     }
@@ -616,7 +731,6 @@ class Mongodb
         } else {
             $filter = $q;
         }
-
         $C = self::connect($n);
         $stmt = null;
         try {
@@ -685,11 +799,7 @@ class Mongodb
             if (!isset($odata[$fn]) && $fv->required) {
                 throw new AppException(array(S::t('%s should not be null.', 'exception'), $M::fieldLabel($fn)));
             } else if(array_key_exists($fn, $odata)) {
-                if(isset($this->_keys[$fn])) {
-                    $data[$fn] = new ObjectId($odata[$fn]);
-                } else {
-                    $data[$fn] = $odata[$fn];
-                }
+                $data[$fn] = $this->mongoValue($odata[$fn], $fv, $fn);
             } else if($M->getOriginal($fn, false)!==false && is_null($M->$fn)) {
                 $data[$fn] = null;
             }
@@ -741,15 +851,12 @@ class Mongodb
             if (!isset($odata[$fn]) && $original===false) {
                 continue;
             } else if(array_key_exists($fn, $odata)) {
-                $v  = $odata[$fn];
+                $v = $this->mongoValue($odata[$fn], $fv, $fn);
                 if($original===false) $original=null;
-                if(@(string)$original!==@(string)$v) {
+                else $original = $this->mongoValue($v, $fv);
+                if(gettype($original) !== gettype($v) || $original!=$v) {
                     if(!isset($data['$set'])) $data['$set'] = [];
-                    if(isset($this->_keys[$fn])) {
-                        $v = new ObjectId($v);
-                    }
                     $data['$set'][$fn]=$v;
-                    //$M->setOriginal($fn, $v);
                 }
             } else if($original!==false && $M->$fn===false) {
                 if(!isset($data['$unset'])) $data['$unset'] = [];
@@ -777,12 +884,45 @@ class Mongodb
 
     public function delete($M, $conn=null)
     {
-        S::log('[WARNING] Define: '.__METHOD__, func_get_args());
+        S::log(__METHOD__, debug_backtrace(null, 5));
+        return true;
+        if(($pk=$M->_id) || ($pk=$M->getPk())) {
+            $filter = ['_id'=>(is_object($pk) ?$pk :new ObjectId($pk))];
+        } else {
+            $filter = $M->getPk(true);
+        }
+        if(!$filter) {
+            throw new AppException('Cannot find primary key for '.$M);
+        }
+        $tn = $M::$schema->tableName;
+        if(!$conn) {
+            $conn = self::connect($this->schema('database').'.'.$tn);
+        } else if($conn instanceof Database) {
+            $conn = $conn->selectCollection($tn);
+        }
+        $r = $conn->deleteOne($filter);
+        if($M::$schema->audit) {
+            $M->auditLog('delete', $pk);
+        }
+        return $r;
     }
 
     public function create($schema=null, $conn=null)
     {
         if(S::$log>0) S::log('[INFO] Define: '.__METHOD__.' ... is it required? or should we control the schemas only at app level?');
+    }
+
+    public function mongoValue($v, $fd, $fn=null)
+    {
+        if($this->config('unserializeStrings') && $fd->serialize && is_string($v)) {
+            return S::unserialize($v, $fd->serialize);
+        } else if($fd->type && substr($fd->type, 0, 4)==='date') {
+            return new UTCDateTime($v);
+        } else if($fn && isset($this->_keys[$fn])) {
+            return new ObjectId($v);
+        } else {
+            return $v;
+        }
     }
 
     /**

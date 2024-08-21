@@ -376,9 +376,15 @@ class Schema implements ArrayAccess
     {
         if(!isset($def['type'])) $def['type'] = 'string';
         if($def['type']=='string') {
-            if(is_array($value)) {
+            if(is_array($value) || is_object($value)) {
                 if(isset($def['serialize'])) {
                     $value = S::serialize($value, $def['serialize']);
+                } else if(is_object($value)) {
+                    if(method_exists($value, '__toString' )) {
+                        $value = (string)$value;
+                    } else {
+                        $value = var_export($value, true);
+                    }
                 } else {
                     $value = S::implode($value);
                 }

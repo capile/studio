@@ -2182,7 +2182,7 @@ class Api extends SchemaObject
                     }
                     $msg = '<a data-action="'.$a.'" data-url="'.S::xml($uri).'" data-message="'.S::xml($st['m']).'"></a>';
                     // process has ended
-                    Cache::delete('sync-qbo/'.$uid);
+                    Cache::delete($prefix.$uid);
                 } else {
                     $msg = '<a data-action="status" data-url="'.S::xml($uri).'" data-message="'.S::xml($st['m']).'" data-status="'.$uid.'"></a>';
                 }
