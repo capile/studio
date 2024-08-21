@@ -148,6 +148,8 @@ ENV STUDIO_AUTOLOAD=/var/www/studio/vendor/autoload.php
 ENV STUDIO_ENV="prod"
 ENV STUDIO_INIT=""
 ENV STUDIO_CACHE_KEY="studio"
+ENV STUDIO_CACHE_STORAGE=""
+ENV STUDIO_MAIL_SERVER=""
 VOLUME /opt/studio
 ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]
 CMD ["php-fpm"]

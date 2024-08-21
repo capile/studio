@@ -60,17 +60,31 @@ class Cache
     {
         if(is_null(self::$storage)) {
             $m = null;
-            foreach(self::$preferredStorage as $m) {
-                if($m==='memcached') {
-                    if(self::$memcachedServers && ini_get('memcached.serializer') && Memcached::memcached()) break;
-                } else if($m==='memcache') {
-                    if(self::$memcachedServers && function_exists('memcache_debug') && Memcache::memcache()) break;
-                } else if($m==='apc') {
-                    if(function_exists('apc_fetch') || function_exists('apcu_fetch')) break;
-                } else if($m==='file') {
-                    break;
+            if(!static::$servers && isset($_SERVER['STUDIO_CACHE_STORAGE']) && $_SERVER['STUDIO_CACHE_STORAGE']) static::$servers = explode(' ', $_SERVER['STUDIO_CACHE_STORAGE']);
+            if(static::$servers) {
+                foreach(static::$servers as $s) {
+                    if(preg_match('/^([a-z]+):/', $s, $n) && in_array($n[1], static::$preferredStorage)) {
+                        if(!$m) $m = $n[1];
+                        if(($n[1]==='memcached' || $n[1]==='memcache') && !in_array($s=substr($s, strlen($n[0])), self::$memcachedServers)) {
+                            self::$memcachedServers[] = $s;
+                        }
+                    }
+                    unset($n, $s);
                 }
-                $m = null;
+            }
+            if(!$m) {
+                foreach(self::$preferredStorage as $m) {
+                    if($m==='memcached') {
+                        if(self::$memcachedServers && ini_get('memcached.serializer') && Memcached::memcached()) break;
+                    } else if($m==='memcache') {
+                        if(self::$memcachedServers && function_exists('memcache_debug') && Memcache::memcache()) break;
+                    } else if($m==='apc') {
+                        if(function_exists('apc_fetch') || function_exists('apcu_fetch')) break;
+                    } else if($m==='file') {
+                        break;
+                    }
+                    $m = null;
+                }
             }
             self::$storage = ($m) ?$m :'file';
         }
@@ -81,7 +95,7 @@ class Cache
     public static function storage($method=null, $className=false)
     {
         $r = null;
-        if(!is_null($method) && is_string($method) && in_array($method, array('file', 'apc', 'memcache', 'memcached'))) {
+        if(!is_null($method) && is_string($method) && in_array($method, static::$preferredStorage)) {
             $r = $method;
         } else {
             $r = self::preferredStorage();

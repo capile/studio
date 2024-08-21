@@ -413,6 +413,21 @@ class Mail
     public function send()
     {
         // configure mailer
+        if(is_null(self::$config) && isset($_SERVER['STUDIO_MAIL_SERVER']) && $_SERVER['STUDIO_MAIL_SERVER']) {
+            $u = parse_url($_SERVER['STUDIO_MAIL_SERVER']);
+            static::$config = [
+                'transport' => (isset($u['scheme'])) ?$u['scheme'] :'smtp',
+                'server' => (isset($u['host'])) ?$u['host'] :'localhost',
+            ];
+            if(isset($u['path'])) self::$config['mail'] = $u['path'];
+            if(isset($u['port'])) self::$config['port'] = $u['port'];
+            if(isset($u['user'])) self::$config['username'] = $u['user'];
+            if(isset($u['pass'])) self::$config['password'] = $u['pass'];
+            if(isset($u['query']) && (parse_str($u['query'], $q))) {
+                self::$config += $q;
+                unset($q);
+            }
+        }
         if (is_null(self::$config)) {
             $config = false;
             $app = S::getApp();
