@@ -4,7 +4,7 @@ Studio is a multi-purpose data management tool, designed to work as an API provi
 
 Ready to start? You'll need:
 
-- PHP version 7.3+
+- PHP version 8.3+
 - Composer
 - Git
 

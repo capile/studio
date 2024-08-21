@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP version 7.3+
+ * PHP version 8.3+
  *
  * @package   capile/tecnodesign
  * @author    Tecnodesign <ti@tecnodz.com>
