@@ -34,9 +34,31 @@ class Redis
             foreach(Cache::$servers as $s) {
                 if(substr($s, 0, 6)==='redis:') {
                     try {
-                        parse_str(str_replace(';', '&', substr($s, 6)), $db);
-                        if(isset($db['port'])) $db['port'] = (int)$db['port'];
-                        if(isset($db['connectTimeout'])) $db['connectTimeout'] = (float)$db['connectTimeout'];
+                        if(strpos($s, ':/') && ($db=parse_url($s))) {
+                            if(isset($db['fragment'])) unset($db['fragment']);
+                            if(isset($db['port'])) $db['port'] = (int) $db['port'];
+                            unset($db['scheme']);
+                            if(isset($db['path'])) {
+                                if($db['path'] && $db['path']!=='/' && parse_str(str_replace(';', '&', substr($db['path'], 6)), $q)) $db += $q;
+                                unset($db['path'], $q);
+                            }
+                            if(isset($db['query']) && (parse_str($db['query'], $q))) {
+                                $db += $q;
+                                unset($q);
+                            }
+                            if(isset($db['user'])) {
+                                $db['auth'] = [$db['user']];
+                                unset($db['user']);
+                            }
+                            if(isset($db['pass'])) {
+                                $db['auth'][1] = $db['pass'];
+                                unset($db['pass']);
+                            }
+                        } else {
+                            parse_str(str_replace(';', '&', substr($s, 6)), $db);
+                            if(isset($db['port'])) $db['port'] = (int)$db['port'];
+                            if(isset($db['connectTimeout'])) $db['connectTimeout'] = (float)$db['connectTimeout'];
+                        }
                         self::$_server = new RedisServer($db);
                         foreach(self::$options as $k=>$v) {
                             self::$_server->setOption($k, $v);
