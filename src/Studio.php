@@ -15,6 +15,7 @@ use Studio\Asset;
 use Studio\Asset\Image;
 use Studio\Cache;
 use Studio\Collection;
+use Studio\Crypto;
 use Studio\Model;
 use Studio\Model\Entries;
 use Studio\Yaml;
@@ -1774,9 +1775,7 @@ class Studio
     {
         static $trace;
         $logs = array();
-        if(!self::$logDir && self::$_app && self::$_env) {
-            self::$logDir = self::getApp()->config('app', 'log-dir');
-        }
+        if(!self::$logDir) return;
         $d = (!is_array(self::$logDir))?(array(self::$logDir)):(self::$logDir);
         foreach($d as $l) {
             if($l=='syslog' && openlog('studio', LOG_PID|LOG_NDELAY, LOG_LOCAL5)) {
@@ -2358,82 +2357,19 @@ class Studio
         return $r;
     }
 
-    /**
-     * Data encryption function
-     *
-     * Encrypts any data and returns a base64 encoded string with its information
-     *
-     * @param   mixed  $data      data to be encrypted
-     * @param   string $salt      (optional) the salt to encrypt the data
-     * @param   string $alg       (optional) the algorithm to use
-     * @return  string            the encoded string
-     */
-    public static function encrypt($s, $salt=null, $alg=null)
+    public static function encrypt($s, $salt=null, $alg=null, $encode=true)
     {
-        if($alg) {
-            // unique random ids per string
-            // this is double-stored in file cache to prevent duplication
-            if($alg==='uuid') {
-                $sh = (strlen($s)>30 || preg_match('/[^a-z0-9-_]/i', $s))?(md5($s)):($s);
-                $r = null;
-                if($r=Cache::get('uuid/'.$sh)) {
-                    if($salt===false) {
-                        Cache::delete('uuid/'.$sh);
-                        Cache::delete('uuids/'.$r);
-                    }
-                    unset($sh);
-                } else if($salt!==false) {
-                    // generate uniqid in base64: 10 char string
-                    while(!$r) {
-                        $r = self::encodeBase64Url((function_exists('openssl_random_pseudo_bytes'))?(openssl_random_pseudo_bytes(7)):(pack('H*',uniqid(true))));
-                        if(Cache::get('uuids/'.$r)) {
-                            $r='';
-                        }
-                    }
-                    Cache::set('uuid/'.$sh, $r);
-                    Cache::set('uuids/'.$r, $s);
-                }
-                unset($sh);
-                return $r;
-            } else {
-                if(is_null($salt)) {
-                    if(!($salt=Cache::get('rnd', 0, true, true))) {
-                        $salt = self::salt(32);
-                        Cache::set('rnd', $salt, 0, true, true);
-                    }
-                }
-                if(function_exists('openssl_encrypt')) {
-                    if($alg===true || $alg===null) $alg = 'AES-256-CFB';
-                    $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($alg));
-                    $s = $iv.openssl_encrypt($s, $alg, $salt, 0, $iv);
-                } else if(function_exists('mcrypt_encrypt')) {
-                    if($alg===true || $alg===null) $alg = '3DES';
-                    # create a random IV to use with CBC encoding
-                    $iv = mcrypt_create_iv(mcrypt_get_iv_size($alg, MCRYPT_MODE_CBC), MCRYPT_RAND);
-                    $s = $iv.mcrypt_encrypt($alg, $salt, $s, MCRYPT_MODE_CBC, $iv);
-                }
-            }
-        }
-        return self::encodeBase64Url($s);
+        return Crypto::encrypt($s, $salt, $alg, $encode);
+    }
+
+    public static function decrypt($r, $salt=null, $alg=null)
+    {
+        return Crypto::decrypt($r, $salt, $alg);
     }
 
     public static function salt($length=40, $safe=true)
     {
-        if(function_exists('openssl_random_pseudo_bytes')) {
-            $rnd = openssl_random_pseudo_bytes($length);
-        } else if(function_exists('random_bytes')) {
-            $rnd = random_bytes($length);
-        } else {
-            $rnd = pack('H*',uniqid(true).uniqid(true).uniqid(true).uniqid(true).uniqid(true));
-        }
-        if($safe && is_string($safe)) {
-            return substr(preg_replace('/[^'.$safe.']+/', '', base64_encode($rnd)),0,$length);
-        } else if($safe) {
-            return substr(self::encodeBase64Url($rnd),0,$length);
-        } else {
-            return substr(base64_encode($rnd), 0, $length);
-
-        }
+        return Crypto::salt($length, $safe);
     }
 
     public static function encodeBase64Url($s)
@@ -2457,69 +2393,9 @@ class Studio
         return ($urlSafe) ?self::decodeBase64Url($s) :base64_decode($s);
     }
 
-    /**
-     * Data decryption function
-     *
-     * Decrypts data encrypted with encrypt
-     *
-     * @param mixed  $data   data to be decrypted
-     * @param string $salt   (optional) the key to encrypt the data
-     * @param string $alg    (optional) the algorithm to use
-     *
-     * @return mixed the encoded information
-     */
-    public static function decrypt($r, $salt=null, $alg=null)
-    {
-        if($alg) {
-            // unique random ids per string
-            // this is double-stored in file cache to prevent duplication
-            if($alg==='uuid') {
-                return Cache::get('uuids/'.$r);
-            } else {
-                if(is_null($salt) && !($salt=Cache::get('rnd', 0, true, true))) {
-                    return false;
-                }
-                $r = self::decodeBase64Url($r);
-                if(function_exists('openssl_encrypt')) {
-                    if($alg===true) $alg = 'AES-256-CFB';
-                    $l = openssl_cipher_iv_length($alg);
-                    $s = openssl_decrypt(substr($r, $l), $alg, $salt, 0, substr($r, 0, $l));
-                } else if(function_exists('mcrypt_encrypt')) {
-                    if($alg===true) $alg = '3DES';
-                    # create a random IV to use with CBC encoding
-                    $l  = mcrypt_get_iv_size($alg, MCRYPT_MODE_CBC);
-                    $s = mcrypt_decrypt($alg, $salt, substr($r, $l), MCRYPT_MODE_CBC, substr($r, 0, $l));
-                    unset($l);
-                }
-                unset($r, $alg, $salt);
-                return $s;
-            }
-        }
-        return self::decodeBase64Url($r);
-    }
-
-    /**
-     * Dynamic hashing and checking
-     *
-     * Will return an hashed version of string using the MD5 method, instead of the
-     * common DES encryption algorithm. It's useful for cross-platforms encryptions,
-     * since the MD5 checksum can be found in many other environments (even not
-     * Unix/GNU).
-     *
-     * The results are hashes and cannot be unencrypted. To check if a new text
-     * matches the encrypted version, provide this as the salt, and the result
-     * should be the same as the encrypted text.
-     *
-     * @param   string $str   the text to be encrypted
-     * @param   string $salt  the encrypted text or a randomic salt
-     * @param   string $type  hash type, can be either a hash_algos() or a string length
-     *                        (from 40 to 80) for the hash size
-     *
-     * @return  string        an encrypted version of $str
-     */
     public static function hash($str, $salt=null, $type=40)
     {
-        return Studio\Crypto::hash($str, $salt, $type);
+        return Crypto::hash($str, $salt, $type);
     }
 
     /**

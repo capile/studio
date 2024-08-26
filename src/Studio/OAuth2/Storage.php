@@ -85,6 +85,16 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
                 'expires'=>'expires',
                 'jti'=>'options.jti',
             ],
+            'jwk'=> [
+                'kid'=>'id',
+                'kty'=>'options.kty',
+                'use'=>'options.use',
+                'n'=>'options.n',
+                'e'=>'options.e',
+                'x5t'=>'options.x5t',
+                'x5c'=>'options.x5c',
+                'alg'=>'options.alg',
+            ],
             'user_claims'=>[
                 'user_id'=>'user',
             ],

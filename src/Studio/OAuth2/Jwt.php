@@ -13,6 +13,8 @@
 namespace Studio\OAuth2;
 
 use Studio as S;
+use Studio\Crypto;
+use Studio\Query\Api as QueryApi;
 use OAuth2\Encryption\Jwt as BaseJwt;
 use Exception;
 use InvalidArgumentException;
@@ -38,14 +40,14 @@ class Jwt extends BaseJwt
         }
 
         $segments = array(
-            $this->urlSafeB64Encode(json_encode($header)),
-            $this->urlSafeB64Encode(json_encode($payload))
+            S::encodeBase64Url(S::serialize($header, 'json')),
+            S::encodeBase64Url(S::serialize($payload, 'json'))
         );
 
         $signing_input = implode('.', $segments);
 
-        $signature = $this->sign($signing_input, $key, $algo);
-        $segments[] = $this->urlsafeB64Encode($signature);
+        $signature = Crypto::sign($signing_input, $key, $algo);
+        $segments[] = S::encodeBase64Url($signature);
 
         return implode('.', $segments);
     }
@@ -60,28 +62,7 @@ class Jwt extends BaseJwt
      */
     private function verifySignature($signature, $input, $key, $algo = 'HS256')
     {
-        // use constants when possible, for HipHop support
-        switch ($algo) {
-            case'HS256':
-            case'HS384':
-            case'HS512':
-                return $this->hash_equals(
-                    $this->sign($input, $key, $algo),
-                    $signature
-                );
-
-            case 'RS256':
-                return openssl_verify($input, $signature, $key, defined('OPENSSL_ALGO_SHA256') ? OPENSSL_ALGO_SHA256 : 'sha256')  === 1;
-
-            case 'RS384':
-                return @openssl_verify($input, $signature, $key, defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'sha384') === 1;
-
-            case 'RS512':
-                return @openssl_verify($input, $signature, $key, defined('OPENSSL_ALGO_SHA512') ? OPENSSL_ALGO_SHA512 : 'sha512') === 1;
-
-            default:
-                throw new InvalidArgumentException("Unsupported or invalid signing algorithm.");
-        }
+        return Crypto::verify($signature, $input, $key, $algo);
     }
 
     /**
@@ -93,28 +74,7 @@ class Jwt extends BaseJwt
      */
     private function sign($input, $key, $algo = 'HS256')
     {
-        switch ($algo) {
-            case 'HS256':
-                return hash_hmac('sha256', $input, $key, true);
-
-            case 'HS384':
-                return hash_hmac('sha384', $input, $key, true);
-
-            case 'HS512':
-                return hash_hmac('sha512', $input, $key, true);
-
-            case 'RS256':
-                return $this->generateRSASignature($input, $key, defined('OPENSSL_ALGO_SHA256') ? OPENSSL_ALGO_SHA256 : 'sha256');
-
-            case 'RS384':
-                return $this->generateRSASignature($input, $key, defined('OPENSSL_ALGO_SHA384') ? OPENSSL_ALGO_SHA384 : 'sha384');
-
-            case 'RS512':
-                return $this->generateRSASignature($input, $key, defined('OPENSSL_ALGO_SHA512') ? OPENSSL_ALGO_SHA512 : 'sha512');
-
-            default:
-                throw new Exception("Unsupported or invalid signing algorithm.");
-        }
+        return Crypto::sign($input, $key, $algo);
     }
 
     /**
@@ -131,5 +91,57 @@ class Jwt extends BaseJwt
         }
 
         return $signature;
+    }
+
+    const ERROR_NO_KEY='Cannot find signature key to validate JWT';
+    const ERROR_INVALID_SIGNATURE='The provided singature is not valid';
+
+    public static function tokenData($token, $Server=null, $verifySignature=true, $throw=true)
+    {
+        @list($header, $payload, $signature) = explode('.', $token, 3);
+        if($verifySignature) {
+            $sid = null;
+            if($Server) {
+                if(is_string($Server)) {
+                    $sid = $Server;
+                    if(($S = Client::config('servers')) && isset($S[$sid])) {
+                        $Server = $S[$sid];
+                    }
+                } else if (is_object($Server) || (is_array($Server) && isset($S['id']))) {
+                    $sid = $Server['id'];
+                } else {
+                    $Server = false;
+                }
+            }
+            if(!$Server) {
+                if($throw) throw new Exception(self::ERROR_NO_KEY);
+                return false;
+            }
+            $kid = (($H = S::unserialize(S::decodeBase64Url($header), 'json')) && isset($H['kid'])) ?$H['kid'] :null;
+            if($kid && !($jwk = Storage::fetch('jwk', $H['kid']))) {
+                // fetch from jwks endpoint and store locally
+                $kurl = (!is_string($Server)) ?$Server['jwks_uri'] :null;
+                if(!$kurl || !($R = QueryApi::runStatic($kurl, $sid, null, 'GET', null, 'json', true)) || !isset($R['keys'])) {
+                    if($throw) throw new Exception(self::ERROR_NO_KEY);
+                    return false;
+                }
+                foreach($R['keys'] as $i=>$o) {
+                    $okid = $o['kid'];
+                    Storage::replace(['type'=>'jwk', 'id'=>$okid, 'token'=>$sid, 'options'=>$o]);
+                    if($kid===$okid) $jwk = $o;
+                }
+            }
+            if(!$jwk) {
+                if($throw) throw new Exception(self::ERROR_NO_KEY);
+                return false;
+            }
+
+            if(!Crypto::verify($signature, $header.'.'.$payload, $jwk['x5c'][0], $H['alg'], true)) {
+                if($throw) throw new Exception(self::ERROR_INVALID_SIGNATURE);
+                return false;
+            }
+        }
+
+        return S::unserialize(S::decodeBase64Url($payload), 'json');
     }
 }

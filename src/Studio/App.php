@@ -222,6 +222,9 @@ class App
      */
     public function start()
     {
+        if(!S::$logDir && isset($this->_vars['app']['log-dir'])) {
+            S::$logDir = $this->_vars['app']['log-dir'];
+        }
         if(isset($this->_vars['app']['lib-dir'])) {
             $sep = (isset($_SERVER['WINDIR']))?(';'):(':');
             if(!is_array($this->_vars['app']['lib-dir'])) {

@@ -12,6 +12,7 @@ namespace Studio;
 use Studio as S;
 use Studio\App;
 use Studio\Cache;
+use Studio\Crypto;
 use Studio\Model;
 use Studio\Form;
 use ReflectionClass;
@@ -32,6 +33,7 @@ class User
         $cookieHttpOnly=true,
         $resetCookie=0.5,       // percentage of timeout to set a new cookie
         $actions = [],          // force signin URLs
+        $auditLog,
         $fingerprint;
 
     const FORM_USER = 'user';
@@ -45,7 +47,7 @@ class User
         $_current = null,       // current session opened
         $_cookies=[],           // cookies retrieved from the browser
         $_cookiesSent=[],       // cookies sent to the browser
-        $audit=['REMOTE_ADDR'=>'ip','HTTP_USER_AGENT'=>'ua']
+        $audit=['ip'=>'ip','HTTP_USER_AGENT'=>'ua']
         ;
 
     protected
@@ -232,10 +234,11 @@ class User
 
     public function log()
     {
-        $cid = (is_null($this->_cid))?($this->getSessionId()):($this->_cid);
+        if(!static::$auditLog) return;
+        $cid = (is_null($this->_cid))?($this->getSessionId(true)):($this->_cid);
         $lk = 'user/access-log-'.$cid;
         $storage = $this->nsConfig('storage', $this->_storage);
-        $l = Cache::get($lk, 0, $storage, true);
+        $l = Cache::get($lk, 0, $storage);
         if(!$l) {
             $l=array('from'=>S_TIME,'to'=>S_TIME);
             if(static::$audit) {
@@ -256,7 +259,7 @@ class User
         if(is_null($this->lastAccess) && $this->_uid) {
             $uk = 'user/user-log-'.$this->_uid;
             $storage = $this->nsConfig('storage', $this->_storage);
-            $s = Cache::get($uk, 0, $storage, true);
+            $s = Cache::get($uk, 0, $storage);
             $cid = (is_null($this->_cid))?($this->getSessionId()):($this->_cid);
             $t = 0;
             $s0 = array($cid=>S_TIME);
@@ -277,14 +280,14 @@ class User
                     $r = array_slice($s, static::USER_LOG_LEVEL, null, true);
                     foreach($r as $k=>$v) {
                         $lk = 'user/access-log-'.$k;
-                        Cache::delete($lk, $storage, true);
+                        Cache::delete($lk, $storage);
                         unset($r[$k], $s[$k], $k, $v, $lk);
                     }
                 }
             } else {
                 $s = $s0;
             }
-            Cache::set($uk, $s, 0, $storage, true);
+            Cache::set($uk, $s, 0, $storage);
             unset($s, $s0, $cid, $storage);
             if(!$t && static::$setLastAccess) {
                 if($t=$this->__get($fn=static::$setLastAccess)) {
@@ -454,7 +457,10 @@ class User
             return;
         }
 
-        if(isset(static::$cfg['model'])) {
+        // @TODO: need to consolidate one single configuration scheme (for next major release)
+        if(isset($nso['model'])) {
+            $cn = $nso['model'];
+        } else if(isset(static::$cfg['model'])) {
             $cn = static::$cfg['model'];
         } else if(isset($nso['type']) && class_exists($cn='Studio\\User\\'.S::camelize($nso['type'], true))) {
         } else if(isset($nso['class'])){
@@ -468,7 +474,11 @@ class User
         $nsoptions = (isset($nso['options']))?($nso['options']):(array());
 
         if(method_exists($cn, 'find')) {
-            $scope = (isset(static::$cfg['scope']))?(static::$cfg['scope']):(null);
+            $scope = null;
+            if(isset($nso['scope'])) $scope = $nso['scope'];
+            else if(isset(static::$cfg['scope'])) $scope = static::$cfg['scope'];
+            else if(isset($nso['properties'])) $scope = $nso['properties'];
+            else if(isset($nso['export'])) $scope = $nso['export'];
             $R = $cn::find($q,1,$scope);
             $c = get_called_class();
             if($R) {
@@ -529,16 +539,17 @@ class User
     public function getMessage($storage=null, $delete=false, $cookie=null)
     {
         $cid = (is_null($this->_cid))?($this->getSessionId()):($this->_cid);
-        $ckey = "user/message-{$cid}";
         if(is_null($storage)) {
             $storage = $this->nsConfig('storage', $this->_storage);
         }
-        $msg = Cache::get($ckey, 0, $storage, true);
-        if(!$this->_message) $this->_message=array();
-        if($msg) {
-            $this->_message += $msg;
+        if(!$this->_message) $this->_message=[];
+        if($cid) {
+            $ckey = "user/message-{$cid}";
+            if($msg = Cache::get($ckey, 0, $storage)) {
+                $this->_message += $msg;
+            }
+            unset($cid, $ckey, $msg);
         }
-        //unset($cid, $ckey, $msg);
         $msg = '';
         $msgs = $this->_message;
         if($this->_me && is_object($this->_me)) {
@@ -616,7 +627,7 @@ class User
         }
         $message = null;
         $store   = false;
-        $message = Cache::get($ckey, 0, $storage, true);
+        $message = Cache::get($ckey, 0, $storage);
         if(is_null($this->_message)) {
             $store = true;//$message;
         } else {
@@ -645,10 +656,10 @@ class User
         $ret = true;
         if ($store) {
             if(is_null($this->_message)) {
-                $ret = Cache::delete($ckey, $storage, true);
+                $ret = Cache::delete($ckey, $storage);
             } else {
                 $timeout = $this->nsConfig('timeout', static::$timeout);
-                $ret = Cache::set($ckey, $this->_message, $timeout, $storage, true);
+                $ret = Cache::set($ckey, $this->_message, $timeout, $storage);
             }
             if($setcookie) $this->setSessionCookie();
         }
@@ -722,7 +733,7 @@ class User
                 break;
             }
             if($setCookie && is_null($this->_cid)) {
-                $this->_cid = S::salt(40, 'a-zA-Z0-9\-');
+                $this->_cid = Crypto::salt(40);
                 self::$_cookies[$n][]=$this->_cid;
             }
             if($setCookie) $this->setSessionCookie();
@@ -786,7 +797,7 @@ class User
             Cache::delete($ckey, $storage);
             Cache::delete("user/attr-{$this->_cid}");
             Cache::delete("fpr/{$this->_cid}");
-            $this->_cid = S::hash(microtime(true), null, 20);
+            $this->_cid = Crypto::salt(40);
             $this->_me = null;
             //$n = $this->getSessionId();
             //self::$_cookies[$n][]=$this->_cid;
@@ -870,10 +881,9 @@ class User
                     return true;
                 }
             } else {
-                $valid = (S::hash($key, $pass, static::$hashType)==$pass);
-                if(!$valid && static::$hashTypes) {
+                if(!($valid=Crypto::verify($pass, $key, $pass, static::$hashType) && static::$hashTypes)) {
                     foreach(static::$hashTypes as $t) {
-                        if($valid = (S::hash($key, $pass, $t)==$pass)) break;
+                        if($valid=Crypto::verify($pass, $key, $pass, $t)) break;
                     }
                 }
                 if($valid) {

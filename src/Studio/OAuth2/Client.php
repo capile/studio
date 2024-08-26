@@ -66,6 +66,10 @@ class Client extends SchemaObject
                 }
                 unset($ns);
             }
+            if($c=App::config('studio', 'oauth2')) {
+                static::$cfg += $c;
+                unset($c);
+            }
         }
 
         if(!isset(static::$cfg['servers'])) {
@@ -312,7 +316,6 @@ class Client extends SchemaObject
             S::scriptName($route['url']);
             $p = S::urlParams();
         }
-
         $ref = null;
         if(isset($options['target']) && $options['target']) $ref = $options['target'];
         if($ref || (App::request('get', 'ref') && (($ref=App::request('headers', 'referer')) && substr($ref, 0, strlen(S::scriptName()))!=S::scriptName()))) {
@@ -332,11 +335,31 @@ class Client extends SchemaObject
                     if(S::$log>0) S::log('[INFO] Client Token: '.$Client);
                 } else {
                     $Client = $Server->requestAuthorization($options);
-                    if(S::$log>0) S::log('[INFO] Authorization: '.$Client, var_export($options, true), var_export($Server, true));
+                    if(S::$log>0) S::log('[INFO] Authorization: '.$Client);
                 }
                 if(!$User && $Client && $Client['options.access_token']) {
-                    $User = $Server->requestUserinfo($Client);
-                    if(S::$log>0) S::log('[INFO] Userinfo (end): '.var_export($User, true));
+                    if($Server->config('use_jwt_access_tokens') && ($R=Jwt::tokenData($Client['options.access_token'], $Server, true, false))) {
+                        $pks = ['sub'];
+                        if(!$Server->user_key) {
+                            $pks = (!is_array($Server->user_key)) ?[$Server->user_key] :$Server->user_key;
+                        }
+                        $valid = true;
+                        $q = [];
+                        foreach($pks as $k) {
+                            $key = ($Server->user_map && isset($Server->user_map[$k])) ?$Server->user_map[$k] :$k;
+                            if(is_null($val=S::extractValue($R, $key))) {
+                                $valid = false;
+                                break;
+                            }
+                            $q[$k] = $val;
+                        }
+                        if($q) $User = S::user($q);
+                        if(S::$log>0) S::log('[INFO] Fetch Userinfo from access_token: '.$User);
+                    }
+                    if(!$User) {
+                        $User = $Server->requestUserinfo($Client);
+                        if(S::$log>0) S::log('[INFO] Fetch Userinfo from API: '.$User);
+                    }
                 }
                 if($User) {
                     if(!isset($U)) $U = S::getUser();
