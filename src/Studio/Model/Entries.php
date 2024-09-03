@@ -178,9 +178,9 @@ class Entries extends Model
         }
 
         self::$s=1;
+        $dyn = false;
         if(($contents=$this->getRelatedContent()) && count($contents)>0) {
             foreach($contents as $i=>$C) {
-                $dyn = false;
                 if($C->content_type=='php') {
                     $dyn = $this->dynamic = true;
                 } else if($C->content_type=='widget') {
@@ -1066,7 +1066,7 @@ class Entries extends Model
                 $C = Studio::content($page, $checkLang, $checkTemplate);
                 $mod=null;
                 if($C) {
-                    $mod = $C->modified;
+                    $mod = ($C->updated) ?S::strtotime($C->updated) :null;
                     if($mod && $mod > $this->modified) $this->modified = $mod;
                     if($C->_position) {
                         if(!isset($r[$C->_position])) $r[$C->_position] = $C;
