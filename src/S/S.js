@@ -519,7 +519,7 @@ S.element=function(o,before,after) {
             } else {
                 r.appendChild(document.createTextNode(o.c));
             }
-        } else {
+        } else if(o.c instanceof Array) {
             var t=o.c.length,i=0;
             while(i < t) {
                 if(typeof(o.c[i])=='string') r.appendChild(document.createTextNode(o.c[i]));
