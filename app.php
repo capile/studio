@@ -17,12 +17,18 @@ unset($a);
 use Studio as S;
 
 $env = S::env();
-$appMemoryNamespace = file_exists(S_APP_ROOT.'/.appkey') ? S::slug(file_get_contents(S_APP_ROOT.'/.appkey')) : 'app';
 if(isset($_SERVER['STUDIO_CONFIG']) && $_SERVER['STUDIO_CONFIG'] && ($configFile=S::glob($_SERVER['STUDIO_CONFIG']))) {
    if(!isset($configFile[1])) $configFile = array_shift($configFile);
 } else if(!file_exists($configFile=S_PROJECT_ROOT.'/'.basename(S_PROJECT_ROOT).'.yml') &&
    !file_exists($configFile=S_APP_ROOT.'/'.basename(S_APP_ROOT).'.yml')) {
     $configFile = __DIR__.'/app.yml';
+}
+if(file_exists(S_APP_ROOT.'/.appkey')) {
+   $appMemoryNamespace =  S::slug(file_get_contents(S_APP_ROOT.'/.appkey'));
+} else if(is_string($configFile)) {
+   $appMemoryNamespace =  S::slug(basename($configFile, '.yml'));
+} else {
+   $appMemoryNamespace =  'app';
 }
 S::app($configFile, $appMemoryNamespace, $env)->run();
 if(S::$perfmon) {
