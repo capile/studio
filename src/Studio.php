@@ -179,7 +179,7 @@ class Studio
     public static function app($s, $siteMemKey=false, $env='prod')
     {
         if ($siteMemKey) {
-            if(!isset($_SERVER['STUDIO_TAG']) || $_SERVER['STUDIO_TAG']!=$siteMemKey) $_SERVER['STUDIO_TAG']=$siteMemKey;
+            if(!isset($_SERVER['STUDIO_TAG']) || !$_SERVER['STUDIO_TAG'] || $_SERVER['STUDIO_TAG']!=$siteMemKey) $_SERVER['STUDIO_TAG']=$siteMemKey;
             self::env();
             self::$_app = $siteMemKey;
             self::$_env = $env;
@@ -2279,7 +2279,7 @@ class Studio
             unset($locale);
             define('STUDIO_VERSION', Studio::VERSION);
             if(!defined('S_TAG')) {
-                if(isset($_SERVER['STUDIO_TAG'])) define('S_TAG', $_SERVER['STUDIO_TAG']);
+                if(isset($_SERVER['STUDIO_TAG']) && $_SERVER['STUDIO_TAG']) define('S_TAG', $_SERVER['STUDIO_TAG']);
                 else define('S_TAG', 'studio');
             }
             if(!defined('S_CLI')) {
