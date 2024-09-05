@@ -84,6 +84,6 @@ Now access the demo studio on <http://127.0.0.1:9999/_studio>
 | STUDIO_DATA          | "/opt/studio/data"        | Folder to store persistent data.                                                                             |
 | STUDIO_ENV           | "prod"                    | Current environment (`prod` or `stage` or `dev` or `test`)                                                   |
 | STUDIO_INIT          | ""                        | Container initialization arguments ( `-v` for verbosity level and/or `-g` for git integration)               |
-| STUDIO_CACHE_KEY     | "studio"                  | Namespace for prefixing cache entries, to avoid conflicts on shared servers                                  |
+| STUDIO_TAG           | "studio"                  | Namespace for prefixing cache entries, to avoid conflicts on shared servers                                  |
 | STUDIO_CACHE_STORAGE | ""                        | Setup cache, multiple entries separated by space are allowed, can be "file", "apc", or a redis/memcached DSN |
 | STUDIO_MAIL_SERVER   | ""                        | Outbound mail server setup, use a DSN (like smtp://localhost:25)                                             |

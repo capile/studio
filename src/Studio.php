@@ -179,7 +179,7 @@ class Studio
     public static function app($s, $siteMemKey=false, $env='prod')
     {
         if ($siteMemKey) {
-            if(!isset($_SERVER['STUDIO_CACHE_KEY']) || $_SERVER['STUDIO_CACHE_KEY']!=$siteMemKey) $_SERVER['STUDIO_CACHE_KEY']=$siteMemKey;
+            if(!isset($_SERVER['STUDIO_TAG']) || $_SERVER['STUDIO_TAG']!=$siteMemKey) $_SERVER['STUDIO_TAG']=$siteMemKey;
             self::env();
             self::$_app = $siteMemKey;
             self::$_env = $env;
@@ -2278,9 +2278,9 @@ class Studio
             }
             unset($locale);
             define('STUDIO_VERSION', Studio::VERSION);
-            if(!defined('S_CACHE_KEY')) {
-                if(isset($_SERVER['STUDIO_CACHE_KEY'])) define('S_CACHE_KEY', $_SERVER['STUDIO_CACHE_KEY']);
-                else define('S_CACHE_KEY', 'studio');
+            if(!defined('S_TAG')) {
+                if(isset($_SERVER['STUDIO_TAG'])) define('S_TAG', $_SERVER['STUDIO_TAG']);
+                else define('S_TAG', 'studio');
             }
             if(!defined('S_CLI')) {
                 if(defined('TDZ_CLI')) define('S_CLI', TDZ_CLI);
@@ -2344,10 +2344,10 @@ class Studio
                 'S_ENV' => S_ENV,
                 'S_PROJECT_ROOT'=>S_PROJECT_ROOT,
                 'S_ROOT'=>S_ROOT,
+                'S_TAG'=>S_TAG,
                 'S_TIME'=>S_TIME,
                 'S_TIMESTAMP'=>S_TIMESTAMP,
                 'S_VAR'=>S_VAR,
-                'S_CACHE_KEY'=>S_CACHE_KEY,
                 'STUDIO_VERSION'=>STUDIO_VERSION,
             ]
             :self::$_env;

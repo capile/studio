@@ -186,7 +186,7 @@ class Cache
         if (!is_null($s) && is_null(self::$_siteKey)) {
             self::$_siteKey = $s;
         } else if (is_null(self::$_siteKey)) {
-            if(defined('S_CACHE_KEY')) self::$_siteKey = S_CACHE_KEY;
+            if(defined('S_TAG')) self::$_siteKey = S_TAG;
             else self::$_siteKey = false;
         }
         unset($s);

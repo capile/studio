@@ -87,7 +87,7 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
     sed -E 's/expose_php = On/expose_php = Off/' \
         -E 's/max_execution_time = 30/max_execution_time = 10/' \
         -E 's/max_input_time = 60/max_input_time = 5/' \
-        -E '/catch_workers_output/s/^;//'  \
+        -E 's/^;catch_workers_output.*/catch_workers_output = yes/' \
         -E 's/^error_log.*/error_log = \/dev\/stderr/' \
         -E 's/^;error_log.*/error_log = \/dev\/stderr/' \
         -E 's/^memory_limit.*/memory_limit = 32M/' \
@@ -95,14 +95,15 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
         -E 's/;?default_charset = "UTF-8"/default_charset = "UTF-8"/' \
         -E 's/;?max_input_vars = 1000/max_input_vars = 10000/' \
         -E 's/;?date.timezone =/date.timezone = UTC/' \
-        -i $PHP_INI_DIR/php.ini && \
+        -i $PHP_INI_DIR/php.ini \
+    && \
     echo 'max_input_vars = 10000' > $PHP_INI_DIR/conf.d/x-config.ini \
     && \
     sed -E 's/^listen = .*/listen = 9000/' \
         -E 's/^listen\.allowed_clients/;listen.allowed_clients/' \
         -E 's/^user = .*/;user = www-data/' \
         -E 's/^group = .*/;group = www-data/' \
-        -E 's/;catch_workers_output.*/catch_workers_output = yes/' \
+        -E 's/^;catch_workers_output.*/catch_workers_output = yes/' \
         -E 's/^pm.max_children = .*/pm.max_children = 1000/' \
         -E 's/^pm.start_servers = .*/pm.start_servers = 5/' \
         -E 's/^pm.max_spare_servers .*/pm.max_spare_servers = 100/' \
@@ -111,7 +112,7 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
         -E 's/^php_admin_value\[memory_limit\] = .*/;php_admin_value[memory_limit] = 32M/' \
         -i /usr/local/etc/php-fpm.d/www.conf \
     && \
-    sed -e 's/^error_log.*/error_log = \/dev\/stderr/' \
+    sed -E 's/^error_log.*/error_log = \/dev\/stderr/' \
         -i /usr/local/etc/php-fpm.conf \
     && \
     echo -e "[safe]\n\tdirectory = *" > /var/www/.gitconfig \
@@ -171,7 +172,7 @@ ENV STUDIO_CONFIG=/var/www/studio/app.yml
 ENV STUDIO_AUTOLOAD=/var/www/studio/vendor/autoload.php
 ENV STUDIO_ENV="prod"
 ENV STUDIO_INIT=""
-ENV STUDIO_CACHE_KEY="studio"
+ENV STUDIO_TAG="studio"
 ENV STUDIO_CACHE_STORAGE=""
 ENV STUDIO_MAIL_SERVER=""
 ENV PHP_FCGI_CHILDREN="1000"
