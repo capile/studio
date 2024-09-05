@@ -84,35 +84,38 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
     && \
     cp /var/www/studio/data/deploy/opcache.ini /usr/local/etc/php/conf.d/opcache.ini \
     && \
-    sed -E 's/expose_php = On/expose_php = Off/' \
-        -E 's/max_execution_time = 30/max_execution_time = 10/' \
-        -E 's/max_input_time = 60/max_input_time = 5/' \
-        -E 's/^;catch_workers_output.*/catch_workers_output = yes/' \
-        -E 's/^error_log.*/error_log = \/dev\/stderr/' \
-        -E 's/^;error_log.*/error_log = \/dev\/stderr/' \
-        -E 's/^memory_limit.*/memory_limit = 32M/' \
-        -E 's/post_max_size = 8M/post_max_size = 4M/' \
-        -E 's/;?default_charset = "UTF-8"/default_charset = "UTF-8"/' \
-        -E 's/;?max_input_vars = 1000/max_input_vars = 10000/' \
-        -E 's/;?date.timezone =/date.timezone = UTC/' \
+    sed -E \
+        -e 's/expose_php = On/expose_php = Off/' \
+        -e 's/max_execution_time = 30/max_execution_time = 10/' \
+        -e 's/max_input_time = 60/max_input_time = 5/' \
+        -e 's/^;catch_workers_output.*/catch_workers_output = yes/' \
+        -e 's/^error_log.*/error_log = \/dev\/stderr/' \
+        -e 's/^;error_log.*/error_log = \/dev\/stderr/' \
+        -e 's/^memory_limit.*/memory_limit = 32M/' \
+        -e 's/post_max_size = 8M/post_max_size = 4M/' \
+        -e 's/;?default_charset = "UTF-8"/default_charset = "UTF-8"/' \
+        -e 's/;?max_input_vars = 1000/max_input_vars = 10000/' \
+        -e 's/;?date.timezone =/date.timezone = UTC/' \
         -i $PHP_INI_DIR/php.ini \
     && \
     echo 'max_input_vars = 10000' > $PHP_INI_DIR/conf.d/x-config.ini \
     && \
-    sed -E 's/^listen = .*/listen = 9000/' \
-        -E 's/^listen\.allowed_clients/;listen.allowed_clients/' \
-        -E 's/^user = .*/;user = www-data/' \
-        -E 's/^group = .*/;group = www-data/' \
-        -E 's/^;catch_workers_output.*/catch_workers_output = yes/' \
-        -E 's/^pm.max_children = .*/pm.max_children = 1000/' \
-        -E 's/^pm.start_servers = .*/pm.start_servers = 5/' \
-        -E 's/^pm.max_spare_servers .*/pm.max_spare_servers = 100/' \
-        -E 's/^;?pm.max_requests = .*/pm.max_requests = 500/' \
-        -E 's/^php_admin_value\[error_log\]/;php_admin_value[error_log]/' \
-        -E 's/^php_admin_value\[memory_limit\] = .*/;php_admin_value[memory_limit] = 32M/' \
+    sed -E \
+        -e 's/^listen = .*/listen = 9000/' \
+        -e 's/^listen\.allowed_clients/;listen.allowed_clients/' \
+        -e 's/^user = .*/;user = www-data/' \
+        -e 's/^group = .*/;group = www-data/' \
+        -e 's/^;catch_workers_output.*/catch_workers_output = yes/' \
+        -e 's/^pm.max_children = .*/pm.max_children = 1000/' \
+        -e 's/^pm.start_servers = .*/pm.start_servers = 5/' \
+        -e 's/^pm.max_spare_servers .*/pm.max_spare_servers = 100/' \
+        -e 's/^;?pm.max_requests = .*/pm.max_requests = 500/' \
+        -e 's/^php_admin_value\[error_log\]/;php_admin_value[error_log]/' \
+        -e 's/^php_admin_value\[memory_limit\] = .*/;php_admin_value[memory_limit] = 32M/' \
         -i /usr/local/etc/php-fpm.d/www.conf \
     && \
-    sed -E 's/^error_log.*/error_log = \/dev\/stderr/' \
+    sed -E \
+        -e 's/^error_log.*/error_log = \/dev\/stderr/' \
         -i /usr/local/etc/php-fpm.conf \
     && \
     echo -e "[safe]\n\tdirectory = *" > /var/www/.gitconfig \
