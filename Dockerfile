@@ -162,7 +162,7 @@ RUN composer install --no-dev -n \
     && \
     composer clear-cache \
     && \
-    rm -rf ~/.composer/cache
+    rm -rf ~/.composer/cache ~/.npm/*
 ENV PATH="${PATH}:/var/www/studio"
 ENV STUDIO_IP="0.0.0.0"
 ENV STUDIO_PORT="9999"
