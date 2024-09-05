@@ -77,7 +77,7 @@ RUN apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
     && \
     apk del .deps \
     && \
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2
 WORKDIR /var/www/studio
 COPY . .
 RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
