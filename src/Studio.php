@@ -25,7 +25,7 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.2.2';
+    const VERSION = '1.2.3';
     const VER = 1.2;
 
     protected static
@@ -37,7 +37,7 @@ class Studio
     $script_name = null,
     $real_script_name = null,
     $encoder,
-    $cacheControlExpires=864000;
+    $cacheControlExpires=86400;
 
     public static
         $formats = array(
@@ -1497,8 +1497,9 @@ class Studio
         }
         if(!S_CLI && !is_null($expires)) {
             $expires = (int)$expires;
-            $cc = preg_replace('/\,.*/', '', $cacheControl);
-
+            if($expires>0 && strpos($cacheControl, 'private')!==false) {
+                $expires = 0;
+            }
             if (function_exists('header_remove')) {
                 header_remove('cache-control');
                 header_remove('pragma');

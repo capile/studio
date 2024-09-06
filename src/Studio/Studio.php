@@ -715,14 +715,13 @@ class Studio
             'expired'=>'',
         );
         static $scope = array('id','title','type','link','source','master','format','updated','published','version');
-        self::$private = array();
+        self::$private = self::credential('preview');
         if(static::$response) static::addResponse(static::$response);
         $connEnabled = (self::connected('content'));
         if(is_null($published)) {
             // get information from user credentials
             if($connEnabled && ($U=S::getUser()) && $U->hasCredential($c=self::credential('previewUnpublished'), false)) {
                 $published = false;
-                self::$private = (is_array($c))?($c):(array($c));
             } else {
                 $published = true;
             }
@@ -735,6 +734,7 @@ class Studio
             if($E->link!==S::scriptName() && (S::scriptName()===$E->link.'/' || $E->link===S::scriptName().'/')) {
                 S::redirect($E->link);
             }
+            if(!self::$private && !$published && !$E->published) self::$private = true;
             if($meta = $E::loadMeta($E->link)) {
                 foreach($meta as $fn=>$v) {
                     if(property_exists($E, $fn)) {
