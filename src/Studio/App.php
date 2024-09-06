@@ -18,6 +18,7 @@ use Studio\Asset;
 use Studio\Cache as Cache;
 use Studio\Exception\EndException;
 use Studio\Exception\AppException;
+use Studio\Model\Tasks;
 use Exception;
 use ArrayObject;
 
@@ -64,6 +65,7 @@ class App
         $result,
         $http2push=false,
         $requestIpHeader='HTTP_X_FORWARDED_FOR',
+        $healthcheckUri='/_me?healthcheck',
         $link;
     protected static $configMap = ['tecnodesign'=>'app'];
     protected $_o=null;
@@ -440,6 +442,7 @@ class App
             foreach($run as $exec) {
                 S::exec($exec);
             }
+            if(S::requestUri()===static::$healthcheckUri) Tasks::check(false);
         }
     }
 

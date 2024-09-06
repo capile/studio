@@ -1,0 +1,18 @@
+---
+Studio\Model\Tasks:
+ - 
+    id: 1
+    title: Studio cache cleanup
+    code:
+      shell: studio :cleanup
+    starts: 2024-09-06T00:00:00
+    ends: ~
+    interval: 86400
+ - 
+    id: 2
+    title: Studio Index
+    code:
+      shell: studio :index
+    starts: 2024-09-06T00:00:00
+    ends: ~
+    interval: 3600

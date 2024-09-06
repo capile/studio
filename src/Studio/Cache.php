@@ -205,6 +205,22 @@ class Cache
 
     public static function cleanup()
     {
+        if(S_CLI && App::request('shell')) {
+            if($a = App::request('argv')) {
+                $p = $m = null;
+                foreach($a as $i=>$o) {
+                    if(substr($o, 0, 1)==='-') {
+                        if(preg_match('/^-(v+)$/', $o, $m)) {
+                            S::$log = strlen($m[1]);
+                        } else  if(substr($o, 1)==='q') {
+                            S::$log = 0;
+                        }
+                        unset($a[$i]);
+                    }
+                    unset($i, $o, $m);
+                }
+            }
+        }
         $L = [File::cacheDir()];
         $i = 0;
         $c = 0;

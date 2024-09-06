@@ -92,23 +92,32 @@ class Query extends SchemaObject
             else {
                 foreach($data as $f) {
                     if($f===':import') continue;
-                    self::import($f);
+                    if(preg_match('/^-(v+)$/', $f, $m)) {
+                        S::$log = strlen($m[1]);
+                    } else  if(substr($f, 1)==='q') {
+                        S::$log = 0;
+                    } else {
+                        self::import($f);
+                    }
                 }
                 return;
             }
         }
+        $name = null;
         if(!is_array($data)) {
-            $ext = 'json';
+            $name = $ext = 'json';
             if(substr($data, 0, 1)!=='{') {
-                $ext = 'yaml';
+                $name = $ext = 'yaml';
                 if(strpos($data, "\n")===false && strpos($data, '"')===false && file_exists($data)) {
                     if(substr($data, -5)==='.json') $ext = 'json';
+                    $name = $data.' as '.$ext;
                     $data = file_get_contents($data);
                 }
             }
             $data = S::unserialize($data, $ext);
         }
         if(!is_array($data)) {
+            if($name && S::$log>0) S::log("[WARNING] Can't import: {$name}");
             return false;
         }
         try {
@@ -192,6 +201,7 @@ class Query extends SchemaObject
                     }
                 }
             }
+            if($name && S::$log>0) S::log("[INFO] Imported: {$name}");
         } catch(Exception $e) {
             S::log("[ERROR] Can't import data: {$e->getMessage()}", $r, (string)$e);
             return false;

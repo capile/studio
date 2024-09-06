@@ -20,9 +20,8 @@ class Tasks extends Model
     public static $schema, $schemaClass='Studio\\Schema\\Model', $worker, $batchInterval=60, $harakiri=10;
     protected $id, $title, $code, $starts, $ends, $interval, $schedule, $executed, $created, $updated;
 
-    public static function check()
+    public static function check($enableBackground=true)
     {
-        S::$log=1;
         if(($w=Cache::get('tasks/worker')) && $w!==self::$worker) return true;
         if(is_null(self::$worker)) self::$worker = S::salt(10);
         Cache::set('tasks/worker', self::$worker, self::$batchInterval * 1.1);
@@ -51,6 +50,13 @@ class Tasks extends Model
                 }
                 unset($L[$i], $i, $o);
             }
+        }
+
+        if(!$enableBackground) {
+            if(($w=Cache::get('tasks/worker')) && $w===self::$worker) {
+                Cache::delete('tasks/worker');
+            }
+            return true;
         }
 
         if($o = Tasks::find(['starts>'=>$ts,['|ends'=>'', '|ends<'=>$ts]],1,['starts'],false,['starts'=>'asc'])) {
