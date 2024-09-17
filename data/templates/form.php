@@ -16,14 +16,16 @@ $fieldsets=array();
 $hasFieldset = false;
 $fs = '';
 foreach($fields as $fn=>$fo) {
-    if((string)$fo->fieldset!=='1') $fs = (string)$fo->fieldset;
-    if(!$hasFieldset && $fs) $hasFieldset = true;
+    if($s=$fo->render()) {
+        if((string)$fo->fieldset!=='1') $fs = (string)$fo->fieldset;
+        if(!$hasFieldset && $fs) $hasFieldset = true;
 
-    if(!$fs) {
-        $fieldsets[] = $fo->render();
-    } else {
-        if(!isset($fieldsets[$fs])) $fieldsets[$fs]='';
-        $fieldsets[$fs] .= $fo->render();
+        if(!$fs) {
+            $fieldsets[] = $s;
+        } else {
+            if(!isset($fieldsets[$fs])) $fieldsets[$fs]='';
+            $fieldsets[$fs] .= $s;
+        }
     }
 }
 
@@ -37,15 +39,17 @@ if(isset($limits) && $limits) {
     }
     if(isset($limits['fields'])) {
         foreach($limits['fields'] as $fn=>$fo) {
-            if(isset($fo->fieldset)) {
-                $fs = (string) $fo->fieldset;
-                if(!$hasFieldset && $fs) $hasFieldset = true;
-            }
-            if(!$fs) {
-                $fieldsets[] = $fo->render();
-            } else {
-                if(!isset($fieldsets[$fs])) $fieldsets[$fs]='';
-                $fieldsets[$fs] .= $fo->render();
+            if($s=$fo->render()) {
+                if(isset($fo->fieldset)) {
+                    $fs = (string) $fo->fieldset;
+                    if(!$hasFieldset && $fs) $hasFieldset = true;
+                }
+                if(!$fs) {
+                    $fieldsets[] = $s;
+                } else {
+                    if(!isset($fieldsets[$fs])) $fieldsets[$fs]='';
+                    $fieldsets[$fs] .= $s;
+                }
             }
         }
     }
