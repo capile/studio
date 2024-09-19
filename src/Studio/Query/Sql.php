@@ -903,7 +903,19 @@ class Sql
                             $r .= $b.self::escape($v, false).$a;
                         }
                     } else if($cop=='%') {
-                        $r .= " {$fn}".(($cnot)?(' not'):(''))." like '%".str_replace('-', '%', S::slug($v, $cn::$queryAllowedChars, true))."%'";
+                        if(is_array($v) && count($v)>1) {
+                            $r .= ' (';
+                            $first = true;
+                            foreach($v as $vi) {
+                                if(!$first) $r .= ($cnot)?(' and '):(' or ');
+                                else $first = false;
+                                $r .= "{$fn}".(($cnot)?(' not'):(''))." like '%".str_replace('-', '%', S::slug($vi, $cn::$queryAllowedChars, true))."%'";
+                            }
+                            $r .= ')';
+                        } else {
+                            if(is_array($v)) $v = implode('', $v);
+                            $r .= " {$fn}".(($cnot)?(' not'):(''))." like '%".str_replace('-', '%', S::slug($v, $cn::$queryAllowedChars, true))."%'";
+                        }
                     } else {
                         $r .= ($not)?(" not({$fn}{$cop}".self::escape($v).')'):(" {$fn}{$cop}".self::escape($v));
                     }
