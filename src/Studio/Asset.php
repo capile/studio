@@ -637,6 +637,7 @@ class Asset
         $composer = null;
         $git = [];
         $assets = [];
+        $sh = [];
         if(App::request('shell')) {
             if($a = App::request('argv')) {
                 $p = $m = null;
@@ -650,10 +651,15 @@ class Asset
                             $force = true;
                         } else  if(substr($o, 1)==='i') {
                             $image = true;
-                        } else  if(substr($o, 1)==='f') {
+                        } else  if(substr($o, 1)==='p') {
                             $publish = true;
                         } else  if(substr($o, 1)==='c' && file_exists(S_PROJECT_ROOT.'/composer.lock') && isset(S::$paths['composer'])) {
                             $composer = true;
+                        } else  if(substr($o, 1, 1)==='s' && preg_match('#^\-s=([a-z0-9\-\_\./]+)$#', $o, $m)) {
+                            if(isset($m[1]) && (is_executable($cmd=$m[1]) || is_executable($cmd=S_PROJECT_ROOT.'/'.$m[1]))) {
+                                $sh[] = $cmd;
+                            }
+                            unset($m);
                         } else  if(substr($o, 1, 1)==='g' && preg_match('/^\-g(=[a-z0-9\-\_\.]+)?$/', $o, $m)) {
                             $gitp = true;
                             if(isset($m[1])) {
@@ -772,6 +778,13 @@ class Asset
                 if(substr($component, 0, 1)=='!') $component = substr($component, 1);
                 if(S::$log) S::log('[INFO] Building component: '.$component);
                 App::asset('!'.$component, $force);
+            }
+        }
+        if($sh) {
+            foreach($sh as $cmd) {
+                $r = S::exec(['shell'=>$cmd]);
+                if(S::$log>0) S::log($r);
+                unset($cmd, $r);
             }
         }
     }
