@@ -145,6 +145,7 @@ class Studio
             'cat'=>'/bin/cat',
             'java'=>'/usr/bin/java',
             'composer'=>'/usr/bin/composer --no-dev',
+            'gzip'=>'/bin/gzip',
         ),
         $dateFormat='d/m/Y',
         $timeFormat='H:i',
@@ -1561,10 +1562,14 @@ class Studio
         }
         if ($gzip) {
             $gzf=S_VAR . '/cache/download/' . md5_file($file);
-            if (!file_exists($gzf) || filemtime($gzf) > $lastmod) {
-                $s = file_get_contents($file);
-                $gz = gzencode($s, 9);
-                self::save($gzf, $gz, true);
+            if (!file_exists($gzf) || filemtime($gzf) < $lastmod) {
+                self::exec(['shell'=>self::$paths['gzip'].' -9ck '.escapeshellarg($file).' > '.escapeshellarg($gzf)]);
+                if(!file_exists($gzf) || filesize($gzf)==0) {
+                    self::log('[INFO] Could not compress ' .$file.' into '.$gzf.' loading data to compress using php');
+                    $s = file_get_contents($file);
+                    $gz = gzencode($s, 9);
+                    self::save($gzf, $gz, true);
+                }
             }
             $gze = 'gzip';
             if (strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'x-gzip') !== false)
