@@ -457,7 +457,10 @@ class App
             206 => 'Partial Content',
             301 => 'Moved Permanently',
             302 => 'Found',
+            303 => 'See Other',
             304 => 'Not Modified',
+            307 => 'Temporary Redirect',
+            308 => 'Permanent Redirect',
             400 => 'Bad Request',
             401 => 'Unauthorized',
             403 => 'Forbidden',
@@ -468,6 +471,8 @@ class App
             422 => 'Unprocessable Entity',
             429 => 'Too Many Requests',
             500 => 'Internal Server Error',
+            502 => 'Bad Gateway',
+            503 => 'Service Unavailable',
         );
         if(!isset($status[$code])) $code = 500;
         if($header) {
