@@ -19,6 +19,7 @@ use Studio\Cache\File;
 use Studio\Cache\Memcache;
 use Studio\Cache\Memcached;
 use Studio\Cache\Redis;
+use Studio\Model\Tokens;
 
 class Cache
 {
@@ -205,6 +206,7 @@ class Cache
 
     public static function cleanup()
     {
+        $tokens = false;
         if(S_CLI && App::request('shell')) {
             if($a = App::request('argv')) {
                 $p = $m = null;
@@ -214,6 +216,8 @@ class Cache
                             S::$log = strlen($m[1]);
                         } else  if(substr($o, 1)==='q') {
                             S::$log = 0;
+                        } else  if(substr($o, 1)==='t') {
+                            $tokens = true;
                         }
                         unset($a[$i]);
                     }
@@ -242,5 +246,29 @@ class Cache
             unset($o);
         }
         if(S::$log > 0) S::log("[INFO] Cleaned up {$c} files in {$i} cached entries.");
+
+        if($tokens && ($C=Tokens::find(['expires<'=>date('Y-m-d\TH:i:s', time()-86400)],null,['type','id']))) {
+            $i = $C->count();
+            $c = 0;
+            $o = 500;
+            $L = null;
+            while($c < $i) {
+                if(!$L) {
+                    $L = $C->getItems(0, $o);
+                    if(!$L) {
+                        break;
+                    }
+                }
+                if($T = array_shift($L)) {
+                    $T->delete();
+                    $T = null;
+                    $c++;
+                } else {
+                    break;
+                }
+            }
+
+            if(S::$log > 0) S::log("[INFO] Cleaned up {$c}/{$i} expired tokens.");
+        }
     }
 }

@@ -4,7 +4,7 @@ Studio\Model\Tasks:
     id: 1
     title: Studio cache cleanup
     code:
-      shell: studio :cleanup
+      shell: studio :cleanup -t
     starts: 2024-09-06T00:00:00
     ends: ~
     interval: 86400
