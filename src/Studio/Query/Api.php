@@ -281,7 +281,6 @@ class Api
         $ckey = $n.'/req-token';
         if(!($url=$this->config('token_endpoint')) || !isset(self::$C[$n]) || !($conn = curl_copy_handle(self::$C[$n]))) return false;
         $ckey .= '-'.sha1($url);
-
         $R = Cache::get($ckey, 0);
         $tokenId = null;
         if(Studio::config('enable_api_index') && ($T=Tokens::find(['type'=>'authorization', 'token'=>$n],1,['options', 'updated', 'id']))) {
@@ -303,32 +302,8 @@ class Api
         }
         if(!$R) {
             // try to fetch a new access_token based on the refresh token
-            $d = [
-                'grant_type' => ($c=$this->config('grant_type')) ?$c :'client_credentials',
-                'scope' => (($c=$this->config('auth_scope')) || ($c=$this->config('scope'))) ?$c :'openid',
-            ];
-            if($a=$this->config('token_options')) {
-                $d += $a;
-            }
-            if(($ct = (string)$this->config('contentType')) && substr($c, -4)==='json') {
-                $data = S::serialize($d, 'json');
-            } else {
-                $data = http_build_query($d);
-                if(!$ct) $ct = 'application/x-www-form-urlencoded';
-            }
-            $method = 'POST';
-            $headers = array(
-                'accept: application/json',
-                'content-type: '.$ct,
-                'authorization: Basic '.base64_encode($this->config('client_id').':'.$this->config('client_secret')),
-            );
-            //curl_setopt($conn, CURLOPT_HEADER, false);
-            curl_setopt($conn, CURLOPT_URL, $url);
-            curl_setopt($conn, CURLOPT_POST, true);
-            curl_setopt($conn, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($conn, CURLOPT_HTTPHEADER, $headers);
-            $R = $this->_exec($conn, 'json');
-            curl_close($conn);
+            $R = $this->tokenRequest($n, ($c=$this->config('grant_type')) ?$c :'client_credentials', $exception);
+
             if($R && isset($R['access_token'])) {
                 $expires = 100;
                 if(isset($R['expires_in'])) $expires = $R['expires_in'] -5;
@@ -349,33 +324,13 @@ class Api
         $this->authorizationHeader('Bearer',  $R['access_token']);
     }
 
-    public function refreshToken($n='zoom-api', $R=null, $exception=true)
+    public function refreshToken($n='', $R=null, $exception=true)
     {
         $ckey = $n.'/req-token';
-        if(!($url=$this->config('token_endpoint')) || !isset(self::$C[$n]) || !($conn = curl_copy_handle(self::$C[$n]))) return false;
         $ckey .= '-'.sha1($url);
-
+        $this->config('refresh_token', $R['refresh_token']);
+        $R = $this->tokenRequest($n, 'refresh_token', $exception);
         $tokenId = (isset($R['token_id'])) ?$R['token_id'] :null;
-        $d = ['grant_type'=>'refresh_token', 'refresh_token'=>$R['refresh_token']];
-        if(($ct = (string)$this->config('contentType')) && substr($c, -4)==='json') {
-            $data = S::serialize($d, 'json');
-        } else {
-            $data = http_build_query($d);
-            if(!$ct) $ct = 'application/x-www-form-urlencoded';
-        }
-        $method = 'POST';
-        $headers = array(
-            'accept: application/json',
-            'authorization: Basic '.base64_encode($this->config('client_id').':'.$this->config('client_secret')),
-            'content-type: '.$ct,
-        );
-        //curl_setopt($conn, CURLOPT_HEADER, false);
-        curl_setopt($conn, CURLOPT_URL, $url);
-        curl_setopt($conn, CURLOPT_POST, true);
-        curl_setopt($conn, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($conn, CURLOPT_HTTPHEADER, $headers);
-        $R = $this->_exec($conn, 'json');
-        curl_close($conn);
         if($R && isset($R['access_token'])) {
             if(!isset($R['expires'])) {
                 $expires = 100;
@@ -393,6 +348,63 @@ class Api
             if($exception) throw new AppException('Could not retrieve '.$n.' tokens!');
             $R = false;
         }
+
+        return $R;
+    }
+
+    public function tokenRequest($n='', $grant_type='client_credentials', $exception=true)
+    {
+        // try to fetch a new access_token based on the refresh token
+        if(!($url=$this->config('token_endpoint')) || !isset(self::$C[$n]) || !($conn = curl_copy_handle(self::$C[$n]))) return false;
+        $d = [
+            'grant_type' => $grant_type,
+        ];
+        $scope = null;
+        if($grant_type==='refresh_token') {
+            if($c=$this->config('refresh_token')) $d['refresh_token'] = $c;
+            $scope = false;
+        } else if($grant_type==='authorization_code') {
+            if($c=$this->config('code')) $d['code'] = $c;
+        }
+
+        if(is_null($scope)) $scope = $this->config('token_scope');
+        if(is_null($scope)) $scope = $this->config('auth_scope'); // deprecated
+        if($scope!==false) {
+            $d['scope'] = ($scope || ($scope=$this->config('scope'))) ?$scope :'openid';
+        }
+        $ct = (string)$this->config('contentType');
+        if(!$ct) $ct = 'application/x-www-form-urlencoded';
+        $method = 'POST';
+        $headers = array(
+            'accept: application/json',
+            'content-type: '.$ct,
+        );
+        if(!($c=$this->config('token_auth')) || $c==='client_secret_basic') {
+            $headers[] = 'authorization: Basic '.base64_encode($this->config('client_id').':'.$this->config('client_secret'));
+        } else if($c==='client_secret_post') {
+            $d += [
+                'client_id'=>$this->config('client_id'),
+                'client_secret'=>$this->config('client_secret'),
+            ];
+        }
+        if($a=$this->config('token_options')) {
+            $d += $a;
+        }
+        if($a=$this->config('token_params')) {
+            $url = S::buildUrl($url, [], $a);
+        }
+        if(substr($c, -4)==='json') {
+            $data = S::serialize($d, 'json');
+        } else {
+            $data = http_build_query($d);
+        }
+        //curl_setopt($conn, CURLOPT_HEADER, false);
+        curl_setopt($conn, CURLOPT_URL, $url);
+        curl_setopt($conn, CURLOPT_POST, true);
+        curl_setopt($conn, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($conn, CURLOPT_HTTPHEADER, $headers);
+        $R = $this->_exec($conn, 'json');
+        curl_close($conn);
 
         return $R;
     }

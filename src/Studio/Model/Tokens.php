@@ -94,6 +94,7 @@ class Tokens extends Model
         $Client = $Server->currentClient(['options.access_token'=>true, 'scope'=>$Server->scope]);
 
         if($code=App::request('get', 'code')) {
+            $Server->grant_type = 'authorization_code';
             $Client = $Server->requestToken($code);
 
             $U = S::getUser();

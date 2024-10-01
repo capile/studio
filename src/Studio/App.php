@@ -964,28 +964,31 @@ class App
                 self::$_response += $r;
             }
             unset($r);
+            $S = $_SERVER + ['REQUEST_METHOD'=>'get', 'REMOTE_ADDR'=>'127.0.0.1'];
             self::$_request=array('started'=>microtime(true));
             self::$_request['shell']=S_CLI;
-            self::$_request['method']=(!self::$_request['shell'])?(strtolower($_SERVER['REQUEST_METHOD'])):('get');
-            self::$_request['ajax']=(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH']=='XMLHttpRequest');
+            self::$_request['method']=(!self::$_request['shell'])?(strtolower($S['REQUEST_METHOD'])):('get');
+            self::$_request['ajax']=(isset($S['HTTP_X_REQUESTED_WITH']) && $S['HTTP_X_REQUESTED_WITH']=='XMLHttpRequest');
             if (!self::$_request['shell']) {
-                $ip = (isset($_SERVER[static::$requestIpHeader])) ?$_SERVER[static::$requestIpHeader] :$_SERVER['REMOTE_ADDR'];
+                $ip = (isset($S[static::$requestIpHeader])) ?$S[static::$requestIpHeader] :$S['REMOTE_ADDR'];
                 if($p=strpos($ip, ',')) {
                     $ip = substr($ip, 0, $p);
-                    if(!isset($_SERVER['REMOTE_ADDR']) || $_SERVER['REMOTE_ADDR']!==$ip) $_SERVER['REMOTE_ADDR'] = $ip;
+                    if(!isset($_SERVER['REMOTE_ADDR']) || $_SERVER['REMOTE_ADDR']!==$ip) {
+                        $_SERVER['REMOTE_ADDR'] = $S['REMOTE_ADDR'] = $ip;
+                    }
                 }
                 self::$_request['ip'] = $ip;
                 unset($ip, $p);
-                self::$_request['hostname']=preg_replace('/([\s\n\;]+|\:[0-9]+$)/', '', $_SERVER['HTTP_HOST']);
-                self::$_request['https']=(isset($_SERVER['HTTPS']));
-                if(isset($_SERVER['REQUEST_SCHEME'])) {
-                    self::$_request['scheme']=$_SERVER['REQUEST_SCHEME'];
+                self::$_request['hostname']=preg_replace('/([\s\n\;]+|\:[0-9]+$)/', '', $S['HTTP_HOST']);
+                self::$_request['https']=(isset($S['HTTPS']));
+                if(isset($S['REQUEST_SCHEME'])) {
+                    self::$_request['scheme']=$S['REQUEST_SCHEME'];
                 } else {
                     self::$_request['scheme']=(self::$_request['https']) ?'https' :'http';
                 }
                 self::$_request['host']=self::$_request['scheme'].'://'.self::$_request['hostname'];
-                if(isset($_SERVER['SERVER_PORT'])) {
-                    self::$_request['port']=$_SERVER['SERVER_PORT'];
+                if(isset($S['SERVER_PORT'])) {
+                    self::$_request['port']=$S['SERVER_PORT'];
                 }
                 $uri = S::requestUri();
                 $ui=@parse_url($uri);
@@ -999,7 +1002,7 @@ class App
                     }
                 }
             } else {
-                $arg = $_SERVER['argv'];
+                $arg = $S['argv'];
                 self::$_request['shell'] = array_shift($arg);
                 $uri = array_shift($arg);
                 $ui=parse_url($uri);
@@ -1033,10 +1036,10 @@ class App
             self::$_request['get']=$_GET;
             // fix: apache fills up CONTENT_TYPE rather than HTTP_CONTENT_TYPE
             if(self::$_request['method']!='get' && !isset($_SERVER['HTTP_CONTENT_TYPE']) && isset($_SERVER['CONTENT_TYPE'])) {
-                $_SERVER['HTTP_CONTENT_TYPE'] = $_SERVER['CONTENT_TYPE'];
+                $_SERVER['HTTP_CONTENT_TYPE'] = $S['HTTP_CONTENT_TYPE'] = $_SERVER['CONTENT_TYPE'];
             }
-            if(self::$_request['method']!='get' && isset($_SERVER['HTTP_CONTENT_TYPE'])) {
-                if(substr($_SERVER['HTTP_CONTENT_TYPE'],0,16)=='application/json') {
+            if(self::$_request['method']!='get' && isset($S['HTTP_CONTENT_TYPE'])) {
+                if(substr($S['HTTP_CONTENT_TYPE'],0,16)=='application/json') {
                     if($d=file_get_contents('php://input')) {
                         self::$_request['post']=json_decode($d, true);
                         if(is_null(self::$_request['post'])) {
@@ -1044,7 +1047,7 @@ class App
                         }
                         unset($d);
                     }
-                } else if(substr($_SERVER['HTTP_CONTENT_TYPE'],0,15)=='application/xml' || substr($_SERVER['HTTP_CONTENT_TYPE'],0,8)=='text/xml') {
+                } else if(substr($S['HTTP_CONTENT_TYPE'],0,15)=='application/xml' || substr($S['HTTP_CONTENT_TYPE'],0,8)=='text/xml') {
                     if($d=file_get_contents('php://input')) {
                         $xml = simplexml_load_string($d, null, LIBXML_NOCDATA);
                         if($xml) {
@@ -1056,6 +1059,7 @@ class App
                     }
                 }
             }
+            unset($S);
             if(!isset(self::$_request['post'])) {
                 self::$_request['post']=S::postData($_POST);
             }
