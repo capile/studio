@@ -11,19 +11,27 @@
 namespace Studio\Test;
 
 use Studio as S;
+use Studio\App;
 use Studio\Yaml;
 
 class Helper 
 {
+    public const AUTOLOAD_CALLBACK='startup';
     public static $id, $port;
     protected static $config, $configFiles=[], $db;
+
+    public static function startup()
+    {
+        if(!self::$id) self::$id = S::salt(10);
+    }
 
     public static function startServer()
     {
         self::$port = 9998;
         while(file_exists(S_VAR.'/.studio-test-'.self::$port.'.pid') && self::$port > 9990) self::$port--;
         if(!self::$id) self::$id = S::salt(10);
-        exec('TAG=studio-test-'.self::$port.' STUDIO_PORT='.self::$port.' '.S_ROOT.'/studio-server');
+        $server = 'STUDIO_CONFIG='.S_ROOT.'/'.self::$id.'.yml STUDIO_TAG=studio-test-'.self::$port.' STUDIO_ENV=test STUDIO_PORT='.self::$port.' STUDIO_INIT="-a -g" STUDIO_MODE=daemon '.S_ROOT.'/studio-server';
+        exec($server);
         $timeout = time()+3;
         $r = null;
         while(!$r && time()<=$timeout) $r=exec('curl --connect-timeout 10 -s http://127.0.0.1:'.self::$port.'/_me');
@@ -42,6 +50,9 @@ class Helper
                 exec('kill '.trim(file_get_contents($f)));
                 @unlink($f);
             }
+            if(file_exists($f=S_VAR.'/studio-test-'.$uriOrPort.'.php')) {
+                unlink($f);
+            }
         }
     }
 
@@ -50,32 +61,29 @@ class Helper
         if(!is_array($exampleFiles)) $exampleFiles = [$exampleFiles];
         $update = null;
         foreach($exampleFiles as $fn) {
-            if(file_exists($f=$fn) || file_exists($f=S_ROOT . '/data/config/'.$fn.'.yml-example')) {
-                if(substr($f, 0, strlen(S_ROOT.'/'))===S_ROOT.'/') $f = substr($f, strlen(S_ROOT.'/'));
-                if(!in_array($f, self::$configFiles)) {
-                    $update = true;
-                    self::$configFiles[] = $f;
-                }
+            if(file_exists($f=S_ROOT . '/data/config/'.$fn.'.yml-example')) {
+                $update = true;
+                self::$configFiles[] = Yaml::loadFile($f);
             }
         }
+        if(!self::$id) self::$id = S::salt(10);
+        $studioCmd = 'STUDIO_CONFIG='.S_ROOT.'/'.self::$id.'.yml STUDIO_TAG=studio-test-'.self::$port.' STUDIO_ENV=test '.S_ROOT.'/studio';
         if($update || !self::$config) {
-            $cf = S_ROOT.'/app.yml';
-            if(!self::$config) self::$config = file_get_contents($cf);
-            $Y = Yaml::loadString(self::$config);
-            $Y['all']['include'] = '{'.implode(',', self::$configFiles).'}';
-            if(!self::$id) self::$id = S::salt(10);
-            self::$db='data/test-'.self::$id.'.db';
-            $Y['all']['database']['studio']['dsn'] = 'sqlite:'.self::$db;
-            S::$database = $Y['all']['database'];
-            Yaml::save($cf, $Y);
-            if(file_exists(S_ROOT.'/.appkey')) rename(S_ROOT.'/.appkey', S_ROOT.'/.appkey.old');
-            S::save(S_ROOT.'/.appkey', self::$id);
-            exec(S_ROOT.'/studio :check');
+            $cf = S_ROOT.'/'.self::$id.'.yml';
+            array_unshift(self::$configFiles, Yaml::loadFile(S_ROOT.'/app.yml'));
+            array_unshift(self::$configFiles, S::env());
+            self::$config = call_user_func_array(['Studio', 'config'], self::$configFiles);
+            unset(self::$config['all']['include']);
+            self::$db=S_ROOT.'/data/test-'.self::$id.'.db';
+            self::$config['all']['database']['studio']['dsn'] = 'sqlite:'.self::$db;
+            S::$database = self::$config['all']['database'];
+            Yaml::save($cf, self::$config);
+            exec($studioCmd.' :check');
         }
 
         foreach($exampleFiles as $fn) {
             if(file_exists($f=S_ROOT.'/data/tests/_data/'.$fn.'.yml')) {
-                exec(S_ROOT.'/studio :import "'.$f.'"');
+                exec($studioCmd.' :import "'.$f.'"');
             }
         }
     }
@@ -85,11 +93,12 @@ class Helper
         if(self::$db && file_exists(S_ROOT.'/'.self::$db)) {
             unlink(S_ROOT.'/'.self::$db);
         }
-
+        if(self::$id) {
+            if(file_exists($f=S_ROOT.'/'.self::$id.'.yml')) unlink($f);
+            if(file_exists($f=S_ROOT.'/data/test-'.self::$id.'.db')) unlink($f);
+            unset($f);
+        }
         if(!is_null(self::$config)) {
-            Yaml::save(S_ROOT.'/app.yml', Yaml::loadString(self::$config));
-            if(file_exists(S_ROOT.'/.appkey.old')) rename(S_ROOT.'/.appkey.old', S_ROOT.'/.appkey');
-            else if(file_exists(S_ROOT.'/.appkey')) unlink(S_ROOT.'/.appkey');
             self::$config = null;
             self::$configFiles = [];
         }

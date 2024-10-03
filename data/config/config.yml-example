@@ -1,22 +1,23 @@
 ---
-title: "*Welcome!"
 all:
   studio:
-    version: 1.0
     connection: studio
     enable_apis: true
     enable_api_content: true
     enable_api_credential: true
     enable_api_index: true
     enable_api_schema: true
+  app:
+    api-dir: [ data/api-config ]
     web-repos:
       - id: studio-docs
         src: https://github.com/capile/studio.wiki.git
         mount: /docs
         mount-src: ~
-  app:
-    api-dir: [ data/api-config ]
-    asset-build-strategy: auto
+      - id: tecnodz.com
+        src: https://github.com/capile/www.tecnodz.com.git
+        mount: /
+        mount-src: ~
     languages:
       English: en
       Português: pt

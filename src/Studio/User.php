@@ -1069,7 +1069,7 @@ class User
                 $this->_credentials = $this->_me->getCredentials();
             } else if(is_object($this->_me)) {
                 $n = $this->nsConfig('credentials', 'credentials');
-                if(property_exists($this->_me, $n)) {
+                if(is_string($n) && property_exists($this->_me, $n)) {
                     $this->_credentials = $this->_me->$n;
                 }
             }

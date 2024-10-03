@@ -1,5 +1,5 @@
 #!/bin/sh
-TAG=${TAG:="studio-server"}
+STUDIO_TAG=${STUDIO_TAG:="studio-server"}
 
 STUDIO_IP=${STUDIO_IP:="127.0.0.1"}
 STUDIO_PORT=${STUDIO_PORT:="9999"}
@@ -15,10 +15,8 @@ if [ -s "$PIDFILE" ]; then PID=$(cat "$PIDFILE"); fi
 LOG_DIR="$STUDIO_DATA/log"
 mkdir -p "$LOG_DIR"
 
-STUDIO_TAG=$TAG
 PHP="php -S $STUDIO_IP:$STUDIO_PORT \
   -q \
-  -d STUDIO_DATA=$STUDIO_DATA \
   -d memory_limit=16M \
   -d display_errors=Off \
   -d error_reporting=E_ALL \
@@ -37,10 +35,18 @@ if [ "$STUDIO_DEBUG" != "" ]; then
       -d xdebug.use_compression=false \
       "
 fi
-
+if [ "$STUDIO_INIT" != "" ]; then
+    studio :build $STUDIO_INIT
+fi
+APP="${0%/*}/app.php"
+if [ "$STUDIO_CONFIG" != "" ]; then
+    REAL_APP=`realpath "${0%/*}/app.php"`
+    APP="$STUDIO_DATA/$STUDIO_TAG.php"
+    echo "<?php \$_SERVER += ['STUDIO_CONFIG'=>'$STUDIO_CONFIG','STUDIO_TAG'=>'$STUDIO_TAG','STUDIO_ENV'=>'$STUDIO_ENV','STUDIO_DATA'=>'$STUDIO_DATA']; require '$REAL_APP';" > "$APP"
+fi
 if [ "$STUDIO_MODE" = "daemon" ]; then
-    $PHP "${0%/*}/app.php" -s $TAG >> "$LOG_DIR/app.log" 2>&1 &
+    $PHP "$APP" -s $TAG >> "$LOG_DIR/app.log" 2>&1 &
     echo $! > "$PIDFILE"
 else
-    exec $PHP "${0%/*}/app.php" -s $TAG
+    exec $PHP "$APP" -s $STUDIO_TAG
 fi

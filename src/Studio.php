@@ -2290,7 +2290,7 @@ class Studio
             }
             if(!defined('S_CLI')) {
                 if(defined('TDZ_CLI')) define('S_CLI', TDZ_CLI);
-                else define('S_CLI', (!isset($_SERVER['HTTP_HOST']) && isset($_SERVER['SHELL'])));
+                else define('S_CLI', !isset($_SERVER['HTTP_HOST']));
             }
             define('S_TIME', (isset($_SERVER['REQUEST_TIME_FLOAT'])) ?$_SERVER['REQUEST_TIME_FLOAT'] :microtime(true));
             @list($u, $t) = explode('.', (string) S_TIME);
@@ -2500,28 +2500,24 @@ class Studio
 
     public static function checkIp($ip=null, $cidrs=null)
     {
-        $ipu = explode('.', $ip);
-        foreach ($ipu as &$v)
-            $v = str_pad(decbin($v), 8, '0', STR_PAD_LEFT);
-
-        $ipu = join('', $ipu);
-        $res = false;
+        if(!filter_var($ip, FILTER_VALIDATE_IP)) return false;
         if($cidrs) {
-            if(!is_array($cidrs)) $cidrs = array($cidrs);
+            $address = \IPLib\Factory::parseAddressString($ip);
+            if(!is_array($cidrs)) $cidrs = [$cidrs];
             foreach ($cidrs as $cidr) {
-                if(strpos($cidr, '/')===false) {
-                    $cidr .= '/32';
+                $range = \IPLib\Factory::parseRangeString($cidr);
+                if($range && $range->contains($address)) {
+                    unset($range, $cidr, $address);
+
+                    return true;
                 }
-                $parts = explode('/', $cidr);
-                $ipc = explode('.', $parts[0]);
-                foreach ($ipc as &$v) $v = str_pad(decbin($v), 8, '0', STR_PAD_LEFT);
-                $ipc = substr(join('', $ipc), 0, $parts[1]);
-                $ipux = substr($ipu, 0, $parts[1]);
-                $res = ($ipc === $ipux);
-                if ($res) break;
+                unset($range, $cidr);
             }
+
+            return false;
         }
-        return $res;
+
+        return true;
     }
 
     /**

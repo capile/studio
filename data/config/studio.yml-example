@@ -1,7 +1,6 @@
 ---
 all:
   studio:
-    version: 1.0
     connection: studio
     enable_apis: true
     enable_api_content: true

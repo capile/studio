@@ -15,7 +15,7 @@ use Studio\Test\Helper;
 
 class StudioCest
 {
-    protected $configs=['studio'], $host='http://127.0.0.1:9999', $terminate;
+    protected $configs=['studio','config'], $host='http://127.0.0.1:9999', $terminate;
 
     public function _before()
     {
@@ -28,6 +28,8 @@ class StudioCest
 
     public function homePageWorks(\AcceptanceTester $I)
     {
+        // last test, destroy server afterwards
+        $this->terminate = true;
         // remove cached css and see if it was properly generated
         $css = S_DOCUMENT_ROOT . '/_/site.css';
         if (file_exists($css)) {
@@ -35,10 +37,9 @@ class StudioCest
         }
 
         $I->amOnPage($this->host.'/');
-        $I->see('Welcome to Studio!');
+        $I->see('Tecnodesign = Design + TI');
         $I->seeElement('link[href^="/_/site.css?"]');
 
-        $this->terminate = true;
     }
 
     public function _after()
