@@ -84,9 +84,11 @@ class Yaml
 
         if(is_null($isFile)) {
             $isFile = ($string && strlen($string) < 255 && file_exists($string));
+        } else if($isFile && !file_exists($string)) {
+            return false;
         }
 
-        $cacheKey = 'yaml/' . md5($string);
+        $cacheKey = 'yaml/' . (($isFile) ?md5_file($string) :md5($string));
         $useCache = (self::$cache && $cacheTimeout > 0 && ($isFile || strlen($string) > 4000));
         if ($useCache) {
             if ($isFile && ($lastModified = filemtime($string)) > time() - $readTimeout) {
