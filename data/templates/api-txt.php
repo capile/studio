@@ -13,7 +13,7 @@
 use Studio as S;
 use Studio\App;
 use Studio\Model;
-use Tecnodesign_Form as Form;
+use Studio\Form;
 
 $id = S::slug($url);
 if(strpos($url, '?')!==false) list($url, $qs)=explode('?', $url, 2);

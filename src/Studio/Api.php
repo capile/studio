@@ -344,6 +344,7 @@ class Api extends SchemaObject
             unset($d['relation']);
         }
         */
+        $cn = null;
         if($this->model && class_exists($this->model)) {
             $cn = $this->model;
             if(!$this->key) {
@@ -384,6 +385,11 @@ class Api extends SchemaObject
         if(static::$optionsDefault) {
             if(!$this->options) $this->options = static::$optionsDefault;
             else $this->options += static::$optionsDefault;
+        }
+        if(isset($this->options['schema']) && is_array($this->options['schema']) && $cn) {
+            foreach($this->options['schema'] as $k=>$v) {
+                $cn::$schema[$k] = $v;
+            }
         }
     }
 

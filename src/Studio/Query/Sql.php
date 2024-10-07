@@ -12,6 +12,7 @@
 namespace Studio\Query;
 
 use Studio as S;
+use Studio\Cache;
 use Studio\Exception\AppException;
 use Studio\Query;
 use Studio\Model;
@@ -39,7 +40,8 @@ class Sql
         $options,
         $conn=[],
         $tableDefault,
-        $tableAutoIncrement;
+        $tableAutoIncrement,
+        $qc=[];
     protected 
         $_schema,
         $_database,
@@ -937,6 +939,9 @@ class Sql
         if(!$conn) {
             $conn = self::connect($this->schema('database'));
         }
+        // reset cache, if that exists
+        if($this->schema('_queryCachePattern')) static::resetCache($this->schema('className'));
+
         return $conn->exec($q);
     }
 
@@ -992,19 +997,57 @@ class Sql
 
     public function query($q, $p=null)
     {
+        $ckey = $ct = null;
+
         try {
+            if($qc=$this->schema('_queryCachePattern')) {
+                if($qc===true) $qc = ['/select/'=>0];
+                else if(!is_array($qc)) $qc = [$qc=>0];
+                foreach($qc as $r=>$t) {
+                    if(preg_match($r, $q)) {
+                        if($t) {
+                            if(!($ckey=Cache::get($cckey='qc/'.S::slug($this->schema('className'), '_', true)))) {
+                                $ckey = S_TIME;
+                                Cache::set($cckey, $ckey, $t);
+                            }
+                        }
+                        $ckey = sha1($r.':'.S::serialize(func_get_args(), 'php').':'.$ckey);
+                        $ct = $t;
+                        break;
+                    }
+                    unset($r, $t);
+                }
+                unset($qc);
+                if($ckey) {
+                    if(!isset(static::$qc[$ckey])) {
+                        if($ct && ($r=Cache::get($ckey))) {
+                            static::$qc[$ckey] = $r;
+                        }
+                    }
+                    if(isset(static::$qc[$ckey])) {
+                        return static::$qc[$ckey];
+                    }
+                }
+            }
             if (is_null($p)) {
-                return $this->run($q)->fetchAll(\PDO::FETCH_ASSOC);
+                $r = $this->run($q)->fetchAll(\PDO::FETCH_ASSOC);
             } else {
                 $arg = func_get_args();
                 array_shift($arg);
-                return call_user_func_array(array($this->run($q), 'fetchAll'), $arg);
+                $r = call_user_func_array(array($this->run($q), 'fetchAll'), $arg);
             }
+            if($ckey) {
+                static::$qc[$ckey] = $r;
+                if($ct) Cache::set($ckey, $r, $ct);
+            }
+
+            return $r;
+
         } catch(Exception $e) {
             if(isset($this::$errorCallback) && $this::$errorCallback) {
                 return call_user_func($this::$errorCallback, $e, func_get_args(), $this);
             }
-            S::log('[WARNING] Error in '.get_called_class()."::query: {$e->getCode()}:\n  ".$e->getMessage()."\n {$this}", var_Export($this, true));
+            S::log('[WARNING] Error in '.get_called_class()."::query: {$e->getCode()}:\n  {$e->getMessage()}\n {$this}");
             return false;
         }
     }
@@ -1883,5 +1926,11 @@ class Sql
         }
         return $schema;
     }
-    
+
+    public static function resetCache($cn)
+    {
+        if(Cache::get($cckey='qc/'.S::slug($cn, '_', true))) {
+            Cache::delete($cckey);
+        }
+    }
 }
