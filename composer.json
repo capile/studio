@@ -14,7 +14,8 @@
         "ext-mbstring": "*",
         "phpmailer/phpmailer": "^6.7.1",
         "mongodb/mongodb": "^1.20.0",
-        "mlocati/ip-lib": "^1"
+        "mlocati/ip-lib": "^1",
+        "dragonmantank/cron-expression": "^3.3"
     },
     "extra": {
         "foxy": true

@@ -14,6 +14,7 @@ use Studio\App;
 use Studio\Cache;
 use Studio\Model;
 use Studio\Studio;
+use Cron\CronExpression;
 
 class Tasks extends Model
 {
@@ -107,8 +108,26 @@ class Tasks extends Model
         }
 
         // organize scheduled times
+        if(!$t && $this->schedule) {
+            $t = static::nextSchedule($this->schedule, ($this->executed) ?$this->executed :$this->starts);
+        }
 
         return $t;
+    }
+
+    public static function nextSchedule($schedule, $t0=null)
+    {
+        if($t0 && is_int($t0)) $t0=date('c', $t0);
+        $cron = new CronExpression($schedule);
+        $D = $cron->getNextRunDate($t0);
+        unset($cron);
+
+        if($D) {
+            $r = $D->getTimestamp();
+            unset($D);
+
+            return $r;
+        }
     }
 
     public function run($timestamp=null)
