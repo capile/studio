@@ -112,7 +112,7 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
         -e 's/^;?pm.max_requests = .*/pm.max_requests = 500/' \
         -e 's/^php_admin_value\[error_log\]/;php_admin_value[error_log]/' \
         -e 's/^php_admin_value\[memory_limit\] = .*/;php_admin_value[memory_limit] = 32M/' \
-        -e 's/^;?access.format = .*/access.format = "%{REMOTE_ADDR}e - %u %t \"%m %r%Q%q\" %s %{milli}d %{kilo}M %C%%"/' \
+        -e 's/^;?access.format = .*/access.format = "%{REMOTE_ADDR}e %u %t %{HTTP_HOST}e \"%m %r%Q%q\" %s %{milli}d %{kilo}M %C%%"/' \
         -i /usr/local/etc/php-fpm.d/www.conf \
     && \
     sed -E \
