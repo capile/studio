@@ -70,18 +70,14 @@ class App
     protected static $configMap = ['tecnodesign'=>'app'];
     protected $_o=null;
 
-    public function __construct($s, $siteMemKey=false, $env='prod')
+    public function __construct($s, $name=null, $env=null)
     {
-        if ($siteMemKey) {
-            Cache::siteKey($siteMemKey);
-            $this->_name = $siteMemKey;
+        if(!$name) {
+            $name = S::appName();
         }
+        if(!$env) $env = S::env();
+        $this->_name = $name;
         $this->start=time();
-        if (!defined('S_ENV')) {
-            define('S_ENV', $env);
-        } else {
-            $env = S_ENV;
-        }
         $this->_env = $env;
         $config = $s;
         if(is_array($s)) {
@@ -168,48 +164,37 @@ class App
             }
             unset($name, $value);
         }
-        $this->_vars['startup'] = ['config'=>$config, 'app'=>$siteMemKey, 'env'=>$env, 'time'=>S_TIMESTAMP];
+        $this->_vars['startup'] = ['config'=>$config, 'app'=>$this->_name, 'env'=>$this->_env, 'time'=>S_TIMESTAMP];
         $this->cache();
         $this->start();
     }
 
-    public static function getInstance($name=false, $env='prod', $expires=0)
+    public static function getInstance($name=null, $env=null, $expires=0)
     {
-        $instance="{$name}/{$env}";
-        $ckey="app/{$instance}";
-        $app = false;
-        if (!defined('S_ENV')) {
-            define('S_ENV', $env);
-        } else {
-            $env = S_ENV;
+        if(is_null($env)) {
+            if(defined('S_ENV')) $env = S_ENV;
+            else $env = S::env();
         }
-        if (!$name) {
-            if(is_null(App::$_instances)) {
-                App::$_instances = new ArrayObject();
-            }
+        if(is_null(App::$_instances)) {
+            App::$_instances = new ArrayObject();
+        }
+        if(is_null($name) && !($name=S::appName())) {
             $instances = App::$_instances;
-            $siteKey = Cache::siteKey();
-            if ($siteKey) {
-                $siteKey .= '/';
-                foreach ($instances as $key=>$instance) {
-                    if (substr($key, 0, strlen($siteKey))==$siteKey) {
-                        return $instance;
-                    }
+            foreach ($instances as $key=>$instance) {
+                if (substr($key, -1*(strlen($env)+1))=="/{$env}") {
+                    return $instance;
                 }
-            } else {
-                if(!is_array($instances)) {
-                    $instances = (array)$instances;
-                }
-                return array_shift($instances);
+                unset($key, $instance);
             }
+            if(!$name) $name = 'studio';
         }
+        $instance="{$name}/{$env}";
+        $ckey='app-'.S::VER.'/'.$instance;
+        $app = false;
         if(isset(App::$_instances[$instance])) {
             return App::$_instances[$instance];
-        } else if(Cache::siteKey()) {
-            $app = Cache::get($ckey, $expires);
-            if($app) {
-                App::$_instances[$instance] = $app;
-            }
+        } else if($app = Cache::get($ckey, $expires)) {
+            App::$_instances[$instance] = $app;
         }
         return $app;
     }

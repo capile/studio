@@ -354,7 +354,7 @@ class Client extends SchemaObject
                             $q[$k] = $val;
                         }
                         if($q) $User = S::user($q);
-                        if(S::$log>0) S::log('[INFO] Fetch Userinfo from access_token: '.$User);
+                        if(S::$log>0) S::log('[INFO] Fetch Userinfo from access_token: '.$User, $q, $R);
                     }
                     if(!$User) {
                         $User = $Server->requestUserinfo($Client);

@@ -25,7 +25,7 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.2.5';
+    const VERSION = '1.2.8';
     const VER = 1.2;
 
     protected static
@@ -179,21 +179,46 @@ class Studio
      */
     public static function app($s, $siteMemKey=false, $env='prod')
     {
+        self::env();
+        self::$_env = $env;
         if ($siteMemKey) {
             if(!isset($_SERVER['STUDIO_TAG']) || !$_SERVER['STUDIO_TAG'] || $_SERVER['STUDIO_TAG']!=$siteMemKey) $_SERVER['STUDIO_TAG']=$siteMemKey;
-            self::env();
-            self::$_app = $siteMemKey;
-            self::$_env = $env;
             Cache::siteKey($siteMemKey);
-            if (!is_array($s) && file_exists($s)) {
-                $timeout = filemtime($s);
-                $cache = App::getInstance($siteMemKey, $env, $timeout);
-                if ($cache) {
-                    return $cache;
+        }
+        $timeout = static::$timeout;
+        if(isset($_SERVER['STUDIO_APP']) && $_SERVER['STUDIO_APP']) {
+            self::$_app = $_SERVER['STUDIO_APP'];
+        } else if(is_string($s) && file_exists($s)) {
+            self::$_app = basename($s, '.yml');
+            $timeout = filemtime($s);
+        } else {
+            self::$_app = md5sum((is_array($s)) ?implode(':', $s) :$s);
+        }
+        if($cache=App::getInstance(self::$_app, $env, $timeout)) {
+            return $cache;
+        }
+
+        return new App($s, self::$_app, self::$_env);
+    }
+
+    public static function appName()
+    {
+        if(is_null(self::$_app)) {
+            if(isset($_SERVER['STUDIO_APP']) && $_SERVER['STUDIO_APP']) {
+                self::$_app = $_SERVER['STUDIO_APP'];
+            } else if(isset($_SERVER['STUDIO_CONFIG']) && $_SERVER['STUDIO_CONFIG']) {
+                $s = $_SERVER['STUDIO_CONFIG'];
+                if(is_string($s) && file_exists($s)) {
+                    self::$_app = basename($s, '.yml');
+                } else {
+                    self::$_app = md5sum((is_array($s)) ?implode(':', $s) :$s);
                 }
+            } else {
+                self::$_app = 'studio';
             }
         }
-        return new App($s, $siteMemKey, $env);
+
+        return self::$_app;
     }
 
     /**
