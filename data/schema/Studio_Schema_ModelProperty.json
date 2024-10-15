@@ -59,6 +59,7 @@
                 "integer": "int",
                 "decimal": "number",
                 "float": "number",
+                "list": "array",
                 "date": {
                     "type": "string",
                     "format": "date"
@@ -214,6 +215,12 @@
         },
         "serialize": {
             "type": "string"
+        },
+        "properties": {
+            "type": "object"
+        },
+        "items": {
+            "type": "object"
         }
     }
 }

@@ -29,7 +29,8 @@ class Index extends Model
     public static 
         $schema,
         $interfaces,
-        $pathSeparator='/';
+        $pathSeparator='/',
+        $pidKey='studio/index';
     protected $interface, $id, $summary, $indexed, $created, $updated, $IndexText, $IndexDate, $IndexBool, $IndexNumber, $IndexBlob, $IndexInterfaces;
 
     /**
@@ -57,7 +58,6 @@ class Index extends Model
     {
         // studio indexing
         if(!static::checkConnection()) return;
-
         $index = [];
         $indexApi = Studio::config('enable_api_index');
         $indexFiles = ($indexApi && Studio::config('enable_api_content'));
@@ -76,6 +76,8 @@ class Index extends Model
                         $indexApi = false;
                     } else if(preg_match('/^-m([0-9]+)$/', $o, $m)) {
                         S::tune(null, (int)$m[1], (int)$m[1]);
+                    } else if(preg_match('/^-p=([a-z0-9]+)$/', $o, $m)) {
+                        static::$pidKey = 'studio/'.$m[1];
                     }
                 } else if($p=strpos($o, '=')) {
                     $q[substr($o, 0, $p)] = substr($o, $p);
@@ -85,16 +87,17 @@ class Index extends Model
                 unset($a[$i], $i, $o, $p, $m);
             }
         }
+        if($p=Cache::get(static::$pidKey)) {
+            S::log('[WARNING] Another process is indexing (for '.substr(S_TIME - $p, 0, 5).'s), please wait.');
+            return;
+        }
+        Cache::set(static::$pidKey, S_TIME, 60);
+        if(static::$pidKey=='studio/index') S::debug('reload, please');
         if($q) {
             $index = Interfaces::find($q,null,null,false);
             if(!$index) $index = [];
         }
 
-        if($p=Cache::get('studio/indexing')) {
-            S::log('[WARNING] Another process is indexing (for '.substr(S_TIME - $p, 0, 5).'s), please wait.');
-            return;
-        }
-        Cache::set('studio/indexing', S_TIME, 20);
         if($indexApi) {
             if(!$q) {
                 $index = static::$interfaces;
@@ -149,6 +152,7 @@ class Index extends Model
                         $files[] = ['file'=>$d, 'model'=>Studio::class, 'url'=>(isset($repo['mount'])) ?$repo['mount'] :null, 'src'=>$repo['id'].':'];
                         $ds[] = $d;
                     }
+                    Cache::set(static::$pidKey, S_TIME, 60);
                 }
             }
             if(file_exists(S_DOCUMENT_ROOT) && is_dir(S_DOCUMENT_ROOT)) {
@@ -184,13 +188,14 @@ class Index extends Model
                                 break;
                             }
                         }
+                        Cache::set(static::$pidKey, S_TIME, 60);
                     }
                 }
 
             }
         }
 
-        Cache::delete('studio/indexing');
+        Cache::delete(static::$pidKey);
         return true;
     }
 
@@ -227,6 +232,7 @@ class Index extends Model
 
     public static function indexInterface($a, $icn=null, $scope='preview', $keyFormat=false, $valueFormat=false, $serialize=false)
     {
+        $renewCache = (Cache::get(static::$pidKey)==S_TIME);
         $q = null;
         if(isset($a['search']) && $a['search']) {
             $q = $a['search'];
@@ -289,6 +295,7 @@ class Index extends Model
         if(isset($a['options']['group-by'])) {
             $q['groupBy'] = $a['options']['group-by'];
         }
+        if($renewCache) Cache::set(static::$pidKey, S_TIME, 60);
 
         $count = null;
         $R = $cn::query($q);
@@ -326,6 +333,7 @@ class Index extends Model
             $pkid = $cn::pk();
             $ppk = ['id', 'uid', 'uuid'];
             while($continue && $count > $offset) {
+                if($renewCache) Cache::set(static::$pidKey, S_TIME, 60);
                 if($offset!==0 || $count===0 || !($L=$R->response())) {
                     $L = $R->fetch($offset, $limit);
                 }
@@ -424,12 +432,14 @@ class Index extends Model
         }
 
         if(method_exists($cn, 'studioIndex')) {
+            if($renewCache) Cache::set(static::$pidKey, S_TIME, 60);
             $cn::studioIndex($a, $icn, $pscope, $keyFormat, $valueFormat, $serialize);
         }
 
         $total = $offset;
 
         if($indexCleanup && $total && $lmod && ($R=static::find(['interface'=>$id, 'indexed<'=>preg_replace('/\.[0-9]+$/', '', S_TIMESTAMP)])) && $R->count()>0) {
+            if($renewCache) Cache::set(static::$pidKey, S_TIME, 60);
             $count = $R->count();
             $total += $count;
             if(!isset($limit)) $limit = $cn::$queryBatchLimit;
@@ -438,6 +448,7 @@ class Index extends Model
             if(S::$log>0) S::log('[INFO] Cleaning up '.$count.' stale indexed records on '.$id);
             while($count > $offset) {
                 $L = $R->getItem($offset, $limit);
+                if($renewCache) Cache::set(static::$pidKey, S_TIME, 60);
                 if(!$L) break;
                 foreach($L as $i=>$o) {
                     $offset++;
@@ -506,6 +517,8 @@ class Index extends Model
             foreach($value as $k=>$v) {
                 if($subs) {
                     $fd = (isset($subs[$k])) ?$subs[$k] :null;
+                } else if(!$fd && is_array($v)) {
+                    $fd = ['type'=>'object'];
                 }
                 self::propToRel($v, $name.self::$pathSeparator.$k, $fd, $output, $base);
             }

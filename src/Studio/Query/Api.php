@@ -315,7 +315,7 @@ class Api
                 }
                 Cache::set($ckey, $R, 0);
             } else {
-                S::log('[WARNING] Could not retrieve '.$n.' tokens!', $R, $d);
+                S::log('[WARNING] Could not retrieve '.$n.' tokens!');
                 if($exception) throw new AppException('Could not retrieve '.$n.' tokens!');
                 return false;
             }

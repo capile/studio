@@ -599,7 +599,9 @@ class Api extends SchemaObject
             static::loadAssets();
             S::$variables['html-layout'] = 'studio-api';
 
-            //if($I && $I->auth) S::cacheControl('private, no-store, no-cache, must-revalidate',0);
+            if($I && $I->auth && !isset(static::$headers[static::H_CACHE_CONTROL])) {
+                static::$headers[static::H_CACHE_CONTROL] = 'private, no-store, no-cache, must-revalidate';
+            }
             $sn = S::scriptName();
             S::scriptName($I->url);
 
