@@ -600,7 +600,7 @@ class Api extends SchemaObject
             S::$variables['html-layout'] = 'studio-api';
 
             if($I && $I->auth && !isset(static::$headers[static::H_CACHE_CONTROL])) {
-                static::$headers[static::H_CACHE_CONTROL] = 'private, no-store, no-cache, must-revalidate';
+                static::$headers[static::H_CACHE_CONTROL] = 'private';
             }
             $sn = S::scriptName();
             S::scriptName($I->url);
@@ -867,7 +867,7 @@ class Api extends SchemaObject
         return static::checkAuth($this->getAuth($action), $setStatus);
     }
 
-    public static function authHeaders($U=null, $h='private, no-cache')
+    public static function authHeaders($U=null, $h='private')
     {
         S::cacheControl($h, static::$expires);
         self::$headers[static::H_CACHE_CONTROL] = $h;
@@ -1151,8 +1151,8 @@ class Api extends SchemaObject
                 static::$headers[static::H_CACHE_CONTROL] = 'public';
                 S::cacheControl('public', static::$expires);
             } else {
-                static::$headers[static::H_CACHE_CONTROL] = 'nocache';
-                S::cacheControl('nocache', 0);
+                static::$headers[static::H_CACHE_CONTROL] = 'private';
+                S::cacheControl('private', 0);
             }
         }
     }

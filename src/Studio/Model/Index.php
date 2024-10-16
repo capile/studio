@@ -92,7 +92,6 @@ class Index extends Model
             return;
         }
         Cache::set(static::$pidKey, S_TIME, 60);
-        if(static::$pidKey=='studio/index') S::debug('reload, please');
         if($q) {
             $index = Interfaces::find($q,null,null,false);
             if(!$index) $index = [];

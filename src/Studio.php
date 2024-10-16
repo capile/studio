@@ -1507,6 +1507,9 @@ class Studio
 
     public static function cacheControl($set=null, $expires=null)
     {
+        static $private='private, no-cache, no-store, must-revalidate';
+
+        if($set==='private') $set = $private;
         if(!$expires && $set) {
             if(strpos($set, 'no-cache')!==false) {
                 if(strpos($set, 'no-store')===false) $set .= ', no-store';
@@ -1520,12 +1523,12 @@ class Studio
             $cacheControl = self::get('cache-control');
         }
         if(!$cacheControl) {
-            $cacheControl = 'private, must-revalidate';
+            $cacheControl = $private;
             self::set('cache-control', $cacheControl);
         }
         if(!S_CLI && !is_null($expires)) {
             $expires = (int)$expires;
-            if($expires>0 && strpos($cacheControl, 'private')!==false) {
+            if($expires>0 && $set && strpos($cacheControl, 'private')!==false) {
                 $expires = 0;
             }
             if (function_exists('header_remove')) {
