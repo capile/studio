@@ -25,7 +25,7 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.2.8';
+    const VERSION = '1.2.9';
     const VER = 1.2;
 
     protected static
@@ -597,7 +597,9 @@ class Studio
         }
         if($p==='*') {
             return $a;
-        } else if(array_key_exists($p, $a)) {
+        } else if(is_object($a) && property_exists($a, $p)) {
+            return $a->$p;
+        } else if(is_array($a) && array_key_exists($p, $a)) {
             return $a[$p];
         } else if(strpos($p, '.')!==false) {
             $pa = explode('.', $p);

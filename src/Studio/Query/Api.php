@@ -53,6 +53,8 @@ class Api
         $deletePath='/%s/delete/%s',
         $deleteQuery,
         $deleteMethod='POST',
+        $indexQuery,
+        $indexCleanup,
         $saveToModel,
         $serializeBody=true,
         $postFormat='json',

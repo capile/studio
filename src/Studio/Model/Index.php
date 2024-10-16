@@ -306,8 +306,11 @@ class Index extends Model
             $indexCleanup = $R->config('indexCleanup');
             if(is_null($indexCleanup)) $indexCleanup = true;
         }
-        if($indexQuery && is_array($indexQuery)) {
-            $R->filter($indexQuery);
+        if($indexQuery) {
+            if(is_string($indexQuery)) $indexQuery = S::extractValue($cn::$schema, $indexQuery);
+            if(is_array($indexQuery)) {
+                $R->filter($indexQuery);
+            }
         }
         if($scope && is_string($scope)) {
             $pscope = $cn::columns($scope, null, 3, true);
