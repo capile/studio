@@ -1679,22 +1679,24 @@ class Studio
         return $imgd;
     }
 
-    public static function validUrl($s='')
+    public static function validUrl($s='', $cleanup=true)
     {
         $s = trim($s);
         if($s != '') {
-            if(strpos($s, '%')) $s = urldecode($s);
+            if(strpos($s, '%')!==false) $s = urldecode($s);
             if (substr($s, 0, 1) != '/') $s = "/{$s}";
             $s = preg_replace('#\.\.+#', '.', $s);
             $s = preg_replace('#\.+([^a-z0-9-_])#i', '$1', $s);
-            $s = self::slug($s, '_./', true);
-            //$s = html_entity_decode(preg_replace('/&([a-z]{1,2})(?:acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml);/i', '$1', htmlentities($s, ENT_QUOTES, 'UTF-8')), ENT_QUOTES, 'UTF-8');
-            //$s = preg_replace('/[^a-z0-9-_\.\/]+/i', '-', $s);
-            $s = preg_replace('/-?\/-?/', '/', $s);
+            if($cleanup) {
+                $s = self::slug($s, '_./', true);
+                $s = preg_replace('/-?\/-?/', '/', $s);
+                $s = preg_replace('/-+/', '-', $s);
+                $s = preg_replace('/^-|-$/', '', $s);
+            } else {
+                $s = self::slug($s, '_./ ', true);
+            }
             $s = preg_replace('#//+#', '/', $s);
-            $s = preg_replace('/-+/', '-', $s);
-            $s = preg_replace('/^-|-$/', '', $s);
-            $s = preg_replace('/([^\/])\/+$/', '$1', $s);
+            $s = preg_replace('#([^/])/+$#', '$1', $s);
             return $s;
         }
         return $s;

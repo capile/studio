@@ -75,6 +75,7 @@ class Studio
         $apiListParent = [
             'apis'=>'interfaces',
         ],
+        $invalidUrlPattern='/[\$\|&\[\]\{\}\#\`\?\;]/',
         $headersTemplate,
         $cliApps=[
             'app'=>['Studio\\Studio','standaloneApp'],
@@ -121,6 +122,12 @@ class Studio
         self::app();
         $req = App::request();
         $sn = $req['script-name'];
+        if(strpos($sn, '%')!==false) $sn = urldecode($sn);
+        if(self::$invalidUrlPattern && preg_match(self::$invalidUrlPattern, $sn)) {
+            if(S::$log>0) S::log('[ERROR] Invalid URL pattern: '.$sn);
+            self::error(404);
+            return false;
+        }
         foreach($cfg as $n) {
             if(!is_null($b=self::config($n))) {
                 $n = S::camelize($n);
@@ -172,7 +179,6 @@ class Studio
         S::$translator = 'Studio\\Studio::translate';
 
         if(!isset(static::$assetsOptimizeUrl)) static::$assetsOptimizeUrl = S::$assetsUrl;
-
         // try the interface
         if(static::$webInterface && ($sn==self::$home || strncmp($sn, self::$home, strlen(self::$home))===0)) {
             if($sn!==self::$home && self::config('enable_api_index')) {
@@ -700,11 +706,7 @@ class Studio
      */
     public static function page($url, $exact=false, $published=null)
     {
-        $url = S::validUrl($url);
-        //$url = preg_replace('#\.\.+#', '.', $url);
-        //$url = preg_replace('#\.+/+#', '', $url);
-        //$url = preg_replace('/\/(\.)*\/+/','/',$url);
-        //$url = preg_replace('/\/\/+/','/',$url);
+        $url = S::validUrl($url, false);
         if ($url=='') {
             return false;
         }
