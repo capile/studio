@@ -329,8 +329,12 @@ class Api
     public function refreshToken($n='', $R=null, $exception=true)
     {
         $ckey = $n.'/req-token';
-        $ckey .= '-'.sha1($url);
-        $this->config('refresh_token', $R['refresh_token']);
+        if($url=$this->config('token_endpoint')) {
+            $ckey .= '-'.sha1($url);
+        }
+        if($R && isset($R['refresh_token'])) {
+            $this->config('refresh_token', $R['refresh_token']);
+        }
         $R = $this->tokenRequest($n, 'refresh_token', $exception);
         $tokenId = (isset($R['token_id'])) ?$R['token_id'] :null;
         if($R && isset($R['access_token'])) {
@@ -1051,6 +1055,7 @@ class Api
 
         if($enablePaging && $this->response && ($c=$this->config('pagingAttribute')) && ($this->_next=$this->_getResponseAttribute($c))) {
             $page = $q;
+            $pages = [$q];
             $R = array();
             $dataAttribute = null;
             if($this->response && ($d=$this->config('dataAttribute')) && $this->_expand($d)) {
@@ -1079,9 +1084,10 @@ class Api
             if(S::$log>0) S::log('[INFO] Loading paging resultset: '.$count.' records...'.($pnum++));
             $max = ($this->_limit && $this->_limit!=$count) ?$this->_limit :(int)$this->config('maxCount');
             $nextPage=$this->nextPage($q);
-            while($nextPage && $page!=$nextPage && ($max==0 || $count < $max)) {
+            while($nextPage && !in_array($nextPage, $pages) && ($max==0 || $count < $max)) {
                 // check if cursor is an URL or a parameter
                 $page = $nextPage;
+                $pages[] = $nextPage;
                 $this->response = null;
                 $this->run($nextPage, $conn, false, true);
 
@@ -1103,8 +1109,10 @@ class Api
                             }
                             unset($i, $o, $O);
                         }
-                    } else {
+                    } else if($M) {
                         $R = array_merge($R, $M);
+                    } else {
+                        break;
                     }
                     $this->_next=$this->_getResponseAttribute($c);
                 }
