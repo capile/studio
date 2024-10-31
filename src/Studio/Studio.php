@@ -75,7 +75,7 @@ class Studio
         $apiListParent = [
             'apis'=>'interfaces',
         ],
-        $invalidUrlPattern='/[\$\|&\[\]\{\}\#\`\?\;]/',
+        $invalidUrlPattern='/[\$\|&\[\]\{\}\#\`\?\;]|\/\.|\/\/+|\:/',
         $headersTemplate,
         $cliApps=[
             'app'=>['Studio\\Studio','standaloneApp'],
@@ -684,8 +684,6 @@ class Studio
     public static function ignore($url)
     {
         if(!is_array(self::$ignore)) return false;
-        if(substr(basename($url), 0, 1)=='.') return true;
-        if(preg_match('#//+|\:#', $url)) return true;
         foreach(self::$ignore as $p) {
             if(strpos($url, $p)!==false) return true;
             unset($p);

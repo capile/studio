@@ -762,7 +762,6 @@ class Entries extends Model
     public static function findPage(&$url, $multiview=false, $redirect=false)
     {
         // get file-based page definitions
-        if(substr(basename($url),0,1)=='.') return;
         $P=null;
         if(!$multiview) {
             if($pages = static::file(str_replace('.', '{-,.}', $url), false)) {
@@ -789,12 +788,12 @@ class Entries extends Model
     protected static function _checkPage($page, &$url, $multiview=false, $extAttr=null)
     {
         if(is_dir($page)) return;
-        $base = preg_replace('/\..*/', '', basename($page));
+        $base = preg_replace('/([^\.])\..*/', '$1', basename($page));
         if($base===static::$indexFile && substr($url, -1)!=='/' && basename($url)!==static::$indexFile) $url .= '/';
         $pn = basename($page);
         //if(substr($pn, 0, strlen($base)+1)==$base.'.') $pn = substr($pn, strlen($base)+1);
         $pp = explode('.', $pn);
-        if(in_array('_tpl_', $pp) || $pp[0]=='') return; // templates cannot be pages, neither .dotted files
+        if(in_array('_tpl_', $pp)) return; // templates cannot be pages, neither .dotted files
         $ext = strtolower(array_pop($pp));
         //if(is_array(Contents::$disableExtensions) && in_array($ext, Contents::$disableExtensions)) return;
 
