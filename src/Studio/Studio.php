@@ -124,9 +124,12 @@ class Studio
         $sn = $req['script-name'];
         if(strpos($sn, '%')!==false) $sn = urldecode($sn);
         if(self::$invalidUrlPattern && preg_match(self::$invalidUrlPattern, $sn)) {
-            if(S::$log>0) S::log('[ERROR] Invalid URL pattern: '.$sn);
-            self::error(404);
-            return false;
+            // only possible exception to invalid URLs are the $cliApps, which start with :
+            if(!(static::$cliInterface && self::$cli && S_CLI && substr($sn, 0, 1)==':' && isset(self::$cliApps[substr($sn,1)]))) {
+                if(S::$log>0) S::log('[ERROR] Invalid URL pattern: '.$sn);
+                self::error(404);
+                return false;
+            }
         }
         foreach($cfg as $n) {
             if(!is_null($b=self::config($n))) {
@@ -189,8 +192,9 @@ class Studio
             S::scriptName($sn);
             S::cacheControl('private, no-cache', 0);
             return self::_runInterface();
-        } else if(static::$cliInterface && self::$cli && S_CLI && substr($sn, 0, 1)==':' && isset(self::$cliApps[$sn=substr($sn,1)])) {
+        } else if(static::$cliInterface && self::$cli && S_CLI && substr($sn, 0, 1)==':' && isset(self::$cliApps[substr($sn,1)])) {
             // cli apps
+            $sn=substr($sn,1);
             S::$variables['template'] = 'cli';
             App::response('layout', 'cli');
             if(isset(self::$cliApps[$sn])) {
