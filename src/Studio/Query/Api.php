@@ -283,15 +283,18 @@ class Api
         $ckey = $n.'/req-token';
         if(!($url=$this->config('token_endpoint')) || !isset(self::$C[$n]) || !($conn = curl_copy_handle(self::$C[$n]))) return false;
         $ckey .= '-'.sha1($url);
-        $R = Cache::get($ckey, 0);
+        $R = null;
         $tokenId = null;
         if(Studio::config('enable_api_index') && ($T=Tokens::find(['type'=>'authorization', 'token'=>$n],1,['options', 'updated', 'id']))) {
+            $R0 = ($R) ?$R :null;
             $R = $T->options;
             if(is_string($R)) $R = S::unserialize($R, 'json');
             if(!isset($R['expires']) && isset($R['expires_in'])) $R['expires'] = S::strtotime($T->updated) + (int)$R['expires_in'] -5;
             $R['token_id'] = $T->id;
             $tokenId = $T->id;
             unset($T);
+        } else {
+            $R = Cache::get($ckey, 0);
         }
         if($R && isset($R['access_token'])) {
             if(isset($R['expires']) && $R['expires']<time()) {
@@ -314,8 +317,9 @@ class Api
                     $T->options = $R;
                     $T->save();
                     unset($T);
+                } else {
+                    Cache::set($ckey, $R, 0);
                 }
-                Cache::set($ckey, $R, 0);
             } else {
                 S::log('[WARNING] Could not retrieve '.$n.' tokens!');
                 if($exception) throw new AppException('Could not retrieve '.$n.' tokens!');
@@ -333,7 +337,8 @@ class Api
             $ckey .= '-'.sha1($url);
         }
         if($R && isset($R['refresh_token'])) {
-            $this->config('refresh_token', $R['refresh_token']);
+            if(!isset($this->_options['refresh_token'])) $this->_options['refresh_token'] = $R['refresh_token'];
+            else $this->config('refresh_token', $R['refresh_token']);
         }
         $R = $this->tokenRequest($n, 'refresh_token', $exception);
         $tokenId = (isset($R['token_id'])) ?$R['token_id'] :null;
@@ -343,11 +348,12 @@ class Api
                 if(isset($R['expires_in'])) $expires = $R['expires_in'] -5;
                 $R['expires'] = time()+$expires;
             }
-            Cache::set($ckey, $R, 0);
             if($tokenId && Studio::config('enable_api_index') && ($T=Tokens::find(['type'=>'authorization', 'token'=>$n, 'id'=>$tokenId],1,null))) {
                 $T->options = $R;
                 $T->save();
                 unset($T);
+            } else {
+                Cache::set($ckey, $R, 0);
             }
         } else {
             if(S::$log>0) S::log('[INFO] Could not refresh '.$n.' tokens');
