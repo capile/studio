@@ -1696,7 +1696,7 @@ class Studio
                 $s = self::slug($s, '_./ ', true);
             }
             $s = preg_replace('#//+#', '/', $s);
-            $s = preg_replace('#([^/])/+$#', '$1', $s);
+            $s = preg_replace('#([^/])/+$#', '$1/', $s);
             return $s;
         }
         return $s;

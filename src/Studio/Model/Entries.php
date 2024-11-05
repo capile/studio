@@ -763,6 +763,7 @@ class Entries extends Model
     {
         // get file-based page definitions
         $P=null;
+        $sn = $url;
         if(!$multiview) {
             if($pages = static::file(str_replace('.', '{-,.}', $url), false)) {
                 foreach($pages as $page) {
@@ -772,7 +773,7 @@ class Entries extends Model
                 }
             }
             // redirect rules: if it's a folder, S::scriptName() must end with / otherwise, can't end with /
-            if($P && $redirect && $P->link!==$url) {
+            if($P && $redirect && $P->link!==$sn) {
                 S::redirect($P->link);
             }
         } else if($url) {
@@ -871,7 +872,8 @@ class Entries extends Model
         }
 
         $meta = static::loadMeta($url, $page, $meta);
-        if($isPage && basename($url)===static::$indexFile && $source===$url.'.'.$ext) {
+        $burl = basename($url);
+        if($isPage && $burl===static::$indexFile && basename($source)===$burl.'.'.$ext) {
             $url = substr($url, 0, strlen($url) - strlen(static::$indexFile));
         }
         $t = date('Y-m-d\TH:i:s', filemtime($page));
