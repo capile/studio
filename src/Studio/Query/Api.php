@@ -99,7 +99,7 @@ class Api
         $ratelimitHeaderPrefix='x-ratelimit-',
         // apply ratelimit to all connections or just this specific connection 
         $ratelimitStrategy='site'; // site | client
-    protected static $options, $conn=array();
+    protected static $options, $C=[], $expires=[];
     protected $_schema, $_method, $_url, $_requestHeaders, $_requestBody, $_scope, $_select, $_where, $_orderBy, $_groupBy, $_limit, $_offset, $_options, $_last, $_next, $_count, $_unique, $_cid, $headers, $response, $error=[];
 
     public function __construct($s=null)
@@ -236,19 +236,25 @@ class Api
         }
     }
 
-    protected static $C=array();
     public function connect($n='', $exception=true, $tries=3)
     {
-        $req = false;
-        if(!isset(self::$C[$n])) {
-            self::$C[$n] = curl_init();
-            if($c = $this->config('curlOptions')) {
-                curl_setopt_array(self::$C[$n], $c);
-                unset($c);
-            }
-            $req = true;
-        }
         $this->_cid = $n;
+        if(isset(self::$expires[$n]) && time()>self::$expires[$n]) {
+            if(isset(self::$C[$n])) {
+                curl_close(self::$C[$n]);
+                unset(self::$C[$n]);
+            }
+            unset(self::$expires[$n]);
+        }
+        if(isset(self::$C[$n]) && self::$C[$n]) {
+            if(S::$log>1) S::log('[DEBUG] Connection already exists, keeping existing one...');
+            return self::$C[$n];
+        }
+        self::$C[$n] = curl_init();
+        if($c = $this->config('curlOptions')) {
+            curl_setopt_array(self::$C[$n], $c);
+            unset($c);
+        }
         if($c=$this->config('cookieJar')) {
             if(!is_string($c)) {
                 $c = tempnam(Cache::cacheDir(), 'cookie');
@@ -303,6 +309,9 @@ class Api
                 } else {
                     $R = null;
                 }
+            }
+            if($R && isset($R['expires']) && is_int($R['expires'])) {
+                self::$expires[$n] = $R['expires']; // expire this connection
             }
         }
         if(!$R) {
