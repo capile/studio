@@ -870,6 +870,7 @@ class Field extends SchemaObject
             }
 
             $ckey = 'upload-'.hash('sha256', $upload['uid'].':'.$uid.':'.preg_replace('/(ajax|_index|\&_retry)=[0-9]+/', '', S::requestUri()));
+            $wkey = $ckey.'w';
             $size = $upload['end'] - $upload['start'];
             if(!($u=Cache::get($ckey, $timeout))) {
                 $f = tempnam(self::$tmpDir, $ckey);
@@ -878,11 +879,7 @@ class Field extends SchemaObject
                     'name'=>$upload['file'],
                     'file'=>$f,
                     'size'=>$upload['total'],
-                    'wrote'=>$size,
                 );
-                Cache::set($ckey, $u, $timeout);
-            } else {
-                $u['wrote'] += $size;
                 Cache::set($ckey, $u, $timeout);
             }
 
@@ -905,7 +902,7 @@ class Field extends SchemaObject
                 if($ftype) {
                     try {
                         $this->checkFileType($ftype);
-                        if($u=Cache::get($ckey, $timeout)) {
+                        if(($u=Cache::get($ckey, $timeout)) && !isset($u['type'])) {
                             $u['type'] = $ftype;
                             Cache::set($ckey, $u, $timeout);
                         }
@@ -922,8 +919,11 @@ class Field extends SchemaObject
                 unlink($u['file']);
                 Cache::delete($ckey);
             } else {
-                $R = array('size'=>$size, 'total'=>$u['wrote'], 'expects'=>$u['size']);
-                if($u['wrote']>=$u['size']) {
+                $w = (int)Cache::get($wkey, $timeout);
+                $w += $size;
+                Cache::set($wkey, $w, $timeout);
+                $R = array('size'=>$size, 'total'=>$w, 'expects'=>$u['size']);
+                if($w>=$u['size']) {
                     $R['id'] = $upload['id'];
                     $R['value'] = 'ajax:'.$ckey.'|'.$upload['file'];
                     $R['file'] = $upload['file'];
