@@ -349,8 +349,8 @@ class Api
             if(!isset($this->_options['refresh_token'])) $this->_options['refresh_token'] = $R['refresh_token'];
             else $this->config('refresh_token', $R['refresh_token']);
         }
-        $R = $this->tokenRequest($n, 'refresh_token', $exception);
         $tokenId = (isset($R['token_id'])) ?$R['token_id'] :null;
+        $R = $this->tokenRequest($n, 'refresh_token', $exception);
         if($R && isset($R['access_token'])) {
             if(!isset($R['expires'])) {
                 $expires = 100;
