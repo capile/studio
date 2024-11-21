@@ -485,6 +485,13 @@ class Api
         return ($cn) ?$cn::$schema :null;
     }
 
+    public function setSchema($s)
+    {
+        if($s && property_exists($s, 'schema')) {
+            $this->_schema = $s;
+        }
+    }
+
     public static function getTables($n='')
     {
     }

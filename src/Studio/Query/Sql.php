@@ -1411,6 +1411,7 @@ class Sql
         $pk = [];
         $idx = [];
         $formats = ['date', 'datetime', 'int', 'decimal' ];
+        $serialize = ['array', 'list', 'object'];
         foreach($schema->properties as $fn=>$fd) {
             if($fd->alias) continue;
             $q .= (($q)?(",\n "):("\n "))
@@ -1420,6 +1421,7 @@ class Sql
             if(isset(static::$typeMap[$type])) {
                 $type = static::$typeMap[$type];
             }
+            if(in_array($type, $serialize) && $fd->serialize) $type = 'string';
             if(in_array($type, $formats)) {
 
                 if(substr($type, 0, 4)=='date') {

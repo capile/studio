@@ -1622,17 +1622,28 @@ class Model implements ArrayAccess, Iterator, Countable
         }
     }
 
-    public static function queryHandler()
+    public static function queryHandler($db=null)
     {
-        return Query::handler(get_called_class());
+        $cn = get_called_class();
+        if(!$db || $db===$cn) {
+            return Query::handler($cn);
+        } else {
+            $Q = Query::handler($db, $cn);
+            $Q->setSchema($cn);
+
+            return $Q;
+        }
     }
 
     public static function connect($conn=null, $Q=null)
     {
         if(!$conn) {
             $conn = static::$schema->database;
+            if(is_null($Q)) $Q = static::queryHandler();
+        } else if(is_null($Q)) {
+            $Q = static::queryHandler($conn);
+            $Q->setSchema(get_called_class());
         }
-        if(is_null($Q)) $Q = static::queryHandler();
         $C = $Q->connect($conn);
         if($C && is_object($C)) return $C;
         return $Q;
@@ -1971,8 +1982,8 @@ class Model implements ArrayAccess, Iterator, Countable
     public static function query($q=null, $cn=null, $asArray=false)
     {
         if(!$cn) $cn = get_called_class();
-        if($q) return Query::handler($cn)->find($q, $asArray);
-        else return Query::handler($cn);
+        if($q) return static::queryHandler($cn)->find($q, $asArray);
+        else return static::queryHandler($cn);
     }
 
     public static function fetch($pk)

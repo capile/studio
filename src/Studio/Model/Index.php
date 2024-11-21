@@ -236,7 +236,6 @@ class Index extends Model
         if(isset($a['search']) && $a['search']) {
             $q = $a['search'];
         }
-
         $II = null;
         if(is_object($a)) {
             $II = $a;
@@ -297,7 +296,8 @@ class Index extends Model
         if($renewCache) Cache::set(static::$pidKey, S_TIME, 60);
 
         $count = null;
-        $R = $cn::query($q);
+        $conn = (isset($a['connection'])) ?$a['connection'] :null;
+        $R = $cn::query($q, $conn);
         $indexQuery = null;
         $indexCleanup = true;
         if(method_exists($R, 'config')) {
