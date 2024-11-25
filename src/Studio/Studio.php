@@ -762,7 +762,7 @@ class Studio
             $f['Contents.content_type']=Contents::$multiviewContentType;
             $u = $url;
             while(strlen($u)>1) {
-                $u = preg_replace('#/[^/]+$#', '', $u);
+                $u = preg_replace('#/[^/]*$#', '', $u);
                 $f['link'] = $u;
                 if($connEnabled && ($E=Entries::find($f,1,$scope,false,array('type'=>'desc')))) {
                     unset($f, $published);
