@@ -843,7 +843,7 @@ class Field extends SchemaObject
         }
 
         if(App::request('headers', 'x-studio-action')==='Upload' && ($upload=App::request('post', '_upload')) && $upload['uploader']==$this->attributes['data-uploader-id']) {
-            static $timeout = 60;
+            static $timeout = 300;
             // check id
 
             /**
@@ -882,10 +882,7 @@ class Field extends SchemaObject
                 );
                 Cache::set($ckey, $u, $timeout);
             }
-
             $data = $upload['data'];
-            $upload['data'] = substr($data, 0, 100).'...';
-
             if(strpos($data, ',')!==false) $data = substr($data, strpos($data, ',')+1);
             $fp=fopen($u['file'],"r+");
             fseek($fp, $upload['start']);
@@ -896,22 +893,19 @@ class Field extends SchemaObject
                 $err[] = 'There was a problem writing the file upload.';
                 $retry = true;
             }
-
             if($type && !isset($u['type'])) {
                 $ftype = S::fileFormat($u['file'], false, $u['name'], ['application/octet-stream', 'text/plain']);
                 if($ftype) {
                     try {
                         $this->checkFileType($ftype);
-                        if(($u=Cache::get($ckey, $timeout)) && !isset($u['type'])) {
+                        if(!isset($u['type'])) {
                             $u['type'] = $ftype;
-                            Cache::set($ckey, $u, $timeout);
                         }
                     } catch(Exception $e) {
                         $err[] = $e->getMessage();
                     }
                 }
             }
-
             if($err) {
                 App::status(400);
                 $R = ['message'=>implode("\n", $err)];
@@ -922,12 +916,14 @@ class Field extends SchemaObject
                 $w = (int)Cache::get($wkey, $timeout);
                 $w += $size;
                 Cache::set($wkey, $w, $timeout);
+                Cache::set($ckey, $u, $timeout);
                 $R = array('size'=>$size, 'total'=>$w, 'expects'=>$u['size']);
                 if($w>=$u['size']) {
                     $R['id'] = $upload['id'];
                     $R['value'] = 'ajax:'.$ckey.'|'.$upload['file'];
                     $R['file'] = $upload['file'];
                 }
+                unset($upload);
             }
 
             S::output($R, 'json');

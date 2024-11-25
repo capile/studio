@@ -98,7 +98,9 @@ class Api
         $ratelimitStatus=429,
         $ratelimitHeaderPrefix='x-ratelimit-',
         // apply ratelimit to all connections or just this specific connection 
-        $ratelimitStrategy='site'; // site | client
+        $ratelimitStrategy='site', // site | client
+        $ratelimitPreset = [] // 'limit'=>5, 'reset'=>30
+        ;
     protected static $options, $C=[], $expires=[];
     protected $_schema, $_method, $_url, $_requestHeaders, $_requestBody, $_scope, $_select, $_where, $_orderBy, $_groupBy, $_limit, $_offset, $_options, $_last, $_next, $_count, $_unique, $_cid, $headers, $response, $error=[];
 
@@ -204,6 +206,7 @@ class Api
             'ratelimitStatus',
             'ratelimitHeaderPrefix',
             'ratelimitStrategy',
+            'ratelimitPreset',
         ];
         if($n) {
             $r = null;
@@ -1722,29 +1725,46 @@ class Api
         return $this->response;
     }
 
-    /*
-        // enables ratelimit logging and verification
-        $ratelimit=true,
-        // actually changes the querying rate, by a certain threshold 0.0 (no delay at all) - 1.0 (keep a full margin)
-        $ratelimitDelay=0.1,
-        $ratelimitStatus=429,
-        $ratelimitHeaderPrefix='x-ratelimit-',
-        // apply ratelimit to all connections or just this specific connection 
-        $ratelimitStrategy='site'; // site | client
-    */
-
     protected function ratelimitPreExec($conn, $decode=null, $disconnect=null)
     {
         $strategy = $this->config('ratelimitStrategy');
         $strategyTo = null;
         $R = [];
         if($strategy==='site') {
-            $R = Cache::get('ratelimit/'.$this->_cid.'-site');
-            if($this->_cid) $strategyTo = ' to '.$this->_cid;
+            $h = ($this->_url) ?preg_replace('#^[^\:]+:/+([^/]+).*$#', '$1', $this->_url) :$this->_cid;
+            $R = Cache::get('ratelimit/'.$h.'-site');
+            if($this->_cid) $strategyTo = ' to '.$h;
         } else if(isset($this->_ratelimit)) {
             $R = $this->_ratelimit;
             $strategyTo = ' to client';
-        };
+        }
+        if($C=$this->config('ratelimitPreset')) {
+            if(!isset($C['limit']) || !$C['limit'] || !isset($C['reset']) || !$C['reset']) {
+                S::log('[WARNING] Rate limit preset needs a (int) `limit` and a (int) `reset` timeout. Igoring rate limits');
+            } else if(!$R) {
+                // first connection
+                $R = [
+                    'limit' => (int) $C['limit'],
+                    'remaining' => (int) $C['limit'],
+                    'reset' => (int) $C['reset'] + time(),
+                ];
+            } else {
+                if($R['reset']<time()) {
+                    $R['reset'] = (int) $C['reset'] + time();
+                    $R['remaining'] = (int) $C['limit'] ;
+                } else {
+                    $R['remaining']--;
+                }
+            }
+            if($R) {
+                if($strategy==='site') {
+                    Cache::set('ratelimit/'.$h.'-site', $R, $R['reset']);
+                } else {
+                    $this->_ratelimit = $R;
+                }
+            }
+        }
+
         if($R && isset($R['limit']) && isset($R['remaining'])) {
             $delay = (float) $this->config('ratelimitDelay');
             $rate = ($R['remaining']>0) ?(((int)$R['remaining']) / ((int)$R['limit'])) :0;
@@ -1757,7 +1777,7 @@ class Api
                     } else {
                         $toDelay = $toReset;
                     }
-                    if(S::$log > 1) S::log('[INFO] Ratelimit: sleeping '.$toDelay.' seconds before next API call'.$strategyTo.'.', $R);
+                    if(S::$log > 0) S::log('[INFO] Ratelimit: sleeping '.$toDelay.' seconds before next API call'.$strategyTo.'. Resets to '.$R['limit'].' at '.S::date($R['reset']));
                     if($toDelay > 1) {
                         sleep(ceil($toDelay));
                     } else {
@@ -1771,7 +1791,7 @@ class Api
     protected function ratelimitPostExec($conn, $decode=null, $disconnect=null)
     {
         $R = [];
-        if($this->headers) {
+        if($this->headers && !$this->config('ratelimitPreset')) {
             $p = $this->config('ratelimitHeaderPrefix');
             $R = [
                 'limit' => (int)$this->header($p.'limit'),
@@ -1783,17 +1803,18 @@ class Api
             $strategyTo = null;
             $expires = ($R['reset'] > time()) ?($R['reset'] - time()) :5;
             if($strategy==='site') {
-                Cache::set('ratelimit/'.$this->_cid.'-site', $R, $expires);
-                if($this->_cid) $strategyTo = ' to '.$this->_cid;
+                $h = ($this->_url) ?preg_replace('#^[^\:]+:/+([^/]+).*$#', '$1', $this->_url) :$this->_cid;
+                Cache::set('ratelimit/'.$h.'-site', $R, $expires);
+                if($this->_cid) $strategyTo = ' to '.$h;
             } else {
                 $this->_ratelimit = $R;
                 $strategyTo = ' to client';
             }
-            if($R['limit']==0 && $this->header('status')===429) {
+            if($R['limit']==0 && $this->header('status')===$this->config('ratelimitStatus')) {
                 // retry exec
-                if(S::$log > 1) S::log('[INFO] Ratelimit exceeded: retrying request.', $this->response);
+                if(S::$log > 0) S::log('[INFO] Ratelimit exceeded: retrying request.', $this->response);
                 if(!$this->config('ratelimitDelay')) {
-                    if(S::$log > 0) S::log('[INFO] Ratelimit: sleeping '.$expires.' seconds before next API call'.$strategyTo.'.', $R);
+                    if(S::$log > 0) S::log('[INFO] Ratelimit: sleeping '.$expires.' seconds before next API call'.$strategyTo.'. Resets to '.$R['limit'].' at '.S::date($R['reset']));
                     sleep($expires);
                 }
                 $this->exec($conn, $decode, $disconnect);
