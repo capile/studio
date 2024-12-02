@@ -10,7 +10,7 @@
         "name": { "type": "string", "size": 200 },
         "password": { "type": "string", "size": 200 },
         "email": { "type": "string", "format": "email", "size": 100, "index": [ "idx_s_users__email_idx" ] },
-        "details": { "type": "string", "size": 10000 },
+        "details": { "type": "string", "size": 10000, "serialize": "json" },
         "accessed": { "format": "datetime", "type": "string" },
         "created": { "format": "datetime", "type": "string", "required": true },
         "updated": { "format": "datetime", "type": "string", "required": true },

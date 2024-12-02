@@ -59,7 +59,7 @@ if(isset($list) && is_array($list)) {
             }
             if(substr($fn, 0, 2)=='--' && substr($fn, 0, -2)=='--') continue;
             if($p=strrpos($fn, ' ')) $fn = substr($fn, $p+1);
-            if(is_int($label)) $label = $fn;
+            if(is_int($label) || substr($label, 0, 1)==='*') $label = $fn;
             $S[$label]=$fn;
             unset($label, $fn, $p, $m);
         }

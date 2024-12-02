@@ -390,7 +390,7 @@ class Entries extends Model
                     $file = $cachefile;
                 else {
                     $data='';
-                    if(method_exists('tdz', $method))
+                    if(method_exists('Studio', $method))
                         $data=S::$method($file,$params);
                     else if(function_exists($method))
                         $data=$method($file,$params);
@@ -424,18 +424,23 @@ class Entries extends Model
 
     public function renderEntry($template=false, $args=array())
     {
-        $a = array('script'=>Studio::templateFile($template, 'tdz_entry'),
+        $a = array('script'=>Studio::templateFile($template, 'studio_entry'),
             'variables'=>$this->asArray()
         );
         if(is_array($args) && count($args)>0)
             $a['variables'] +=$args;
         $a['variables']['entry']=$this;
-        return S::exec($a);
+
+        if(Studio::$page==$this->id) {
+            return ['content'=>S::exec($a)]+$a['variables'];
+        } else {
+            return S::exec($a);
+        }
     }
 
     public function renderFeed($template=false, $args=array())
     {
-        $tpl=(substr(S::scriptName(), 0, strlen($this->link))==$this->link)?('tdz_atom'):('tdz_feed');
+        $tpl=(substr(S::scriptName(), 0, strlen($this->link))==$this->link)?('studio_atom'):('studio_feed');
         $template = Studio::templateFile($template, $tpl);
         return $this->renderEntry(substr($template, 0, strlen($template)-4), $args);
     }
@@ -1194,8 +1199,8 @@ class Entries extends Model
 
     public function previewContents()
     {
-        $tpl = '<div class="tdz-i-scope-block" data-action-schema="preview" data-action-url="'.S::scriptName(true).'">'
-           .     '<a href="'.Studio::$home.'/contents/new?entry='.$this->id.'&amp;position={position}&amp;slot={slot}&amp;scope=entry-content&amp;next=preview" class="tdz-i-button z-align-bottom z-i--new" data-inline-action="new"></a>'
+        $tpl = '<div class="s-i-scope-block" data-action-schema="preview" data-action-url="'.S::scriptName(true).'">'
+           .     '<a href="'.Studio::$home.'/contents/new?entry='.$this->id.'&amp;position={position}&amp;slot={slot}&amp;scope=entry-content&amp;next=preview" class="s-i-button z-align-bottom z-i--new" data-inline-action="new"></a>'
            . '</div>';
         $r = str_replace(['{position}', '{slot}'], [1, static::$slot], $tpl);
         $slots = [];
@@ -1208,9 +1213,9 @@ class Entries extends Model
                 $slot = ($o->slot) ?$o->slot :static::$slot;
                 if(!isset($slots[$slot])) $slots[$slot] = '';
                 $slots[$slot] .= '<div class="ih5 z-item z-inner-block">'
-                    .   '<div class="tdz-i-scope-block" data-action-expects-url="'.Studio::$home.'/contents/update/'.$o->id.'" data-action-schema="preview" data-action-url="'.S::scriptName(true).'">'
-                    .     '<a href="'.Studio::$home.'/contents/update/'.$o->id.'?scope=u-'.$ct.'&amp;next=preview" class="tdz-i-button z-i--update" data-inline-action="update"></a>'
-                    .     '<a href="'.Studio::$home.'/contents/delete/'.$o->id.'?scope=u-'.$ct.'&amp;next='.S::scriptName(true).'" class="tdz-i-button z-i--delete" data-inline-action="delete"></a>'
+                    .   '<div class="s-i-scope-block" data-action-expects-url="'.Studio::$home.'/contents/update/'.$o->id.'" data-action-schema="preview" data-action-url="'.S::scriptName(true).'">'
+                    .     '<a href="'.Studio::$home.'/contents/update/'.$o->id.'?scope=u-'.$ct.'&amp;next=preview" class="s-i-button s-api--update" data-inline-action="update"></a>'
+                    .     '<a href="'.Studio::$home.'/contents/delete/'.$o->id.'?scope=u-'.$ct.'&amp;next='.S::scriptName(true).'" class="s-i-button s-api--delete" data-inline-action="delete"></a>'
                     . (($o->content_type && in_array($o->content_type, $o::$previewContentType))
                         ?'<div class="z-t-center z-app-image"><span class="z-t-inline z-t-left">'.$o->previewContent().'</span></div>'
                         :$o->previewContent()

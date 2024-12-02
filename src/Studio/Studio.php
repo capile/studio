@@ -291,7 +291,14 @@ class Studio
     private static function _runInterface($url=null)
     {
         if(!$url) $url = substr(S::scriptName(), strlen(self::$home));
-        if(strpos($url, '.')!==false && !strpos($url, '/', 1)) {
+        $asset = (strpos($url, '.')!==false && !strpos($url, '/', 1));
+        $Api=self::$apiClass;
+        if($asset && preg_match('@^([^\.]+)\.([a-z]+)$@', $url, $m) && ($format=$Api::format($m[2])) && $format===$m[2]) {
+            $asset = false;
+            $url = $m[1];
+            unset($m, $format);
+        }
+        if($asset) {
             if(substr($url, 0, 1)=='.') $url = '/studio'.$url;
             else if(substr($url, 0, 1)!='/') $url = '/'.$url;
             if(!Asset::run($url, S_ROOT.'/src/S', true) 
@@ -308,13 +315,13 @@ class Studio
                 return self::error(403);
             }
 
-            $In=self::$apiClass;
+            
             S::$variables['apiId'] = 'studio';
             if(App::request('headers', 'x-studio-action')=='api') {
                 S::scriptName(self::$home);
                 S::$translator = 'Studio\\Studio::translate';
                 App::response('layout', 'layout');
-                return $In::run();
+                return $Api::run();
             } else if(isset($methods[$url])) {
                 $m = $methods[$url];
                 return self::$m();
@@ -327,7 +334,7 @@ class Studio
                 App::response('layout', 'studio');
                 if(self::config('reset_interface_style')) App::response('style', []);
                 if(self::config('reset_interface_script')) App::response('script', []);
-                return $In::run();
+                return $Api::run();
             }
         }
         self::error(404);

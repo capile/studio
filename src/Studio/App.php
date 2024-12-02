@@ -59,6 +59,7 @@ class App
             ],
         ],
         $copyNodeAssets=[
+            'S'=>'S/Studio.svg',
             'S.Api'=>'@fortawesome/fontawesome-free/webfonts/fa-solid-900.*',
             'S.Form'=>'quill/dist/quill.min.js.map',
         ],

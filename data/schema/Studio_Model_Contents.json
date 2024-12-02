@@ -6,7 +6,7 @@
     "_indexId": "contents",
     "properties": {
         "id": { "increment": "auto", "required": true, "primary": true },
-        "entry": { "type": "string", "format": "int", "index": [ "z_content__entry_idx" ] },
+        "entry": { "type": "string", "format": "int", "index": [ "s_content__entry_idx" ] },
         "slot": { "type": "string", "size": 50 },
         "content_type": { "type": "string", "size": 100 },
         "source": { "type": "string", "size": 200 },

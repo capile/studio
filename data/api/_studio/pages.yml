@@ -21,25 +21,26 @@ all:
       '${greatest}(`updated`,`Contents.updated`)': desc
     scope:
       review:
-        '*Title': title
-        URL: link
-        '*Summary': summary
-        '*Last Modified': '${greatest}(`updated`,`Contents.updated`) updated'
+        - id
+        - title
+        - link
+        - summary
+        - '${greatest}(`updated`,`Contents.updated`) updated'
       search:
         q:
-          '*Title': title
-          '*Summary': summary
-          URL: link
-          '*Tag': Tag.slug
+          - title
+          - summary
+          - link
+          - Tag.slug
         URL: link
-        '*Last modified': 
+        '*Last Modified':
           bind: '${greatest}(`updated`,`Contents.updated`)'
           format: datetime
         '*Type': "substring_index(`type`,'/',1)"
         '*Tag': Tag.slug
       preview:
         - scope::page
-        - scope::_content
+        - scope::content
         - scope::credentials
         - scope::_meta
       new:
@@ -99,9 +100,14 @@ all:
         '*Updated': updated
         '*Version': version
         '*Source': source
-      _content:
+      content:
         '*Contents':
           fieldset: '*Contents'
-          bind: contents
+          bind: Contents
           type: form
-          scope: studio-content
+          scope:
+            - content_type
+            - slot
+            - bind: content
+              class: ~
+

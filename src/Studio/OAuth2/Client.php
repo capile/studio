@@ -477,8 +477,10 @@ class Client extends SchemaObject
                     $valid = true;
                     $q = [];
                     foreach($pks as $k) {
-                        $key = ($this->user_map && isset($this->user_map[$k])) ?$this->user_map[$k] :$k;
-                        if(is_null($val=S::extractValue($R, $key))) {
+                        $ukey = ($this->user_map && isset($this->user_map[$k])) ?$this->user_map[$k] :$k;
+                        if($ukey===$key && $idk) {
+                            $val = $idk;
+                        } else if(is_null($val=S::extractValue($R, $ukey))) {
                             $valid = false;
                             break;
                         }
@@ -511,7 +513,9 @@ class Client extends SchemaObject
                     // create user
                     if($this->user_map) {
                         foreach($this->user_map as $k=>$p) {
-                            if(!is_null($v = S::extractValue($R, $p))) {
+                            if($p===$key && $idk) {
+                                $q[$k] = $idk;
+                            } else if(!is_null($v = S::extractValue($R, $p))) {
                                 $q[$k] = $v;
                             }
                         }
@@ -524,7 +528,9 @@ class Client extends SchemaObject
                 } else if($User && $this->user_update  && $this->user_map) {
                     $save = false;
                     foreach($this->user_map as $k=>$p) {
-                        if(!is_null($v = S::extractValue($R, $p)) && $User->$k!=$v) {
+                        if($p===$key && $idk) {
+                            continue;
+                        } else if(!is_null($v = S::extractValue($R, $p)) && $User->$k!=$v) {
                             $User->$k = $v;
                             $save = true;
                         }

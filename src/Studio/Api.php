@@ -3442,6 +3442,7 @@ class Api extends SchemaObject
             $order = App::request('get', static::REQ_ORDER);
             if($scope && (isset($scope[0]) || substr(array_keys($scope)[0], 0, 1)=='*') && static::$translate) {
                 $nscope = [];
+                $format = static::format();
                 foreach($scope as $i=>$o) {
                     $fn = $o;
                     if(is_array($fn)) {
@@ -3449,9 +3450,12 @@ class Api extends SchemaObject
                         if(isset($fn['bind'])) $fn = $fn['bind'];
                         else continue;
                     }
-                    if(is_int($i)) {
-                        $i = $cn::fieldLabel($fn);
-                    } else if(substr($i, 0, 1)=='*') {
+                    $translate = (is_string($i) && substr($i, 0, 1)==='*');
+                    if(is_int($i) || ($translate && $format!=='html')) {
+                        if($p=strrpos($fn, ' ')) $fn = substr($fn, $p+1);
+                        if($format==='html') $fn = $cn::fieldLabel($fn);
+                        $i = $fn;
+                    } else if($translate) {
                         $i = S::t(substr($i, 1), 'model-'.$cn::$schema->tableName);
                     }
                     $nscope[$i] = $o;
@@ -3687,6 +3691,7 @@ class Api extends SchemaObject
             return $scope;
         }
         */
+
         return $this->scope;
     }
 
