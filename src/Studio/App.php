@@ -55,7 +55,7 @@ class App
         $assetsOptional=[
             'S.Form'=>[
                 'quill'=>'quill/dist/quill.min,quill/dist/quill.snow',
-                'choices.js'=>'choices.js/public/assets/scripts/choices.min,choices.js',
+                'choices.js'=>'choices.js/public/assets/scripts/choices.min',
             ],
         ],
         $copyNodeAssets=[

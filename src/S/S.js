@@ -2,7 +2,7 @@
 if(!('Studio' in window))window.Z=window.Studio={version:1.2, host:null, altHost:null,uid:'/_me',timeout:0,headers:{},env:'prod',timestamp:null,xhrCredentials:true,xhrHeaders:{'x-requested-with':'XMLHttpRequest'}};
 (function(S) {
 "use strict";
-var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl, _assets={}, _wm,
+var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl, _assets={}, _pending={}, _wm,
   defaultModules={
     Callback:'*[data-callback]',
     Copy:'a.s-copy[data-target]',
@@ -179,10 +179,8 @@ S.init=function(o)
         if(!(ifn in S) && j && i.search(/_/)>-1) {
             // must load component, then initialize the object
             var a=i.replace(/^S(tudio)?_/, '').split(/_/);
-            //S.debug('initializing module: '+i, a);
             if(i.substr(0,7)==='Studio_' && (i in window)) {
                 if(typeof(window[i])=='function') {
-                    //S.debug('adding plugin: '+i, window[i], S.modules[i]);
                     ifn=S.addPlugin(i, window[i], S.modules[i]);
                     window[i]=null;
                     delete(window[i]);
@@ -191,6 +189,10 @@ S.init=function(o)
                 var u='s-'+S.slug(a[0]);
                 if(!(u in _assets)) {
                     loadAsset('s-'+S.slug(a[0]), S.init, arguments, c);
+                } else if(!n) {
+                    if(!(i in _pending)) _pending[i] = [];
+                    _pending[i].push(c);
+                    setTimeout(initPending, 500);
                 }
             }
         }
@@ -205,6 +207,28 @@ S.init=function(o)
         }
     }
 };
+
+function initPending()
+{
+    for(var i in _pending) {
+        if(_pending[i].length>0 && (i in window)) {
+            if(typeof(window[i])=='function') {
+                S.addPlugin(i, window[i], S.modules[i]);
+                window[i]=null;
+                delete(window[i]);
+                while(_pending[i].length>0) {
+                    S.init(_pending[i].shift());
+                }
+                delete(_pending[i]);
+            } else {
+                setTimeout(initPending, 500);
+            }
+
+        } else {
+            delete(_pending[ifn]);
+        }
+    }
+}
 
 var _delayed={};
 function loadAsset(f, fn, args, ctx)

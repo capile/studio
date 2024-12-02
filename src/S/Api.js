@@ -50,14 +50,18 @@
                 return;
             }
         }
-        if(I.getAttribute('data-startup')) return;
+        if(I.getAttribute('data-startup')) {
+            return;
+        }
         I.setAttribute('data-startup', '1');
 
         if(E=S.parentNode(I, '.s-api-box[base-url]')) {
             setRoot(E);
             E = null;
         }
-        if(_init) S.init(I);
+        if(_init) {
+            S.init(I);
+        }
         getBase();
         var base=I.getAttribute('data-base-url');
         if(!base && _base) {
@@ -1175,7 +1179,9 @@
                     box.querySelector('.s-api-body').appendChild(I);
                 }
             }
-
+            if(I.getAttribute('data-startup')) {
+                I.removeAttribute('data-startup');
+            }
             startup(I);
             S.focus(S.parentNode(I, '.s-api-body'));
             S.event(I, 'loadInterface');

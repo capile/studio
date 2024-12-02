@@ -419,7 +419,6 @@ class Asset
         $r = ''; // other metadata not to messed with (unparseable code)
         $files = (!is_array($src))?([$src]):($src);
         $s = '';
-
         foreach($files as $i=>$url) {
             if(is_array($url)) {
                 $r .= static::minify($url, $root, $compress, $before, $raw, (!is_numeric($i)) ?$i :false, $force);

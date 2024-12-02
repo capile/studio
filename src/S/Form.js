@@ -6,19 +6,6 @@
 
 var S, _Tl,_L=[], _eids=0;
 
-function init()
-{
-    if(!('Studio' in window)) {
-        return setTimeout(init, 500);
-    }
-    if(!S) S=window.Studio;
-    S.Form = {
-        fieldSelector: '.s-api-field,.field',
-        checkSelector: 'input[type="radio"],input[type="checkbox"]',
-        inputSelector: 'input,select,textarea'
-    };
-}
-
 function checkLabel(e)
 {
     /*jshint validthis: true */
@@ -1670,7 +1657,6 @@ function initHtmlEditor()
 function initChoicesJs()
 {
     if(!('Choices' in window)) return;
-    S.debug('choices.js to ', this);
     if(this.getAttribute('data-choices-js')) return;
     this.setAttribute('data-choices-js',1);
     new Choices(this, {
@@ -1728,11 +1714,24 @@ function Form(o)
         S.addPlugin('Cleanup', initCleanup, 'button.cleanup');
         S.addPlugin('Omnibar', initOmnibar, 'input[data-omnibar]');
         S.addPlugin('HtmlEditor', initHtmlEditor, 'textarea[data-format="html"]');
-        S.addPlugin('choices.js', initChoicesJs, 'select.s-choices-js,.s-choices-js select');
+        S.addPlugin('ChoicesJs', initChoicesJs, 'select.s-choices-js,.s-choices-js select');
         S.clearForm=clearForm;
     }
     var n=S.node(o, this);
     if(n) S.init(n);
+}
+
+function init()
+{
+    if(!('Studio' in window)) {
+        return setTimeout(init, 500);
+    }
+    if(!S) S=window.Studio;
+    S.Form = {
+        fieldSelector: '.s-api-field,.field',
+        checkSelector: 'input[type="radio"],input[type="checkbox"]',
+        inputSelector: 'input,select,textarea'
+    };
 }
 
 window.Studio_Form = Form;
