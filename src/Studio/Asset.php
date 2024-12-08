@@ -132,7 +132,9 @@ class Asset
             if(!$cacheDir) $cacheDir = S_VAR.'/cache';
             $cacheDir .= '/minify';
             if(!is_dir($cacheDir)) {
-                mkdir($cacheDir, 0777, true);
+                if(!mkdir($cacheDir, 0777, true)) {
+                    S::log('[WARINING] Could not create minifying cache dir: '.$cacheDir);
+                }
             }
             if($shell) {
                 $cmd = sprintf(S::$minifier[$this->format], implode(' ',$files), $tempnam);

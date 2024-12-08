@@ -18,7 +18,8 @@ var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl,
     Recaptcha: '.s-recaptcha',
     LoadUri: '.s-action[data-load-uri]',
     LanguageSelection: 'link[rel="alternate"][hreflang]',
-    Autofocus: 'input[autofocus],textarea[autofocus],select[autofocus]'
+    Autofocus: 'input[autofocus],textarea[autofocus],select[autofocus]',
+    AttributeTemplate: '*[data-attr-template]'
   }, _sTimestamp='';
 
 // load authentication info
@@ -1710,6 +1711,30 @@ S.initAutofocus = function()
 {
     this.focus();
 }
+
+S.encodeBase64Url=function(s)
+{
+    return btoa(s).replace('+', '-').replace('/', '_').replace('=', '');
+}
+
+S.decodeBase64Url=function(s)
+{
+    return atob(s.replace('-', '+').replace('_', '/') + '='.repeat(s.length() % 4));
+}
+
+S.initAttributeTemplate = function()
+{
+    var a, A, b;
+    if((a=this.getAttribute('data-attr-template')) && (A=JSON.parse(a))) {
+        this.removeAttribute('data-attr-template');
+        var C={'$URL':S.encodeBase64Url(window.location.pathname+window.location.hash)}, c;
+        for(b in A) {
+            for(c in C) A[b] = A[b].replace(c, C[c]);
+            this.setAttribute(b, A[b]);
+        }
+    }
+}
+
 
 window.requestAnimFrame = (function(){
   return  window.requestAnimationFrame       ||

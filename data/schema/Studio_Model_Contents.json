@@ -30,6 +30,7 @@
         "update": [ "content_type", "slot" ],
         "studio-content": [ "content_type", "slot",  "_title", "_subtitle", "_html", "_img", "_entry", "_master", "_limit", "_hpp", "_options", "_script", "_pi", "_src", "_format", "_href", "_txt" ] ,
         "review": { "*Id": "id", "*Page": "entry", "*Content Type": "content_type", "*Last Modified": "updated" },
+        "content": ["content"],
         "u-html":  ["content.title","content.subtitle","content.html","content.img"],
         "u-php": ["content.script","content.pi"],
         "u-feed":["content.entry","content.master", "content.limit", "content.hpp"],
@@ -56,7 +57,7 @@
     "overlay": {
         "content_type": {"bind": "content_type","label":"*Content Type","format": "select", "class": "i1s2","required":true},
         "slot": {"bind": "slot", "label": "*Slot", "type": "select", "class": "i1s2", "choices": "choicesSlot" },
-        "content": {"bind": "content", "format": "form", "min_size": 1, "size": 1, "class": "studio-field-content", "scope": "u-txt" },
+        "content": {"bind": "content", "format": "form", "min_size": 1, "size": 1, "class": "studio-field-content", "scope": "content" },
         "content.title": { "label":"*Title"},
         "content.subtitle":{"label":"*Subtitle"},
         "content.html":{"label":"*Content","format":"html","class":"ih10","html_labels":true},

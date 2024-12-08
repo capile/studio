@@ -1814,6 +1814,10 @@ class Field extends SchemaObject
     public function checkObject($value, $message='')
     {
         $r = null;
+        if($value && is_string($value) && $this->serialize && ($a=S::unserialize($value, $this->serialize))) {
+            $value = $a;
+            unset($a);
+        }
         if($value && is_array($value)) {
             $r = [];
             foreach($value as $i=>$o) {

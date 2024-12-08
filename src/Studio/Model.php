@@ -888,6 +888,30 @@ class Model implements ArrayAccess, Iterator, Countable
     }
 
     /**
+     * Replace Behavior
+     *
+     * Check if this is a new entry
+     */
+    public function replaceableTrigger($fields, $conn=null)
+    {
+        $new = true;
+        $q = [];
+        foreach($fields as $fn) {
+            if(isset($this->$fn)) {
+                $q[$fn] = $this->$fn;
+            } else {
+                $q = [];
+                break;
+            }
+        }
+        if($q && self::find($q, 1)) $new = false;
+        $this->_new = $new;
+        unset($q, $fn);
+
+        return true;
+    }
+
+    /**
      * Sortable Behavior
      */
     public function sortableTrigger($fields, $conn=null)

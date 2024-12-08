@@ -21,6 +21,7 @@ use Studio\Model\Migration;
 use Studio\Model\Interfaces;
 use Studio\Query;
 use Studio\Studio;
+use Studio\Yaml;
 use Studio\Exception\AppException;
 use Exception;
 
@@ -574,6 +575,7 @@ class Index extends Model
         $check = Studio::enabledModels();
         $H = [];
         $T = [];
+        $load = [];
         foreach($check as $cn) {
             $dbn = $cn::$schema->database;
             if(!($cdb=Query::database($dbn))) continue;
@@ -595,6 +597,9 @@ class Index extends Model
                                 $H[$dbn]->exec($to['sql']);
                             }
                         }
+                    }
+                    if(file_exists($f=S_VAR.'/deploy/data/'.str_replace('\\', '_', $cn).'.yml') || file_exists($f=S_ROOT.'/data/deploy/data/'.str_replace('\\', '_', $cn).'.yml')) {
+                        $load[] = $f;
                     }
                 } catch(Exception $e) {
                     S::log('[WARNING] Error while creating table: '.$e->getMessage(), $H[$dbn]->lastQuery());
@@ -635,6 +640,12 @@ class Index extends Model
                 $cn::$schema->relations = $rel;
                 unset($rel, $idx);
             }
+        }
+        foreach($load as $f) {
+            if($D = Yaml::loadFile($f)) {
+                Query::import($D);
+            }
+            unset($D, $f);
         }
 
         return $db;

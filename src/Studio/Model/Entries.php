@@ -105,7 +105,7 @@ class Entries extends Model
         unset($r);
     }
 
-    public function renderPage()
+    public function renderPage($body=null)
     {
         $master = $this->master;
         $c = $this->getCredentials('previewPublished');
@@ -175,6 +175,15 @@ class Entries extends Model
                 $slots[$slotname] = array(array($slot));
             }
             unset($slotname, $slot);
+        }
+        if($body) {
+            if(isset($slots['body'])) {
+                array_unshift($slots['body'], $body);
+            } else {
+                foreach($slots as $slotname=>$slot) {
+                    array_unshift($slots[$slotname], $body);
+                }
+            }
         }
 
         self::$s=1;
@@ -430,11 +439,12 @@ class Entries extends Model
         if(is_array($args) && count($args)>0)
             $a['variables'] +=$args;
         $a['variables']['entry']=$this;
+        $r = S::exec($a);
 
         if(Studio::$page==$this->id) {
-            return ['content'=>S::exec($a)]+$a['variables'];
+            return $this->renderPage($r);
         } else {
-            return S::exec($a);
+            return $r;
         }
     }
 

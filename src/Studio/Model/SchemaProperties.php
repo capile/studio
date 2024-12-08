@@ -17,7 +17,7 @@ class SchemaProperties extends Model
 {
     public static $schema;
 
-    protected $schema_id, $bind, $type, $format, $title, $description, $primary, $required, $default, $serialize, $created, $updated, $Display, $Schema;
+    protected $schema_id, $bind, $type, $item, $title, $description, $primary, $required, $default, $serialize, $created, $updated, $Display, $Schema;
 
     public function __toString()
     {
@@ -29,21 +29,19 @@ class SchemaProperties extends Model
     }
 
     public static function choicesType() { return Schema::choicesType(); }
-    public static function choicesFormat()
+    public function choicesItem()
     {
         static $o;
         if(!$o) {
-            $o = S::t([
-                'text' => 'Text input',
-                'number' => 'Number input',
-                'date' => 'Date input',
-                'datetime' => 'Datetime input',
-                'email' => 'E-mail input',
-                'checkbox' => 'Checkbox',
-                'radio' => 'Radio buttons',
-                'select' => 'Select',
-                'select-multiple' => 'Multiple Select',
-            ], 'model-studio_schema');
+            $o = [];
+            $q = [];
+            if($this->schema_id) $q['id!=']=$this->schema_id;
+            if($L=Schema::find($q, null, ['id', 'title'],false)) {
+                foreach($L as $a=>$b) {
+                    $o[$b->id] = $b->title;
+                    unset($L[$a], $a, $b);
+                }
+            }
         }
         return $o;
     }

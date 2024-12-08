@@ -16,7 +16,7 @@ class Schema extends Model
 {
     public static $schema;
 
-    protected $id, $title, $type, $description, $class_name, $database, $table_name, $view, $order_by, $group_by, $pattern_properties, $scope, $base, $created, $updated, $BaseSchema, $SchemaProperties, $SchemaDisplay;
+    protected $id, $title, $type, $description, $class_name, $database, $table_name, $view, $order_by, $group_by, $pattern_properties, $scope, $base, $enable_content, $created, $updated, $BaseSchema, $SchemaProperties, $SchemaDisplay;
 
 
     public static function choicesType()
@@ -28,5 +28,17 @@ class Schema extends Model
         }
 
         return $types;
+    }
+
+    public function previewTitle()
+    {
+        if(!$this->title) return S::t(ucwords(preg_replace('/[\-\_\.]+/', ' ', basename($this->id))), 'model-studio_schema');
+    }
+
+    public function formOverlay($prefix=null)
+    {
+        return [
+            $prefix.'.teste' => ['type'=>'text','label'=>'teste', 'bind'=>$prefix.'.teste'],
+        ];
     }
 }

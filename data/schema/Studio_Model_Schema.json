@@ -17,6 +17,8 @@
         "pattern_properties": { "type": "string", "size": 200 },
         "scope": { "type": "object", "size": 2000, "serialize": "json" },
         "base": { "type": "string", "size": 200 },
+        "aliases": { "type": "string", "serialize": "json" },
+        "enable_content": { "type": "bool", "default": "0" },
         "created": { "type": "datetime", "required": true },
         "updated": { "type": "datetime", "required": true }
     },
@@ -36,7 +38,8 @@
         "before-delete": [ "actAs" ]
     },
     "overlay": {
-        "type": { "format": "select", "choices": "choicesType" }
+        "type": { "format": "select", "choices": "choicesType" },
+        "aliases": { "multiple": true }
     },
     "actAs": {
         "before-insert": { "timestampable": [ "created", "updated" ] },

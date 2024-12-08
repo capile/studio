@@ -1,0 +1,85 @@
+---
+Studio\Model\Schema:
+  - id: text
+    type: object
+    enable_content: 1
+    aliases:
+      - txt
+      - md
+      - ""
+    SchemaProperties:
+      - bind: text
+        type: string
+        position: 1
+    SchemaDisplay:
+      - bind: text
+        type: format
+        content: textarea
+      - bind: text
+        type: class
+        content: ih20
+  - id: html
+    type: object
+    enable_content: 1
+    SchemaProperties:
+      - bind: title
+        type: string
+        max_size: 500
+        position: 1
+      - bind: html
+        type: string
+        position: 2
+    SchemaDisplay:
+      - bind: html
+        type: format
+        content: html
+      - bind: html
+        type: class
+        content: ih20
+  - id: feed
+    type: object
+    enable_content: 1
+    SchemaProperties:
+      - bind: entry
+        type: int
+        position: 1
+        required: 1
+      - bind: limit
+        type: int
+        position: 2
+      - bind: hpp
+        type: int
+        required: 1
+        default: 25
+        position: 3
+    SchemaDisplay:
+      - bind: entry
+        type: choices
+        content: Studio\Model\Entries
+      - bind: limit
+        type: class
+        content: i1s2
+      - bind: hpp
+        type: class
+        content: i1s2
+  - id: media
+    type: object
+    enable_content: 1
+    SchemaProperties:
+      - bind: src
+        type: string
+        max_size: 500
+        position: 1
+        required: 1
+      - bind: title
+        type: string
+        max_size: 500
+        position: 2
+      - bind: format
+        type: string
+        max_size: 100
+        position: 3
+    SchemaDisplay:
+      - bind: src
+        type: format
+        content: file

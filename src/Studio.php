@@ -2377,10 +2377,11 @@ class Studio
             ?[
                 'LC_ALL'=> setlocale(LC_ALL, '0'),
                 'S_APP_ROOT'=>S_APP_ROOT,
+                'S_DOCUMENT_ROOT'=>S_DOCUMENT_ROOT,
+                'S_PROJECT_ROOT'=>S_PROJECT_ROOT,
                 'S_BACKGROUND'=>S_BACKGROUND,
                 'S_CLI'=>S_CLI,
                 'S_ENV' => S_ENV,
-                'S_PROJECT_ROOT'=>S_PROJECT_ROOT,
                 'S_ROOT'=>S_ROOT,
                 'S_TAG'=>S_TAG,
                 'S_TIME'=>S_TIME,

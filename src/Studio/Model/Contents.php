@@ -65,7 +65,7 @@ class Contents extends Model
         static $checked;
         if(!$checked) {
             $checked = true;
-            static::$contentType = S::checkTranslation(static::$contentType, 'model-tdz_contents');
+            static::$contentType = S::checkTranslation(static::$contentType, 'model-studio_contents');
             asort(static::$contentType);
         }
         if($choice) {
@@ -105,18 +105,41 @@ class Contents extends Model
             $this->refresh(['entry']);
         }
 
+        $s = null;
+        $e = null;
         if($this->entry) {
             $E = Entries::find(['id'=>$this->entry],1,['title','type']);
             if($E) {
                 if(substr(S::scriptName(), 0, strlen(Studio::$home)+1)==Studio::$home.'/') {
                     $link = $E->getStudioLink().'/preview/'.$E->id;
-                    return S::xml((string)$E).' <a href="'.$link.'" class="z-i-link z-i--preview"></a>';
+                    $s = S::xml((string)$E).' <a href="'.$link.'" class="z-i-link z-i--preview"></a>';
                 } else {
-                    return S::xml((string)$E);
+                    $s = S::xml((string)$E);
                 }
             }
+        } else {
+            $e = 'em';
+            $s = S::t('Not Available', 'ui');
         }
 
+        if($d=$this->previewContentsDisplay()) {
+            $s .= ', '.S::t('Display at', 'ui').': '.$d;
+        }
+
+        return ($e) ?"<{$e}>$s</{$e}>" :$s;
+
+    }
+
+    public function previewContentsDisplay()
+    {
+        if($this->id && ($L=ContentsDisplay::find(['content'=>$this->id],null,['link','display'], false))) {
+            $r = [];
+            foreach($L as $i=>$o) {
+                $r[] = ($o->display>0) ?S::xml($o->link) :'<s>'.S::xml($o->link).'</s>';
+            }
+
+            return implode(', ', $r);
+        }
     }
 
     public static function find($q=null, $limit=0, $scope=null, $collection=true, $orderBy=null, $groupBy=null)
@@ -390,8 +413,10 @@ class Contents extends Model
         if($p=Studio::config('content_class_name')) {
             $attr['class'] = $p;            
         }
-        if($a=$this['attributes.attributes']) {
-            $attr += $a;
+        if($a=$this->attributes) {
+            if(is_string($a)) $a = S::unserialize($a, 'json');
+            if($a && isset($a['attributes'])) $a = $a['attributes'];
+            if($a && is_array($a)) $attr += $a;
         }
         $a = '';
         foreach($attr as $n=>$v) {
@@ -731,8 +756,8 @@ class Contents extends Model
     public function prepareContentFormField(&$arg, $Field=null)
     {
         $this->refresh(['content_type', 'entry']);
-        if(isset(static::$scope->scope['u-'.$this->content_type])) {
-            static::$scope->overlay['content']['scope']='u-'.$this->content_type;
+        if($S=Schema::find(['|id'=>$this->content_type, '|aliases*='=>'"'.$this->content_type.'"', 'enable_content'=>1],1)) {
+            static::$schema->overlay['content']['scope'] = $S->formOverlay();
         }
     }
 

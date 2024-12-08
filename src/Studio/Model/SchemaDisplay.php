@@ -50,6 +50,8 @@ class SchemaDisplay extends Model
                 'before' => 'Content Before (Markdown)',
                 'after' => 'Content After (Markdown)',
                 'choices' => 'Available Options (YAML or CSV)',
+                'format' => 'Form Display',
+                'class' => 'CSS class (form)',
                 'hidden' => 'Hidden',
                 'disabled' => 'Disabled',
                 'unavailable' => 'Not Available',

@@ -146,13 +146,18 @@ class Mongodb
 
                 $dsn = preg_replace('@^mongo(db|db\+srv)?:/*@', 'mongodb://', $db['dsn']);
                 if($db['username'] || isset($dn['options'])) {
-                    $parts = [];
+                    $parts = parse_url($dsn);
+                    if(!$parts) $parts = ['scheme'=>'mongodb', 'host'=>$dsn];
                     if($db['username']) $parts['user'] = $db['username'];
                     if($db['password']) $parts['pass'] = $db['password'];
-                    if(isset($db['database']) && $db['database']) $parts['path'] = $db['database'];
+                    if(isset($db['options']['authenticationDatabase'])) {
+                        $parts['path'] = '/'.$db['options']['authenticationDatabase'];
+                        unset($db['options']['authenticationDatabase']);
+                    }
+                    //if(isset($db['database']) && $db['database']) $parts['path'] = $db['database'];
                     if(isset($db['port']) && $db['port']) $parts['port'] = $db['port'];
                     $params = (isset($db['options']) && is_array($db['options'])) ?$db['options'] :[];
-                    $dsn = S::buildUrl($dsn, $parts, $params);
+                    $dsn = S::buildUrl($parts, [], $params);
                 }
 
                 static::$conn[$database] = new Client($dsn, $options);
@@ -257,9 +262,13 @@ class Mongodb
     {
         if($Database = static::connect($n)) {
             $r = [];
-            foreach($Database->listCollections() as $i=>$o) {
-                $r[] = ['table_name' => $o->getName()];
-                unset($i, $o);
+            try {
+                foreach($Database->listCollections() as $i=>$o) {
+                    $r[] = ['table_name' => $o->getName()];
+                    unset($i, $o);
+                }
+            } catch (Exception $e) {
+                S::log('[WARNING] Could not fetch tables from '.$n.': '.$e->getMessage()."\n{$e}");
             }
             return $r;
         }

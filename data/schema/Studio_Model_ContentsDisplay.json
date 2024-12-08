@@ -9,8 +9,7 @@
         "version": { "type": "int", "default": 1 },
         "display": { "type": "int", "max": 128, "required": true },
         "created": { "format": "datetime", "type": "string", "required": true },
-        "updated": { "format": "datetime", "type": "string", "required": true },
-        "expired": { "format": "datetime", "type": "string", "index": [ "s_content_display__expired_idx" ] }
+        "updated": { "format": "datetime", "type": "string", "required": true }
     },
     "relations": {
         "Content": { "local": "content", "foreign": "id", "type": "one", "className": "Studio\\Model\\Contents", "constraint": { "fk_s_content_display__entry": "cascade" } }
@@ -22,17 +21,17 @@
         "before-delete": [ "actAs" ],
         "after-insert": [ "actAs" ],
         "after-update": [ "actAs" ],
-        "after-delete": [ "actAs" ],
-        "active-records": "`expired` is null"
+        "after-delete": [ "actAs" ]
     },
     "overlay": {
         "content_type": { "bind": "content_type", "type": "select", "choices": "choicesContentTypes", "class": "studio-field-content-type" },
-        "content": { "bind": "content", "type": "hidden", "class": "studio-field-content" }
+        "content": { "bind": "content", "type": "hidden", "class": "studio-field-content" },
+        "display": { "bind": "display", "format": "bool" }
     },
     "actAs": {
-        "before-insert": { "timestampable": [ "created", "updated" ] },
+        "before-insert": { "timestampable": [ "created", "updated" ], "replaceable": [ "content", "link" ] },
         "before-update": { "timestampable": [ "updated" ] },
-        "before-delete": { "timestampable": [ "updated" ], "soft-delete": [ "expired" ] },
+        "before-delete": { "timestampable": [ "updated" ] },
         "after-insert": { "versionable": [ "version" ] },
         "after-update": { "versionable": [ "version" ] },
         "after-delete": { "versionable": [ "version" ] }

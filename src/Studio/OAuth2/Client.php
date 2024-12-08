@@ -144,7 +144,7 @@ class Client extends SchemaObject
                     if(isset($o['options']['redirect_sign_in']) && $o['options']['redirect_sign_in']) {
                         S::redirect(static::$signInRoute.'/'.$n);
                     }
-                    $s .= '<a class="z-i-button" href="'.S::xml(static::$signInRoute.'/'.$n).'?ref=1">'.S::xml($o['button']).'</a>';
+                    $s .= '<a class="s-button" href="'.S::xml(static::$signInRoute.'/'.$n).'?ref=1" data-attr-template=\'{"href":"'.S::xml(static::$signInRoute.'/'.$n).'?url=$URL"}\'>'.S::xml($o['button']).'</a>';
                 }
             }
         }
@@ -317,8 +317,23 @@ class Client extends SchemaObject
             $p = S::urlParams();
         }
         $ref = null;
-        if(isset($options['target']) && $options['target']) $ref = $options['target'];
-        if($ref || (App::request('get', 'ref') && (($ref=App::request('headers', 'referer')) && substr($ref, 0, strlen(S::scriptName()))!=S::scriptName()))) {
+        if(isset($options['target']) && $options['target']) {
+            $ref = $options['target'];
+        } else if(App::request('get', 'ref') && ($ref=App::request('headers', 'referer'))) {
+            if(substr($ref, 0, strlen(S::scriptName()))===S::scriptName()) $ref = null;
+        }
+        if(!$ref && ($burl=App::request('get', 'url')) && ($ref=S::decodeBase64Url($burl))) {
+            if($purl = parse_url($ref)) {
+                unset($purl['scheme'], $purl['host']);
+                if(isset($purl['path'])) $purl['path'] = S::validUrl($purl['path'], false);
+                else $purl['path'] = '/';
+                $ref = $purl['path'] . ((isset($purl['query']) && $purl['query']) ?'?'.$purl['query'] :'') . ((isset($purl['fragment']) && $purl['fragment']) ?'#'.$purl['fragment'] :'');
+            } else {
+                $ref = null;
+            }
+            unset($purl, $burl);
+        }
+        if($ref) {
             $U = S::getUser();
             $U->setAttribute('authorize-source', $ref);
         }

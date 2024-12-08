@@ -18,11 +18,13 @@ all:
     #      key: entry
     scope:
       search:
+        - content
         - id
         - entry
       preview:
         - "scope::c"
-        - "scope::_e"
+        - "scope::e"
+        - "scope::d"
       #new:
       #  - "scope::e"
       update:
@@ -61,15 +63,15 @@ all:
         __default:
           fieldset: '*Page information'
         '*Page':
-            bind: entry
-            choices: Studio\Model\Page
-            format: search
-            class: i1s2
-            attributes:
-              data-datalist-api: /_studio/page/q?envelope=false&scope=choices 
+          bind: entry
+          choices: Studio\Model\Page
+          format: search
+          class: i1s4
+          attributes:
+            data-datalist-api: /_studio/page/q?envelope=false&scope=choices
         '*Content Type':
-            bind: content_type
-            class: i1s2
+          bind: content_type
+          class: i1s4
         '*Location':
           bind: slot
           type: select
@@ -88,9 +90,24 @@ all:
         '*Location':
           bind: slot
           type: select
-          class: i1s2
+          class: i1s4
           choices: choicesSlot
         '*Order':
           bind: position
           type: number
+          class: i1s4
+        '*Attributes':
+          bind: attributes
+          format: object
           class: i1s2
+      d:
+        '*Display on':
+          bind: ContentsDisplay
+          format: form
+          scope:
+            '*URL':
+              bind: link
+              class: i1s2
+            '*Enable':
+              bind: display
+              class: i1s2
