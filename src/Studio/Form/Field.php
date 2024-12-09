@@ -709,6 +709,9 @@ class Field extends SchemaObject
                     }
                     if(!$F->validate($v)) {
                         $valid = false;
+                        if($ea = $F->getError()) {
+                            $errors[] = $ea;
+                        }
                     }
                     $value[$i] = $O;
                 } catch(Exception $e) {
