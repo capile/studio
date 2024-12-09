@@ -37,8 +37,54 @@ class Schema extends Model
 
     public function formOverlay($prefix=null)
     {
-        return [
-            $prefix.'.teste' => ['type'=>'text','label'=>'teste', 'bind'=>$prefix.'.teste'],
-        ];
+        $r = [];
+        if($this->type==='object') {
+            $P = SchemaProperties::find(['schema_id'=>$this->id],null,null,false,['position'=>'asc']);
+            if($P) {
+                foreach($P as $i=>$o) {
+                    $s = [
+                        'bind'=>($prefix) ?$prefix.'.'.$o->bind :$o->bind,
+                        'id'=>$o->bind,
+                        'type'=>($o->type) ?$o->type :'string',
+                        'primary'=>($o->primary>0) ?true :false,
+                        'required'=>($o->required>0) ?true :false,
+                        'default'=>$o->default,
+                    ];
+                    $s['label'] = ($o->title) ?$o->title :S::t(ucfirst(str_replace(['-', '_'], ' ', trim($o->bind, '-_'))), 'labels');
+                    if($o->description) $s['placeholder'] = $o->description;
+                    if($o->max_size>0) $s['size'] = (int)$o->max_size;
+                    if(is_numeric($o->min_size)) $s['min_size'] = (int)$o->min_size;
+                    if($o->serialize) $s['serialize'] = $o->serialize;
+                    $r[$o->bind] = $s;
+                    unset($P[$i], $i, $o);
+                }
+            }
+            unset($P);
+            $P = SchemaDisplay::find(['schema_id'=>$this->id],null,null,false);
+            if($P) {
+                $bool = ['hidden', 'disabled'];
+                $j0 = ['{', '['];
+                foreach($P as $i=>$o) {
+                    if(!isset($r[$o->bind]) || $o->type==='unavailable') {
+                        if(isset($r[$o->bind])) unset($r[$o->bind]);
+                        continue;
+                    } else if($o->type==='unavailable') {
+                        continue;
+                    } else if(in_array($o->type, $bool)) {
+                        $c = (bool) $o->content;
+                    } else if($o->type==='choices') {
+                        if(!preg_match('/^[\-\*\{\[]|\n/', $o->content)) $c = trim($o->content);
+                        else $c = S::unserialize($o->content, (in_array(substr($o->content, 0, 1), $j0)) ?'json' :'yaml');
+                    } else if($o->type==='attributes') {
+                        $c = S::unserialize($o->content, (in_array(substr($o->content, 0, 1), $j0)) ?'json' :'yaml');
+                    } else {
+                        $c = $o->content;
+                    }
+                    $r[$o->bind][$o->type] = $c;
+                }
+            }
+        }
+
+        return $r;
     }
 }

@@ -87,15 +87,6 @@ all:
         'Content':
           bind: content
           #class: ih20
-        '*Location':
-          bind: slot
-          type: select
-          class: i1s4
-          choices: choicesSlot
-        '*Order':
-          bind: position
-          type: number
-          class: i1s4
         '*Attributes':
           bind: attributes
           format: object

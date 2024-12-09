@@ -33,7 +33,8 @@
     },
     "scope": {
         "string": [ "title", "type", "id" ],
-        "link": [ "id", "link", "title", "summary" ],
+        "position": [ "title", "Children.position _position" ],
+        "link": [ "id", "link", "title", "summary", "type" ],
         "studio-new": [ "type", "title", "link", "summary", "published" ],
         "studio-edit": [ "type", "title", "link", "summary", "published", "contents" ],
         "review": { "*Title": "title", "*Link": "link", "*Summary": "summary", "*Last Modified": "updated" }

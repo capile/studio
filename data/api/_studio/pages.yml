@@ -4,14 +4,6 @@ all:
   model: Studio\Model\Entries
   search:
     type: page
-  actions:
-    sitemap:
-      position: ~
-      identified: false
-      batch: false
-      query: true
-      additional-params: true
-      action: executeMethod
   options:
     priority: 1001
     list-parent: site
@@ -41,29 +33,18 @@ all:
       preview:
         - scope::page
         - scope::content
-        - scope::credentials
         - scope::_meta
       new:
         - scope::page
-        - scope::credentials
         - format: hidden
           bind: type
           value: page
           label: ~
       update:
         - scope::page
-        - scope::credentials
       choices:
         label: title
         value: id
-      credentials:
-        '*Credentials':
-          bind: Permission
-          format: form
-          fieldset: '*Page Credentials'
-          scope:
-            '*Role': role
-            '*Credentials': credentials
       page:
         __default:
           fieldset: '*Properties'
@@ -72,27 +53,29 @@ all:
         '*Link': link
         '*Summary':
           bind: summary
-          class: ih5
-        '*Published': published
-        '*Tag': _tags
-        '*Template': master
+          format: html
+          class: ih10
         '*Sitemap':
           bind: Related
           format: form
           scope:
-            parent:
-              label: ~
+            "*Parent":
               bind: parent
               format: select
               choices: Studio\Model\Entries
-              choicesFilter:
-                type: page
               attributes:
-                data-datalist-api: /_studio/page/sitemap?envelope=false
-                data-datalist-target: position
-            position:
-              label: ~
-              format: hidden
+                data-datalist-api: /_studio/site/sitemap?envelope=false
+            "*Position": position
+        '*Tag': _tags
+        '*Published': published
+        '*Template': master
+        '*Credentials':
+          bind: Permission
+          format: form
+          scope:
+            '*Role': role
+            '*Credentials': credentials
+        '*Type': type
       _meta:
         __default:
           class: i1s4

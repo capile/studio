@@ -34,7 +34,7 @@ if($figures && count($figures)>0) {
         $sf = '<div class="media-thumbnail">'.$sf.'</div>';
     }
 }
- 
+
 $s = '<article><div class="hentry'.$class.'" id="e'.$id.'">';
 $s .= '<h3 class="entry-title">'.(($link)?('<a href="'.Studio::xml($link).'" rel="bookmark" title="'.Studio::xml($title).'">'.Studio::xml($title).'</a>'):(Studio::xml($title))).'</h3>';
 $s .= '<div class="entry-content">'.$sf.$summary.'</div>';

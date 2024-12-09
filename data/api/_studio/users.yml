@@ -19,4 +19,4 @@ all:
         '*Name': name
         '*Username': username
         '*E-mail': email
-        '*Password': password
+        '*Credentials': _groups

@@ -48,6 +48,7 @@ class Studio
         $allowOrigin=[],
         $private=[],        // updated at runtime, indicates when a cache-control: private,nocache should be sent
         $page,              // updated at runtime, actual entry id rendered
+        $extension,         // filled with allowed extensions
         $connection,        // connection to use, set to false to disable database
         $params=array(),    // updated at runtime, general params
         $cacheTimeout=false,// configurable, cache timeout
@@ -66,7 +67,7 @@ class Studio
         $languages=array(),
         $ignore=array('.meta', '.less', '.md', '.yml'),
         $indexIgnore=array('js', 'css', 'font', 'json', 'studio'),
-        $allowedExtensions=array('.html'),
+        $allowedExtensions=['.html'=>'', '.xml'=>'feed'], // enable alternative formats by the extension, leave empty for redirection
         $breadcrumbSeparator=' » ',
         $userMessage,
         $cli='studio',      // configurable, where to load Studio command-line interface
@@ -75,7 +76,7 @@ class Studio
         $apiListParent = [
             'apis'=>'interfaces',
         ],
-        $invalidUrlPattern='/[\$\|&\[\]\{\}\#\`\?\;]|\/\.|\/\/+|\:/',
+        $invalidUrlPattern='/[\$\|&\[\]\{\}\#\`\?\;]|\/\.|\/\/+/',
         $headersTemplate,
         $cliApps=[
             'app'=>['Studio\\Studio','standaloneApp'],
@@ -213,6 +214,7 @@ class Studio
         } else if(self::ignore($sn)) {
             self::error(404);
         } else if($E=self::page($sn)) {
+            self::$page = $E->id;
             $E->render();
             unset($E);
             if(!self::$private && !S::get('cache-control') && static::$cacheTimeout) {
@@ -741,29 +743,53 @@ class Studio
             $f['published<'] = date('Y-m-d\TH:i:s');
         }
         $E=null;
-        if($connEnabled && ($E=Entries::find($f, 1, $scope,false,array('type'=>'desc','published'=>'desc','version'=>'desc')))) {
-            if($E->link!==S::scriptName() && (S::scriptName()===$E->link.'/' || $E->link===S::scriptName().'/')) {
-                S::redirect($E->link);
-            }
-            if(!self::$private && !$published && !$E->published) self::$private = true;
-            if($meta = $E::loadMeta($E->link)) {
-                foreach($meta as $fn=>$v) {
-                    if(property_exists($E, $fn)) {
-                        if($fn=='layout' || $fn=='slots') $E::$$fn = $v;
-                        else if(!$E->$fn) $E->$fn = $v;
-                    }
-                    unset($meta[$fn], $fn, $v);
+        if($connEnabled) {
+            $sort = ['type'=>'desc','published'=>'desc','version'=>'desc'];
+            if ($E=Entries::find($f, 1, $scope,false,$sort)) {
+                if($E->link!==S::scriptName() && (S::scriptName()===$E->link.'/' || $E->link===S::scriptName().'/')) {
+                    S::redirect($E->link);
                 }
-                unset($meta);
+            } else if(preg_match('/('.str_replace('.', '\.', implode('|',array_keys(self::$allowedExtensions))).')$/', $url, $m)) {
+                $nurl=substr($url,0,strlen($url)-strlen($m[1]));
+                $f['link'] = $nurl;
+                $redirect = false;
+                if(self::$allowedExtensions[$m[1]]==='') {
+                    $redirect = $url;
+                } else {
+                    $f['type'] = self::$allowedExtensions[$m[1]];
+                }
+                if($E=Entries::find($f, 1, $scope,false,$sort)) {
+                    self::$extension = $m[1];
+                    $url = $nurl;
+                    unset($f, $published, $nurl);
+                }
             }
-            unset($f, $published);
-            return $E;
+
+            if($E) {
+                if(!self::$private && !$published && !$E->published) self::$private = true;
+                if($meta = $E::loadMeta($E->link)) {
+                    foreach($meta as $fn=>$v) {
+                        if(property_exists($E, $fn)) {
+                            if($fn=='layout' || $fn=='slots') $E::$$fn = $v;
+                            else if(!$E->$fn) $E->$fn = $v;
+                        }
+                        unset($meta[$fn], $fn, $v);
+                    }
+                    unset($meta);
+                }
+                unset($f, $published);
+                return $E;
+            }
         }
         if(!$E && ($E=Entries::findPage($url, false, true))) {
             unset($f, $published);
-        } else if(preg_match('/('.str_replace('.', '\.', implode('|',self::$allowedExtensions)).')$/', $url, $m) && ($nurl=substr($url,0,strlen($url)-strlen($m[1]))) && ($E=Entries::findPage($nurl, false, true))) {
-            $url = $nurl;
-            unset($f, $published, $nurl);
+        } else if(preg_match('/('.str_replace('.', '\.', implode('|',array_keys(self::$allowedExtensions))).')$/', $url, $m)) {
+            $nurl=substr($url,0,strlen($url)-strlen($m[1]));
+            if($E=Entries::findPage($nurl, false, (self::$allowedExtensions[$m[1]]===''))) {
+                self::$extension = $m[1];
+                $url = $nurl;
+                unset($f, $published, $nurl);
+            }
         }
         if(!$E && !$exact && substr($url, 0, 1)=='/' && strlen($url)>1) {
             $f['Contents.content_type']=Contents::$multiviewContentType;

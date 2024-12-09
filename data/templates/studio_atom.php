@@ -15,7 +15,7 @@ $i=1;
 $s = '';
 if($entries = $entry->getChildren(['type'=>'entry'], 'feed', false, ['published'=>'desc', 'title'=>'asc'], null, $limit *2)) {
     foreach($entries as $entry) {
-        $es = $entry->renderEntry('tdz_atom_entry');
+        $es = $entry->renderEntry('studio_atom_entry');
         if(!$es) continue;
         $s .= $es;
         $emod = strtotime($entry->updated);

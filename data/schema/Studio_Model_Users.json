@@ -17,7 +17,7 @@
         "expired": { "format": "datetime", "type": "string", "index": [ "idx_s_users__expired_idx" ] }
     },
     "relations": {
-        "Credentials": { "local": "id", "foreign": "user", "type": "many", "className": "Studio\\Model\\Credentials" }
+        "Credentials": { "local": "id", "foreign": "userid", "type": "many", "className": "Studio\\Model\\Credentials" }
     },
     "scope": {
         "string": [ "name", "username" ]
@@ -33,5 +33,7 @@
         "before-update": { "timestampable": [ "updated" ] },
         "before-delete": { "timestampable": [ "updated" ], "soft-delete": [ "expired" ] }
     },
-    "overlay": []
+    "overlay": {
+        "_groups": { "bind": "_groups", "format": "checkbox", "choices": "Studio\\Model\\Groups", "multiple": true, "class": "i-vlabel" }
+    }
 }

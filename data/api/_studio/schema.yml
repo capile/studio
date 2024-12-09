@@ -36,7 +36,7 @@ all:
           scope:
             - bind
             - type
-            - format
+            - item
             - description
             - primary
             - required

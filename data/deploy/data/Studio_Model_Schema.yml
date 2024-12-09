@@ -17,7 +17,7 @@ Studio\Model\Schema:
         content: textarea
       - bind: text
         type: class
-        content: ih20
+        content: ih5 s-h-auto
   - id: html
     type: object
     enable_content: 1
@@ -44,24 +44,48 @@ Studio\Model\Schema:
         type: int
         position: 1
         required: 1
+      - bind: display
+        type: string
+        max_size: 100
+        position: 2
       - bind: limit
         type: int
-        position: 2
+        position: 3
       - bind: hpp
         type: int
         required: 1
         default: 25
-        position: 3
+        position: 4
     SchemaDisplay:
       - bind: entry
         type: choices
         content: Studio\Model\Entries
+      - bind: entry
+        type: format
+        content: select
+      - bind: entry
+        type: attributes
+        content: "data-datalist-api: /_studio/site/pages"
+      - bind: display
+        type: choices
+        content: |
+          ---
+          sitemap: "*Sitemap"
+          list: "*List"
+          search: "*Search"
+          breadcrumbs: "*Breadcrumbs"
+      - bind: display
+        type: format
+        content: select
+      - bind: display
+        type: class
+        content: i1s2
       - bind: limit
         type: class
-        content: i1s2
+        content: i1s4
       - bind: hpp
         type: class
-        content: i1s2
+        content: i1s4
   - id: media
     type: object
     enable_content: 1

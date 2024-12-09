@@ -25,8 +25,8 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.2.16';
-    const VER = 1.2;
+    const VERSION = '1.3.0';
+    const VER = 1.3;
 
     protected static
     $_app = null,
@@ -1925,26 +1925,30 @@ class Studio
         return $s . "\n";
     }
 
-    public static function serialize($a, $hint=null)
+    public static function serialize($a, $hint=null, $flags=null)
     {
-        if(!is_null($hint)) {
-            if($hint=='yaml') return Yaml::dump($a);
-            else if($hint=='json') return json_encode($a,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
-            else if($hint=='php') return serialize($a);
-            else if($hint=='query') return http_build_query($a);
-        }
-        return (is_object($a))?(serialize($a)):(json_encode($a,JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE));
+        if(is_null($hint)) $hint = (is_object($a)) ?'php' :'json';
+        if($hint=='yaml') return Yaml::dump($a);
+        else if($hint=='json') return json_encode($a, (is_null($flags)) ?JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE :$flags);
+        else if($hint=='query') return http_build_query($a);
+        else return serialize($a);
     }
 
-    public static function unserialize($a, $hint=null)
+    public static function unserialize($a, $hint=null, $flags=null)
     {
         if(is_string($a)) {
-            if(!is_null($hint)) {
-                if($hint=='yaml') return Yaml::load($a);
-                else if($hint=='json') return json_decode($a, true, 512, JSON_INVALID_UTF8_IGNORE|JSON_BIGINT_AS_STRING);
-                else if($hint=='php') return unserialize($a);
+            if(is_null($hint)) $hint = (substr($a,1,1)==':' && strpos('aOidsN', substr($a,0,1))!==false) ?'php' :'json';
+            if($hint=='yaml') {
+                return Yaml::load($a);
+            } else if($hint=='json') {
+                return json_decode($a, true, 512, (is_null($flags)) ?JSON_INVALID_UTF8_IGNORE|JSON_BIGINT_AS_STRING :$flags);
+            } else if($hint=='query') {
+                $r = [];
+                parse_str($a, $r);
+                return $r;
+            } else {
+                return unserialize($a);
             }
-            return (substr($a,1,1)==':' && strpos('aOidsN', substr($a,0,1))!==false)?(unserialize($a)):(json_decode($a,true));
         }
     }
 

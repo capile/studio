@@ -15,6 +15,6 @@ use Studio\Studio;
 
 class Credentials extends Model
 {
-    public static $schema;
+    public static $schema, $schemaClass='Studio\\Schema\\Model';
     protected $userid, $groupid, $created, $updated, $expired, $Users, $Groups;
 }

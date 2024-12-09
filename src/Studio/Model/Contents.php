@@ -65,7 +65,17 @@ class Contents extends Model
         static $checked;
         if(!$checked) {
             $checked = true;
-            static::$contentType = S::checkTranslation(static::$contentType, 'model-studio_contents');
+            if(Studio::config('enable_api_schema')) {
+                static::$contentType = [];
+                $L = Schema::find(['enable_content'=>1],null,['id', 'title'], false);
+                if($L) {
+                    foreach($L as $i=>$o) {
+                        static::$contentType[$o->id] = ($o->title) ?$o->title :S::t('*'.ucfirst(str_replace(['-', '_'], ' ', trim($o->id, '-_'))), 'model-studio_contents');
+                    }
+                }
+            } else {
+                static::$contentType = S::checkTranslation(static::$contentType, 'model-studio_contents');
+            }
             asort(static::$contentType);
         }
         if($choice) {
@@ -294,23 +304,24 @@ class Contents extends Model
         //$c = S::xml($this->content);
         if(!isset($this->content_type) && $this->id) $this->refresh(['content_type']);
         $scope = null;
+        $preview = null;
         if($this->content_type) {
-            $scope = 'u-'.$this->content_type;
-            if(!isset(static::$schema->scope[$scope])) {
-                $scope = null;
+            if($S=Schema::find(['|id'=>$this->content_type, '|aliases*='=>'"'.$this->content_type.'"', 'enable_content'=>1],1)) {
+                $scope = $S->formOverlay('content');
+            } else {
+                $scope = 'u-'.$this->content_type;
+                if(!isset(static::$schema->scope[$scope])) {
+                    $scope = null;
+                }
             }
         }
 
-        if($this->content_type && in_array($this->content_type, static::$previewContentType)) {
-            $c = $this->render(true);
-        } else if(!$scope) {
-            $c = '<div class="z-inner-block">'.S::xml($this->content).'</div>';
+
+        if(!$scope) {
+            $c = '<div class="z-inner-block">'.S::xml(S::serialize($this->content, 'yaml')).'</div>';
         } else {
             if(is_string($scope)) $scope = static::columns($scope, null, true);
-            if(count($scope)>2) {
-                array_pop($scope);
-                array_pop($scope);
-            }
+        if(is_string($this->content)) $this->content = S::unserialize($this->content, 'json');
             $c = $this->renderScope($scope, true, null, '<dl class="$CLASS"><dt>$LABEL</dt><dd>$INPUT</dd></dl>');
         }
 
@@ -360,17 +371,27 @@ class Contents extends Model
                 }
             } else if(is_array($v)) {
                 if(isset($v[0]) && count($v)==1) $v = array_shift($v);
+                $clear = true;
                 foreach($v as $k=>$d) {
-                    if(preg_match('/^(0\.)?content[\._]/', $k, $m)) {
+                    if(preg_match('/^(0\.)?(content[\._])?/', $k, $m) && $m[0]) {
                         unset($v[$k]);
                         $v[substr($k, strlen($m[0]))] = $d;
+                        $clear = false;
                     }
                     unset($m, $k, $d);
+                }
+                if(!$clear && ($c0=$this->content)) {
+                    if(is_string($c0)) $c0 = S::unserialize($c0, 'json');
+                    if(is_array($c0)) {
+                        $v = $c0 +  $v;
+                    }
                 }
             }
         }
 
         $this->content = $v;
+
+        return true;
     }
 
     public static function prepareContentTypes($a)
@@ -518,7 +539,8 @@ class Contents extends Model
 
     public static function renderText($code=null)
     {
-        return self::renderTxt($code);
+        // check studio format?
+        return self::renderMd($code);
     }
 
     public static function renderMd($code=null)
@@ -650,8 +672,12 @@ class Contents extends Model
          *
          * If the entry is not found, it should use current feed as a parameter
          */
-        $o['script'] = Studio::templateFile((isset($code['master']))?($code['master']):(null), 'tdz_feed');
-
+        if(isset($code['display']) && $code['display']) {
+            if(!isset($code['template'])) $o['variables']['template'] = 'studio_entry_'.$code['display'];
+            $o['script'] = Studio::templateFile((isset($code['master']))?($code['master']):(null), 'studio_feed_'.$code['display'], 'studio_feed');
+        } else {
+            $o['script'] = Studio::templateFile((isset($code['master']))?($code['master']):(null), 'studio_feed');
+        }
         $eid = null;
         $E = null;
         if(is_object($e) && ($e instanceof Entries)) {
@@ -758,7 +784,12 @@ class Contents extends Model
         $this->refresh(['content_type', 'entry']);
         if($S=Schema::find(['|id'=>$this->content_type, '|aliases*='=>'"'.$this->content_type.'"', 'enable_content'=>1],1)) {
             static::$schema->overlay['content']['scope'] = $S->formOverlay();
+            if($Field) {
+                $Field->setScope(static::$schema->overlay['content']['scope']);
+            }
+            if($this->content_type!=$S->id) $this->content_type = $S->id;
         }
+        if(is_string($this->content)) $this->content = S::unserialize($this->content, 'json');
     }
 
     public function updateSource()

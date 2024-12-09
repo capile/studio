@@ -52,9 +52,13 @@ if(isset($script)) {
     if($script) {
         $js .= S::minify($script);
     }
-    $nonce = S::salt(10);
-    header("Content-Security-Policy: default-src 'none'; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data:; font-src 'self' data:; script-src 'nonce-{$nonce}' 'strict-dynamic' 'self'; form-action 'self'; media-src 'self'; connect-src 'self'; object-src 'none'; frame-src https:; frame-ancestors 'none'; base-uri 'self'");
-    $js = str_replace('<script', '<script nonce="'.$nonce.'"', $js);
+    if(Studio::config('enable-csp-nonce')) {
+        $nonce = S::salt(10);
+        header("Content-Security-Policy: default-src 'none'; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data:; font-src 'self' data:; script-src 'nonce-{$nonce}' 'strict-dynamic' 'self'; form-action 'self'; media-src 'self'; connect-src 'self'; object-src 'none'; frame-src https:; frame-ancestors 'none'; base-uri 'self'");
+        $js = str_replace('<script', '<script nonce="'.$nonce.'"', $js);
+    } else {
+        header("Content-Security-Policy: default-src 'none'; style-src 'self' 'unsafe-inline' https:; img-src 'self' https: data:; font-src 'self' data:; script-src 'self' 'unsafe-inline'; form-action 'self'; media-src 'self'; connect-src 'self'; object-src 'none'; frame-src https:; frame-ancestors 'none'; base-uri 'self'");
+    }
     $script = $js;
     unset($js);
 }

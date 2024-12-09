@@ -98,11 +98,13 @@ class Field extends SchemaObject
                 }
             }
         }
+        $M = null;
         if (isset($def['bind'])) {
             $bdef = $this->setBind($def['bind'], true);
             if(is_array($bdef)) $def += $bdef;
             unset($bdef);
             unset($def['bind']);
+            $M = $this->getModel();
         }
         $val = '';
         if(isset($def['value'])) {
@@ -112,9 +114,14 @@ class Field extends SchemaObject
         if($def) {
             $def = static::properties($def);
             foreach ($def as $name=>$value) {
+                if(strpos($name, '-')!==false) $name = S::camelize($name);
                 $this->__set($name, $value);
             }
         }
+        if($M && method_exists($M, $m=S::camelize('prepare-'.$this->id).'FormField')) {
+            $M->$m($this->attributes, $this);
+        }
+
         if($val!='') {
             $this->setValue($val);
         }
@@ -1608,9 +1615,6 @@ class Field extends SchemaObject
     {
         $M = ($this->bind && !isset($arg['no-render-model'])) ?$this->getModel() :null;
 
-        if($M && method_exists($M, $m=S::camelize('prepare-'.$this->id).'FormField')) {
-            $M->$m($arg, $this);
-        }
         $base = array('id', 'name', 'value', 'error', 'label', 'class');
         foreach ($base as $k) {
             if (!isset($arg[$k])) {
@@ -2051,7 +2055,7 @@ class Field extends SchemaObject
         }
         $M = $this->getModel();
         if(is_string($scope) && !isset($M::$schema['scope'][$scope])) return null;
-        $columns = $M::columns($scope);
+        $columns = (is_array($scope) && $scope && is_array(array_values($scope)[0])) ?$scope :$M::columns($scope);
         foreach($columns as $fn=>$fd) {
             unset($columns[$fn]);
             if(!is_array($fd)) {
@@ -2088,6 +2092,7 @@ class Field extends SchemaObject
 
             $columns[$fn] = $fd;
         }
+        S::log(__METHOD__, [func_get_args(), $columns, var_export($this, true)]);
         if(!$columns) return null;
         $fo = array(
             'fields'=>$columns,

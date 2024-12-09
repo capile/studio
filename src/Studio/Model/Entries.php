@@ -85,14 +85,13 @@ class Entries extends Model
             App::$afterRun['staticCache']=array('callback'=>array('Studio\\Studio','setStaticCache'));
             S::cacheControl('public', Studio::$cacheTimeout);
         }
-        Studio::$page = $this->id;
         if($this->link!=S::scriptName()) S::scriptName($this->link);
         S::$variables['entry'] = $this;
         $m = 'render'.ucfirst(S::camelize($this->getType()));
         if(!method_exists($this, $m)) {
             Studio::error(404);
         }
-        $r = $this->$m();
+        $r = $this->$m(null, ['renderPage'=>true]);
         S::$variables['template']=null;
         if(is_array($r)) {
             foreach($r as $k=>$v) {
@@ -112,14 +111,19 @@ class Entries extends Model
         if(!$master || is_null($c)) {
             if(Studio::connected('content')) {
                 $E = $this;
+                $i = 5;
                 while($E=$E->getParent()) {
+                    $i--;
+                    if(!$i) break;
                     if(!$master) {
                         $master=$E->master;
                     }
                     if(is_null($c)) {
                         $c = $E->getCredentials('previewPublished');
                     }
-                    if($master && !is_null($c)) break;
+                    if($master && !is_null($c)) {
+                        break;
+                    }
                 }
                 unset($E);
             }
@@ -176,14 +180,22 @@ class Entries extends Model
             }
             unset($slotname, $slot);
         }
+        $bodySlot = 'body';
         if($body) {
             if(isset($slots['body'])) {
                 array_unshift($slots['body'], $body);
             } else {
                 foreach($slots as $slotname=>$slot) {
+                    $bodySlot = $slotname;
                     array_unshift($slots[$slotname], $body);
+                    break;
                 }
             }
+        }
+
+        if($this->id===Studio::$page && ($meta=Studio::config('render_meta'))) {
+            $this->refresh(['title', 'summary', 'link']);
+            array_unshift($slots[$bodySlot], $this->renderMeta($meta));
         }
 
         self::$s=1;
@@ -433,6 +445,9 @@ class Entries extends Model
 
     public function renderEntry($template=false, $args=array())
     {
+        if($this->type==='entry' && isset($args['renderPage']) && $args['renderPage'] && Studio::$page==$this->id) {
+            return $this->renderPage();
+        }
         $a = array('script'=>Studio::templateFile($template, 'studio_entry'),
             'variables'=>$this->asArray()
         );
@@ -441,7 +456,7 @@ class Entries extends Model
         $a['variables']['entry']=$this;
         $r = S::exec($a);
 
-        if(Studio::$page==$this->id) {
+        if(isset($args['renderPage']) && $args['renderPage'] && Studio::$page==$this->id) {
             return $this->renderPage($r);
         } else {
             return $r;
@@ -450,9 +465,12 @@ class Entries extends Model
 
     public function renderFeed($template=false, $args=array())
     {
-        $tpl=(substr(S::scriptName(), 0, strlen($this->link))==$this->link)?('studio_atom'):('studio_feed');
+        static $atomExtensions = ['.xml', '.rss', '.feed'];
+        $ext = (Studio::$extension) ?Studio::$extension :preg_replace('#.*(\.[a-z]+)?$#', '$1', S::scriptName());
+        $tpl=($ext && in_array($ext, $atomExtensions)) ?'studio_atom' :'studio_feed';
         $template = Studio::templateFile($template, $tpl);
-        return $this->renderEntry(substr($template, 0, strlen($template)-4), $args);
+
+        return $this->renderEntry(basename($template, '.php'), $args);
     }
     
 
@@ -476,12 +494,12 @@ class Entries extends Model
     public function getType()
     {
         if(!$this->type && !$this->isNew()) {
-            $this->type = 'page';
+            $this->refresh(['type']);
         }
         return $this->type;
     }
 
-    public function getParent($scope=null)
+    public function getParent($scope=null, $filter=[])
     {
         if(!$this->id) return null;
         return static::find(array('Children.entry'=>$this->id),1,$scope,false);
@@ -563,7 +581,8 @@ class Entries extends Model
                     $found=true;
                     break;
                 }
-                array_unshift($as, $a);
+                if($scope==='position' && $a->_position) array_unshift($as, $a->title.'<'.substr('000000'.$a->_position, -6).'>');
+                else array_unshift($as, $a);
             }
         }
         if($stopId && !$found) $as=array();
@@ -601,7 +620,7 @@ class Entries extends Model
         $search['published<']=S_TIMESTAMP;
         $search['Related.parent'] = $this->id;
         if(!isset($search['type'])) {
-            $search['type'] = ['page','entry'];
+            $search['type'] = ['page','feed'];
         }
         if(!$orderBy) {
             if($this->type=='feed') {
@@ -1222,16 +1241,16 @@ class Entries extends Model
                 $ct = ($o->content_type) ?$o->content_type :'text';
                 $slot = ($o->slot) ?$o->slot :static::$slot;
                 if(!isset($slots[$slot])) $slots[$slot] = '';
-                $slots[$slot] .= '<div class="ih5 z-item z-inner-block">'
-                    .   '<div class="s-i-scope-block" data-action-expects-url="'.Studio::$home.'/contents/update/'.$o->id.'" data-action-schema="preview" data-action-url="'.S::scriptName(true).'">'
-                    .     '<a href="'.Studio::$home.'/contents/update/'.$o->id.'?scope=u-'.$ct.'&amp;next=preview" class="s-i-button s-api--update" data-inline-action="update"></a>'
-                    .     '<a href="'.Studio::$home.'/contents/delete/'.$o->id.'?scope=u-'.$ct.'&amp;next='.S::scriptName(true).'" class="s-i-button s-api--delete" data-inline-action="delete"></a>'
+                $slots[$slot] .= '<div class="s-api-item s-api-inner-block">'
+                    .   '<div class="s-api-scope-block" data-action-expects-url="'.Studio::$home.'/contents/update/'.$o->id.'" data-action-schema="preview" data-action-url="'.S::scriptName(true).'">'
+                    .     '<a href="'.Studio::$home.'/contents/update/'.$o->id.'?next=preview" class="s-i-button s-api--update" data-inline-action="update"></a>'
+                    .     '<a href="'.Studio::$home.'/contents/delete/'.$o->id.'?next='.S::scriptName(true).'" class="s-i-button s-api--delete" data-inline-action="delete"></a>'
                     . (($o->content_type && in_array($o->content_type, $o::$previewContentType))
-                        ?'<div class="z-t-center z-app-image"><span class="z-t-inline z-t-left">'.$o->previewContent().'</span></div>'
+                        ?'<div class="s-t-center z-app-image"><span class="s-t-inline s-t-left">'.$o->previewContent().'</span></div>'
                         :$o->previewContent()
                       )
-                    .    '<dl class="z-i-field i1s2"><dt>'.S::t('Content Type', 'model-studio_contents').'</dt><dd>'.$o->previewContentType().'</dd></dl>'
-                    .    '<dl class="z-i-field i1s2"><dt>'.S::t('Position', 'model-studio_contents').'</dt><dd>'.S::xml($o->position).'</dd></dl>'
+                    .    '<dl class="s-api-field i1s2"><dt>'.S::t('Content Type', 'model-studio_contents').'</dt><dd>'.$o->previewContentType().'</dd></dl>'
+                    .    '<dl class="s-api-field i1s2"><dt>'.S::t('Position', 'model-studio_contents').'</dt><dd>'.S::xml($o->position).'</dd></dl>'
                     .   '</div>'
                     . '</div>'
                     . str_replace(['{position}', '{slot}'], [$o->position+1, $slot], $tpl);
@@ -1239,7 +1258,6 @@ class Entries extends Model
             S::$variables['entry'] = $E;
             unset($E);
         }
-
         foreach(static::$slots as $slot=>$c) {
             if(isset($slots[$slot])) {
                 $r .= '<h2 class="z-title">'.$slot.'</h2>'.str_replace(['{position}', '{slot}'], [1, $slot], $tpl);
@@ -1461,11 +1479,11 @@ class Entries extends Model
         $Interface['text'] = $A;
     }
 
-    public function executeSitemap($Interface=null)
+    public static function executeSitemap($Api=null)
     {
         $params = App::request('get', 'q');
 
-        $q = null;
+        $q = [];
         if($params) {
             $q = [
                 '|id'=>$params,
@@ -1474,29 +1492,76 @@ class Entries extends Model
                 '|link%='=>$params,
             ];
         }
+        $q['type'] = ['page', 'feed'];//static::$previewEntryType;
+        //$q['Relation.parent'] = null;
 
         $r = [];
-        $L = static::find($q, null, null, false);
+        $s = [];
+        $p = [];
+        $sep = Studio::config('breadcrumb_separator');
+        $L = static::find($q, null, ['id', 'title', 'Relation.Parent.title _parent_title', 'Relation.parent _parent', 'Relation.position _parent_position'], false, ['title'=>'asc'],['id']);
         if($L) {
-            $sep = Studio::config('breadcrumb_separator');
             foreach($L as $i=>$o) {
-                $g = null;
-                if($a = $o->getAncestors(null, 'string')) {
-                    $g = implode($sep, $a).$sep;
+                $g = $o->_parent_title;
+                $p[$o->id] = $o->_parent;
+
+                if($g) {
+                    //if(isset($p[$o->_parent])) {}
+                    $t = implode($sep, $o->getAncestors(null, 'position')).$sep;
+                    $g = preg_replace('#<[0-9]+>#', '', $t);
+                } else {
+                    $t = $o->title;
                 }
-                $r[] = ['value'=>$o->id, 'label'=>$o->title, 'group'=>$g, 'position'=>1];
-                $o->childrenOptions($r);
+                $r[] = ['value'=>$o->id, 'label'=>$o->title, 'group'=>$g];
+                $s[] = $t;
             }
         }
-        S::output($r, 'json');
+        if($r) {
+            array_multisort($r, SORT_ASC, SORT_STRING, $s);
+        }
+        $flags = JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES;
+        if($Api && $Api::$pretty) $flags = $flags|JSON_PRETTY_PRINT;
+        S::output(json_encode(array_values($r), $flags), 'json');
+    }
+
+    public static function executePages($Api=null)
+    {
+        $params = App::request('get', 'q');
+
+        $q = [];
+        if($params) {
+            $q = [
+                '|id'=>$params,
+                '|title%='=>$params,
+                '|summary%='=>$params,
+                '|link%='=>$params,
+            ];
+        }
+        $q['type'] = App::request('get', 'type');
+        if(!$q['type']) $q['type'] = ['page', 'feed'];//static::$previewEntryType;
+        //$q['Relation.parent'] = null;
+
+        $r = [];
+        $s = [];
+        $p = [];
+        $sep = Studio::config('breadcrumb_separator');
+        $L = static::find($q, null, ['id', 'title'], false, ['title'=>'asc'],['id']);
+        if($L) {
+            foreach($L as $i=>$o) {
+                $r[] = ['value'=>$o->id, 'label'=>$o->title];
+            }
+        }
+        $flags = JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES;
+        if($Api && $Api::$pretty) $flags = $flags|JSON_PRETTY_PRINT;
+        S::output(json_encode(array_values($r), $flags), 'json');
     }
 
     public function childrenOptions(&$r)
     {
         if($L = $this->getChildren(null, 'string')) {
             foreach($L as $i=>$o) {
-                $r[] = ['value'=>$o->id, 'label'=>$o->title, 'position'=>1, 'className'=>'z-indent'];
-                $r[] = ['value'=>$this->id, 'label'=>$this->title, 'position'=>$i+2, 'className'=>'z-nolabel'];
+                $r[$o->id] += ['value'=>$o->id, 'label'=>$o->title, 'position'=>1, 'className'=>'z-indent'];
+                $r[$this->id] += ['value'=>$this->id, 'label'=>$this->title, 'position'=>$i+2, 'className'=>'z-nolabel'];
                 //$o->childrenOptions($r);
             }
         }
@@ -1523,5 +1588,23 @@ class Entries extends Model
         } else {
             return S::glob($f.$pat);
         }
+    }
+
+    public function renderMeta($meta=null)
+    {
+        if(!is_array($meta)) $meta = ['title', 'summary', 'tags', 'published'];
+        if($this->id==Studio::$page) {
+            if(in_array('title', $meta) && ($m=$this->title)) $s .= '<h1>'.S::xml($m).'</h1>';
+            if(in_array('summary', $meta) && ($m=$this->summary)) $s .= '<div class="p-summary">'.$m.'</div>';
+            if(in_array('tags', $meta) && ($m=$this->getTags())) {
+                $s .= '<div class="p-subject">'.S::xml(implode(', ', $m)).'</div>';
+            }
+            //if(in_array('published', $meta) && ($m=$entry->published)) $pub = S::strtotime($m);//$after .= '<p class="p-published" data-published="'.S::xml($m).'">'.S::date($m).'</p>';
+        } else {
+            if(in_array('title', $meta) && ($m=$this->title)) $s .= '<h3>'.(($entry->link) ?'<a href="'.S::xml($this->link).'">'.S::xml($m).'</a>' :S::xml($m)).'</h3>';
+            if(in_array('summary', $meta) && ($m=$this->summary)) $s .= '<div class="p-summary">'.$m.'</div>';
+        }
+
+        return $s;
     }
 }

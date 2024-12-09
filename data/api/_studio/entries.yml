@@ -33,7 +33,7 @@ all:
           bind: Related.parent
           type: select
           attributes:
-            data-datalist-api: /_studio/feed/q?envelope=false&scope=title
+            data-datalist-api: /_studio/site/pages?type=feed
           
         '*Last modified': updated
         '*Published': published
@@ -68,6 +68,8 @@ all:
               choices: Studio\Model\Entries
               choicesFilter:
                 type: feed
+              attributes:
+                data-datalist-api: /_studio/site/pages?type=feed
         '*Published':
           bind: published
           class: i1s2

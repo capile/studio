@@ -55,11 +55,11 @@ class Users extends Model
     public function getCredentials()
     {
         if(is_null($this->credentials)) {
-            $cs = Groups::find(['Credentials.userid'=>$this->id],null,['name'],false);
+            $cs = Groups::find(['Credentials.userid'=>$this->id],null,['id', 'name'],false);
             $this->credentials=[];
             if($cs) {
                 foreach($cs as $C) {
-                    $this->credentials[(int)$C->id]=$C->name;
+                    $this->credentials[$C->id]=$C->name;
                 }
             }
         }
@@ -86,5 +86,41 @@ class Users extends Model
             if(!is_null($this->credentials)) $this->credentials=null;
             $this->save();
         }
+    }
+
+    public function getGroups()
+    {
+        return ($c=$this->getCredentials()) ?array_keys($c) :[];
+    }
+
+    public function previewGroups()
+    {
+        if($c=$this->getCredentials()) {
+            if(Api::format()==='html') {
+                $s = '<ul>';
+                foreach($c as $id=>$name) $s .= '<li>'.S::xml($name).'</li>';
+                $s .= '</ul>';
+            } else {
+                $s = $c;
+            }
+
+            return $s;
+        }
+    }
+
+    public function setGroups($v)
+    {
+        if(is_array($v)) {
+            $this->getRelation('Credentials', null, null, false);
+            $b = ($this->id) ?['userid'=>$this->id] :[];
+            foreach($v as $i=>$o) {
+                if(is_string($o) || is_int($o)) $v[$i] = ['groupid'=>$o]+$b;
+                else if(is_bool($o) || is_null($o)) unset($v[$i]);
+                unset($i, $o);
+            }
+            $this->setRelation('Credentials', $v);
+        }
+
+        return true;
     }
 }

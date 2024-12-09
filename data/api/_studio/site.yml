@@ -2,6 +2,21 @@
 all:
   title: '*Site Resources'
   model: Studio\Model\Entries
+  actions:
+    sitemap:
+      position: ~
+      identified: false
+      batch: true
+      query: true
+      additional-params: true
+      action: executeMethod
+    pages:
+      position: ~
+      identified: false
+      batch: true
+      query: true
+      additional-params: true
+      action: executeMethod
   #graph:
   #  entry-type-bar:
   #    style:

@@ -15,7 +15,9 @@
     "relations": {
         "Credentials": { "local": "id", "foreign": "groupid", "type": "many", "className": "Studio\\Model\\Credentials" }
     },
-    "scope": [],
+    "scope": {
+        "string": [ "name" ]
+    },
     "events": {
         "before-insert": [ "actAs" ],
         "before-update": [ "actAs" ],
