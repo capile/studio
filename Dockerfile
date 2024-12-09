@@ -1,8 +1,7 @@
-## tecnodesign/studio:v1.2
+## tecnodesign/studio:v1.3
 #
-# docker build -t tecnodesign/studio:latest -t tecnodesign/studio:v1.2 "git@github.com:capile/studio.git#main"
-# docker push tecnodesign/studio:latest
-# docker push tecnodesign/studio:v1.2
+# docker build -t tecnodesign/studio:1.3 "git@github.com:capile/studio.git#v1.3"
+# docker push docker.io/tecnodesign/studio:v1.3
 FROM php:8.3-fpm-alpine
 RUN apk add --no-cache --update \
       ffmpeg \

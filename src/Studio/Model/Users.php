@@ -52,7 +52,7 @@ class Users extends Model
         }
     }
 
-    public function getCredentials()
+    public function getCredentials($keys=true)
     {
         if(is_null($this->credentials)) {
             $cs = Groups::find(['Credentials.userid'=>$this->id],null,['id', 'name'],false);
@@ -63,7 +63,7 @@ class Users extends Model
                 }
             }
         }
-        return $this->credentials;
+        return ($keys) ?array_keys($this->credentials) :$this->credentials;
     }
 
 
@@ -90,12 +90,12 @@ class Users extends Model
 
     public function getGroups()
     {
-        return ($c=$this->getCredentials()) ?array_keys($c) :[];
+        return $this->getCredentials(true);
     }
 
     public function previewGroups()
     {
-        if($c=$this->getCredentials()) {
+        if($c=$this->getCredentials(false)) {
             if(Api::format()==='html') {
                 $s = '<ul>';
                 foreach($c as $id=>$name) $s .= '<li>'.S::xml($name).'</li>';

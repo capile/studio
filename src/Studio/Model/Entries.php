@@ -1593,6 +1593,7 @@ class Entries extends Model
     public function renderMeta($meta=null)
     {
         if(!is_array($meta)) $meta = ['title', 'summary', 'tags', 'published'];
+        $s = null;
         if($this->id==Studio::$page) {
             if(in_array('title', $meta) && ($m=$this->title)) $s .= '<h1>'.S::xml($m).'</h1>';
             if(in_array('summary', $meta) && ($m=$this->summary)) $s .= '<div class="p-summary">'.$m.'</div>';

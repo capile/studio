@@ -91,7 +91,7 @@ class Studio
             'task'=>['Studio\\Model\\Tasks', 'check'],
             'version'=>['Studio', 'env', [true, true]],
         ];
-    const VERSION = 1.1;    // should match the development branch 
+    const VERSION = 1.3;    // should match the development branch
 
     /**
      * This is a App, the constructor is loaded once and then cached (until configuration changes)
