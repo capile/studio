@@ -51,6 +51,7 @@ all:
       entry:
         __default:
           fieldset: '*Article'
+          class: i1s2
         '*Title': title
         '*Link': link
         '*Summary':
@@ -70,12 +71,16 @@ all:
                 type: feed
               attributes:
                 data-datalist-api: /_studio/site/pages?type=feed
-        '*Published':
-          bind: published
-          class: i1s2
-        '*Tag': 
-          bind: _tags
-          class: i1s2
+        '*Tag': _tags
+        '*Published': published
+        '*Template': master
+        '*Credentials':
+          bind: Permission
+          format: form
+          scope:
+            '*Role': role
+            '*Credentials': credentials
+        '*Type': type
       content:
         __default:
           fieldset: '*Content'

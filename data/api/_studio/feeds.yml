@@ -39,7 +39,7 @@ all:
         '*Published': published
         '*Tag': Tag.slug
       new:
-        - scope::feed
+        - 'scope::feed'
         - format: hidden
           bind: type
           value: feed
@@ -50,18 +50,34 @@ all:
       feed:
         __default:
           fieldset: '*Newsfeed'
+          class: i1s2
         '*Title': title
         '*Link': link
         '*Summary':
           bind: summary
           format: html
           class: ih10
-        '*Published':
-          bind: published
-          class: i1s2
-        '*Tag': 
-          bind: _tags
-          class: i1s2
+        '*Sitemap':
+          bind: Related
+          format: form
+          scope:
+            "*Parent":
+              bind: parent
+              format: select
+              choices: Studio\Model\Entries
+              attributes:
+                data-datalist-api: /_studio/site/sitemap?envelope=false
+            "*Position": position
+        '*Tag': _tags
+        '*Published': published
+        '*Template': master
+        '*Credentials':
+          bind: Permission
+          format: form
+          scope:
+            '*Role': role
+            '*Credentials': credentials
+        '*Type': type
       _meta:
         __default:
           class: i1s4

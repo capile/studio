@@ -41,8 +41,10 @@ foreach($scope as $fn=>$fd) {
     if($schema) $a['itemprop'] = $fn;
     if(isset($fd['format'])) {
         if($fd['format']=='html') {
+            $el = 'div';
             $escape = false;
         } else if($fd['format']=='textarea' || $fd['format']=='markdown') {
+            $el = 'div';
             $v = S::markdown($v);
             $escape = false;
         } else if($fd['format']=='datetime' || $fd['format']=='date') {
