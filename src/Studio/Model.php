@@ -2601,6 +2601,7 @@ class Model implements ArrayAccess, Iterator, Countable
                     }
                 } else if(isset($fd['format']) && $fd['format']=='html' && isset($fd['html_labels']) && $fd['html_labels']) {
                     $xmlEscape = false;
+                    S::log(__METHOD__, $v, S::safeHtml($v));
                     $v = S::safeHtml($v);
                 } else if(substr($fd['type'], 0, 3)=='int') {
                     if(is_numeric($v)) $v = (int)$v;

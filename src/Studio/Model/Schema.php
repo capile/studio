@@ -97,6 +97,9 @@ class Schema extends Model
                         else $c = S::unserialize($o->content, (in_array(substr($o->content, 0, 1), $j0)) ?'json' :'yaml');
                     } else if($o->type==='attributes') {
                         $c = S::unserialize($o->content, (in_array(substr($o->content, 0, 1), $j0)) ?'json' :'yaml');
+                    } else if($o->type==='format') {
+                        $c = trim($o->content);
+                        if($c==='html') $r[$o->bind]['html_labels'] = true;
                     } else {
                         $c = $o->content;
                     }

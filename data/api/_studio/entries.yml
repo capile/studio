@@ -52,8 +52,12 @@ all:
         __default:
           fieldset: '*Article'
           class: i1s2
-        '*Title': title
-        '*Link': link
+        '*Title':
+            bind: title
+            class: ~
+        '*Link':
+          bind: link
+          class: ~
         '*Summary':
           bind: summary
           format: html

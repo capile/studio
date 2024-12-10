@@ -6,7 +6,7 @@ all:
     type: feed
   options:
     list-parent: site
-    priority: 1003
+    priority: 1002
     index: true
     group-by: [ id ]
     order:

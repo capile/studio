@@ -323,6 +323,7 @@ class Contents extends Model
         if(!$scope) {
             $c = '<div class="s-inner-block">'.S::xml(S::serialize($this->content, 'yaml')).'</div>';
         } else {
+            S::log(__METHOD__, $scope);
             if(is_string($scope)) $scope = static::columns($scope, null, true);
             if(is_string($this->content)) $this->content = S::unserialize($this->content, 'json');
             $c = $this->renderScope($scope, true, null, '<dl class="s-api-field"><dt>$LABEL</dt><dd>$INPUT</dd></dl>', null, true);

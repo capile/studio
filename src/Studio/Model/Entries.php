@@ -1513,7 +1513,7 @@ class Entries extends Model
             }
         }
         if($r) {
-            array_multisort($r, SORT_ASC, SORT_STRING, $s);
+            @array_multisort($r, SORT_ASC, SORT_STRING, $s);
         }
         $flags = JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES;
         if($Api && $Api::$pretty) $flags = $flags|JSON_PRETTY_PRINT;
@@ -1541,11 +1541,25 @@ class Entries extends Model
         $s = [];
         $p = [];
         $sep = Studio::config('breadcrumb_separator');
-        $L = static::find($q, null, ['id', 'title'], false, ['title'=>'asc'],['id']);
+        $L = static::find($q, null, ['id', 'title', 'Relation.Parent.title _parent_title', 'Relation.parent _parent', 'Relation.position _parent_position'], false, ['title'=>'asc'],['id']);
         if($L) {
             foreach($L as $i=>$o) {
-                $r[] = ['value'=>$o->id, 'label'=>$o->title];
+                $g = $o->_parent_title;
+                $p[$o->id] = $o->_parent;
+
+                if($g) {
+                    //if(isset($p[$o->_parent])) {}
+                    $t = implode($sep, $o->getAncestors(null, 'position')).$sep;
+                    $g = preg_replace('#<[0-9]+>#', '', $t);
+                } else {
+                    $t = $o->title;
+                }
+                $r[] = ['value'=>$o->id, 'label'=>$o->title, 'group'=>$g];
+                $s[] = $t;
             }
+        }
+        if($r) {
+            @array_multisort($r, SORT_ASC, SORT_STRING, $s);
         }
         $flags = JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES;
         if($Api && $Api::$pretty) $flags = $flags|JSON_PRETTY_PRINT;
