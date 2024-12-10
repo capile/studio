@@ -49,6 +49,7 @@ class Studio
         $private=[],        // updated at runtime, indicates when a cache-control: private,nocache should be sent
         $page,              // updated at runtime, actual entry id rendered
         $extension,         // filled with allowed extensions
+        $schema,            // filled with the page schema
         $connection,        // connection to use, set to false to disable database
         $params=array(),    // updated at runtime, general params
         $cacheTimeout=false,// configurable, cache timeout
@@ -821,7 +822,7 @@ class Studio
 
     public static function template($url=null)
     {
-        $E = new Entries(array('link'=>$url),false, false);
+        $E = new Entries(array('link'=>$url, 'published'=>S_TIMESTAMP, 'updated'=>S_TIMESTAMP),false, false);
         $C = $E->getRelatedContent();
         unset($E);
         $tpl = array();

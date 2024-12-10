@@ -193,11 +193,6 @@ class Entries extends Model
             }
         }
 
-        if($this->id===Studio::$page && ($meta=Studio::config('render_meta'))) {
-            $this->refresh(['title', 'summary', 'link']);
-            array_unshift($slots[$bodySlot], $this->renderMeta($meta));
-        }
-
         self::$s=1;
         $dyn = false;
         if(($contents=$this->getRelatedContent()) && count($contents)>0) {
@@ -231,6 +226,18 @@ class Entries extends Model
                 }
                 unset($contents[$i], $i, $C, $pos);
             }
+        }
+
+        if($this->id===Studio::$page && ($meta=Studio::config('render_meta'))) {
+            $this->refresh(['title', 'summary', 'link']);
+            $sm = $this->renderMeta($meta, $bodySlot);
+            if(isset($slots[$bodySlot][0])) {
+                if(is_array($slots[$bodySlot][0])) array_unshift($slots[$bodySlot][0], $sm);
+                else $slots[$bodySlot][0] = $sm.$slots[$bodySlot][0];
+            } else {
+                $slots[$bodySlot][0] = $sm;
+            }
+            unset($sm);
         }
 
         if(!$dyn && $this->modified) {
@@ -276,7 +283,11 @@ class Entries extends Model
 
             if($slotname!='meta' && $slotname!='title') {
                 $merge[]=$slotname;
-                $a['variables'][$slotname] = "<div id=\"{$slotname}\" data-studio=\"{$sid}\">"
+                $sa = '';
+                if($slotname===$bodySlot && Studio::$schema) {
+                    $sa = ' itemscope itemtype="'.S::xml(trim(Studio::$schema)).'"';
+                }
+                $a['variables'][$slotname] = "<div id=\"{$slotname}\" data-studio=\"{$sid}\"{$sa}>"
                   . S::get('before-'.$slotname)
                   . $a['variables'][$slotname]
                   . S::get($slotname)
@@ -1575,17 +1586,21 @@ class Entries extends Model
         }
     }
 
-    public function renderMeta($meta=null)
+    public function renderMeta($meta=null, $bodySlot='body')
     {
         if(!is_array($meta)) $meta = ['title', 'summary', 'tags', 'published'];
         $s = null;
         if($this->id==Studio::$page) {
-            if(in_array('title', $meta) && ($m=$this->title)) $s .= '<h1>'.S::xml($m).'</h1>';
-            if(in_array('summary', $meta) && ($m=$this->summary)) $s .= '<div class="p-summary">'.$m.'</div>';
+            if(in_array('title', $meta) && ($m=$this->title)) $s .= '<h1'.((Studio::$schema) ?' itemprop="name"' :'').'>'.S::xml($m).'</h1>';
+            if(in_array('summary', $meta) && ($m=$this->summary)) $s .= '<div class="p-about"'.((Studio::$schema) ?' itemprop="about"' :'').'>'.$m.'</div>';
+            $after = null;
             if(in_array('tags', $meta) && ($m=$this->getTags())) {
-                $s .= '<div class="p-subject">'.S::xml(implode(', ', $m)).'</div>';
+                $after .= '<p class="p-keywords"'.((Studio::$schema) ?' itemprop="keywords"' :'').'>'.S::xml(implode(', ', $m)).'</p>';
             }
-            //if(in_array('published', $meta) && ($m=$entry->published)) $pub = S::strtotime($m);//$after .= '<p class="p-published" data-published="'.S::xml($m).'">'.S::date($m).'</p>';
+            if(in_array('published', $meta) && ($m=$entry->published)) {
+                $after .= '<p class="p-published"'.((Studio::$schema) ?' itemprop="datePublished" content="'.S::xml($m).'"' :'').'>'.S::date($m).'</p>';
+            }
+            if($after) S::set('after-'.$bodySlot, S::get('after-'.$bodySlot).$after);
         } else {
             if(in_array('title', $meta) && ($m=$this->title)) $s .= '<h3>'.(($entry->link) ?'<a href="'.S::xml($this->link).'">'.S::xml($m).'</a>' :S::xml($m)).'</h3>';
             if(in_array('summary', $meta) && ($m=$this->summary)) $s .= '<div class="p-summary">'.$m.'</div>';

@@ -437,28 +437,10 @@ class Contents extends Model
         if($p=Studio::config('content_class_name')) {
             $attr['class'] = $p;            
         }
-        if($a=$this->attributes) {
-            if(is_string($a)) $a = S::unserialize($a, 'json');
-            if($a && isset($a['attributes'])) $a = $a['attributes'];
-            if($a && is_array($a)) $attr += $a;
+        if(!is_array($this->attributes)) {
+            if($this->attributes && is_string($this->attributes)) $this->attributes = S::unserialize($this->attributes, 'json');
+            else $this->attributes = [];
         }
-        $a = '';
-        foreach($attr as $n=>$v) {
-            $a .= ' '.$n.'="'.S::xml($v).'"';
-            unset($attr[$n], $n, $v);
-        }
-        unset($attr);
-        if($tpl=S::templateFile('studio-contents-'.$type)) {
-            if(!isset($code['txt']) && isset($code[0])) {
-                $code['txt']=$code[0];
-                unset($code[0]);
-            }
-            $s = "<div{$a}>"
-                . S::exec(array('script'=>$tpl, 'variables'=>$code))
-                . '</div>';
-            return $s;
-        }
-
         $ct = (isset(static::$contentType[$type]))?(static::$contentType[$type]):(array());
         $call = (isset($ct['class']) && class_exists($ct['class']))?(array($ct['class'])):(array($this));
         if(isset($ct['method']) && method_exists($call[0], $ct['method'])) {
@@ -466,8 +448,21 @@ class Contents extends Model
         } else {
             $call[1] = 'render'.ucfirst($type);
         }
-        $r = call_user_func($call, $code, $this);
+        if(method_exists($call[0], $call[1])) {
+            $r = call_user_func($call, $code, $this);
+        } else if($tpl=S::templateFile('studio_contents_'.$type, 'studio-contents-'.$type, 'studio_contents')) {
+            $r = S::exec(['script'=>$tpl, 'variables'=>$code+['Content'=>$this, 'entry'=>$this->entry, 'type'=>$type]]);
+        }
         unset($call[0], $call);
+        if($this->attributes) {
+            $attr += $this->attributes;
+        }
+        $a = '';
+        foreach($attr as $n=>$v) {
+            $a .= ' '.$n.((!is_null($v) && $v!==false) ?'="'.S::xml($v).'"' :'');
+            unset($attr[$n], $n, $v);
+        }
+        unset($attr);
         if($display) {
             $result = '';
             if(is_array($r)) {

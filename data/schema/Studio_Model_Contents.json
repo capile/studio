@@ -10,7 +10,7 @@
         "slot": { "type": "string", "size": 50 },
         "content_type": { "type": "string", "size": 100 },
         "source": { "type": "string", "size": 200 },
-        "attributes": { "type": "string", "size": 2000, "serialize": "json" },
+        "attributes": { "type": "object", "size": 2000, "serialize": "json" },
         "content": { "type": "string", "serialize": "json", "size": 100000 },
         "position": { "type": "int" },
         "published": { "format": "datetime", "type": "string", "index": [ "s_content__published_idx" ] },
