@@ -9,6 +9,9 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+use Studio as S;
+use Studio\Studio;
+
 $class='';$sf='';$dim='.200x100';
 $figures = $entry->getContents(array('content_type'=>'media'));
 if($figures && count($figures)>0) {
@@ -25,8 +28,8 @@ if($figures && count($figures)>0) {
         }
         $sf .= '<figure id="fig'.$imgid.'">';
         $fig += array('alt'=>'');
-        $sf .= '<img alt="'.Studio::xml($fig['alt']).'" src="'.Studio::xml($src).'" border="0" />';
-        if(isset($fig['title'])) $sf .= '<legend>'.Studio::xml($fig['title']).'</legend>';
+        $sf .= '<img alt="'.S::xml($fig['alt']).'" src="'.S::xml($src).'" border="0" />';
+        if(isset($fig['title'])) $sf .= '<legend>'.S::xml($fig['title']).'</legend>';
         $sf .= '</figure>';
     }
     if($sf!='') {
@@ -35,16 +38,14 @@ if($figures && count($figures)>0) {
     }
 }
 
-$s = '<article><div class="hentry'.$class.'" id="e'.$id.'">';
-$s .= '<h3 class="entry-title">'.(($link)?('<a href="'.Studio::xml($link).'" rel="bookmark" title="'.Studio::xml($title).'">'.Studio::xml($title).'</a>'):(Studio::xml($title))).'</h3>';
-$s .= '<div class="entry-content">'.$sf.$summary.'</div>';
-$pub = strtotime($published);
-$s .= '<p class="date">';
-if($pub)
-  $s .= '<span class="published">Publicado em <abbr class="published" title="'.date('c',$pub).'">'.date('d/m/Y H:i',$pub).'</abbr></span> ';
-$mod = strtotime($updated);
-if($mod)
-  $s .= '<span class="updated">Última atualização <abbr class="updated" title="'.date('c',$mod).'">'.date('d/m/Y H:i',$mod).'</abbr></span>';
+$schema = Studio::config('entry_schema');
 
-$s .= '</p></div></article>';
-echo $s;
+echo '<article'.(($schema) ?' itemscope itemtype="'.$schema.'"' :'').'>'
+   .   '<div class="hentry'.$class.'" id="e'.$id.'">'
+   .     '<h3 class="entry-title"'.(($schema) ?' itemprop="name"' :'').'>'.(($link)?('<a href="'.S::xml($link).'">'.S::xml($title).'</a>'):(S::xml($title))).'</h3>'
+   .     '<div class="entry-content"'.(($schema) ?' itemprop="about"' :'').'>'.$sf.$summary.'</div>'
+   .     (($pub = strtotime($published)) ?'<p class="entry-published"'.(($schema) ?' itemprop="datePublished" content="'.$published.'"' :'').'>'.preg_replace('/ +[0\:]+$/', '', S::date($pub)).'</p>' :'')
+   .    (($entry && ($tag=$entry->getTags())) ?'<p class="entry-keywords"'.(($schema) ?' itemprop="keywords"' :'').'><span>'.implode('</span> <span>', $tag).'</span></p>' :'')
+   .   '</div>'
+   . '</article>'
+   ;

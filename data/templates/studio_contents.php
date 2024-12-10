@@ -43,15 +43,17 @@ foreach($scope as $fn=>$fd) {
         if($fd['format']=='html') {
             $el = 'div';
             $escape = false;
+            $v = trim(S::safeHtml($v));
         } else if($fd['format']=='textarea' || $fd['format']=='markdown') {
             $el = 'div';
-            $v = S::markdown($v);
+            $v = trim(S::markdown($v));
             $escape = false;
         } else if($fd['format']=='datetime' || $fd['format']=='date') {
             $a[$fd['format']] = $v;
             $v = S::date($v);
         }
     }
+    if(!$v) continue;
     if(is_array($v)) $v = implode(', ', $v);
     $s .= '<'.$el;
     foreach($a as $n=>$m) $s .= ' '.$n.'="'.S::xml($m).'"';

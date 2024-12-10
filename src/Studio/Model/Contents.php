@@ -454,6 +454,7 @@ class Contents extends Model
         } else if($tpl=S::templateFile('studio_contents_'.$type, 'studio-contents-'.$type, 'studio_contents')) {
             $r = S::exec(['script'=>$tpl, 'variables'=>$code+['Content'=>$this, 'entry'=>$this->entry, 'type'=>$type]]);
         }
+
         unset($call[0], $call);
         if($this->attributes) {
             $attr += $this->attributes;

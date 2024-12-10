@@ -35,6 +35,7 @@
         "string": [ "title", "type", "id" ],
         "position": [ "title", "Children.position _position" ],
         "link": [ "id", "link", "title", "summary", "type" ],
+        "feed": [ "id", "link", "title", "summary", "type", "published" ],
         "studio-new": [ "type", "title", "link", "summary", "published" ],
         "studio-edit": [ "type", "title", "link", "summary", "published", "contents" ],
         "review": { "*Title": "title", "*Link": "link", "*Summary": "summary", "*Last Modified": "updated" }

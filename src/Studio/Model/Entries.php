@@ -46,6 +46,7 @@ class Entries extends Model
         $indexFile='index',                            // filename to use for directory reads
         $previewEntryType=array('feed','file','page'), // which entry types can be previewed
         $hostnames=[],                                 // list of hostnames that should be skipped in the link validation
+        $rendered=[],
         $s = 1;
 
     protected $id, $title, $summary, $link, $source, $format, $published, $language, $type, $master, $version=false, $created, $updated=false, $expired, $Tag, $Contents, $Permission, $Child, $Parent, $Related, $Children, $ContentsDisplay;
@@ -628,8 +629,8 @@ class Entries extends Model
     {
         if(!$this->id) return null;
         if(!is_array($search)) $search = [];
+        $search = ['|Related.parent' => $this->id ] + $search;
         $search['published<']=S_TIMESTAMP;
-        $search['Related.parent'] = $this->id;
         if(!isset($search['type'])) {
             $search['type'] = ['page','feed'];
         }
@@ -1602,12 +1603,20 @@ class Entries extends Model
 
     public function renderMeta($meta=null, $bodySlot='body')
     {
+        if(isset(self::$rendered[$this->id])) return null;
+        self::$rendered[$this->id] = true;
         if(!is_array($meta)) $meta = ['title', 'summary', 'tags', 'published'];
         $s = null;
+        $after = null;
         if($this->id==Studio::$page) {
             if(in_array('title', $meta) && ($m=$this->title)) $s .= '<h1'.((Studio::$schema) ?' itemprop="name"' :'').'>'.S::xml($m).'</h1>';
-            if(in_array('summary', $meta) && ($m=$this->summary)) $s .= '<div class="p-about"'.((Studio::$schema) ?' itemprop="about"' :'').'>'.$m.'</div>';
-            $after = null;
+            if(in_array('summary', $meta) && ($m=$this->summary)) {
+                $m = trim(S::safeHtml($m));
+                if($m) {
+                    if(!preg_match('#<(p|div|h[1-9])[ >]#i', $m)) $m = '<p>'.trim($m).'</p>';
+                    $s .= '<div class="p-about"'.((Studio::$schema) ?' itemprop="about"' :'').'>'.$m.'</div>';
+                }
+            }
             if(in_array('tags', $meta) && ($m=$this->getTags())) {
                 $after .= '<p class="p-keywords"'.((Studio::$schema) ?' itemprop="keywords"' :'').'>'.S::xml(implode(', ', $m)).'</p>';
             }
@@ -1616,7 +1625,7 @@ class Entries extends Model
             }
             if($after) S::set('after-'.$bodySlot, S::get('after-'.$bodySlot).$after);
         } else {
-            if(in_array('title', $meta) && ($m=$this->title)) $s .= '<h3>'.(($entry->link) ?'<a href="'.S::xml($this->link).'">'.S::xml($m).'</a>' :S::xml($m)).'</h3>';
+            if(in_array('title', $meta) && ($m=$this->title)) $s .= '<h3>'.(($this->link) ?'<a href="'.S::xml($this->link).'">'.S::xml($m).'</a>' :S::xml($m)).'</h3>';
             if(in_array('summary', $meta) && ($m=$this->summary)) $s .= '<div class="p-summary">'.$m.'</div>';
         }
 

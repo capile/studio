@@ -20,28 +20,45 @@ if($entry && ($meta=Studio::config('render_meta'))) {
     if(!is_array($meta) || in_array('published', $meta) && ($m=$entry->published)) $pub = S::strtotime($m);
 }
 
-$s .= '<div class="hfeed s-entry" id="e'.$entry->id.'">';
 $i=1;
 $qs='';
+$fetch = false;
 if(!isset($template)) $template='studio_entry';
 if(!isset($entries)) {
-    $entries = $entry->getChildren(['type'=>'entry'], 'link', true);
+    $fetch = ($entry->id===Studio::$page);
+    $q = ['type'=>'entry'];
+    if($fetchAll) {
+        $fetch = false;
+        $q = ['|Related.Parent.Related.parent'=>$entry->id] + $q;
+    }
+    if(!isset($hpp)) $hpp = 10;
+    $entries = $entry->getChildren($q, 'feed', true);
 }
 if($entries && is_object($entries)) {
     if($hpp) {
-        $s .= $entries->paginate($hpp, 'renderEntry', array($template), true, true);
-        $entries = $entry->getChildren(); // show subpages afterwards
+        $s .= '<div class="hfeed s-entry" id="e'.$entry->id.'">'
+            . $entries->paginate($hpp, 'renderEntry', array($template), true, true)
+            . '</div>';
+        $entries = null;
     } else {
         $entries = $entries->getItems();
     }
 }
+if($fetch) {
+    $template = 'studio_feed';
+    $entries = $entry->getChildren(['type'=>['page', 'feed']], 'feed', false);
+}
+
 if($entries) {
+    $s .= '<div class="hfeed s-page">';
     foreach($entries as $entry) {
-        $s .= $entry->renderEntry($template);
+        $s .= $entry->renderEntry($template, ['fetchAll'=>true, 'linkEntry'=>true, 'hpp'=>3]);
         if(isset($limit) && $i++>=$limit)break;
         else if(!isset($limit))$i++;
     }
+    $s .= '</div>';
 }
-$s = $before.$s.'</div>'.$after;
+
+$s = $before.$s.$after;
 //$after .= '<p class="p-published" data-published="'.S::xml($m).'">'.S::date($m).'</p>';
 echo $s;

@@ -2114,7 +2114,11 @@ class Studio
 
     public static function safeHtml($s)
     {
-        return preg_replace('#<(/?[a-z][a-z0-9\:\-]*)(\s|[a-z0-9\-\_]+\=("[^"]*"|\'[^\']*\')|[^>]*)*(/?)>#i', '<$1$2>', strip_tags(preg_replace('#<(style|script)>[^<]+</(style|script)>#m', '', $s), '<p><ul><li><ol><table><th><td><br><br/><div><strong><em><i><u><del><strong><b><details><summary>'));
+        return  preg_replace('#<(/?[a-z][a-z0-9\:\-]*)(\s|[a-z0-9\-\_]+\=("[^"]*"|\'[^\']*\')|[^>]*)*(/?)>#i', '<$1$2>', 
+                strip_tags(
+                    preg_replace('#<(style|script)>[^<]+</(style|script)>#m', '', preg_replace('#<([^ <]+) [^<]*(style|script)=[^<]+>#m', '<$1>', $s)),
+                    '<p><ul><li><ol><table><th><td><br><br/><div><strong><em><i><u><sup><sub><a><del><strong><b><details><summary>')
+            );
     }
 
     public static function buildUrl($url, $parts=[], $params=[])
