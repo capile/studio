@@ -1,5 +1,5 @@
 ---
-Entry: Artigo
+Entry: Publicação
 Page: Página
 Slot: Lacuna
 Content Type: Tipo de conteúdo
@@ -14,13 +14,13 @@ Id: ID
 Location: Localização
 Order: Posição
 Attributes: Atributos
-Entry URL: URL do artigo
+Entry URL: URL da publicação
 Metadata: Metadados
-Feed: Lista de artigos
-Number of items: Quantidade de artigos
-Items per page: Artigos por página
+Feed: Lista de publicações
+Number of items: Quantidade de publicações
+Items per page: Publicações por página
 Options: Opções
-Related: Incluir artigos relacionados
+Related: Incluir publicações relacionadas
 Include link to page: Incluir link para página
 Preview: Habilitar visualização
 Enable search: Habilitar busca
@@ -31,8 +31,8 @@ Title: Título
 Subtitle: Subtítulo
 Image: Imagem
 Template: Modelo
-Number of items: Número de artigos
-Items per page: Artigos por página
+Number of items: Número de publicações
+Items per page: Publicações por página
 Source: Origem
 Media Format: Formato
 Link Target: Destino do link
@@ -46,8 +46,8 @@ Property: Atributo
 Value: Valor
 Text: Texto Simples
 Html: Texto em HTML
-Feed: Lista de Artigos
-Entry: Artigo
+Feed: Lista de publicações
+Entry: Publicação
 Media: Arquivo de mídia
 Body: Corpo de conteúdo
 Header: Cabeçalho
