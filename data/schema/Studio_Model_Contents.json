@@ -30,7 +30,7 @@
         "update": [ "content_type", "slot" ],
         "studio-content": [ "content_type", "slot",  "_title", "_subtitle", "_html", "_img", "_entry", "_master", "_limit", "_hpp", "_options", "_script", "_pi", "_src", "_format", "_href", "_txt" ] ,
         "review": { "*Id": "id", "*Page": "entry", "*Content Type": "content_type", "*Last Modified": "updated" },
-        "content": ["content"],
+        "content": ["content", "slot", "content_type", "attributes", "position"],
         "u-html":  ["content.title","content.subtitle","content.html","content.img"],
         "u-php": ["content.script","content.pi"],
         "u-feed":["content.entry","content.master", "content.limit", "content.hpp"],

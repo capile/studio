@@ -70,7 +70,7 @@ class Contents extends Model
                 $L = Schema::find(['enable_content'=>1],null,['id', 'title'], false);
                 if($L) {
                     foreach($L as $i=>$o) {
-                        static::$contentType[$o->id] = ($o->title) ?$o->title :S::t('*'.ucfirst(str_replace(['-', '_'], ' ', trim($o->id, '-_'))), 'model-studio_contents');
+                        static::$contentType[$o->id] = ($o->title) ?$o->title :S::t(ucfirst(str_replace(['-', '_'], ' ', trim($o->id, '-_'))), 'model-studio_contents');
                     }
                 }
             } else {
@@ -95,9 +95,12 @@ class Contents extends Model
 
     public static function choicesSlot()
     {
-        $r = array();
-        foreach(Entries::$slots as $n=>$c) {
-            $r[$n] = Studio::t($n, ucfirst($n));
+        static $r;
+        if(!$r) {
+            $r = [];
+            foreach(Entries::$slots as $n=>$c) {
+                $r[$n] = S::t(ucfirst(str_replace(['-', '_'], ' ', trim($n, '-_'))), 'model-studio_contents');
+            }
         }
         return $r;
     }
@@ -105,7 +108,7 @@ class Contents extends Model
     public function previewSlot()
     {
         if($this->slot) {
-            return Studio::t($this->slot, ucfirst($this->slot));
+            return S::t(ucfirst(str_replace(['-', '_'], ' ', trim($this->slot, '-_'))), 'model-studio_contents');
         }
     }
 
@@ -301,13 +304,15 @@ class Contents extends Model
 
     public function previewContent()
     {
-        //$c = S::xml($this->content);
         if(!isset($this->content_type) && $this->id) $this->refresh(['content_type']);
         $scope = null;
         $preview = null;
         if($this->content_type) {
             if($S=Schema::find(['|id'=>$this->content_type, '|aliases*='=>'"'.$this->content_type.'"', 'enable_content'=>1],1)) {
-                $scope = $S->formOverlay('content');
+                $scope0 = $S->formOverlay('content');
+                $scope = [];
+                foreach($scope0 as $fd) $scope[$fd['label']] = $fd;
+                unset($scope0, $fd);
             } else {
                 $scope = 'u-'.$this->content_type;
                 if(!isset(static::$schema->scope[$scope])) {
@@ -315,14 +320,12 @@ class Contents extends Model
                 }
             }
         }
-
-
         if(!$scope) {
-            $c = '<div class="z-inner-block">'.S::xml(S::serialize($this->content, 'yaml')).'</div>';
+            $c = '<div class="s-inner-block">'.S::xml(S::serialize($this->content, 'yaml')).'</div>';
         } else {
             if(is_string($scope)) $scope = static::columns($scope, null, true);
-        if(is_string($this->content)) $this->content = S::unserialize($this->content, 'json');
-            $c = $this->renderScope($scope, true, null, '<dl class="$CLASS"><dt>$LABEL</dt><dd>$INPUT</dd></dl>');
+            if(is_string($this->content)) $this->content = S::unserialize($this->content, 'json');
+            $c = $this->renderScope($scope, true, null, '<dl class="s-api-field"><dt>$LABEL</dt><dd>$INPUT</dd></dl>', null, true);
         }
 
         return $c;

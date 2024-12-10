@@ -1228,40 +1228,24 @@ class Entries extends Model
 
     public function previewContents()
     {
-        $tpl = '<div class="s-i-scope-block" data-action-schema="preview" data-action-url="'.S::scriptName(true).'">'
-           .     '<a href="'.Studio::$home.'/contents/new?entry='.$this->id.'&amp;position={position}&amp;slot={slot}&amp;scope=entry-content&amp;next=preview" class="s-i-button z-align-bottom z-i--new" data-inline-action="new"></a>'
-           . '</div>';
-        $r = str_replace(['{position}', '{slot}'], [1, static::$slot], $tpl);
         $slots = [];
-
         if($L=$this->getContents([], 'content', false, ['position'=>'asc', 'id'=>'desc'])) {
-            $E = (isset(S::$variables['entry'])) ?S::$variables['entry'] :null;
-            S::$variables['entry'] = $this;
             foreach($L as $i=>$o) {
                 $ct = ($o->content_type) ?$o->content_type :'text';
                 $slot = ($o->slot) ?$o->slot :static::$slot;
                 if(!isset($slots[$slot])) $slots[$slot] = '';
-                $slots[$slot] .= '<div class="s-api-item s-api-inner-block">'
-                    .   '<div class="s-api-scope-block" data-action-expects-url="'.Studio::$home.'/contents/update/'.$o->id.'" data-action-schema="preview" data-action-url="'.S::scriptName(true).'">'
-                    .     '<a href="'.Studio::$home.'/contents/update/'.$o->id.'?next=preview" class="s-i-button s-api--update" data-inline-action="update"></a>'
-                    .     '<a href="'.Studio::$home.'/contents/delete/'.$o->id.'?next='.S::scriptName(true).'" class="s-i-button s-api--delete" data-inline-action="delete"></a>'
-                    . (($o->content_type && in_array($o->content_type, $o::$previewContentType))
-                        ?'<div class="s-t-center z-app-image"><span class="s-t-inline s-t-left">'.$o->previewContent().'</span></div>'
-                        :$o->previewContent()
-                      )
-                    .    '<dl class="s-api-field i1s2"><dt>'.S::t('Content Type', 'model-studio_contents').'</dt><dd>'.$o->previewContentType().'</dd></dl>'
-                    .    '<dl class="s-api-field i1s2"><dt>'.S::t('Position', 'model-studio_contents').'</dt><dd>'.S::xml($o->position).'</dd></dl>'
-                    .   '</div>'
-                    . '</div>'
-                    . str_replace(['{position}', '{slot}'], [$o->position+1, $slot], $tpl);
+                else $slots[$slot] .= '<hr />';
+                $slots[$slot] .= $o->previewContent()
+                    . '<dl class="s-api-field i1s2"><dt>'.S::t('Content Type', 'model-studio_contents').'</dt><dd>'.$o->previewContentType().'</dd></dl>'
+                    . '<dl class="s-api-field i1s2"><dt>'.S::t('Position', 'model-studio_contents').'</dt><dd>'.S::xml($o->position).'</dd></dl>'
+                    ;
             }
-            S::$variables['entry'] = $E;
             unset($E);
         }
         foreach(static::$slots as $slot=>$c) {
             if(isset($slots[$slot])) {
-                $r .= '<h2 class="z-title">'.$slot.'</h2>'.str_replace(['{position}', '{slot}'], [1, $slot], $tpl);
-                $r .= '<div class="z-items">'.$slots[$slot].'</div>';
+                $r .= '<strong>'.S::t(ucfirst(str_replace(['-', '_'], ' ', trim($slot, '-_'))), 'model-studio_contents').'</strong>';
+                $r .= '<div class="s-items">'.$slots[$slot].'</div>';
                 unset($slots[$slot]);
             }
         }

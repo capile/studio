@@ -39,6 +39,7 @@
     },
     "overlay": {
         "type": { "format": "select", "choices": "choicesType" },
+        "enable_content": { "format": "radio", "choices": "choicesBool" },
         "aliases": { "multiple": true }
     },
     "actAs": {

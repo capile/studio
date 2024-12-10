@@ -86,7 +86,7 @@ all:
       '*Type':
         - page
         - feed
-        - file
+        - entry
     group-by: id
     order:
       '${greatest}(`updated`,`Contents.updated`)': desc

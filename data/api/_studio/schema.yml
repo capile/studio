@@ -15,6 +15,8 @@ all:
         '*Schema Type': type
       list:
         '*Title': title
+        '*Schema Type': type
+        '*Enable Content': enable_content
         '*Last modified': updated
       preview:
         - 'scope::core'
@@ -23,11 +25,13 @@ all:
       core:
         __default:
           fieldset: '*Schema'
+          class: i1s2
         '*ID': id
-        '*Title': title
         '*Schema Type': type
+        '*Title': title
         '*Description': description
         '*Source': base
+        '*Enable Content': enable_content
       prop:
         '*Properties':
           bind: SchemaProperties
@@ -37,9 +41,12 @@ all:
             - bind
             - type
             - item
-            - description
+            - title
             - primary
             - required
+            - description
+            - min_size
+            - max_size
             - default
             - serialize
             - position

@@ -113,7 +113,7 @@ class Model implements ArrayAccess, Iterator, Countable
     public function choicesBool()
     {
         static $o;
-        if(!$o) $o = S::t(['No', 'Yes'], 'interface');
+        if(!$o) $o = S::t(['No', 'Yes'], 'api');
 
         return $o;
     }
@@ -2528,7 +2528,7 @@ class Model implements ArrayAccess, Iterator, Countable
             $v = '<img src="'.((is_array($f))?(implode('" /><img src="', $f)):($f)).'" />';
             $xmlEscape = false;
         } else if(isset($fd['type']) && $fd['type']=='bool') {
-            $v = ($this[$fn] > 0) ?S::t('Yes', 'interface') :S::t('No', 'interface');
+            $v = ($this[$fn] > 0) ?S::t('Yes', 'api') :S::t('No', 'api');
         } else if(isset($fd['type']) && $fd['type']=='object') {
             $v = $this[$fn];
             if($v && !is_array($v)) $v = S::unserialize($v, (isset($fd['serialize'])) ?$fd['serialize'] :'json');

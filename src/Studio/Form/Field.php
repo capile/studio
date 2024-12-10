@@ -2011,7 +2011,7 @@ class Field extends SchemaObject
                         unset($fn, $f, $id);
                     }
                     $input .= '</div>';
-                    unset($i, $o);
+                    unset($k, $o);
                 }
             }
         }
@@ -2095,7 +2095,6 @@ class Field extends SchemaObject
 
             $columns[$fn] = $fd;
         }
-        S::log(__METHOD__, [func_get_args(), $columns, var_export($this, true)]);
         if(!$columns) return null;
         $fo = array(
             'fields'=>$columns,
@@ -2598,6 +2597,17 @@ class Field extends SchemaObject
 
     public function renderString(&$arg, $enableChoices=true)
     {
+        return $this->renderText($arg, $enableChoices);
+    }
+
+    public function renderList(&$arg, $enableChoices=true)
+    {
+        return $this->renderArray($arg, $enableChoices);
+    }
+
+    public function renderArray(&$arg, $enableChoices=true)
+    {
+        $this->multiple = true;
         return $this->renderText($arg, $enableChoices);
     }
 

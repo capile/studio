@@ -11,6 +11,7 @@ namespace Studio\Model;
 
 use Studio as S;
 use Studio\Model;
+use Studio\Api;
 
 class Schema extends Model
 {
@@ -32,11 +33,28 @@ class Schema extends Model
 
     public function previewTitle()
     {
-        if(!$this->title) return S::t(ucwords(preg_replace('/[\-\_\.]+/', ' ', basename($this->id))), 'model-studio_schema');
+        $s = ($this->title) ?$this->title :S::t(ucwords(preg_replace('/[\-\_\.]+/', ' ', basename($this->id))), 'model-studio_contents');
+
+        return S::xml($s);
+    }
+
+    public function previewSchemaProperties()
+    {
+        if($L=$this->getRelation('SchemaProperties', null, 'string', false)) {
+            $s = '<ul>';
+            foreach($L as $i=>$o) {
+                $t = ($o->title) ?$o->title :S::t($o->bind, 'model-studio_schema');
+                $s .= '<li>'.S::xml($t).(($t!==$o->bind) ?' ('.S::xml($o->bind).')' :'').'</li>';
+            }
+            $s .= '</li>';
+
+            return $s;
+        }
     }
 
     public function formOverlay($prefix=null)
     {
+        static $multipleType=['array', 'object'];
         $r = [];
         if($this->type==='object') {
             $P = SchemaProperties::find(['schema_id'=>$this->id],null,null,false,['position'=>'asc']);
@@ -51,10 +69,12 @@ class Schema extends Model
                         'default'=>$o->default,
                     ];
                     $s['label'] = ($o->title) ?$o->title :S::t(ucfirst(str_replace(['-', '_'], ' ', trim($o->bind, '-_'))), 'labels');
+                    if(in_array($o->type, $multipleType)) $s['multiple'] = true;
                     if($o->description) $s['placeholder'] = $o->description;
                     if($o->max_size>0) $s['size'] = (int)$o->max_size;
                     if(is_numeric($o->min_size)) $s['min_size'] = (int)$o->min_size;
                     if($o->serialize) $s['serialize'] = $o->serialize;
+                    else if(isset($s['multiple']) && $s['multiple']) $s['serialize'] = 'json';
                     $r[$o->bind] = $s;
                     unset($P[$i], $i, $o);
                 }

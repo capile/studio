@@ -38,7 +38,7 @@ class SchemaProperties extends Model
             if($this->schema_id) $q['id!=']=$this->schema_id;
             if($L=Schema::find($q, null, ['id', 'title'],false)) {
                 foreach($L as $a=>$b) {
-                    $o[$b->id] = $b->title;
+                    $o[$b->id] = ($b->title) ?$b->title :S::t(ucwords(preg_replace('/[\-\_\.]+/', ' ', basename($b->id))), 'model-studio_schema');
                     unset($L[$a], $a, $b);
                 }
             }

@@ -46,6 +46,8 @@
         "required": { "format": "radio", "choices": "choicesBool", "class": "i1s4", "label": "*Required" },
         "default": { "class": "i1s2", "label": "*Default Value" },
         "serialize": { "format": "select", "choices": "choicesSerialize", "class": "i1s4", "label": "*Serialize Data" },
+        "min_size": { "format": "int", "class": "i1s4", "label": "*Minimal size" },
+        "max_size": { "format": "int", "class": "i1s4", "label": "*Maximum size" },
         "position": { "format": "number", "class": "i1s4", "label": "*Sorting Order" }
     },
     "actAs": {

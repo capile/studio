@@ -79,17 +79,14 @@ all:
       content:
         __default:
           fieldset: '*Content'
-        '*Media':
+        '*Contents':
           bind: Contents
-          format: form
+          type: form
           scope:
-            '*Title': title
-            '*Link':
-              bind: link
-              format: select
-              choices: Studio\Model\Entries
-              choicesFilter:
-                type: file
+            - content_type
+            - slot
+            - bind: content
+              class: ~
 
       _meta:
         __default:

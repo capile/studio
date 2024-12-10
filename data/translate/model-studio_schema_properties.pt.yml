@@ -10,3 +10,6 @@ Primary Key: Chave Primária
 Required: Obrigatório
 Default Value: Valor Padrão
 Sorting Order: Ordem
+Minimal size: Tamanho mínimo
+Maximum size: Tamanho máximo
+Item type: Tipo de item
