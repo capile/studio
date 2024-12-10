@@ -1980,7 +1980,7 @@ class Field extends SchemaObject
             if(is_array($value)) {
                 if(!isset($value[0])) {
                     foreach($value as $i=>$o) {
-                        if(!is_numeric($i) && !is_array($o) && !is_object($o)) {
+                        if(!is_numeric($i)) {
                             $value = [$value];
                         }
                         unset($i, $o);

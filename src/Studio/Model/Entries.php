@@ -1242,6 +1242,7 @@ class Entries extends Model
             }
             unset($E);
         }
+        $r = null;
         foreach(static::$slots as $slot=>$c) {
             if(isset($slots[$slot])) {
                 $r .= '<strong>'.S::t(ucfirst(str_replace(['-', '_'], ' ', trim($slot, '-_'))), 'model-studio_contents').'</strong>';
