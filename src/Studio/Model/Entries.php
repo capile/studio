@@ -41,6 +41,12 @@ class Entries extends Model
             'entry'=>'*Article',
             'file'=>'*Uploaded file',
         ),
+        $api = [
+            'page'=>'pages',
+            'feed'=>'feeds',
+            'entry'=>'entries',
+            'file'=>'files',
+        ],
         $pageDir='web',                                // where pages are stored (relative to S_VAR)
         $uploadDir,                                    // deprecated, use S::uploadDir
         $indexFile='index',                            // filename to use for directory reads
@@ -61,13 +67,11 @@ class Entries extends Model
 
     public function studioId($prefix=null)
     {
-        static $plural = ['entry'=>'entries'];
-
         if(!$prefix) {
             if(!$this->type) $this->refresh(['type']);
 
             if($this->type) {
-                $prefix = ((isset($plural[$this->type])) ?$plural[$this->type] :$this->type.'s');
+                $prefix = ((isset(static::$api[$this->type])) ?static::$api[$this->type] :$this->type);
             } else {
                 $prefix = 'site';
             }
@@ -1230,12 +1234,34 @@ class Entries extends Model
         }
     }
 
-    public function interfaceLink()
+    public function apiLink()
     {
-        static $plural = ['entry'=>'entries'];
         if(!$this->type) $this->refresh(['type']);
 
-        return Studio::$home.'/'.((isset($plural[$this->type])) ?$plural[$this->type] :$this->type.'s').'/preview';
+        return Studio::$home.'/'.((isset(static::$api[$this->type])) ?static::$api[$this->type] :$this->type).'/preview';
+    }
+
+    public static function executeNext($Api=null)
+    {
+        if(App::request('headers', 'x-studio-action')==='api' && ($ref=App::request('headers', 'x-studio-api'))) {
+                // /_studio/feeds/preview/31
+            $url = $ref;
+            if(substr($ref, 0, $p=strlen(Studio::$home)+1)==Studio::$home.'/') {
+                $urlp = explode('/', substr($ref, $p));
+                if(count($urlp)===3) {
+                    if(in_array($urlp[0], static::$api) && $urlp[1]==='preview' && ($E=static::find(['id'=>$urlp[2],'type!='=>(array_search($urlp[0], static::$api))],1,['type']))) {
+                        $url = Studio::$home.'/'.static::$api[$E->type].'/'.$urlp[1].'/'.$urlp[2];
+                    }
+                    unset($E);
+                }
+                unset($urlp);
+            }
+        } else {
+            $url = Studio::$home.'/site';
+        }
+
+        if($Api) $Api->redirect($url);
+        else S::redirect($url);
     }
 
     public function previewContents()

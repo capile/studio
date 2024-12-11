@@ -90,7 +90,7 @@ all:
     group-by: id
     order:
       '${greatest}(`updated`,`Contents.updated`)': desc
-    link-generator: interfaceLink
+    link-generator: apiLink
     redirect-by-property:
       type:
         feed: feed

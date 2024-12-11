@@ -4,6 +4,16 @@ all:
   model: Studio\Model\Entries
   search:
     type: page
+  actions:
+    next:
+      position: ~
+      identified: false
+      batch: true
+      query: true
+      additional-params: true
+      action: executeMethod
+    update:
+      next: next
   options:
     priority: 1001
     list-parent: site

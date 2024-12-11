@@ -2838,31 +2838,28 @@ class Api extends SchemaObject
                     $msg = '<div class="s-msg s-msg-success">'.$this->text['success'].'</div>';
 
                     $next = $url = null;
-                    if(!($url=App::request('headers', 'x-studio-api')) || substr($url, 0, strlen(static::$base)+1)!=static::$base.'/') {
-                        if(isset($this->options['next'])) {
-                            if(is_array($this->options['next'])) {
-                                if(isset($this->options['next'][$this->action])) {
-                                    $next = $this->options['next'][$this->action];
-                                }
-                            } else {
-                                $next = $this->options['next'];
+                    $url=App::request('headers', 'x-studio-api');
+                    if(isset($this->options['next'])) {
+                        if(is_array($this->options['next'])) {
+                            if(isset($this->options['next'][$this->action])) {
+                                $next = $this->options['next'][$this->action];
                             }
+                        } else {
+                            $next = $this->options['next'];
                         }
-                        if(!$next && isset($this->actions[$this->action]['next'])) {
-                            $next = $this->actions[$this->action]['next'];
-                        }
-                        if(!$next && ($next=App::request('get','next'))) {
-                            if(!isset($this->actions[$next])) $next = null;
-                        }
+                    }
+                    if(!$next && isset($this->actions[$this->action]['next'])) {
+                        $next = $this->actions[$this->action]['next'];
+                    }
+                    if(!$next && ($next=App::request('get','next'))) {
+                        if(!isset($this->actions[$next])) $next = null;
+                    }
 
-                        if($newpk!=$pk) {
-                            $this->id = $newpk;
-                            if(!$next) $next = $this->action;
-                        }
-                        if($next) {
-                            $this->action = $next;
-                            $url = $this->link();
-                        }
+                    if(!$url || substr($url, 0, strlen(static::$base)+1)!=static::$base.'/' || $newpk!=$pk || ($next && $next!=$this->action)) {
+                        if($newpk!=$pk) $this->id = $newpk;
+                        if(!$next) $next = $this->action;
+                        if($next && $next!=$this->action) $this->action = $next;
+                        $url = $this->link();
                     }
 
                     if($url) {

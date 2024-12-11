@@ -66,8 +66,7 @@ all:
           bind: Related
           format: form
           scope:
-            parent:
-              label: ~
+            '*Feed':
               bind: parent
               format: select
               choices: Studio\Model\Entries
