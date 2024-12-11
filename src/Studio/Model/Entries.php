@@ -1039,7 +1039,7 @@ class Entries extends Model
                     $l = substr($l, 0, strrpos($l, '/'));
                 }
             }
-            $r = Contents::find($f,null,null,false);
+            $r = Contents::find($f,null,null,false,['position'=>'asc']);
             if($r) {
                 $updated = false;
                 foreach($r as $i=>$o) {

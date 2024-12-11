@@ -46,7 +46,7 @@ if($entries && is_object($entries)) {
 }
 if($fetch) {
     $template = 'studio_feed';
-    $entries = $entry->getChildren(['type'=>['page', 'feed']], 'feed', false);
+    $entries = $entry->getChildren(['type'=>['page', 'feed']], 'feed', false, ['Related.position'=>'asc', 'title'=>'asc']);
 }
 
 if($entries) {
