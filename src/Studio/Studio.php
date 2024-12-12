@@ -522,7 +522,7 @@ class Studio
             'content'=>$p,
             'content_type'=>$ext,
             'source'=>$source,
-            'attributes'=>$meta,
+            'attributes'=>(isset($meta['attributes'])) ?$meta['attributes'] :[],
             'content'=>$p,
             'position'=>$pos,
             'updated'=>$lmod,

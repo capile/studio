@@ -113,6 +113,9 @@ class Yaml
         $yamlArray = $className ? $className::$functionName($string) : $functionName($string);
         if($yamlArray===false) {
             S::log('[INFO] Could not parse Yaml: '.$string);
+        } else if(is_array($yamlArray) && isset($yamlArray[0]) && $yamlArray[0]==='...' && ($c=count($yamlArray)) && array_keys($yamlArray)[$c -1]===0) {
+            // cleanup ... at the end of yaml file
+            unset($yamlArray[0]);
         }
 
         if ($useCache) {
