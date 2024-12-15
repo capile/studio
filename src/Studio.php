@@ -524,7 +524,8 @@ class Studio
             if(preg_match_all('/\$(([A-Za-z0-9\_]+\:\:)?[A-Za-z0-9\_]+)/', $a, $m)) {
                 foreach($m[1] as $i=>$o) {
                     $r = null;
-                    if($vars && isset($vars[$o])) $r = $vars[$o];
+                    if($vars && is_object($vars)) $r = $vars->$o;
+                    else if($vars && is_array($vars) && isset($vars[$o])) $r = $vars[$o];
                     else if(defined($o)) $r = constant($o);
                     else if($o==='SCRIPT_NAME' || $o==='URL') $r = self::scriptName();
                     else if($o==='PATH_INFO') $r = self::scriptName(true);

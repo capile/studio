@@ -59,7 +59,7 @@ class Users extends Model
             $this->credentials=[];
             if($cs) {
                 foreach($cs as $C) {
-                    $this->credentials[$C->id]=$C->name;
+                    $this->credentials[(string)$C->id]=$C->name;
                 }
             }
         }

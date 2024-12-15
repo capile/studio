@@ -70,7 +70,8 @@ class Mongodb
         $_transaction,
         $_last,
         $_query,
-        $_options;
+        $_options,
+        $_count;
 
     public function __construct($schema = null)
     {
@@ -90,20 +91,30 @@ class Mongodb
                 $Schema = $cn::$schema;
                 if(!isset($Schema->properties[static::UID_ATTRIBUTE])) {
                     $pk = $cn::pk($Schema, true);
+                    $pk1 = null;
                     if($pk && count($pk)===1 && $pk[0]!==static::UID_ATTRIBUTE) {
-                        //$Schema->properties[static::UID_ATTRIBUTE] = new ModelProperty(['type'=>'string','primary'=>true]);
-                        $Schema->properties[$pk[0]]->primary = false;
-                        $Schema->properties[$pk[0]]->alias = static::UID_ATTRIBUTE;
-                        //$Schema->properties[$pk[0]]->alias = static::UID_ATTRIBUTE;
-                    }
-                }
-                // map FK so that we convert them to ObjectId
-                if($Schema->relations) {
-                    foreach($Schema->relations as $rn=>$rd) {
-                        if($rd['type']==='one' && is_string($rd['local'])) {
-                            $this->_keys[$rd['local']] = true;
+                        $pk1 = $pk[0];
+                        if($Schema->properties[$pk[0]]->increment==='auto') {
+                            //$Schema->properties[$pk[0]]->primary = false;
+                            $Schema->properties[$pk[0]]->alias = static::UID_ATTRIBUTE;
+                            $tpl = false;
                         }
                     }
+                    foreach($pk as $fn) {
+                        $Schema->properties[$fn]->primary = false;
+                    }
+                    $Schema->properties = [static::UID_ATTRIBUTE => new ModelProperty(['type'=>'string', 'primary'=>true, 'increment'=>'auto'])] + $Schema->properties;
+                    // map FK so that we convert them to ObjectId
+                    $this->_keys[static::UID_ATTRIBUTE] = true;
+                    /*
+                    if($Schema->relations) {
+                        foreach($Schema->relations as $rn=>$rd) {
+                            if($rd['type']==='one' && is_string($rd['local'])) {
+                                $this->_keys[$rd['local']] = true;
+                            }
+                        }
+                    }
+                    */
                 }
             }
         }
@@ -796,13 +807,20 @@ class Mongodb
         $fs = $M::$schema->properties;
         if(!$fs) $fs = array_flip(array_keys($odata));
         foreach($fs as $fn=>$fv) {
-            if(!is_array($fv) && !is_object($fv)) $fv=[];
-            if($fv->increment==='auto' && !isset($odata[$fn])) {
+            if($fn===static::UID_ATTRIBUTE && (!isset($odata[$fn]) || !$odata[$fn])) {
+                continue;
+            } else if($fv->increment==='auto' && !isset($odata[$fn])) {
+                continue;
+            } else if(!is_object($fv)) {
+                continue;
+            } else if($fv->alias || $fv->readonly) {
                 continue;
             }
-            if($fv->alias || $fv->readonly) continue;
             if(!isset($odata[$fn]) && isset($fv->default) && $M->getOriginal($fn, false, true)===false) {
                 $odata[$fn] = $fv->default;
+            }
+            if(array_key_exists($fn, $odata) && (is_null($odata[$fn]) || ($odata[$fn]===false && $fv->type!=='bool'))) {
+                unset($odata[$fn]);
             }
             if (!isset($odata[$fn]) && $fv->required) {
                 throw new AppException(array(S::t('%s should not be null.', 'exception'), $M::fieldLabel($fn)));
@@ -948,7 +966,6 @@ class Mongodb
             $q = $this->buildQuery((bool)$this->config('countable'));
             $q['action'] = 'count';
             $this->_count = $this->run($q);
-            S::log(__METHOD__, $q, var_export($this, true));
         }
 
         return $this->_count;

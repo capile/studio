@@ -52,7 +52,8 @@
                 "number": "Real numbers",
                 "string": "Text string",
                 "array": "List of items, with sequential numerical keys",
-                "object": "List of items, with textual indexed keys"
+                "object": "List of items, with textual indexed keys",
+                "function": "Computed column, uses callback property"
             },
             "trigger": {
                 "bit": "bool",
@@ -221,6 +222,9 @@
         },
         "items": {
             "type": "object"
+        },
+        "callback": {
+            "type": "array"
         }
     }
 }

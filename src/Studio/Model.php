@@ -757,7 +757,7 @@ class Model implements ArrayAccess, Iterator, Countable
     {
         $cn = get_class($this);
         $Q = static::queryHandler();
-        if(!($Q instanceof \Studio\Query\Sql)) {
+        if($Q::TYPE!=='sql') {
             return $this->identityTrigger($fields, $conn);
         }
         $schema = $cn::$schema;
@@ -829,31 +829,30 @@ class Model implements ArrayAccess, Iterator, Countable
      */
     public function versionableTrigger($fields, $conn=null)
     {
+        if(!is_array($fields)) $fields = [$fields];
+        $fnVersion = $fields[0];
+        if(!isset($this->$fnVersion)) $this->refresh([$this->$fnVersion]);
+        $version0 = (int) $this->$fnVersion;
+        $version = $version0 +1;
+        $this->$fnVersion=$version;
+        $Q = static::queryHandler();
+        if($Q::TYPE!=='sql') {
+            return true;
+        }
         $schema = $this->schema();
         $vtn = ($schema->versionTableName)?($schema->versionTableName):($schema->tableName.'_version');
         $fns = implode(',', array_keys($schema->properties));
         $cn = get_class($this);
-        $scope = $cn::pk();
+        $scope = $cn::pk(null, true);
         $w=array();
-        if(!is_array($scope)) {
-            $scope = array($scope);
-        }
         foreach($scope as $fn) {
             $w[]="{$fn}=".S::sql($this->$fn);
         }
         $w = implode(' and ', $w);
-        if(is_array($fields)) {
-            $fields = array_shift($fields);
-        }
-        if(!isset($this->$fields)) $this->refresh([$this->$fields]);
-        $version = (int) $this->$fields;
-        $version++;
         $sqls = array(
-            "update {$schema->tableName} set {$fields}={$version} where {$w}",
+            "update {$schema->tableName} set {$fnVersion}={$version} where {$w}",
             "replace into {$vtn} ({$fns}) select {$fns} from {$schema->tableName} where {$w}",
         );
-        $this->$fields=$version;
-        $Q = static::queryHandler();
         foreach($sqls as $sql) {
             $Q->exec($sql, $conn);
         }
@@ -1815,7 +1814,7 @@ class Model implements ArrayAccess, Iterator, Countable
                 throw new AppException(array(S::t('Could not save %s.', 'exception'), $cn::label()));
             }
         } catch(Exception $e) {
-            S::log('[INFO] Error while saving '.get_class($this).': '.$e->getMessage());
+            S::log('[INFO] Error while saving '.get_class($this).': '.$e->getMessage().' '.$e);
 
             $msg = ($e instanceof AppException)?($e->getMessage()):('');
             if(!(substr($msg, 0, 1)=='<' && strpos(substr($msg, 0, 100), 's-i-msg'))) {
@@ -2601,7 +2600,6 @@ class Model implements ArrayAccess, Iterator, Countable
                     }
                 } else if(isset($fd['format']) && $fd['format']=='html' && isset($fd['html_labels']) && $fd['html_labels']) {
                     $xmlEscape = false;
-                    S::log(__METHOD__, $v, S::safeHtml($v));
                     $v = S::safeHtml($v);
                 } else if(substr($fd['type'], 0, 3)=='int') {
                     if(is_numeric($v)) $v = (int)$v;
@@ -2872,6 +2870,26 @@ class Model implements ArrayAccess, Iterator, Countable
         }
         if (isset($this->$name)) {
             $ret = $this->$name;
+        } else if(isset(static::$schema->properties[$firstName]->type) && static::$schema->properties[$firstName]->type==='function') {
+            $arg = null;
+            $m = null;
+            if(isset(static::$schema->properties[$firstName]->callback)) {
+                if(is_array(static::$schema->properties[$firstName]->callback)) {
+                    @list($m, $arg) = static::$schema->properties[$firstName]->callback;
+                } else {
+                    $m = (string)static::$schema->properties[$firstName]->callback;
+                }
+            }
+            if(is_string($m) && method_exists($this, $m)) {
+                $m = [$this, $m];
+            }
+            if(!is_array($arg)) {
+                $ret = call_user_func($m);
+            } else {
+                $ret = call_user_func_array($m, $arg);
+            }
+            unset($m, $arg);
+            $this->$name = $ret;
         } else if($dot && $firstName && $ref && (isset($this->$firstName) || method_exists($this, $m='get'.S::camelize($firstName, true)))) {
             if(method_exists($this, $m='get'.S::camelize($firstName, true))) {
                 $a = $this->$m();
@@ -3105,4 +3123,18 @@ class Model implements ArrayAccess, Iterator, Countable
         return count(self::$schema->properties);
     }
 
+    public function objectId($tpl=null, $className=null)
+    {
+        static $hash='sha1';
+        static $compress=true;
+        static $salt;
+
+        if(!$tpl) $tpl = '$'.implode(',$', static::pk(static::$schema, true));
+        $v = S::expandVariables($tpl, $this);
+        if($hash) $v = S::hash($v, $salt, $hash);
+        if($compress) $v = S::compress($v);
+        if($className) $v = new $className($v);
+
+        return $v;
+    }
 }
