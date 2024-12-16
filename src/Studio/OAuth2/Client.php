@@ -156,6 +156,12 @@ class Client extends SchemaObject
         return $s;
     }
 
+    public static function signOut($options=[])
+    {
+        $U = S::getUser();
+        $U->signOut();
+    }
+
     public function currentClient($q=[])
     {
         $U = S::getUser();

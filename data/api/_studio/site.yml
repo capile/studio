@@ -89,7 +89,7 @@ all:
         - entry
     group-by: id
     order:
-      '${greatest}(`updated`,`Contents.updated`)': desc
+      updated: desc
     link-generator: apiLink
     redirect-by-property:
       type:
@@ -103,7 +103,7 @@ all:
         '*Type': type
         URL: link
         '*Tags': _tags
-        '*Last Modified': '${greatest}(`updated`,`Contents.updated`) updated'
+        '*Last Modified': updated
         '*Published': published
       search:
         q:
@@ -117,9 +117,7 @@ all:
           bind: type
           format: checkbox
           multiple: true
-        '*Last Modified': 
-          bind: '${greatest}(`updated`,`Contents.updated`)'
-          format: datetime
+        '*Last Modified': updated
         '*Published': published
       new:
         '*Type':

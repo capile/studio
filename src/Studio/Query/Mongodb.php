@@ -92,29 +92,19 @@ class Mongodb
                 if(!isset($Schema->properties[static::UID_ATTRIBUTE])) {
                     $pk = $cn::pk($Schema, true);
                     $pk1 = null;
+                    $fd = ['type'=>'string', 'increment'=>'auto'];
                     if($pk && count($pk)===1 && $pk[0]!==static::UID_ATTRIBUTE) {
                         $pk1 = $pk[0];
-                        if($Schema->properties[$pk[0]]->increment==='auto') {
-                            //$Schema->properties[$pk[0]]->primary = false;
-                            $Schema->properties[$pk[0]]->alias = static::UID_ATTRIBUTE;
+                        if($Schema->properties[$pk1]->increment==='auto') {
+                            $this->_keys[$pk1] = true;
+                            $Schema->properties[$pk1]->type = 'string';
+                            $Schema->properties[$pk1]->size = 24;
+                            $fd['alias'] = $pk1;
                             $tpl = false;
                         }
                     }
-                    foreach($pk as $fn) {
-                        $Schema->properties[$fn]->primary = false;
-                    }
-                    $Schema->properties = [static::UID_ATTRIBUTE => new ModelProperty(['type'=>'string', 'primary'=>true, 'increment'=>'auto'])] + $Schema->properties;
-                    // map FK so that we convert them to ObjectId
-                    $this->_keys[static::UID_ATTRIBUTE] = true;
-                    /*
-                    if($Schema->relations) {
-                        foreach($Schema->relations as $rn=>$rd) {
-                            if($rd['type']==='one' && is_string($rd['local'])) {
-                                $this->_keys[$rd['local']] = true;
-                            }
-                        }
-                    }
-                    */
+                    $Schema->properties = [static::UID_ATTRIBUTE => new ModelProperty($fd)] + $Schema->properties;
+                    $Schema->scope['uid'] = [ '_id' ];
                 }
             }
         }
@@ -668,6 +658,12 @@ class Mongodb
                         }
                     }
                 }
+                if($this->_keys && isset($a[static::UID_ATTRIBUTE])) {
+                    $uid = (string)$a[static::UID_ATTRIBUTE];
+                    foreach($this->_keys as $fn=>$escape) {
+                        if(!isset($a[$fn])) $a[$fn] = ($escape) ?$uid :$a[static::UID_ATTRIBUTE];
+                    }
+                }
                 if(!$as || $as==='array' || $as==='column') {
                     // add support for queryColumn
                     $r[] = $a;
@@ -936,6 +932,17 @@ class Mongodb
     public function create($schema=null, $conn=null)
     {
         if(S::$log>0) S::log('[INFO] Define: '.__METHOD__.' ... is it required? or should we control the schemas only at app level?');
+        $tn = $schema->tableName;
+        if(!$conn) {
+            $conn = self::connect($schema->database.'.'.$tn);
+        } else if($conn instanceof Database) {
+            $conn = $conn->selectCollection($tn);
+        }
+        $L = $conn->listIndexes();
+        $a = [];
+        foreach($L as $i=>$o) $a[] = (array)$o;
+        $columns = $schema->properties;
+        unset($columns['_id']);
     }
 
     public function mongoValue($v, $fd, $fn=null)

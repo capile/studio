@@ -543,7 +543,6 @@ class Schema implements ArrayAccess
             $scope = $this->properties;
         }
         if(!$scope || !is_array($scope)) return $R;
-
         if(!is_array($add)) $add=array();
         if(isset($scope['__default'])) {
             $add = $scope['__default'] + $add;
@@ -611,13 +610,14 @@ class Schema implements ArrayAccess
             else if(isset($base['bind'])) $n = $base['bind'];
             else if(is_string($def)) $n = $def;
             */
+            $arrOrObj = (is_array($def) || is_object($def));
             if(is_int($n)) {
-                if(is_array($def) && isset($def['bind'])) $n = $def['bind'];
+                if($arrOrObj && isset($def['bind'])) $n = $def['bind'];
                 else if(isset($base['bind'])) $n = $base['bind'];
                 else if(is_string($def)) $n = $def;
             }
 
-            $bind = (is_array($def) && isset($def['bind'])) ?$def['bind'] :$n;
+            $bind = ($arrOrObj && isset($def['bind'])) ?$def['bind'] :$n;
             if(strpos($bind, ' ')) $bind = substr($bind, strrpos($bind, ' ')+1);
 
             if($ref->patternProperties) {
@@ -630,7 +630,7 @@ class Schema implements ArrayAccess
                 }
             }
 
-            if(is_array($def)) {
+            if($arrOrObj) {
                 if($base) $def += $base;
                 if($overlay && isset($def['bind'])) {
                     if(isset($ref->overlay[$bind])) {
@@ -767,11 +767,12 @@ class Schema implements ArrayAccess
         foreach($fo as $fn=>$fd) {
             $bind = (isset($fd['bind']))?($fd['bind']):($fn);
             if($p=strrpos($bind, ' ')) $bind = substr($bind, $p+1);
-            if(isset($cn::$schema->properties[$bind])) {
+            if(isset($cn::$schema->properties[$bind]) && $cn::$schema->properties[$bind]!=$fd) {
+                if(is_object($fd)) $fd = (array) $fd;
                 if(is_object($cn::$schema->properties[$bind]) && static::isSchema($cn::$schema->properties[$bind])) {
-                    $fd += (array) $cn::$schema['columns'][$bind];
+                    $fd += (array) $cn::$schema->properties[$bind];
                 } else {
-                    $fd += (array) $cn::$schema['columns'][$bind];
+                    $fd += (array) $cn::$schema->properties[$bind];
                 }
             }
             $type = (isset($fd['type']) && isset($types[$fd['type']]))?($types[$fd['type']]):('string');

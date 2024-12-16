@@ -1116,9 +1116,22 @@ class User
     public static function signOutWidget()
     {
         $user = S::getUser();
+        if(method_exists($user, 'signOut')) {
+            $user->signOut();
+        } else {
+            $url = (isset(static::$actions['signedout'])) ?static::$actions['signedout'] :'/';
+            if($user->isAuthenticated()) {
+                $user->destroy();
+            }
+            S::redirect($url);
+        }
+    }
+
+    public function signOut()
+    {
         $url = (isset(static::$actions['signedout'])) ?static::$actions['signedout'] :'/';
-        if($user->isAuthenticated()) {
-            $user->destroy();
+        if($this->isAuthenticated()) {
+            $this->destroy();
         }
         S::redirect($url);
     }
