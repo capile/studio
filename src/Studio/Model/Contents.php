@@ -778,16 +778,48 @@ class Contents extends Model
         }
     }
 
-    public function prepareContentFormField(&$arg, $Field=null)
+    public function prepareContentFormField(&$arg, $Field)
     {
         $this->refresh(['content_type', 'entry']);
-        if($S=Schema::find(['|id'=>$this->content_type, '|aliases*='=>'"'.$this->content_type.'"', 'enable_content'=>1],1)) {
-            static::$schema->overlay['content']['scope'] = $S->formOverlay();
-            if($Field) {
-                $Field->setScope(static::$schema->overlay['content']['scope']);
+        if($Field->getForm()['content_type']) {
+            $tpls = [];
+            $cs = [];
+            $fn = 'content_type';
+            if($L=Schema::find(['enable_content'=>1],null,['type','id','title','aliases'],false)) {
+                foreach($L as $i=>$o) {
+                    $tpls[$o->id] = ['scope'=>$o->formOverlay()];
+                    if(($a = $o->aliases) && is_string($a)) $a = S::unserialize($a, 'json');
+                    if(!is_array($a)) $a=[];
+                    // compact version
+                    //$cs[] = [$fn,$o->id,'template:'.$o->id];
+                    // verbose
+                    /*
+                    $cs[] = [
+                        'source'=>$fn,
+                        'value'=>$o->id,
+                        'action'=>'template:'.$o->id,
+                    ];
+                    */
+                    // even more compact
+                    $cs[$o->id] = 'template:'.$o->id;
+
+                    if($Field && ($this->content_type==$o->id || in_array($this->content_type, $a))) {
+                        $Field->setScope($tpls[$o->id]['scope']);
+                        if($this->content_type!=$o->id) {
+                            $this->content_type = $o->id;
+                        }
+                    }
+                }
+                if($tpls && $Field) $Field->templates = $tpls;
             }
-            if($this->content_type!=$S->id) $this->content_type = $S->id;
+            $Field->logic = [[$fn,$cs]];
+        } else {
+            if($S=Schema::find(['|id'=>$this->content_type, '|aliases*='=>'"'.$this->content_type.'"', 'enable_content'=>1],1)) {
+                $Field->setScope($S->formOverlay());
+                if($this->content_type!=$S->id) $this->content_type = $S->id;
+            }
         }
+
         if(is_string($this->content)) $this->content = S::unserialize($this->content, 'json');
     }
 

@@ -450,12 +450,12 @@ class Form implements ArrayAccess //, Iterator, Countable
         return $this->_uid;
     }
 
-    public static function instance($id=null, $newForm=[])
+    public static function instance($id=null, $newForm=[], $forceNew=null)
     {
         if(!$id) {
             $id = array_keys((array)self::$_instances)[0];
         }
-        if(!isset(self::$_instances[$id])) {
+        if(!isset(self::$_instances[$id]) || $forceNew) {
             self::$_instances[$id] = new Form($newForm);
         }
         return self::$_instances[$id];

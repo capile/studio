@@ -117,7 +117,13 @@ class Asset
         if(!isset(S::$minifier[$this->format])) $shell = false;
 
         if(!$outputFile) $outputFile = $this->output;
-
+        if(file_exists($lock=$this->output.'.lock')) {
+            if(filemtime($lock) - S_TIME < 3600) {
+                if(true || S::$log>0) S::log('[INFO] There is another process building the file '.$outputFile.' skipping...');
+                return file_exists($outputFile);
+            }
+        }
+        touch($lock);
         $tempnam = tempnam(dirname($outputFile), '._'.basename($outputFile));
 
         if(!$files) {
@@ -167,6 +173,7 @@ class Asset
                 rename($tempnam, $outputFile);
                 chmod($outputFile, 0666);
                 unset($tempnam, $cacheDir);
+                unlink($lock);
                 return true;
             } else {
                 S::log('[WARN] Minifying script failed: '.$cmd, $cmdoutput);
@@ -180,6 +187,7 @@ class Asset
         rename($tempnam, $outputFile);
         chmod($outputFile, 0666);
         unset($tempnam);
+        unlink($lock);
         return file_exists($outputFile);
     }
 

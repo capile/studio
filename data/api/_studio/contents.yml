@@ -44,6 +44,9 @@ all:
           bind: position
           type: number
           class: i1s4
+        '*Content':
+          bind: content
+          #class: ih20
       _e:
         __default:
           fieldset: '*Page information'
@@ -84,7 +87,7 @@ all:
       c:
         __default:
           fieldset: '*Content'
-        'Content':
+        '*Content':
           bind: content
           #class: ih20
         '*Attributes':

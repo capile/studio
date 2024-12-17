@@ -23,6 +23,8 @@
         "renderer": { "type": "string", "description": "use another renderer instead of the template, accepts callbacks" },
         "error": { "type": "object", "description": "field errors" },
         "filters": { "type": "object", "description": "filters this field choices based on another field's value" },
+        "logic": { "type": "array", "description": "adds conditional logic to this field"},
+        "templates": { "type": "object", "description": "named templates and field overwrites" },
         "dataprop": { "type": "string" },
         "class": { "type": "string", "description": "container class names (attribute value, use spaces for multiple classes)" },
         "template": { "type": "string", "description": "custom template, otherwise, guess from $type" },

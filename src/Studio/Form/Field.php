@@ -1616,6 +1616,7 @@ class Field extends SchemaObject
 
     public function render($arg=array())
     {
+        $arg0 = $arg;
         $M = ($this->bind && !isset($arg['no-render-model'])) ?$this->getModel() :null;
 
         $base = array('id', 'name', 'value', 'error', 'label', 'class');
@@ -1648,6 +1649,9 @@ class Field extends SchemaObject
                 unset($k, $v);
             }
             $this->attributes['data-next']=implode(',',$n);
+        }
+        if($this->logic && is_array($this->logic)) {
+            $this->attributes['data-logic'] = S::serialize($this->logic, 'json');
         }
         $run = array(
             'variables' => $arg,
@@ -1717,7 +1721,25 @@ class Field extends SchemaObject
         $run['variables']['before']=$this->before;
         $run['variables']['after']=$this->after;
 
-        return S::exec($run);
+        $s = null;
+        if($this->templates) {
+            $tpls = $this->templates;
+            $this->templates = null;
+            foreach($tpls as $id=>$tpl) {
+                $base = clone $this;
+                if($base->templates) $base->templates=null;
+                foreach($tpl as $n=>$v) {
+                    if(method_exists($base, $m='set'.S::camelize($n, true))) $base->$m($v);
+                    else $base->$n = $v;
+                }
+                $s .= '<template class="s-hidden s-template '.S::xml($id).'">'
+                    . $base->render($arg0)
+                    . '</template>';
+                unset($base);
+            }
+        }
+
+        return S::exec($run).$s;
     }
 
     public function renderObject(&$arg)
@@ -1751,7 +1773,7 @@ class Field extends SchemaObject
         if($this->multiple) $this->multiple = false;
         $prefix = $this->getName();
         $fo['id'] = $prefix.'[§]';
-        $form = Form::instance($fo['id'], $fo);
+        $form = Form::instance($fo['id'], $fo, true);
         $form->setLimits(false);
         $jsinput = '<div class="item">';
         foreach($form->fields as $fn=>$f) {
@@ -1771,7 +1793,7 @@ class Field extends SchemaObject
         if(is_array($value) && $value) {
             foreach($value as $k=>$v) {
                 $fo['id'] = $prefix.'['.$i.']';
-                $form = Form::instance($fo['id'], $fo);
+                $form = Form::instance($fo['id'], $fo, true);
                 $form->setLimits(false);
                 $input .= '<div class="item '.(($i%2)?('even'):('odd')).'">';
                 foreach($form->fields as $fn=>$f) {
@@ -1810,7 +1832,7 @@ class Field extends SchemaObject
         if($input || $jsinput) {
             $attr=$jsinput;
             foreach($a as $k=>$v) {
-                $attr.=' '.$k.'="'.$v.'"';
+                $attr.=' '.$k.'="'.S::xml($v).'"';
             }
             $input = '<div'.$attr.'>'.$input.'</div>';
         }
@@ -1957,11 +1979,10 @@ class Field extends SchemaObject
                 }
             }
         } else if($fo=$this->getSubForm()) {
-
             // input for javascript
             $prefix = $this->getName();
             $fo['id'] = $prefix.'[§]';
-            $form = Form::instance($fo['id'], $fo);
+            $form = Form::instance($fo['id'], $fo, true);
             $form->setLimits(false);
             $jsinput = '<div class="item">';
             foreach($form->fields as $fn=>$f) {
@@ -1992,7 +2013,7 @@ class Field extends SchemaObject
                     if(is_int($k)) $i = $k;
                     else $i++;
                     $fo['id'] = $prefix.'['.$i.']';
-                    $form = Form::instance($fo['id'], $fo);
+                    $form = Form::instance($fo['id'], $fo, true);
                     $form->setLimits(false);
                     $input .= '<div class="item '.(($i%2)?('even'):('odd')).'">';
                     foreach($form->fields as $fn=>$f) {
@@ -2037,13 +2058,13 @@ class Field extends SchemaObject
         if($this->attributes){
             $a+=$this->attributes;
             if(isset($this->attributes['class'])) {
-                $a['class'].=' '.$this->attributes['class'];
+                $a['class'].=' '.S::xml($this->attributes['class']);
             }
         }
         if($input || $jsinput) {
             $attr=$jsinput;
             foreach($a as $k=>$v) {
-                $attr.=' '.$k.'="'.$v.'"';
+                $attr.=' '.$k.'="'.S::xml($v).'"';
             }
             $input = '<div'.$attr.'>'.$input.'</div>';
         }

@@ -1091,7 +1091,7 @@ function initSubform(o)
     // items
     var id=o.getAttribute('id');
     if(!id) {
-        id='_zidf'+(_eids++);
+        id='_sid'+(_eids++);
         o.setAttribute('id', id);
     }
     var L=document.querySelectorAll('#'+id+'>.item'), i=L.length, fmin=o.getAttribute('data-min'), fmax=o.getAttribute('data-max'), cb;
@@ -1696,6 +1696,129 @@ function initChoicesJs()
     });
 }
 
+var _skipLogic=false;
+function initLogic()
+{
+    // adds trigger events on watched fields, applies current logic if necessary
+    if(this.getAttribute('data-logic-init')) return;
+    this.setAttribute('data-logic-init', Date.now());
+
+    if(_skipLogic) return;
+    var id=this.getAttribute('id');
+    if(!id) {
+        id='_sid'+(_eids++);
+        this.setAttribute('id', id);
+    }
+    var L=JSON.parse(this.getAttribute('data-logic')), T=this, i, P=S.parentNode(this, '.s-api-field'), W, C, I, j, fn, s, ss={}, v, a, F=function(e){return checkLogic(e, id);};
+
+    if(P) P=P.parentNode;
+    else return false;
+
+    if(!(L instanceof Array)) L=[L];
+    i=L.length;
+    while(i--) {
+        if(L[i] instanceof Array) s=L[i][0];
+        else if('s' in L[i]) s=L[i].s;
+        else if('source' in L[i]) s=L[i].source;
+        else break;
+        if(s in ss) break;
+        ss[s]=true;
+        C=P.querySelector(fn=S.Form.fieldSelector.replace(/\s*\,/g, '.if--'+s+',')+'.if--'+s);
+        if(C) {
+            I=C.querySelectorAll('input,textarea,select');
+            j=I.length;
+            while(j--) {
+                S.bind(I[j], 'input', F);
+                checkLogic.call(T, {target:I[j]});
+            }
+        }
+    }
+}
+
+function checkLogic(e)
+{
+    var C=(arguments.length>1) ?document.getElementById(arguments[1]) :this;
+    if(!S.parentNode(C, S.Form.fieldSelector)) return; // not in DOM
+    var L=JSON.parse(C.getAttribute('data-logic')), i, j, s, ts, v, a, A=[], E=e.target, val=S.val(E), add, del, O, P, T, V, D;
+    if(!(L instanceof Array)) L=[L];
+    i=L.length;
+    while(i--) {
+        ts=null;
+        if(L[i] instanceof Array) {
+            s=L[i][0];
+            if(L[i].length===2) {
+                if(val in L[i][1]) {
+                    v=val;
+                    a=L[i][1][v];
+                }
+            } else {
+                v = L[i][1];
+                a = L[i][2];
+            }
+        } else if('s' in L[i]) {
+            s=L[i].s;
+            v = ('v' in L[i]) ?L[i].v :null;
+            a = ('a' in L[i]) ?L[i].a :null;
+        } else if('source' in L[i]) {
+            s=L[i].source;
+            v = ('value' in L[i]) ?L[i].value :null;
+            a = ('action' in L[i]) ?L[i].action :null;
+        } else {
+            break;
+        }
+        if(s===E.id || (E.id.substr(-1*(s.length+1))==='_'+s && E.getAttribute('name').substr(-1*(s.length+2))==='['+s+']')) {
+            if(v==val || ((v instanceof Array) && v.indexOf(val)>-1)) {
+                if(a) A.push(a);
+            }
+        }
+    }
+    if(A.length>0) {
+        // apply actions: show | hide | remove | disable | enable | template:<template-name>
+        for(j=0;j<A.length;j++) {
+            a=A[j];
+            add=del=null;
+            if(a=='remove') {
+                S.deleteNode(C);
+                C=null;
+                return;
+            } else if(a==='show') {
+                add = 's-visible';
+                del = 's-hidden';
+            } else if(a==='hide') {
+                add = 's-hidden';
+                del = 's-visible';
+            } else if(a==='disable') {
+                add = 's-disabled-input';
+                L=C.querySelectorAll(S.Form.inputSelector.replace(/\s*\,/g, ':not(:disabled),')+':not(:disabled)');
+                i = L.length;
+                while(i--) L[i].disabled=true;
+            } else if(a==='enable') {
+                del = 's-disabled-input';
+                L=C.querySelectorAll(S.Form.inputSelector.replace(/\s*\,/g, ':disabled,')+':disabled');
+                i = L.length;
+                while(i--) L[i].disabled=false;
+            } else if(a.substr(0, 9)==='template:') {
+                O = S.parentNode(C, S.Form.fieldSelector);
+                if((P=O.parentNode) && (T=P.querySelector('template.s-template.'+a.substr(9)))) {
+                    if(T && T.content) T = T.content.firstElementChild.cloneNode(true);
+                    // @TODO: dump contents and load in new field?
+                    if(C.getAttribute('data-logic-init') && (D = T.querySelector('*[data-logic]'))) {
+                        D.id = C.id;
+                        D.setAttribute('data-logic-init', C.getAttribute('data-logic-init'));
+                        D=null;
+                    }
+                    P.replaceChild(T, O);
+                    _skipLogic = true;
+                    S.init(T)
+                    _skipLogic = false;
+                }
+            }
+            if(del && E.classList.contains(del)) E.classList.remove(del);
+            if(add && !E.classList.contains(add)) E.classList.add(add);
+        }
+    }
+}
+
 function Form(o)
 {
     var q='Studio_Form';
@@ -1715,6 +1838,7 @@ function Form(o)
         S.addPlugin('Omnibar', initOmnibar, 'input[data-omnibar]');
         S.addPlugin('HtmlEditor', initHtmlEditor, 'textarea[data-format="html"]');
         S.addPlugin('ChoicesJs', initChoicesJs, 'select.s-choices-js,.s-choices-js select');
+        S.addPlugin('Logic', initLogic, '*[data-logic]');
         S.clearForm=clearForm;
     }
     var n=S.node(o, this);
