@@ -170,7 +170,8 @@ class Interfaces extends Model
                 'options'=>[
                     'scope'=>['uid'=>'id'],
                     'link-encode'=>true,
-                ]
+                ],
+                'prepare'=>'prepareApi',
             ]];
             $addParent = true;
             if($f0 && $f0!==$f) {

@@ -639,4 +639,12 @@ class Index extends Model
 
         return $db;
     }
+
+    public static function prepareApi($a)
+    {
+        if(isset($a['search']['interface']) && ($A=Interfaces::find(['id'=>$a['search']['interface'], 'model!='=>'' ],1,['model'])) && (method_exists($M=$A->model, 'prepareIndexApi'))) {
+            return $M::prepareIndexApi($a);
+        }
+        return $a;
+    }
 }
