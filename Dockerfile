@@ -16,8 +16,9 @@ RUN apk add --no-cache --update \
       libzip-dev \
       yarn \
       zip \
-      zlib
-RUN apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
+      zlib \
+      && \
+    apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
       curl-dev \
       cyrus-sasl-dev \
       freetype-dev \
