@@ -2,7 +2,7 @@
 #
 # docker build --no-cache -t tecnodesign/studio:v1.3 "git@github.com:capile/studio.git#v1.3" && \
 # docker push tecnodesign/studio:v1.3
-FROM php:8.3-fpm-alpine
+FROM php:8.4-fpm-alpine
 RUN apk add --no-cache --update \
       ffmpeg \
       git \

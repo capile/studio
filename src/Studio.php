@@ -8,7 +8,7 @@
  * @author    Tecnodesign <ti@tecnodz.com>
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
- * @version   1.2
+ * @version   1.3
  */
 use Studio\App as App;
 use Studio\Asset;

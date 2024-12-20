@@ -12,9 +12,9 @@
         "bshaffer/oauth2-server-php": "^1.11",
         "mustangostang/spyc": "^0.6.2",
         "ext-mbstring": "*",
-        "phpmailer/phpmailer": "^6.7.1",
+        "phpmailer/phpmailer": "^6.9.3",
         "mongodb/mongodb": "^1.20.0",
-        "mlocati/ip-lib": "^1",
+        "mlocati/ip-lib": "^1.18.1",
         "dragonmantank/cron-expression": "^3.3"
     },
     "extra": {
