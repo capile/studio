@@ -1724,6 +1724,7 @@ function initLogic()
         if(s in ss) break;
         ss[s]=true;
         C=P.querySelector(fn=S.Form.fieldSelector.replace(/\s*\,/g, '.if--'+s+',')+'.if--'+s);
+        if(!C && this.form) C=this.form.querySelector(fn);
         if(C) {
             I=C.querySelectorAll('input,textarea,select');
             j=I.length;
@@ -1822,6 +1823,7 @@ function checkLogic(e)
 function Form(o)
 {
     var q='Studio_Form';
+    if(!S) S=window.Studio;
     if(!('initDatePicker' in S)) S.initDatepicker = initDatepicker;
     if(q in S.modules) {
         delete(S.modules[q]);
