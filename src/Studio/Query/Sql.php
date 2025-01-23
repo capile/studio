@@ -334,6 +334,7 @@ class Sql
             . ((!$count && $this->_limit)?(' limit '.$this->_limit):(''))
             . ((!$count && $this->_offset)?(' offset '.$this->_offset):(''))
         ;
+
         return $q;
     }
 
@@ -800,7 +801,7 @@ class Sql
         $not = false;
         static $cops = array('>=', '<=', '<>', '!', '!=', '>', '<');
         static $like = array('%', '$', '^', '*', '~');
-        static $xors = array('and'=>'and', '&'=>'and', 'or'=>'or', '|'=>'or');
+        static $xors = array('and'=>'and', '&'=>'and', 'or'=>'or', '|'=>'or', '!'=>'and not');
         foreach($w as $k=>$v) {
             if(is_int($k)) {
                 if(is_array($v)) {
@@ -839,6 +840,7 @@ class Sql
                 $c1=substr($k, 0, 1);
                 if(isset($xors[$c1])) {
                     $cxor = $xors[$c1];
+                    if($cxor!=$xor) $pxor = 'or';
                     $k = substr($k, 1);
                 }
                 if($pxor && $pxor=='or' && $pxor!=$cxor) {
