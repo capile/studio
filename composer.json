@@ -7,7 +7,7 @@
         "php": ">=7.3",
         "capile/tecnodesign": "^3.0.8",
         "erusev/parsedown": "1.7.*",
-        "phpoffice/phpspreadsheet": "^2.3.4",
+        "phpoffice/phpspreadsheet": "^3.8.0",
         "foxy/foxy": "^1.1.0",
         "bshaffer/oauth2-server-php": "^1.11",
         "mustangostang/spyc": "^0.6.2",
