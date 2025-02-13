@@ -30,7 +30,7 @@ class Sql
         $microseconds=6,
         $datetimeSize=6,
         $enableOffset=true,
-        $typeMap=['float'=>'decimal', 'number'=>'decimal'],
+        $typeMap=['float'=>'decimal', 'number'=>'decimal','object'=>'mediumtext','array'=>'mediumtext'],
         $textToVarchar,
         $logSlowQuery,
         $queryCallback,

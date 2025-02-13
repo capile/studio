@@ -435,7 +435,7 @@ class Server extends \OAuth2\Server
                     $d['kid']=S::compress64(md5(preg_replace('/[\s\n\r]+/', '', $o['public_key'])));
                     foreach($K[$type] as $k=>$v) {
                         if(strlen($k)>4) continue;
-                        $d[$k]=base64_encode($v);
+                        $d[$k]=S::encodeBase64Url($v);
                     }
                     $r[] = $d;
                 }

@@ -353,14 +353,38 @@ class Query extends SchemaObject
         // $n should be the connection name,
         // $s can be the className, an instance of Model, the connection name or a connection string
         $n = '';
+        $t = null;
+        $schema = null;
         if(is_string($s) && ($kdb=static::database($s, true))) {
             $n = $kdb;
         } else if((is_string($s) && $s && property_exists($s, 'schema')) || $s instanceof Model) {
+            $schema = true;
             $n = $s::$schema->database;
+            if(!$n && $s::$schema->tableName) $t = $s::$schema->tableName;
             if(is_object($s)) {
                 $s = (isset($s::$schema->className))?($s::$schema->className):(get_class($s));
             }
+        } else if(is_string($s)) {
+            $t = $s;
         }
+        if(!$n && $t && preg_match('/^([^\:]+)\:\/\/[^\/]+/', $t, $m)) {
+            $cn = 'Studio\\Query\\'.S::camelize($m[1], true);
+            if(class_exists($cn)) {
+                if($schema) {
+                    $s::$schema->database = $m[0];
+                    $s::$schema->tableName = substr($t, strlen($m[0]));
+                }
+                $n = $t;
+                $H[$n] = $cn;
+                S::$database[$n] = [
+                    'dsn' => $t,
+                    'options' => ['queryPath' => '', 'class' => $cn ],
+                ];
+            } else {
+                $cn = null;
+            }
+        }
+
         if(!isset($H[$n])) {
             $H[$n] = self::databaseHandler($n);
         }

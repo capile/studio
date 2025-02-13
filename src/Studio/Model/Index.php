@@ -298,7 +298,18 @@ class Index extends Model
 
         $count = null;
         $conn = (isset($a['connection'])) ?$a['connection'] :null;
+        $connO = [];
+        if(is_string($conn) && preg_match('@^([^\:]+\://[^\#]+)#(.+)$@', $conn, $m)) {
+            $conn = $m[1];
+            parse_str($m[2], $connO);
+        }
         $R = $cn::query($q, $conn);
+        if($connO) {
+            foreach($connO as $i=>$o) {
+                $R->config($i, $o);
+                unset($connO[$i], $i, $o);
+            }
+        }
         $indexQuery = null;
         $indexCleanup = true;
         if(method_exists($R, 'config')) {

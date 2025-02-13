@@ -674,6 +674,7 @@ class Schema implements ArrayAccess
         static $fetch = [];
 
         $cache = false;
+        if(!is_array($R)) $R = [];
 
         if(is_string($source)) {
             if(!$R) {
@@ -686,20 +687,24 @@ class Schema implements ArrayAccess
             $hash = ($p=strpos($source, '#')) ?substr($source, $p+1) :null;
             if($hash) $source = substr($source, 0, $p);
 
-            if(isset($fetch[$source])) $S = $fetch[$source];
-            else {
+            if(isset($fetch[$source])) {
+                $S = $fetch[$source];
+            } else {
                 $s = file_get_contents($source);
-                if(!$s || !($S=S::unserialize($s, 'json'))) return $R;
-
+                if(!$s) {
+                    S::log('[WARNING] Could not fetch schema definition from '.$source);
+                    return $R;
+                } else if(!($S=S::unserialize($s, 'json'))) {
+                    S::log('[WARNING] Schema definition is not a valid JSON, source: '.$source);
+                    return $R;
+                }
                 $fetch[$source] = $S;
             }
-
             if($hash) {
                 $hash = trim(str_replace('/', '.', $hash), '.');
                 $S = S::extractValue($S, $hash);
                 if(!$S) return $R;
             }
-
         } else {
             $S = $source;
         }
@@ -725,7 +730,7 @@ class Schema implements ArrayAccess
             }
         }
 
-        if($cache) {
+        if($cache && $R) {
             Cache::set($cache, $R);
         }
 
