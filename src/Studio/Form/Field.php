@@ -3133,7 +3133,7 @@ class Field extends SchemaObject
             }
             if($m) {
                 unset($m, $tg);
-                S::cacheControl('no-cache',0);
+                S::cacheControl('private',0);
                 S::output($this->ajaxChoices(urldecode((string)App::request('headers', 'x-studio-term'))), 'json');
             }
             unset($m, $tg);

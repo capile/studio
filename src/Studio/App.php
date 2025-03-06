@@ -386,7 +386,7 @@ class App
                     $timeout = (self::$_response['cache']>0)?(self::$_response['cache']):(3600);
                     S::cacheControl('public', $timeout);
                 } else if(!S::get('cache-control')) {
-                    S::cacheControl('no-cache, private, must-revalidate', false);
+                    S::cacheControl('private', 0);
                 }
             }
             if(self::$http2push && self::$link) {
@@ -492,7 +492,7 @@ class App
         }
         //@header('content-type: text/html; charset=utf-8');
         @header('content-length: '.strlen($result));
-        S::cacheControl('no-cache, private, must-revalidate', false);
+        S::cacheControl('private', 0);
         echo $result;
         S::flush();
         exit();

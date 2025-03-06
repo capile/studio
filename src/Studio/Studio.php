@@ -192,7 +192,7 @@ class Studio
             }
             static::$internal = true;
             S::scriptName($sn);
-            S::cacheControl('private, no-cache', 0);
+            S::cacheControl('private', 0);
             return self::_runInterface();
         } else if(static::$cliInterface && self::$cli && S_CLI && substr($sn, 0, 1)==':' && isset(self::$cliApps[substr($sn,1)])) {
             // cli apps
