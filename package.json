@@ -1,6 +1,6 @@
 {
     "name": "Studio",
-    "version": "1.3.2",
+    "version": "1.3.3",
     "description": "Own your data!",
     "main": "studio.js",
     "author": "Guilherme Capilé",
