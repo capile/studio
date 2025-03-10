@@ -59,6 +59,8 @@ class Entries extends Model
     
     protected $dynamic=false, $wrapper, $modified, $credential;
 
+    protected static $repoDir, $repos;
+
     public function __toString()
     {
         return $this->title
@@ -701,15 +703,9 @@ class Entries extends Model
         return $v;
     }
 
-    // use $pat===true to return the probable file location  (doesn't need to exist)
-    public static function file($url, $check=true, $pat=null)
+    public static function repoData($url=null, $id=null, $prop='dir')
     {
-        static $pat0, $repod, $repos;
-        if(!$check && !$pat && is_null($pat0)) {
-            $pat0 = '{,.'.S::$lang.'}{,.'.implode(',.',array_keys(Contents::$contentType)).'}';
-        }
-        if(!$check && !$pat) $pat = $pat0;
-        if(is_null($repos)) {
+        if(is_null(static::$repos)) {
             $repos = [];
             $repod = [];
             if(S_REPO_ROOT && ($rs = Studio::config('web-repos'))) {
@@ -718,7 +714,9 @@ class Entries extends Model
                     $rn = (isset($repo['id']) && $repo['id']) ?$repo['id'] :$i;
                     if(is_dir($d=S_REPO_ROOT.'/'.$rn)) {
                         if(isset($repo['mount-src']) && ($msrc=preg_replace('#^([^\:]+\:|/+)#', '', $repo['mount-src'])) && !preg_match('#/\.\./#', $msrc) && !in_array($msrc, ['.', '/'])) $d .= '/'.$msrc;
-                        $repos[$rn]=$d;
+                        $repo['id'] = $rn;
+                        $repo['dir'] = $d;
+                        $repos[$rn]=$repo;
                         $mu = (isset($repo['mount'])) ?$repo['mount'] :'';
                         if($mu==='/') $mu='';
                         if(is_array($mu)) {
@@ -746,22 +744,76 @@ class Entries extends Model
             if(!isset($repod[''])) {
                 $repod[''] = S_DOCUMENT_ROOT;
             }
+            static::$repoDir = $repod;
+            static::$repos = $repos;
+            unset($repod, $repos);
         }
+
+        if(!is_null($url)) {
+            return (isset(static::$repoDir[$url])) ?static::$repoDir[$url] :null;
+        } else if(!is_null($id)) {
+            return (isset(static::$repos[$id][$prop])) ?static::$repos[$id][$prop] :null;
+        }
+    }
+
+    public static function repoLink($source)
+    {
+        if(!isset(static::$repos)) static::repoData();
+        $d = '';
+        if(strpos($source, ':')) {
+            list($repo, $source) = explode(':', $source, 2);
+            if(isset(static::$repos[$repo]['mount'])) {
+                if(is_array(static::$repos[$repo]['mount'])) {
+                    foreach(static::$repos[$repo]['mount'] as $rd=>$rurl) {
+                        if(substr($source, 0, strlen($rd)+1)===$rd.'/') {
+                            $d = $rurl;
+                            $source = substr($source, strlen($rd));
+                            unset($rd, $rurl);
+                            break;
+                        }
+                        unset($rd, $rurl);
+                    }
+                } else {
+                    $d = static::$repos[$repo]['mount'];
+                    if(isset(static::$repos[$repo]['mount-src']) && static::$repos[$repo]['mount-src'] && substr($source, 0, strlen(static::$repos[$repo]['mount-src'])+1)===static::$repos[$repo]['mount-src'].'/') {
+                        $source = substr($source, strlen(static::$repos[$repo]['mount-src']));
+                    }
+                }
+            }
+            unset($repo);
+        }
+
+        if(preg_match('/('.self::$indexFile.')?\.(md|php|feed|media|html)$/', basename($source), $m)) {
+            $source = substr($source, 0, strlen($source) - strlen($m[0]));
+        }
+
+        return $d ? (preg_replace('@/+$@', '', $d).$source) :$source;
+    }
+
+    // use $pat===true to return the probable file location  (doesn't need to exist)
+    public static function file($url, $check=true, $pat=null)
+    {
+        static $pat0;
+        if(!$check && !$pat && is_null($pat0)) {
+            $pat0 = '{,.'.S::$lang.'}{,.'.implode(',.',array_keys(Contents::$contentType)).'}';
+        }
+        if(!$check && !$pat) $pat = $pat0;
 
         $urlp = ($url && $url!=='/') ?preg_replace('#/+$#', '', $url) :'';
         $d = null;
-        if($repos && $urlp) {
+        static::repoData();
+        if(static::$repos && $urlp) {
             if(($sp=strpos($urlp, ':')) && ($urld=substr($urlp, 0, $sp))) {
-                if(isset($repos[$urld])) {
-                    $d = $repos[$urld];
+                if($urld=static::repoData(null, $urld)) {
+                    $d = $urld;
                     $urlp = substr($urlp, $sp+1);
                 }
             } else {
                 $urld = $urlp;
                 while($urld) {
                     if($urld==='/') $urld='';
-                    if(isset($repod[$urld])) {
-                        $d = $repod[$urld];
+                    if(isset(static::$repoDir[$urld])) {
+                        $d = static::$repoDir[$urld];
                         $urlp = substr($urlp, strlen($urld));
                         break;
                     }
@@ -771,7 +823,7 @@ class Entries extends Model
             unset($urld);
         }
         if(is_null($d)) {
-            $d = $repod[''];
+            $d = static::$repoDir[''];
         }
 
         $r = [];
@@ -817,7 +869,7 @@ class Entries extends Model
         if(!$multiview) {
             if($pages = static::file(str_replace('.', '{-,.}', $url), false)) {
                 foreach($pages as $page) {
-                    if($P=self::_checkPage($page, $url)) {
+                    if($P=self::_checkPage($page, $url, $multiview)) {
                         break;
                     }
                 }
@@ -928,14 +980,14 @@ class Entries extends Model
         }
         $t = date('Y-m-d\TH:i:s', filemtime($page));
         $d = [
-            'id' => $id,
+            'id'  => $id,
             //'id'=>S::hash($id, null, 'uuid'),
-            'source'=>$source,
-            'link'=>$url,
-            'published'=>$t,
-            'format'=>$format,
-            'type'=>($isPage)?('page'):('file'),
-            'updated'=>$t,
+            'source' => $source,
+            'link' => ($multiview) ?$url :self::repoLink($source),
+            'published' => $t,
+            'format' => $format,
+            'type' => ($isPage)?('page'):('file'),
+            'updated' => $t,
         ];
         if($extAttr) {
             $d['title'] = str_replace(['_', '-'], ' ', basename($url));
