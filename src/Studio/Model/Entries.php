@@ -463,6 +463,10 @@ class Entries extends Model
 
     public function renderEntry($template=false, $args=array())
     {
+        if(is_array($template)) {
+            if(!$args) $args = $template;
+            $template = false;
+        }
         if($this->type==='entry' && isset($args['renderPage']) && $args['renderPage'] && Studio::$page==$this->id) {
             return $this->renderPage();
         }
@@ -1111,8 +1115,9 @@ class Entries extends Model
                 if($updated && $r) $r = array_values($r);
 
             }
-
-            return $r;
+            if(!$this->source) {
+                return $r;
+            }
         } else {
             $r = null;
         }
