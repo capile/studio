@@ -23,7 +23,7 @@ use Studio\Model\Tokens;
 
 class Cache
 {
-    public static $expires=0, $servers=[], $memcachedServers=[], $storage, $preferredStorage=['redis', 'memcached', 'memcache', 'file', 'apc'];
+    public static $expires=0, $lockExpires=10, $lockRetryu=50, $servers=[], $memcachedServers=[], $storage, $preferredStorage=['redis', 'memcached', 'memcache', 'file', 'apc'];
     /**
      * Cache key used for storing this site information in memory, must be a 
      * unique string.
@@ -105,6 +105,24 @@ class Cache
         return ($className) ?'Studio\\Cache\\'.ucfirst($r) :$r;
     }
 
+    public static function unlock($key, $lock, $method=null, $keepLocked=false)
+    {
+        $cn = self::storage($method, true);
+        $lockExpires = microtime(true)-(float)self::$lockExpires;
+        while($klock=$cn::get($key.',lock', $lockExpires)) {
+            if($lock && $lock===$klock) break;
+            if(S::$log>1) S::log('[INFO] Cache locked: '.$klock.' (I am '.$lock.') retrying for '.self::$lockExpires.'s every '.self::$lockRetryu.'ms');
+            usleep(self::$lockRetryu * 1000);
+        }
+        if($lock && $keepLocked) {
+            $cn::set($key.',lock', $lock, self::$lockExpires);
+        } else if($klock && $klock===$lock) {
+            $cn::delete($key.',lock');
+        }
+
+        return $klock;
+    }
+
     /**
      * Gets currently stored key-pair value
      *
@@ -112,12 +130,13 @@ class Cache
      * @param $expires int    timestamp to be compared. If timestamp is newer than cached key, false is returned.
      * @param $method  mixed  Storage method to be used. Should be either a key or a value in self::$_methods
      */
-    public static function get($key, $expires=0, $method=null, $fileFallback=false)
+    public static function get($key, $expires=0, $method=null, $fileFallback=false, $lock=null)
     {
         $cn = self::storage($method, true);
         if($expires && $expires<2592000) $expires = microtime(true)-(float)$expires;
         if(is_array($key)) {
             foreach($key as $ckey) {
+                if($lock) self::unlock($ckey, $lock, $method, true);
                 $ret = $cn::get($ckey, $expires);
                 if ($ret) {
                     unset($ckey);
@@ -127,9 +146,11 @@ class Cache
             }
             if(!isset($ret)) $ret=false;
         } else {
+            if($lock) self::unlock($key, $lock, $method, true);
             $ret = $cn::get($key, $expires);
         }
         if($fileFallback && $ret===false && $method!='file' && !$expires) {
+            if($lock) self::unlock($key, $lock, 'file', true);
             $ret = File::get($key);
             if($ret) {
                 self::set($key, $ret);
@@ -147,8 +168,9 @@ class Cache
      * @param $expires int    timestamp to be set as expiration date.
      * @param $method  mixed  Storage method to be used. Should be either a key or a value in self::$_methods
      */
-    public static function set($key, $value, $expires=0, $method=null, $fileFallback=false)
+    public static function set($key, $value, $expires=0, $method=null, $fileFallback=false, $lock=null)
     {
+        if($lock) self::unlock($key, $lock, $method, true);
         $cn = self::storage($method, true);
         if($expires && $expires<2592000) $expires = microtime(true)+(float)$expires;
         $ret = $cn::set($key, $value, $expires);
@@ -159,8 +181,9 @@ class Cache
         return $ret;
     }
 
-    public static function delete($key, $method=null, $fileFallback=false)
+    public static function delete($key, $method=null, $fileFallback=false, $lock=null)
     {
+        if($lock) self::unlock($key, $lock, $method, true);
         $cn = self::storage($method, true);
         if($fileFallback && $method!='file') {
             File::delete($key);

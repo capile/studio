@@ -56,7 +56,7 @@ class Api extends SchemaObject
         $schema,
         $envelopeProperty   = 'data',
         $envelopeAttributes = [ ],
-        $doNotEnvelope      = [ 'access-control-allow-origin' ],
+        $doNotEnvelope      = [ 'access-control-allow-origin', 'access-control-allow-headers' ],
         $navigation         = true,
         $breadcrumbs        = true,
         $displaySearch      = true,

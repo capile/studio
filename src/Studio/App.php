@@ -67,6 +67,8 @@ class App
         $http2push=false,
         $requestIpHeader='HTTP_X_FORWARDED_FOR',
         $healthcheckUri='/_me?healthcheck',
+        $lockCache=true,
+        $afterRunOnHealthcheck=true,
         $link;
     protected static $configMap = ['tecnodesign'=>'app'];
     protected $_o=null;
@@ -404,31 +406,39 @@ class App
 
     public static function afterRun($exec=null, $next=false)
     {
+        $lock = (static::$lockCache) ?S::salt() :null;
         if($exec && $next) {
             $t=($next===true) ?microtime(true) :$next;
             App::$afterRun[$t]=$exec;
-            $nrun = Cache::get('nextRun', 0, null, true);
+            $nrun = Cache::get('nextRun', 0, null, false, $lock);
             if(!$nrun || !is_array($nrun)) {
                 $nrun =array();
             }
             $nrun[$t] = $exec;
-            Cache::set('nextRun', $nrun, 0, null, true);
+            Cache::set('nextRun', $nrun, 0, null, false, $lock);
+            Cache::unlock('nextRun', $lock);
         } else if($exec) {
             App::$afterRun[]=$exec;
         } else {
             $run = App::$afterRun;
-            $nrun = Cache::get('nextRun', 0, null, true);
-            if($nrun) {
-                if(is_array($nrun)) {
-                    $run = array_merge($run, $nrun);
+            $sn = S::requestUri();
+            if(!static::$afterRunOnHealthcheck || $sn===static::$healthcheckUri) {
+                $nrun = Cache::get('nextRun', 0, null, false, $lock);
+                if($nrun) {
+                    if(is_array($nrun)) {
+                        $run = array_merge($run, $nrun);
+                    }
+                    Cache::delete('nextRun', null, false, $lock);
                 }
-                Cache::delete('nextRun', null, true);
+                Cache::unlock('nextRun', $lock);
             }
             App::$afterRun=array();
             foreach($run as $exec) {
                 S::exec($exec);
             }
-            if(S::requestUri()===static::$healthcheckUri) Tasks::check(false);
+            if($sn===static::$healthcheckUri) {
+                Tasks::check(false);
+            }
         }
     }
 
