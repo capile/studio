@@ -255,7 +255,7 @@ class Image {
 
         if($new && $this->transparent) {
             // If this is a GIF or a PNG, we need to set up transparency
-            imagealphablending($this->img, true);
+            imagealphablending($this->img, ($this->type=='png') ?false :true);
             imagesavealpha($this->img, true);
             if(!is_bool($this->transparent) && is_numeric($this->transparent)) {
                 imagecolortransparent($this->img, $this->transparent);
