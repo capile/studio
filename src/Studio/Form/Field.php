@@ -370,7 +370,7 @@ class Field extends SchemaObject
                 } else if(strpos($m, '::') && !strpos($m, '(')) {
                     list($tg, $fn) = explode('::', $m);
                 } else {
-                    $fn = 'check'.ucfirst($m);
+                    $fn = 'check'.S::camelize($m, true);
                     $tg = $this;
                 }
                 if($regex) {
@@ -382,7 +382,7 @@ class Field extends SchemaObject
                         $r = [];
                         foreach($value as $i=>$v) {
                             if(trim($v)) {
-                                $v = $this->checkDns($v, $message);
+                                $v = $this->$fn($v, $message);
                                 if(is_object($tg)) {
                                     $v = $tg->$fn($v, $message);
                                 } else {
@@ -1177,11 +1177,27 @@ class Field extends SchemaObject
 
     }
 
-    public function checkDns($value, $message='')
+    public function checkDns($value, $message=null)
     {
+        static $err = '"%s" is not a valid %s DNS record.';
+        if($message && $message!=static::$defaultErrorMessage) {
+            $err = $message;
+        }
         $value = trim($value);
-        if($value && !S::checkDomain($value, array('SOA'), false)) {
-            $message = S::t('This is not a valid domain.', 'exception');
+        $types = ['SOA'];
+        $stype = null;
+        if(isset($this->attributes['data-dns-types']) && $this->attributes['data-dns-types']) {
+            $types = preg_split('/[,\s]+/', $this->attributes['data-dns-types'], -1, PREG_SPLIT_NO_EMPTY); 
+            if($types===['*']) {
+                $stype = '';
+                $types = ['SOA','ANY'];
+            } else if($types===['ANY'] || $types===['any']) {
+                $stype = '';
+            }
+        }
+        if($value && !S::checkDomain($value, $types, false)) {
+            if(is_null($stype)) $stype = preg_replace('/, ([^\,]+)$/', ' '.S::t('or', 'exception').' $1', implode(', ', $types));
+            $message = sprintf(S::t($err, 'exception'), S::xml($value), $stype);
             $this->error[$message]=$message;
         }
         return $value;
@@ -1189,9 +1205,36 @@ class Field extends SchemaObject
 
     public function checkIp($value, $message='')
     {
+        static $err = '"%s" is not a valid %s IP address.';
+        static $ipTypeFlags = [
+            'ipv4' => FILTER_FLAG_IPV4,
+            'ipv6' => FILTER_FLAG_IPV6,
+            'public' => FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE,
+            'global' => FILTER_FLAG_GLOBAL_RANGE,
+            '*' => null,
+        ];
+        if($message && $message!=static::$defaultErrorMessage) {
+            $err = $message;
+        }
+        $type = ['public'];
+        $flags = null;
+        $stype = null;
+        if(isset($this->attributes['data-ip-types']) && $this->attributes['data-ip-types']) {
+            $types = preg_split('/[,\s]+/', $this->attributes['data-ip-types'], -1, PREG_SPLIT_NO_EMPTY); 
+            if($types===['*'] || $types===['']) {
+                $stype = '';
+                $types = ['*'];
+            }
+            foreach($types as $t) {
+                if(isset($ipTypeFlags[$t])) {
+                    $flags = $flags|$ipTypeFlags[$t];
+                }
+            }
+        }
         $value = trim($value);
-        if($value && !filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)) {
-            $message = S::t('This is not a IP address.', 'exception');
+        if($value && !filter_var($value, FILTER_VALIDATE_IP, $flags)) {
+            if(is_null($stype)) $stype = preg_replace('/, ([^\,]+)$/', ' '.S::t('or', 'exception').' $1', implode(', ', $types));
+            $message = sprintf(S::t($err, 'exception'), S::xml($value), $stype);
             $this->error[$message]=$message;
         }
         return $value;
@@ -1199,22 +1242,43 @@ class Field extends SchemaObject
 
     public function checkIpBlock($value, $message='')
     {
-        static $err = 'This is not a valid IP block.';
-        $ip = trim($value);
-        if($ip) {
-            $mask = null;
-            if($p=strpos($ip, '/')) {
-                $ip = substr($ip, 0, $p);
-                $mask = substr($ip, $p+1);
+        static $err = '"%s" is not a valid %s IP block.';
+        static $ipTypeFlags = [
+            'public' => \IPLib\Range\Type::T_PUBLIC,
+        ];
+        if($message && $message!=static::$defaultErrorMessage) {
+            $err = $message;
+        }
+        $types = ['public'];
+        $flags = null;
+        $stype = null;
+        $value = trim($value);
+        $range = \IPLib\Factory::parseRangeString($value);
+        $valid = false;
+        if($range) {
+            $valid = true;
+            if(isset($this->attributes['data-ip-types']) && $this->attributes['data-ip-types']) {
+                $types = preg_split('/[,\s]+/', $this->attributes['data-ip-types'], -1, PREG_SPLIT_NO_EMPTY); 
+                if($types===['*'] || $types===['']) {
+                    $stype = '';
+                    $types = [];
+                }
             }
-            if(!filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)) {
-                $ip = false;
-            } else if(!is_numeric($mask)) {
-                $ip = false;
+            if($types) {
+                $valid = false;
+                foreach($types as $t) {
+                    if(isset($ipTypeFlags[$t])) {
+                        if($range->getRangeType()==$ipTypeFlags[$t]) {
+                            $valid = true;
+                            break;
+                        }
+                    }
+                }
             }
         }
-        if($value && !filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE|FILTER_FLAG_NO_RES_RANGE)) {
-            $message = S::t('This is not a IP address.', 'exception');
+        if($value && !$valid) {
+            if(is_null($stype) && $types) $stype = preg_replace('/, ([^\,]+)$/', ' '.S::t('or', 'exception').' $1', implode(', ', $types));
+            $message = sprintf(S::t($err, 'exception'), S::xml($value), $stype);
             $this->error[$message]=$message;
         }
         return $value;
@@ -1256,7 +1320,6 @@ class Field extends SchemaObject
         }
         $rules = [];
         $m = null;
-
         if($this->type && method_exists($this, S::camelize('check-'.$this->type))) {
             $rules[$this->type]=static::$defaultErrorMessage;
             $m = ucfirst($this->type);
@@ -2144,6 +2207,20 @@ class Field extends SchemaObject
     {
         $arg['type']='text';
         $arg['data-type']='dns';
+        return $this->renderText($arg);
+    }
+
+    public function renderIp(&$arg)
+    {
+        $arg['type']='text';
+        $arg['data-type']='ip';
+        return $this->renderText($arg);
+    }
+
+    public function renderIpBlock(&$arg)
+    {
+        $arg['type']='text';
+        $arg['data-type']='ip-block';
         return $this->renderText($arg);
     }
 
