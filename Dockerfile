@@ -13,6 +13,7 @@ RUN apk add --no-cache --update \
       nodejs \
       npm \
       openssh-client \
+      postgresql-client \
       libzip-dev \
       yarn \
       zip \
