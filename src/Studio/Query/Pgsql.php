@@ -15,5 +15,5 @@ use Studio\Query\Sql;
 
 class Pgsql extends Sql
 {
-    const DRIVER='pgsql';
+    const DRIVER='pgsql', QUOTE='';
 }

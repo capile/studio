@@ -27,6 +27,7 @@ RUN apk add --no-cache --update \
       libjpeg-turbo-dev \
       libmemcached-dev \
       libpng-dev \
+      libpq-dev \
       libwebp-dev \
       libxcomposite-dev \
       libxdamage-dev \
@@ -68,6 +69,7 @@ RUN apk add --no-cache --update \
       opcache \
       pdo \
       pdo_mysql \
+      pdo_pgsql \
       simplexml \
       soap \
       zip \

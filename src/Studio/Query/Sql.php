@@ -240,7 +240,7 @@ class Sql
             } else {
                 $this->_from = $sc['tableName'];
             }
-            $this->_from .= " as {$quote[0]}a{$quote[1]}";
+            $this->_from .= ($quote) ?" as {$quote[0]}a{$quote[1]}" :' as a';
             $sc = null;
         }
         return $this->_from.$this->_from_other;
