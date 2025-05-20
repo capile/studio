@@ -73,11 +73,9 @@ class App
     protected static $configMap = ['tecnodesign'=>'app'];
     protected $_o=null;
 
-    public function __construct($s, $name=null, $env=null)
+    public function __construct(array|string $s, string $name='', string $env='')
     {
-        if(!$name) {
-            $name = S::appName();
-        }
+        if(!$name) $name = S::appName();
         if(!$env) $env = S::env();
         $this->_name = $name;
         $this->start=time();
@@ -172,7 +170,7 @@ class App
         $this->start();
     }
 
-    public static function getInstance($name=null, $env=null, $expires=0)
+    public static function getInstance(string|null $name=null, string|null $env=null, int $expires=0): App|false
     {
         if(is_null($env)) {
             if(defined('S_ENV')) $env = S_ENV;
@@ -202,7 +200,7 @@ class App
         return $app;
     }
 
-    public function __wakeup()
+    public function __wakeup(): void
     {
         $this->start();
     }
@@ -210,7 +208,7 @@ class App
     /**
      * Class initialization
      */
-    public function start()
+    public function start(): void
     {
         if(!S::$logDir && isset($this->_vars['app']['log-dir'])) {
             S::$logDir = $this->_vars['app']['log-dir'];
@@ -253,7 +251,7 @@ class App
         */
     }
 
-    public static function end($output='', $status=200)
+    public static function end(string $output='', int|string $status=200): void
     {
         throw new EndException($output, $status);
     }
@@ -261,7 +259,7 @@ class App
     /**
      * Restores a cached instance to current request
      */
-    public function renew()
+    public function renew(): void
     {
         self::$_request=null;
         self::request();
@@ -271,7 +269,7 @@ class App
                     if(S::$log > 0) {
                         S::log('[DEBUG] Could not reload app because the classFile "'.$cn.'" could not be located.');
                     }
-                    return false;
+                    return;
                 }
                 foreach($toExport as $k=>$v) {
                     $cn::$$k=$v;
@@ -280,13 +278,12 @@ class App
         }
     }
 
-
     /**
      * Stores current application config in memory
      *
      * @return bool true on success, false on error
      */
-    public function cache()
+    public function cache(): bool
     {
         if (is_null($this->_name) || !$this->_timeout) {
             return false;
@@ -300,7 +297,7 @@ class App
         return Cache::set($ckey, $this, $this->_timeout);
     }
 
-    public function run()
+    public function run(): mixed
     {
         // run internals first...
         $this->renew();
@@ -401,10 +398,11 @@ class App
         }
         // post-processing, like garbage collection, freeing memory, saving to update records, etc.
         App::afterRun();
-        //exit();
+
+        return null;
     }
 
-    public static function afterRun($exec=null, $next=false)
+    public static function afterRun(array|string $exec='', bool $next=false): void
     {
         $lock = (static::$lockCache) ?S::salt() :null;
         if($exec && $next) {
@@ -442,7 +440,7 @@ class App
         }
     }
 
-    public static function status($code=200, $header=true)
+    public static function status(int $code=200, bool $header=true): string
     {
         // http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
         static $status = array(
@@ -478,7 +476,7 @@ class App
         return $status[$code];
     }
 
-    public function runError($error, $layout=null)
+    public function runError(int $error, string|null $layout=null): void
     {
         @ob_clean();
         self::status($error);
@@ -508,7 +506,7 @@ class App
         exit();
     }
 
-    public function runTemplate($tpl, $vars=null, $cache=false)
+    public function runTemplate(string|array $tpl, array|true|null $vars=null, bool $cache=false): mixed
     {
         if($tpl && is_string($tpl) && strpos($tpl, '<')!==false) return $tpl;
         else if(!($scr=S::templateFile($tpl))) return false;
@@ -553,7 +551,7 @@ class App
      * Currently they are loaded from S_ROOT/src/Tecnodesign/Resources/assets but this should be evolved to a modular structure directly under src
      * and external components should also be loaded (example: font-awesome, d3 etc)
      */
-    public static function asset($component, $force=null)
+    public static function asset(string $component, bool $force=false): void
     {
         static $loaded=array();
         if(is_null(S::$assetsUrl) || isset($loaded[$component])) return;
@@ -731,7 +729,7 @@ class App
         }
     }
 
-    public function runRoute($url, $request=null)
+    public function runRoute(string $url, array|null $request=null): bool
     {
         if(is_array($url) && isset($url['url'])) {
             $options = $url;
@@ -917,7 +915,7 @@ class App
      * @param type $class
      * @return object
      */
-    public function getObject($class)
+    public function getObject(string $class): object
     {
         $cache = false;
         if(is_null($this->_o)) {
@@ -933,7 +931,7 @@ class App
         return $this->_o[$class];
     }
 
-    public function getRouteConfig($route)
+    public function getRouteConfig(array|string $route): array
     {
         if(!is_array($route)) {
             $route = array('method'=>$route);
@@ -946,10 +944,8 @@ class App
      * Request builder
      *
      * Might be replaced afterwards for a proper Request object
-     *
-     * @return array request directives
      */
-    public static function request($q=null, $sub=null)
+    public static function request(string $q='', string $sub=''): mixed
     {
         $removeExtensions=array('html', 'htm', 'php');
         if(is_null(self::$_request)) {
@@ -1124,7 +1120,7 @@ class App
      *
      * @return bool
      */
-    public static function response()
+    public static function response(): mixed
     {
         $a = func_get_args();
         $an = count($a);
@@ -1135,12 +1131,12 @@ class App
             if(S::$variables!==self::$_response) S::$variables =& self::$_response;
         } else if($an==1) {
             if(isset(self::$_response[$a[0]])) return self::$_response[$a[0]];
-            else return;
+            else return null;
         }
         return self::$_response;
     }
 
-    public static function config()
+    public static function config(): mixed
     {
         $a = func_get_args();
         $o = S::getApp()->_vars;
@@ -1162,8 +1158,6 @@ class App
 
     /**
      * Magic terminator. Returns the page contents, ready for output.
-     *
-     * @return string page output
      */
     function __toString()
     {
@@ -1173,13 +1167,8 @@ class App
     /**
      * Magic setter. Searches for a set$Name method, and stores the value in $_vars
      * for later use.
-     *
-     * @param string $name  parameter name, should start with lowercase
-     * @param mixed  $value value to be set
-     *
-     * @return void
      */
-    public function  __set($name, $value)
+    public function  __set(string $name, mixed $value): void
     {
         if(isset(self::$configMap[$name])) $name = self::$configMap[$name];
         $m='set'.ucfirst($name);
@@ -1192,12 +1181,8 @@ class App
     /**
      * Magic getter. Searches for a get$Name method, or gets the stored value in
      * $_vars.
-     *
-     * @param string $name parameter name, should start with lowercase
-     *
-     * @return mixed the stored value, or method results
      */
-    public function  __get($name)
+    public function  __get(string $name): mixed
     {
         if(isset(self::$configMap[$name])) $name = self::$configMap[$name];
         $m='get'.ucfirst($name);

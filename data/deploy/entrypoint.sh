@@ -15,6 +15,10 @@ sed -E \
     -e "s/^;?pm.max_requests = .*/pm.max_requests = $PHP_FCGI_MAX_REQUESTS/" \
     -i /usr/local/etc/php-fpm.d/www.conf
 
+if [[ "$PHP_MEMORY_LIMIT" != "" ]]; then
+    echo "memory_limit = $PHP_MEMORY_LIMIT" >> $PHP_INI_DIR/conf.d/x-studio.ini
+fi
+
 if [[ "$FASTCGI_STATUS_LISTEN" != "" ]]; then
     sed -E \
         -e "s/;?pm.status_path = .*/pm.status_path = \/status/" \

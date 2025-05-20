@@ -1,5 +1,5 @@
-/*! capile/studio v1.2 | (c) 2024 Tecnodesign <ti@tecnodz.com> */
-if(!('Studio' in window))window.Z=window.Studio={version:1.2, host:null, altHost:null,uid:'/_me',timeout:0,headers:{},env:'prod',timestamp:null,xhrCredentials:true,xhrHeaders:{'x-requested-with':'XMLHttpRequest'}};
+/*! capile/studio v1.3 | (c) 2025 Tecnodesign <ti@tecnodz.com> */
+if(!('Studio' in window))window.Z=window.Studio={version:1.3, host:null, altHost:null,uid:'/_me',timeout:0,headers:{},env:'prod',timestamp:null,xhrCredentials:true,xhrHeaders:{'x-requested-with':'XMLHttpRequest'}};
 (function(S) {
 "use strict";
 var _ajax={}, _isReady, _onReady=[], _onResize=[], _got=0, _langs={}, _assetUrl, _assets={}, _pending={}, _wm,

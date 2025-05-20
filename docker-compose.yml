@@ -7,27 +7,35 @@ services:
     volumes:
       - studio-config:/opt/studio/config:Z
       - studio-data:/opt/studio/data:Z
-    ## Uncommennt the following lines to enable dev environment
-    #  - .:/var/www/studio:Z
-    #environment:
-    #  - STUDIO_ENV=dev
-    #  - STUDIO_APP_ROOT=/var/www/studio
-    #  - STUDIO_DATA=/var/www/studio/data
-    #  - STUDIO_DOCUMENT_ROOT=/var/www/studio/data/web
-   healthcheck:
-      test: ["CMD", "curl", "-f", "http://web.studio:9999/_me?healthcheck"]
-      interval: 60s
-      retries: 5
-      start_period: 20s
-      timeout: 30s
-  db.studio:
-    hostname: db.studio
-    container_name: db.studio
-    image: mongo:latest
-    volumes:
-      - studio-db:/data/db:Z
-    ports:
-      - 27017:27017
+## Uncomment the following lines to enable dev environment
+#      - ".:/var/www/studio:Z"
+#    environment:
+#      - STUDIO_ENV=dev
+#      - STUDIO_APP_ROOT=/var/www/studio
+#      - STUDIO_PROJECT_ROOT=/var/www/studio
+#      - STUDIO_DATA=/var/www/studio/data
+#      - STUDIO_DOCUMENT_ROOT=/var/www/studio/data/web
+#      - STUDIO_INIT="-v"
+#      - STUDIO_CACHE_KEY=studio
+#      - STUDIO_CACHE_STORAGE="redis://redis.studio:6379/"
+#    healthcheck:
+#      test: [ "CMD", "curl", "-f", "http://web.studio:9999/_me?healthcheck" ]
+#      interval: 60s
+#      retries: 5
+#      start_period: 20s
+#      timeout: 30s
+#  redis.studio:
+#    hostname: redis.studio
+#    container_name: redis.studio
+#    image: redis:alpine
+#  mongodb.studio:
+#    hostname: mongodb.studio
+#    container_name: mongodb.studio
+#    image: mongo:latest
+#    volumes:
+#      - studio-db:/data/db:Z
+#    ports:
+#      - 27017:27017
   web.studio:
     hostname: web.studio
     container_name: web.studio

@@ -102,7 +102,9 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
         -e 's/;?date.timezone =/date.timezone = UTC/' \
         -i $PHP_INI_DIR/php.ini \
     && \
-    echo 'max_input_vars = 10000' > $PHP_INI_DIR/conf.d/x-config.ini \
+    echo 'max_input_vars = 10000' > $PHP_INI_DIR/conf.d/x-studio.ini \
+    && \
+    chown www-data $PHP_INI_DIR/conf.d/x-studio.ini \
     && \
     sed -E \
         -e 's/^listen = .*/listen = 9000/' \
@@ -188,6 +190,7 @@ ENV PHP_FCGI_CHILDREN="1000"
 ENV PHP_FCGI_START_SERVERS="5"
 ENV PHP_FCGI_SPARE_SERVERS="100"
 ENV PHP_FCGI_MAX_REQUESTS="500"
+ENV PHP_MEMORY_LIMIT=""
 ENV FASTCGI_STATUS_LISTEN=""
 
 VOLUME /opt/studio

@@ -10,7 +10,8 @@
  * @link      https://tecnodz.com
  * @version   1.3
  */
-use Studio\App as App;
+declare(strict_types=1);
+use Studio\App;
 use Studio\Asset;
 use Studio\Asset\Image;
 use Studio\Cache;
@@ -25,7 +26,7 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.3.8';
+    const VERSION = '1.3.9';
     const VER = 1.3;
 
     protected static
@@ -169,15 +170,9 @@ class Studio
         ;
 
     /**
-     * Application Startup, see Tecnodesign_App
-     *
-     * @param mixed  $s          configuration file name or its contents parsed
-     * @param string $siteMemKey name of the application, used to create a virtual space in memory
-     * @param type $env          environment. used to retrieve configuration parameters
-     *
-     * @return Tecnodesign_App
+     * Application Startup, see Studio\App
      */
-    public static function app($s, $siteMemKey=false, $env='prod')
+    public static function app(mixed $s, string $siteMemKey='', string $env='prod'): App
     {
         self::env();
         self::$_env = $env;
@@ -201,7 +196,7 @@ class Studio
         return new App($s, self::$_app, self::$_env);
     }
 
-    public static function appName()
+    public static function appName(): string
     {
         if(is_null(self::$_app)) {
             if(isset($_SERVER['STUDIO_APP']) && $_SERVER['STUDIO_APP']) {
@@ -223,15 +218,13 @@ class Studio
 
     /**
      * Current application retrieval
-     *
-     * @return Tecnodesign_App
      */
-    public static function getApp()
+    public static function getApp(): App|false
     {
         return App::getInstance(self::$_app, self::$_env);
     }
 
-    public static function appConfig()
+    public static function appConfig(): array
     {
         return @self::objectCall(self::getApp(), 'config', func_get_args());
     }
@@ -241,7 +234,7 @@ class Studio
      *
      * @return instance of $userClass, authenticated or not
      */
-    public static function getUser()
+    public static function getUser(): object
     {
         static $cn;
         if(is_null($cn)) {
@@ -254,7 +247,7 @@ class Studio
     /**
      * User authentication and management shortcuts
      */
-    public static function user($uid=null)
+    public static function user(string|int $uid=null): object
     {
         if(!is_null($uid) && $uid) {
             $cn = self::getApp()->config('user', 'className');
@@ -273,7 +266,7 @@ class Studio
      * @param Tecnodesign_App $app  failback Tecnodesign_Application to look at configuration
      * @return PDO
      */
-    public static function connect($db=false, $app=null, $throw=false)
+    public static function connect(mixed $db=false, string|null $app=null, bool $throw=false): object|false
     {
         if(is_null(self::$_connection)) {
             self::$_connection = array();
@@ -318,7 +311,7 @@ class Studio
         return self::$_connection[$name];
     }
 
-    public static function setConnection($name=false, $dbh=null)
+    public static function setConnection(string $name='', array|null $dbh=null): object|null
     {
         if(is_null(self::$_connection)) {
             if(is_null($dbh)) {
@@ -337,20 +330,15 @@ class Studio
 
     /**
      * Translator shortcut
-     *
-     * @param mixed  $message message or array of messages to be translated
-     * @param string $table   translation file to be used
-     * @param string $to      destination language, defaults to self::$lang
-     * @param string $from    original language, defaults to 'en'
      */
-    public static function t($message, $table=null, $to=null, $from=null)
+    public static function t(string|array $message, string $table='', string $to='', string $from=''): string|array
     {
         list($cn, $m) = explode('::', self::$translator);
         //$r = $cn::$m($message, $table, $to, $from);
         return $cn::$m($message, $table, $to, $from);
     }
 
-    public static function checkTranslation($message, $table=null, $to=null, $from=null)
+    public static function checkTranslation(string|array $message, string $table='', string $to='', string $from=''): string|array
     {
         if(is_array($message)) {
             foreach($message as $k=>$v) {
@@ -367,12 +355,8 @@ class Studio
 
     /**
      * Shortcut for SQL Queries
-     *
-     * @param string $sql consluta a ser realizada
-     *
-     * @return array resultados com os valores associados
      */
-    public static function query($sql, $conn=null)
+    public static function query(array|string $sql, mixed $conn=null): array|false
     {
         $ret = array();
         $sqls = (is_array($sql))?($sql):(array($sql));
@@ -423,17 +407,14 @@ class Studio
         return $ret;
     }
 
-
     /**
      * Configuration loader
      *
      * loads cascading configuration files.
      *
      * Syntax: self::config($env='prod', $section=null, $cfg1, $cfg2...)
-     *
-     * @return array Configuration
      */
-    public static function config()
+    public static function config(): array
     {
         $a = func_get_args();
         $res = array();
@@ -518,7 +499,7 @@ class Studio
         return array();
     }
 
-    public static function expandVariables($a, $vars=null, $dottedProperties=null)
+    public static function expandVariables(mixed $a, $vars=null, bool|string $dottedProperties=''): mixed
     {
         if(!is_array($a) && !is_object($a)) {
             if(preg_match_all('/\$(([A-Za-z0-9\_]+\:\:)?[A-Za-z0-9\_]+)/', $a, $m)) {
@@ -565,7 +546,7 @@ class Studio
         return $a;
     }
 
-    public static function replace($s, $r, $r2=null)
+    public static function replace(array|string $s, array $r, array|null $r2=null): array|string
     {
         if(is_array($s)) {
             foreach($s as $k=>$v) {
@@ -639,18 +620,16 @@ class Studio
      * Request method to get current script name. May act as a setter if a string is
      * passed. Also returns absolute script name (according to $_SERVER[REQUEST_URI])
      * if true is passed.
-     *
-     * @return string current script name
      */
-    public static function scriptName()
+    public static function scriptName(bool|string|null $setUrl=null, bool $removePageExtensions=true, bool $setRealScriptName=false): string
     {
         $a = func_get_args();
-        if (isset($a[0])) {
-            if($a[0]===false) {
+        if (!is_null($setUrl)) {
+            if($setUrl === false) {
                 self::$real_script_name=null;
-                $a[0]=true;
+                $setUrl=true;
             }
-            if($a[0] === true) {
+            if($setUrl === true) {
                 if (is_null(self::$real_script_name)) {
                     if(isset($_SERVER['REDIRECT_STATUS']) && $_SERVER['REDIRECT_STATUS']=='200' && isset($_SERVER['REDIRECT_URL'])) {
                         self::$real_script_name = self::sanitizeUrl($_SERVER['REDIRECT_URL']);
@@ -661,7 +640,7 @@ class Studio
                     }
 
                     // remove extensions
-                    if(!isset($a[1]) || $a[1]) {
+                    if($removePageExtensions) {
                         self::$real_script_name = preg_replace('#\.(php|html?)(/.*)?$#i', '$2', self::$real_script_name);
                     }
                     $qspos = strpos(self::$real_script_name, '?');
@@ -671,23 +650,32 @@ class Studio
                     unset($qspos);
                 }
                 return self::$real_script_name;
-            } else if(is_string($a[0]) && substr($a[0], 0, 1) == '/') {
-                $qspos = strpos($a[0], '?');
-                if($qspos!==false) {
-                    $a[0] = substr($a[0], 0, $qspos);
+            } else if(is_string($setUrl)) {
+                if(substr($setUrl, 0, 1) == '/') {
+                    $qspos = strpos($setUrl, '?');
+                    if($qspos!==false) {
+                        $setUrl = substr($setUrl, 0, $qspos);
+                    }
+                    unset($qspos);
+                    self::$script_name = self::sanitizeUrl($setUrl);
+                } else if(S_CLI && substr($setUrl, 0, 1)===':' && isset(Studio\Studio::$cliApps[substr($setUrl, 1)])) {
+                    self::$script_name = $setUrl;
                 }
-                unset($qspos);
-                self::$script_name = self::sanitizeUrl($a[0]);
-                if(isset($a[2]) && $a[2]===true)
-                    self::$real_script_name = self::$script_name;
+            }
+            if(is_null(self::$script_name)) {
+                if(!is_null(self::$real_script_name)) self::$script_name = self::$real_script_name;
+                else self::$script_name = '';
+            } else if($setRealScriptName===true) {
+                self::$real_script_name = self::$script_name;
             }
         } else if (is_null(self::$script_name)) {
             self::$script_name = self::scriptName(true);
         }
+        if(is_null(self::$script_name)) self::log(__METHOD__, debug_backtrace(0, 5));
         return self::$script_name;
     }
 
-    public static function sanitizeUrl(&$s)
+    public static function sanitizeUrl(string &$s): string
     {
         if(preg_match('#\./.*(\?|$)#', $s)) {
             if(strpos($s, '?')!==false) {
@@ -708,7 +696,7 @@ class Studio
     /**
      * Compress Javascript & CSS
      */
-    public static function minify($s, $root=false, $compress=true, $before=true, $raw=false, $output=false)
+    public static function minify(array|string $s, string|null $root=null, bool $compress=true, bool $before=true, bool $raw=false, bool|string $output=false): string
     {
         $build = self::getApp()->config('app', 'asset-build-strategy');
         if(!$build) $build = App::$assetsBuildStrategy;
@@ -722,11 +710,8 @@ class Studio
 
     /**
      * Camelizes strings as class names
-     *
-     * @param string $s
-     * @return string Camelized Class name
      */
-    public static function camelize($s, $ucfirst=false)
+    public static function camelize(string $s, bool $ucfirst=false): string
     {
         $cn = str_replace(' ', '', ucwords(preg_replace('/[^a-z0-9A-Z]+/', ' ', $s)));
         if(!$ucfirst) {
@@ -737,11 +722,8 @@ class Studio
 
     /**
      * Uncamelizes strings as underscore_separated_names
-     *
-     * @param string $s
-     * @return string Uncamelized function/table name
      */
-    public static function uncamelize($s)
+    public static function uncamelize(string $s): string
     {
         if(preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $s, $m)) {
             $ret = $m[0];
@@ -755,7 +737,7 @@ class Studio
         }
     }
 
-    public static function implode($v, $sep=',')
+    public static function implode(mixed $v, string $sep=','): string
     {
         if(is_array($v)) {
             $b=$a=$r='';
@@ -781,7 +763,7 @@ class Studio
         }
     }
 
-    public static function xmlImplode($v, $element='span', $printElement=true)
+    public static function xmlImplode(array|string $v, string $element='span', bool $printElement=true): string
     {
         if(is_array($v)) {
             $r = '';
@@ -800,7 +782,7 @@ class Studio
         }
     }
 
-    public static function requestUri($arg=array())
+    public static function requestUri(array $arg=[]): string
     {
         $qs = '';
         if (!empty($arg)) {
@@ -835,7 +817,7 @@ class Studio
         return $uri;
     }
 
-    public static function urlParams($url=false, $unescape=false)
+    public static function urlParams(bool|string|null $url=null, bool $unescape=false): array
     {
         if($url===false || is_null($url)) $url = self::scriptName();
         if($url=='/') $url='';
@@ -853,7 +835,7 @@ class Studio
         return $urlp;
     }
 
-    public static function get($key)
+    public static function get(string $key): mixed
     {
         if (isset(self::$variables[$key])) {
             return self::$variables[$key];
@@ -861,12 +843,12 @@ class Studio
             return false;
         }
     }
-    public static function set($key, $value)
+    public static function set(string $key, mixed $value): void
     {
         self::$variables[$key]=$value;
     }
 
-    public static function isMobile()
+    public static function isMobile(): bool
     {
         $useragent = (isset($_SERVER['HTTP_USER_AGENT'])) ?
                         ($_SERVER['HTTP_USER_AGENT']) : ('');
@@ -908,7 +890,7 @@ class Studio
                 || preg_match($ssearch2, substr($useragent, 0, 4)));
     }
 
-    public static function sql($str, $enclose=true)
+    public static function sql(array|string $str, bool $enclose=true): array|string
     {
         if(is_array($str)) {
             foreach($str as $k=>$v){
@@ -928,13 +910,8 @@ class Studio
      * XML Escaping
      *
      * Use this method to print content inside HTML/XML tags and attributes.
-     *
-     * @param string $s text to be escaped
-     * @param bool   $q escape quotes as well (defaults to true)
-     *
-     * @return string escaped string
      */
-    public static function xml($s, $q=true)
+    public static function xml(mixed $s, bool $q=true): array|string
     {
         if (is_array($s)) {
             foreach ($s as $k => $v) {
@@ -946,7 +923,7 @@ class Studio
         return htmlspecialchars(html_entity_decode((string)$s, $qs, 'UTF-8'), $qs, 'UTF-8', false);
     }
 
-    public static function browser($s=null)
+    public static function browser(string|null $s=null): string|null
     {
         if(is_null($s)) $s = $_SERVER['HTTP_USER_AGENT'];
         $s = strtolower($s);
@@ -956,10 +933,10 @@ class Studio
         }
     }
 
-    public static function render($d, $scope=null, $class='tdz-render', $translate=false, $xmlEscape=true)
+    public static function render(array|object $d, array|string|null $scope=null, string $class='s-render', bool $translate=false, bool $xmlEscape=true)
     {
         $cn = false;
-        if(is_object($d) && $d instanceof Tecnodesign_Model) {
+        if(is_object($d) && $d instanceof Model) {
             $o = $d;
             $cn = get_class($o);
             $d = (is_array($scope))?($scope):($cn::columns($scope));
@@ -989,7 +966,7 @@ class Studio
         return $s;
     }
 
-    public static function cleanCache($prefix='')
+    public static function cleanCache(string $prefix=''): void
     {
         $cd = self::getApp()->config('app', 'cache-dir');
         if(!$cd) $cd = S_VAR.'/cache';
@@ -1000,9 +977,10 @@ class Studio
         }
     }
 
-    public static function meta($s='', $og=false)
+    public static function meta(array|string|null $s='', bool $og=false): string
     {
         if(is_array($s)) $s = implode('', $s);
+        else if(is_null($s)) $s = '';
         if (!isset(self::$variables['meta'])) {
             self::$variables['meta'] = $s;
         } else {
@@ -1018,11 +996,11 @@ class Studio
                 unset(self::$variables['variables']['meta']);
             }
         }
-        if($og && !strpos(self::$variables['meta'], '<meta property="og:')) self::$variables['meta'] .= self::openGraph();
+        if($og && isset(self::$variables['meta']) && !strpos(self::$variables['meta'], '<meta property="og:')) self::$variables['meta'] .= self::openGraph();
         return self::$variables['meta'];
     }
 
-    public static function openGraph($args=array())
+    public static function openGraph(array $args=[]): string
     {
         $exists = true;
         if(!isset(self::$variables['open-graph'])) {
@@ -1123,7 +1101,7 @@ class Studio
         return $s;
     }
 
-    public static function exec($arguments)
+    public static function exec(array $arguments): mixed
     {
         if(isset($arguments['variables']) && is_array($arguments['variables'])) {
             foreach ($arguments['variables'] as $var => $value) {
@@ -1182,17 +1160,17 @@ class Studio
         return $execResult;
     }
 
-    public static function isempty($a)
+    public static function isempty(mixed $a): bool
     {
-        return is_null($a) || $a===false || $a==='' || $a===array();
+        return is_null($a) || $a===false || $a==='' || $a===[];
     }
 
-    public static function notEmpty($a)
+    public static function notEmpty(mixed $a): bool
     {
         return !self::isempty($a);
     }
 
-    public static function isEmptyDir($d)
+    public static function isEmptyDir(string $d): bool
     {
         if($h=opendir($d)) {
             $r = true;
@@ -1208,12 +1186,12 @@ class Studio
         return false;
     }
 
-    public static function fixEncoding($s, $encoding='UTF-8')
+    public static function fixEncoding(mixed $s, string $encoding='UTF-8'): mixed
     {
         return self::encode($s, $encoding);
     }
 
-    public static function encode($s, $to='UTF-8')
+    public static function encode(mixed $s, string $to='UTF-8'): mixed
     {
         static
         $uenc = [
@@ -1264,22 +1242,22 @@ class Studio
         return $s;
     }
 
-    public static function encodeUTF8($s)
+    public static function encodeUTF8(mixed $s): mixed
     {
         return self::encode($s, 'UTF-8');
     }
 
-    public static function decode($s)
+    public static function decode(mixed $s): mixed
     {
         return self::encodeLatin1($s);
     }
 
-    public static function encodeLatin1($s)
+    public static function encodeLatin1(mixed $s): mixed
     {
         return self::encode($s, 'ISO-8859-1,Windows-1252');
     }
 
-    public static function getBrowserCache($etag, $lastModified, $expires=null)
+    public static function getBrowserCache(string $etag, int|string $lastModified, int|null $expires=null): void
     {
         @header(
             'last-modified: '.
@@ -1321,7 +1299,7 @@ class Studio
         exit();
     }
 
-    public static function redirect($url='', $temporary=false, $cache=null)
+    public static function redirect(string $url='', bool $temporary=false, string|int $cache=''): void
     {
         $url = ($url == '') ? (self::scriptName()) : ($url);
         $status = ($temporary)?(302):(301);
@@ -1355,7 +1333,7 @@ class Studio
         exit();
     }
 
-    public static function flush($end=true)
+    public static function flush(bool $end=true): void
     {
         @ob_end_flush();
         flush();
@@ -1364,7 +1342,7 @@ class Studio
         }
     }
 
-    public static function unflush()
+    public static function unflush(): void
     {
         $i=10;
         while (ob_get_level()>0 && $i--) {
@@ -1372,7 +1350,7 @@ class Studio
         }
     }
 
-    public static function pages($pager, $uri=false, $maxpages=10, $tpl=array())
+    public static function pages(array|object $pager, bool|string $uri=false, int $maxpages=10, array $tpl=[]): string
     {
         if ($uri === false) {
             $uri = self::scriptName(true);
@@ -1453,7 +1431,7 @@ class Studio
         return $html;
     }
 
-    public static function fileFormat($file, $checkExtension=true, $fallback=null, $fallbackFormats=[])
+    public static function fileFormat(string $file, bool $checkExtension=true, string $fallback='', array $fallbackFormats=[]): string|bool
     {
         $format = false;
         $ext = null;
@@ -1482,7 +1460,7 @@ class Studio
         return $format;
     }
 
-    public static function output($s, $format=null, $exit=true)
+    public static function output(array|string $s, string $format='', bool $exit=true): void
     {
         self::unflush();
         if($format==='json') {
@@ -1506,7 +1484,7 @@ class Studio
         }
     }
 
-    public static function cacheControl($set=null, $expires=null)
+    public static function cacheControl(string|null $set=null, int|null $expires=null): string
     {
         static $private='private, no-cache, no-store, must-revalidate';
 
@@ -1541,17 +1519,17 @@ class Studio
         return $cacheControl;
     }
 
-    public static function download($file, $format=null, $fname=null, $speed=0, $attachment=null, $nocache=false, $exit=true)
+    public static function download(string $file, string $format='', string $fname='', int $speed=0, bool $attachment=false, bool $nocache=false, bool $exit=true): void
     {
         if (connection_status() != 0 || !$file)
-            return(false);
+            return;
         if(!$fname && $attachment) $fname = basename($file);
         $extension = ($fname) ?strtolower(preg_replace('/.*\.([a-z0-9]{1,5})$/i', '$1', $fname)) :'';
         self::unflush();
 
         if(!file_exists($file)) {
             if($exit) exit();
-            else return false;
+            else return;
         }
         $lastmod = filemtime($file);
         if ($format != '')
@@ -1670,7 +1648,7 @@ class Studio
         }
     }
 
-    public static function resize($img, &$o=array())
+    public static function resize(string $img, array &$o=[]): string|bool
     {
         $img = new Image($img, $o);
         $imgd=$img->render();
@@ -1680,7 +1658,7 @@ class Studio
         return $imgd;
     }
 
-    public static function validUrl($s='', $cleanup=true)
+    public static function validUrl(string $s='', bool $cleanup=true): string
     {
         $s = trim($s);
         if($s != '') {
@@ -1698,14 +1676,14 @@ class Studio
             }
             $s = preg_replace('#//+#', '/', $s);
             $s = preg_replace('#([^/])/+$#', '$1/', $s);
-            return $s;
         }
+
         return $s;
     }
 
-    public static function uploadDir($d=null)
+    public static function uploadDir(string $d=''): string
     {
-        if(!is_null($d) && $d) {
+        if($d) {
             self::$variables['upload-dir'] = $d;
         }
         if(!isset(self::$variables['upload-dir'])) {
@@ -1717,7 +1695,7 @@ class Studio
         return self::$variables['upload-dir'];
     }
 
-    public static function postData($post=null)
+    public static function postData(array|null $post=null): array
     {
         $nf = (!is_null($post))?($post):($_POST);
         if(count($_FILES) >0) {
@@ -1732,7 +1710,7 @@ class Studio
         return $nf;
     }
 
-    public static function mergeRecursive()
+    public static function mergeRecursive(): array
     {
         $a = func_get_args();
         $res = array_shift($a);
@@ -1755,11 +1733,12 @@ class Studio
         // caveats: increments numeric indexes
     }
 
-    protected static function setLastKey($a, $name, $post=null) {
+    protected static function setLastKey(array|string $a, string $name, array $post=[]): array
+    {
         if(is_array($a)) {
             foreach($a as $k=>$v) {
                 $a[$k]=self::setLastKey($v, $name);
-                if($post && is_array($post) && isset($post[$k]) && $post[$k]!=$a[$k]) {
+                if($post && isset($post[$k]) && $post[$k]!=$a[$k]) {
                     if(is_array($a[$k]) && is_array($post[$k])) $a[$k] = $post[$k] + $a[$k];
                     else $a[$k]['_'] = $post[$k];
                 }
@@ -1779,13 +1758,8 @@ class Studio
      *
      * Simple method to debug values - just outputs the value as text. The script
      * should end unless $end = FALSE is passed as param
-     *
-     * @param   mixed $var value to be displayed
-     * @param   bool  $end should be FALSE to avoid the script termination
-     *
-     * @return  string text output of the $var definition
      */
-    public static function debug()
+    public static function debug(): null|bool
     {
         $arg = func_get_args();
         if (!headers_sent())
@@ -1805,12 +1779,8 @@ class Studio
      * Error messages logger
      *
      * Pretty print the objects to the PHP's error_log
-     *
-     * @param   mixed  $var  value to be displayed
-     *
-     * @return  void
      */
-    public static function log()
+    public static function log(): void
     {
         static $trace;
         $logs = array();
@@ -1895,7 +1865,7 @@ class Studio
         unset($logs);
     }
 
-    public static function toString($o, $i=0)
+    public static function toString(mixed $o, int $i=0): string
     {
         $s = '';
         $id = str_repeat(" ", $i++);
@@ -1926,19 +1896,19 @@ class Studio
         return $s . "\n";
     }
 
-    public static function serialize($a, $hint=null, $flags=null)
+    public static function serialize(mixed $a, string $hint='', int|null $flags=null): string
     {
-        if(is_null($hint)) $hint = (is_object($a)) ?'php' :'json';
+        if(!$hint) $hint = (is_object($a)) ?'php' :'json';
         if($hint=='yaml') return Yaml::dump($a);
         else if($hint=='json') return json_encode($a, (is_null($flags)) ?JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE :$flags);
         else if($hint=='query') return http_build_query($a);
         else return serialize($a);
     }
 
-    public static function unserialize($a, $hint=null, $flags=null)
+    public static function unserialize(string $a, string $hint='', int|null $flags=null): mixed
     {
         if(is_string($a)) {
-            if(is_null($hint)) $hint = (substr($a,1,1)==':' && strpos('aOidsN', substr($a,0,1))!==false) ?'php' :'json';
+            if(!$hint) $hint = (substr($a,1,1)==':' && strpos('aOidsN', substr($a,0,1))!==false) ?'php' :'json';
             if($hint=='yaml') {
                 return Yaml::load($a);
             } else if($hint=='json') {
@@ -1955,12 +1925,8 @@ class Studio
 
     /**
      * Text to Slug
-     *
-     * @param string $str Text to convert to slug
-     *
-     * @return string slug
      */
-    public static function slug($s, $accept='_', $anycase=null)
+    public static function slug(string $s, string $accept='_', bool $anycase=false): string
     {
         $acceptPat = ($accept) ?preg_quote($accept, '/') :'';
         $r0 = $r = preg_replace('/[^\pL\d'.$acceptPat.']+/u', '-', (string) $s);
@@ -1978,7 +1944,7 @@ class Studio
         return ($anycase)?($r):(strtolower($r));
     }
 
-    public static function timeToNumber($t)
+    public static function timeToNumber(string $t): int
     {
         $t = explode(':', $t);
         $i=1;
@@ -1990,12 +1956,7 @@ class Studio
         return $r;
     }
 
-    /**
-     * @param int $number
-     * @param bool $uppercase
-     * @return string
-     */
-    public static function numberToLetter($number, $uppercase = false)
+    public static function numberToLetter(int $number, bool $uppercase = false): string
     {
         if (!is_int($number)) {
             $number = (int)$number;
@@ -2011,11 +1972,7 @@ class Studio
         return $uppercase ? $return : strtolower($return);
     }
 
-    /**
-     * @param string $letter
-     * @return int
-     */
-    public static function letterToNumber($letter)
+    public static function letterToNumber(string $letter): int
     {
         $letter = preg_replace('/[^A-Z]+/', '', strtoupper($letter));
         $r = 0;
@@ -2028,13 +1985,8 @@ class Studio
 
     /**
      * Format bytes for humans
-     *
-     * @param float   $bytes     value to be formatted
-     * @param integer $precision decimal units to use
-     *
-     * @return string formatted string
      */
-    public static function bytes($bytes, $precision=2)
+    public static function bytes(float|int|string $bytes, int $precision=2): string
     {
         $units = array('B', 'Kb', 'Mb', 'Gb', 'Tb');
 
@@ -2047,12 +1999,12 @@ class Studio
         return round($bytes, $precision) . ' ' . $units[$pow];
     }
 
-    public static function number($number, $decimals=2)
+    public static function number(float|int $number, int $decimals=2): string
     {
         return number_format($number, $decimals, self::$decimalSeparator, self::$thousandSeparator);
     }
 
-    public static function table($arr, $arg=array())
+    public static function table(array $arr, array $arg=[]): string
     {
         $class = (isset($arg['class'])) ? (" class=\"{$arg['class']}\"") : ('');
         $s = '<table cellpadding="0" cellspacing="0" border="0"' . $class . '><tbody>';
@@ -2079,10 +2031,11 @@ class Studio
         if ($ll !== false)
             $s = str_replace($ll, '', $s);
         $s .= '</tbody></table>';
+
         return $s;
     }
 
-    public static function markdown($s, $safe=true)
+    public static function markdown(string $s, bool $safe=true): string
     {
         static $P;
         if(is_null($P)) {
@@ -2096,7 +2049,7 @@ class Studio
         }
     }
 
-    public static function text($s)
+    public static function text(string $s): string
     {
         static $c;
         if(is_null($c)) {
@@ -2113,7 +2066,7 @@ class Studio
         return $r;
     }
 
-    public static function safeHtml($s)
+    public static function safeHtml(string $s): string
     {
         return  preg_replace('#<(/?[a-z][a-z0-9\:\-]*)(\s|[a-z0-9\-\_]+\=("[^"]*"|\'[^\']*\')|[^>]*)*(/?)>#i', '<$1$2>', 
                 strip_tags(
@@ -2122,7 +2075,7 @@ class Studio
             );
     }
 
-    public static function buildUrl($url, $parts=[], $params=[])
+    public static function buildUrl(array|string $url, array $parts=[], array $params=[]): string
     {
         if (!is_array($url)) {
             $url = parse_url((string)$url);
@@ -2168,7 +2121,7 @@ class Studio
         return $s;
     }
 
-    public static function formatUrl($url, $hostname='', $http='')
+    public static function formatUrl(string $url, string $hostname='', string $http=''): string
     {
         $s = '';
         if ($http == '') {
@@ -2208,15 +2161,11 @@ class Studio
 
     /**
      * wordwrap for utf8 encoded strings
-     *
-     * @param string $str
-     * @param integer $len
-     * @param string $what
-     * @return string
      * @author Milian Wolff <mail@milianw.de>
      */
 
-    public static function wordwrap($str, $width, $break, $cut = false) {
+    public static function wordwrap(string $str, int $width=100, string $break="\n", bool $cut=false): string
+    {
         if (!$cut) {
             $regexp = '#^(?:[\x00-\x7F]|[\xC0-\xFF][\x80-\xBF]+){'.$width.',}\b#U';
         } else {
@@ -2243,14 +2192,9 @@ class Studio
     /**
      * Authenticate a user against a password file generated by Apache's httpasswd
      * using PHP rather than Apache itself.
-     *
-     * @param string $user The submitted user name
-     * @param string $pass The submitted password
-     * @param string $pass_file='.htpasswd' The system path to the htpasswd file
-     * @param string $crypt_type='DES' The crypt type used to create the htpasswd file
-     * @return bool
      */
-    public static function httpAuth($pass_file='.htpasswd', $crypt_type='DES', $user=null,$pass=null){
+    public static function httpAuth(string $pass_file='.htpasswd', string $crypt_type='DES', string|null $user=null, string|null $pass=null): bool
+    {
         // the stuff below is just an example useage that restricts0
         // user names and passwords to only alpha-numeric characters.
         if(is_null($user)) {
@@ -2292,7 +2236,7 @@ class Studio
                         if($test_pw == $fpass){
                             // authentication success.
                             fclose($fp);
-                            return TRUE;
+                            return true;
                         }else{
                             break;
                         }
@@ -2304,9 +2248,11 @@ class Studio
         App::status(401);
         @header('www-authenticate: Basic realm="Restricted access, please provide your credentials."');
         exit('<html><title>401 Unauthorized</title><body><h1>Forbidden</h1><p>Restricted access, please provide your credentials.</p></body></html>');
+
+        return false;
     }
 
-    public static function env($asArray=null, $output=null)
+    public static function env(bool $asArray=false, bool $output=false): array|string
     {
         if(is_null(self::$_env)) {
             if(defined('S_ENV')) self::$_env = S_ENV;
@@ -2405,43 +2351,43 @@ class Studio
         return $r;
     }
 
-    public static function encrypt($s, $salt=null, $alg=null, $encode=true)
+    public static function encrypt(string $s, string|null $salt=null, string|null $alg=null, bool $encode=true): string
     {
         return Crypto::encrypt($s, $salt, $alg, $encode);
     }
 
-    public static function decrypt($r, $salt=null, $alg=null)
+    public static function decrypt(string $r, string|null $salt=null, string|null $alg=null): string
     {
         return Crypto::decrypt($r, $salt, $alg);
     }
 
-    public static function salt($length=40, $safe=true)
+    public static function salt(int $length=40, bool $safe=true): string
     {
         return Crypto::salt($length, $safe);
     }
 
-    public static function encodeBase64Url($s)
+    public static function encodeBase64Url(string $s): string
     {
         return str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($s));
     }
 
-    public static function decodeBase64Url($s)
+    public static function decodeBase64Url(string $s): string|false
     {
         return base64_decode(str_pad(strtr($s, '-_', '+/'), strlen($s) % 4, '=', STR_PAD_RIGHT));
     }
 
-    public static function encodeBase64($s, $urlSafe=null)
+    public static function encodeBase64(string $s, bool $urlSafe=false): string
     {
         return ($urlSafe) ?self::encodeBase64Url($s) :base64_encode($s);
     }
 
-    public static function decodeBase64($s, $urlSafe=null)
+    public static function decodeBase64(string $s, bool $urlSafe=false): string|false
     {
         if(is_null($urlSafe)) $urlSafe = preg_match('@[\-\_]@', $s);
         return ($urlSafe) ?self::decodeBase64Url($s) :base64_decode($s);
     }
 
-    public static function hash($str, $salt=null, $type=40)
+    public static function hash(string $str, string|null $salt=null, int|string $type=40): string
     {
         return Crypto::hash($str, $salt, $type);
     }
@@ -2449,7 +2395,7 @@ class Studio
     /**
      * Date and time functions
      */
-    public static function strtotime($date, $showtime = true, $microseconds=null)
+    public static function strtotime(string $date, bool $showtime = true, bool $microseconds=false): int|false
     {
         $hour=$minute=$second=$ms=0;
         if(preg_match('/^([0-9]{4})(-([0-9]{2})(-([0-9]{2})(T([0-9]{2})\:([0-9]{2})(\:([0-9]{2})(\.[0-9]+)?)?(Z|([-+])([0-9]{2})\:([0-9]{2}))?)?)?)?$/', trim($date), $m)){
@@ -2487,7 +2433,8 @@ class Studio
 
         return $r;
     }
-    public static function date($t, $showtime=true)
+
+    public static function date(string|int|float $t, bool $showtime=true): string
     {
         $s = (is_string($showtime) && !is_numeric($showtime)) ?$showtime :self::$dateFormat.(($showtime)?(' '.self::$timeFormat):(''));
         if(!is_int($t)) {
@@ -2496,7 +2443,7 @@ class Studio
         return date($s, $t);
     }
 
-    public static function dateDiff($start, $end='', $showtime=false)
+    public static function dateDiff(string|int|float $start, string|int|float $end='', bool $showtime=false): string
     {
         $tstart = (is_int($start))?($start):(@strtotime($start));
         $tend = (is_int($end))?($end):(@strtotime($end));
@@ -2529,7 +2476,7 @@ class Studio
         return $str;
     }
 
-    public static function timezoneOffset($tz, $d='now', $tz1=null)
+    public static function timezoneOffset(string $tz, string|int|float $d='now', string $tz1=''): int
     {
         $d = new DateTime($d, new DateTimeZone($tz));
         $o = $d->getOffset();
@@ -2540,7 +2487,7 @@ class Studio
         return $o;
     }
 
-    public static function checkIp($ip=null, $cidrs=null)
+    public static function checkIp(string $ip='', string $cidrs=''): bool
     {
         if(!filter_var($ip, FILTER_VALIDATE_IP)) return false;
         if($cidrs) {
@@ -2565,7 +2512,7 @@ class Studio
     /**
      * Validate an email address.
      */
-    public static function checkEmail($email, $checkDomain=null)
+    public static function checkEmail(string $email, bool $checkDomain=false): bool
     {
         $isValid = true;
         $atIndex = strrpos($email, '@');
@@ -2609,7 +2556,7 @@ class Studio
         return $isValid;
     }
 
-    public static function checkDomain($domain, $records=array('MX', 'A'), $cache=true)
+    public static function checkDomain(string $domain, array $records=['MX', 'A'], bool $cache=true): bool
     {
         if(!$cache || !($R=Cache::get('dnscheck/'.$domain, 600))) {
             $r = false;
@@ -2641,7 +2588,7 @@ class Studio
      *
      * @return bool              true on success, false on error
      */
-    public static function save($file, $contents, $recursive=false, $mask=0666)
+    public static function save(string $file, string $contents, bool $recursive=false, int $mask=0666): bool
     {
         if ($file=='') {
             return false;
@@ -2678,7 +2625,7 @@ class Studio
         }
     }
 
-    public static function mail($to, $subject='', $message='', $headers=null, $attach=null)
+    public static function mail(string|array $to, string $subject='', string $message='', string|array $headers='', array $attach=[]): bool
     {
         try {
             $h = array(
@@ -2712,7 +2659,7 @@ class Studio
         }
     }
 
-    public static function call($fn, $a=null)
+    public static function call(array|string $fn, array $a=[]): mixed
     {
         if($a) {
             if(!is_array($fn)) return self::functionCall($fn, $a);
@@ -2728,7 +2675,7 @@ class Studio
         }
     }
 
-    public static function functionCall($fn, $a)
+    public static function functionCall(string|array $fn, array $a): mixed
     {
         if(!function_exists($fn)) {
             return null;
@@ -2752,7 +2699,7 @@ class Studio
         }
     }
 
-    public static function objectCall($c, $m, $a)
+    public static function objectCall(object $c, string $m, array $a): mixed
     {
         if(!method_exists($c, $m)) {
             return null;
@@ -2776,7 +2723,7 @@ class Studio
         }
     }
 
-    public static function staticCall($c, $m, $a)
+    public static function staticCall(string|object $c, string $m, array $a): mixed
     {
         if(!method_exists($c, $m)) {
             return null;
@@ -2802,16 +2749,16 @@ class Studio
 
     const Z64='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-.';
     const Z85='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#';
-    public static function compress64($s)
+    public static function compress64(string $s): string
     {
         return self::compress($s, self::Z64);
     }
-    public static function compress85($s)
+    public static function compress85(string $s): string
     {
         return self::compress($s, self::Z85);
     }
 
-    public static function compress($s, $chars=null)
+    public static function compress(string $s, string $chars=''): string
     {
         if(!$chars) $chars = self::Z64;
         $s = (string)$s;
@@ -2835,15 +2782,15 @@ class Studio
         return $ns;
     }
 
-    public static function expand64($s)
+    public static function expand64(string $s): string|false
     {
         return self::expand($s, self::Z64);
     }
-    public static function expand85($s)
+    public static function expand85(string $s): string|false
     {
         return self::expand($s, self::Z85);
     }
-    public static function expand($s, $chars=null)
+    public static function expand(string $s, string $chars=''): string|false
     {
         if(!$chars) $chars = self::Z64;
         $ns='';
@@ -2865,7 +2812,7 @@ class Studio
     /**
      * Make questions at command line
      */
-    public static function ask($question, $default=null, $check=null, $err='One more time...', $retries=-1)
+    public static function ask(string $question, string $default='', string $check='', string $err='One more time...', int $retries=-1): string|false
     {
         echo $question, ($check && is_array($check))?(' ('.implode(', ', $check).')'):(''), ($default)?("[{$default}]:\n"):("\n");
         $stdin = fopen('php://stdin', 'r');
@@ -2887,7 +2834,7 @@ class Studio
         return $r;
     }
 
-    public static function relativePath($to, $from=null)
+    public static function relativePath(string $to, string $from=''): string
     {
         if(!$from) {
             $from = str_replace('\\', '/', getcwd());
@@ -2928,7 +2875,7 @@ class Studio
     }
 
 
-    public static function templateDir($asArray=true)
+    public static function templateDir(bool $asArray=true): array|string
     {
         if(is_null(self::$tplDir)) {
             $cfg = self::getApp()->config('app', 'templates-dir');
@@ -2943,7 +2890,7 @@ class Studio
      * Find current template file location, or false if none are found, accepts multiple arguments, processed in order.
      * example: $template = self::templateFile($mytemplate, 'tdz_entry');
      */
-    public static function templateFile($tpls)
+    public static function templateFile(string|array $tpls): string|false
     {
         $apps = self::getApp()->config('app', 'apps-dir');
         if(!is_array($tpls)) $tpls = func_get_args();
@@ -2970,7 +2917,7 @@ class Studio
      *
      * @return void
      */
-    public static function autoload($cn)
+    public static function autoload(string $cn): void
     {
         if($f=self::classFile($cn)) {
             require_once $f;
@@ -2980,7 +2927,7 @@ class Studio
         }
     }
 
-    public static function classFile($cn)
+    public static function classFile(string $cn): string|false
     {
         static $vendor;
 
@@ -3021,9 +2968,11 @@ class Studio
             }
         }
         unset($c);
+
+        return false;
     }
 
-    public static function autoloadParams($cn)
+    public static function autoloadParams(string $cn): void
     {
         if(is_null(self::$autoload)) {
             if(file_exists($c=S_APP_ROOT.'/config/autoload.ini')) {
@@ -3060,15 +3009,15 @@ class Studio
         }
     }
 
-    public static function rawValue($v)
+    public static function rawValue(mixed $v): mixed
     {
         if(is_numeric($v) && preg_match('/^[0-9\.]+$/', $v)) {
-            return ((string)((int)$v)===$v)?((int)$v):((double)$v);
+            return ((string)((int)$v)===$v)?((int)$v):((float)$v);
         }
         return $v;
     }
 
-    public static function raw(&$v)
+    public static function raw(mixed &$v): mixed
     {
         if(is_string($v)) {
             if($v=='true') $v=true;
@@ -3089,7 +3038,7 @@ class Studio
      *
      * @param string $dir directory name
      */
-    public static function rmdirr($dir)
+    public static function rmdirr(string $dir): bool
     {
         if (is_dir($dir)) {
             try {
@@ -3105,7 +3054,7 @@ class Studio
         }
     }
 
-    public static function glob($pat, $showPossibilities=null)
+    public static function glob(string $pat, bool $showPossibilities=false): array
     {
         if(defined('GLOB_BRACE') && !$showPossibilities) {
             return glob($pat, GLOB_BRACE);
@@ -3163,7 +3112,7 @@ class Studio
         return $r;
     }
 
-    public static function tune($s=null,$m=20, $t=20, $allowLessMemory=false)
+    public static function tune(string|null $s='', int|null $m=20, int|null $t=20, bool $allowLessMemory=false): void
     {
         if($m) {
             $mem = (int) substr(ini_get('memory_limit'), 0, strlen(ini_get('memory_limit'))-1);
@@ -3201,7 +3150,7 @@ class Studio
         }
     }
 
-    public static function list($list, $childProperty='nav')
+    public static function list(object|array $list, string $childProperty='nav'): string
     {
         $s = '';
         if(is_object($list) && ($list instanceof Collection)) {
@@ -3241,13 +3190,13 @@ class Studio
         '.'=>'[.]',
         '//'=>'/​/',
     ];
-    public static function defang($s, $r=[])
+    public static function defang(string $s, array $r=[]): string
     {
         $r += self::$defangR;
         return strtr($s, $r);
     }
 
-    public static function refang($s, $r=[])
+    public static function refang(string $s, array $r=[]): string
     {
         $r += self::$defangR;
         return strtr($s, array_flip($r));
