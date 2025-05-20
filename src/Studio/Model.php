@@ -566,10 +566,10 @@ class Model implements ArrayAccess, Iterator, Countable
                     unset($fn0);
                 }
 
-                if(preg_match('/^([a-z0-9\-\_]+)::([a-z0-9\-\_\,]+)(:[a-z0-9\-\_\,\!]+)?$/i', $fn, $m)) {
+                if(preg_match('/^([a-z0-9\-\_]+)::([a-z0-9\-\_\,]+)(:[a-z0-9\-\_\,\!\:]+)?$/i', $fn, $m)) {
                     if(isset($m[3])) {
                         if(!isset($U)) $U=S::getUser();
-                        if(!$U || !$U->hasCredential(preg_split('/[\,\:]+/', $m[3], -1, PREG_SPLIT_NO_EMPTY),false)) {
+                        if(!$U || !$U->hasCredential(preg_split('/[\,\s]+/', substr($m[3],1), -1, PREG_SPLIT_NO_EMPTY),false)) {
                             continue;
                         }
                     }

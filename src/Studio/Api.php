@@ -3564,7 +3564,6 @@ class Api extends SchemaObject
                 return $current[$key];
             }
         }
-
         $r = $cn::find($this->search,$max,$this->scope($a,true,true),$collection,$order,$this->groupBy);
 
         if($max==1 && S::isempty($this->id) && $setId && $r) {
@@ -3654,27 +3653,38 @@ class Api extends SchemaObject
         }
         if(isset($scope)) return $scope;
 
-        if($expand && is_array($this->scope)) {
-            $r = array();
+        if(is_array($this->scope)) {
             foreach($this->scope as $k=>$v) {
-                if(is_string($v) && substr($v, 0, 7)=='scope::') {
+                if(is_string($v) && substr($v, 0, 7)=='scope::' && strpos(substr($v, 7), ':')) {
                     $v = substr($v, 7);
-                    if(strpos($v, ':')) {
-                        $c = preg_split('/[\s\,\:]+/', substr($v, strpos($v, ':')+1), -1, PREG_SPLIT_NO_EMPTY);
-                        $v = substr($v, 0, strpos($v, ':'));
-                        if(!isset($U)) $U = S::getUser();
-                        if($c && (!$U || !$U->hasCredential($c, false))) continue;
+                    $c = preg_split('/[\s\,]+/', substr($v, strpos($v, ':')+1), -1, PREG_SPLIT_NO_EMPTY);
+                    $v = substr($v, 0, strpos($v, ':'));
+                    if(!isset($U)) $U = S::getUser();
+                    if($c && (!$U || !$U->hasCredential($c, false))) {
+                        unset($this->scope[$k]);
+                    } else {
+                        $this->scope[$k] = 'scope::'.$v;
                     }
-                    if(isset($this->options['scope'][$v])) {
-                        $r += (isset($this->options['scope'][$v]['__default'])) ?$cn::columns($this->options['scope'][$v]) :$this->options['scope'][$v];
-                    }
-                    continue;
+                    unset($c);
                 }
-                $r[$k] = $v;
                 unset($k, $v);
             }
-            $this->scope = $r;
-            return $r;
+            if($expand) {
+                $r = array();
+                foreach($this->scope as $k=>$v) {
+                    if(is_string($v) && substr($v, 0, 7)=='scope::') {
+                        $v = substr($v, 7);
+                        if(isset($this->options['scope'][$v])) {
+                            $r += (isset($this->options['scope'][$v]['__default'])) ?$cn::columns($this->options['scope'][$v]) :$this->options['scope'][$v];
+                        }
+                        continue;
+                    }
+                    $r[$k] = $v;
+                    unset($k, $v);
+                }
+                $this->scope = $r;
+                return $r;
+            }
         }
         /*
         if($clean) {
