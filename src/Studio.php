@@ -546,7 +546,7 @@ class Studio
         return $a;
     }
 
-    public static function replace(array|string $s, array $r, array|null $r2=null): array|string
+    public static function replace(mixed $s, array $r, array|null $r2=null): mixed
     {
         if(is_array($s)) {
             foreach($s as $k=>$v) {
@@ -554,9 +554,9 @@ class Studio
             }
         } else if($s) {
             if(is_null($r2)) {
-                $s = strtr($s, $r);
+                $s = strtr((string)$s, $r);
             } else {
-                $s = str_replace($r, $r2, $s);
+                $s = str_replace($r, $r2, (string) $s);
             }
         }
         return $s;
@@ -890,7 +890,7 @@ class Studio
                 || preg_match($ssearch2, substr($useragent, 0, 4)));
     }
 
-    public static function sql(array|string $str, bool $enclose=true): array|string
+    public static function sql(mixed $str, bool $enclose=true): mixed
     {
         if(is_array($str)) {
             foreach($str as $k=>$v){
@@ -900,7 +900,7 @@ class Studio
         }
         $s = array('\\', "'");
         $r = array('\\\\', "''");
-        $str = str_replace($s, $r, $str);
+        $str = str_replace($s, $r, (string) $str);
         $N = ($enclose && self::$sqlUnicode && !mb_check_encoding($str, 'ASCII')) ?'N' :'';
         $str = ($enclose) ? ("$N'{$str}'") : ($str);
         return $str;
@@ -1926,7 +1926,7 @@ class Studio
     /**
      * Text to Slug
      */
-    public static function slug(string $s, string $accept='_', bool $anycase=false): string
+    public static function slug(string|null $s, string $accept='_', bool $anycase=false): string|null
     {
         $acceptPat = ($accept) ?preg_quote($accept, '/') :'';
         $r0 = $r = preg_replace('/[^\pL\d'.$acceptPat.']+/u', '-', (string) $s);
@@ -2983,7 +2983,7 @@ class Studio
         }
         if(isset(self::$autoload[$cn])) {
             foreach(self::$autoload[$cn] as $k=>$v) {
-                $cn::$$k = (!is_array($v) && substr($v, 0, 1)=='{')?(json_decode($v, true)):($v);
+                $cn::$$k = (!is_array($v) && substr((string) $v, 0, 1)=='{')?(json_decode($v, true)):($v);
                 unset($k, $v);
             }
             unset(self::$autoload[$cn]);
@@ -3011,7 +3011,7 @@ class Studio
 
     public static function rawValue(mixed $v): mixed
     {
-        if(is_numeric($v) && preg_match('/^[0-9\.]+$/', $v)) {
+        if(is_numeric($v) && preg_match('/^[0-9\.]+$/', (string)$v)) {
             return ((string)((int)$v)===$v)?((int)$v):((float)$v);
         }
         return $v;
