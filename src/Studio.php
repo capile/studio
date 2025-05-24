@@ -2487,7 +2487,7 @@ class Studio
         return $o;
     }
 
-    public static function checkIp(string $ip='', string $cidrs=''): bool
+    public static function checkIp(string $ip='', array|string $cidrs=''): bool
     {
         if(!filter_var($ip, FILTER_VALIDATE_IP)) return false;
         if($cidrs) {
