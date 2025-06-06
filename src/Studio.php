@@ -25,7 +25,7 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.3.9';
+    const VERSION = '1.3.10';
     const VER = 1.3;
 
     protected static
