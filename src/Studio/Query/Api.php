@@ -1634,7 +1634,7 @@ class Api
     /**
      * Gets the timestampable last update
      */
-    public function timestamp()
+    public function timestamp($fns=null, $where=null)
     {
         if(!$this->_schema) return false;
         $cn = $this->schema('className');
@@ -1645,6 +1645,7 @@ class Api
         S::$variables['timestamp'][$cn] = false;
         if(is_null($this->headers)) {
             $this->_limit = 0;
+            if(!is_null($where)) $this->where($where);
             $this->query($this->buildQuery(true));
             $this->_limit = null;
         }
