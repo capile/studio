@@ -24,6 +24,7 @@ RUN apk add --no-cache --update \
       cyrus-sasl-dev \
       freetype-dev \
       ldb-dev \
+      samba-dev \
       libdrm-dev \
       libjpeg-turbo-dev \
       libmemcached-dev \
