@@ -2151,11 +2151,11 @@ class Model implements ArrayAccess, Iterator, Countable
                     if(is_array($v)) {
                         $v = S::implode($v, static::$listSeparator);
                     }
-                    if($showOriginal && array_key_exists($fn, $this->_original)) {
-                        $v0 = (isset($this->_original[$fn]))?($this->_original[$fn]):(null);
-                        $v1 = (isset($this->$fn))?($this->$fn):(null);
+                    if($showOriginal && array_key_exists((strpos($fn, '.')) ?substr($fn, 0, strpos($fn, '.')) :$fn, $this->_original)) {
+                        $v0 = S::extractValue($this->_original, $fn, true);
+                        $v1 = S::extractValue($this, $fn, true);
                         if($v0!=$v1) {
-                            $this->$fn = $v0;
+                            $this->safeSet($fn, $v0, true);
                             $nv = $this->renderField($fn, $fd, $xmlEscape);
                             if(is_array($nv)) {
                                 $nv = S::implode($v, static::$listSeparator);
@@ -2166,7 +2166,7 @@ class Model implements ArrayAccess, Iterator, Countable
                                    ;
                             }
                             unset($nv);
-                            $this->$fn = $v1;
+                            $this->safeSet($fn, $v1, true);
                         }
                         unset($v0, $v1);
                     }

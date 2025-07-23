@@ -25,7 +25,7 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.3.10';
+    const VERSION = '1.3.12';
     const VER = 1.3;
 
     protected static
@@ -586,7 +586,7 @@ class Studio
      * 
      * Compatible with json_path
      */ 
-    public static function extractValue($a, $p)
+    public static function extractValue($a, $p, $unserialize=false)
     {
         if(!is_array($a) && !is_object($a)) return;
         if(substr($p, 0, 2)=='$.') $p = substr($p, 2);
@@ -626,6 +626,10 @@ class Studio
 
                 } else if(isset($r[$n])) {
                     $r = $r[$n];
+                    if(is_string($r) && $unserialize && ($u=self::unserialize($r))) {
+                        $r = $u;
+                        unset($u);
+                    }
                 } else {
                     $r = null;
                     break;
