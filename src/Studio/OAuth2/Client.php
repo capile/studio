@@ -256,13 +256,11 @@ class Client extends SchemaObject
         $sn = S::scriptName(true);
         if(substr($sn, 0, strlen(static::$signInRoute))===static::$signInRoute) {
             if($auth) exit();
-
             S::scriptName(static::$signInRoute);
             return static::authorizeSignIn();
         }
 
         $U = S::getUser();
-
         if($U->isAuthenticated()) {
             $o = null;
             if($filter = static::config('filter')) {
@@ -292,7 +290,6 @@ class Client extends SchemaObject
                     return Studio::error(403);
                 }
             }
-
             if($export = static::config('export')) {
                 if(!is_array($export)) $export = [$export => $export];
                 if(!isset($o)) $o = $U->getObject();
@@ -310,7 +307,7 @@ class Client extends SchemaObject
             $U->setAttribute('authorize-source', S::requestUri());
         }
 
-        return Studio::error(401);
+        App::end('', 401);
     }
 
     public static function authorizeSignIn($options=[])

@@ -163,34 +163,34 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
     && \
     ln -s "/opt/studio/data/web" /var/www/studio/data/web
 USER www-data
-ENV HOME=/var/www
+ENV HOME=/var/www \
+    PATH="${PATH}:/var/www/studio" \
+    STUDIO_IP="0.0.0.0" \
+    STUDIO_PORT="9999" \
+    STUDIO_DEBUG="" \
+    STUDIO_MODE="app" \
+    STUDIO_APP="" \
+    STUDIO_APP_ROOT=/opt/studio \
+    STUDIO_PROJECT_ROOT=/opt/studio \
+    STUDIO_DATA=/opt/studio/data \
+    STUDIO_CONFIG=/var/www/studio/app.yml \
+    STUDIO_AUTOLOAD=/var/www/studio/vendor/autoload.php \
+    STUDIO_ENV="prod" \
+    STUDIO_INIT="" \
+    STUDIO_TAG="" \
+    STUDIO_CACHE_STORAGE="" \
+    STUDIO_MAIL_SERVER="" \
+    PHP_FCGI_CHILDREN="1000" \
+    PHP_FCGI_START_SERVERS="5" \
+    PHP_FCGI_SPARE_SERVERS="100" \
+    PHP_FCGI_MAX_REQUESTS="500" \
+    FASTCGI_ACCESS_LOG="/dev/stderr" \
+    FASTCGI_STATUS_LISTEN=""
 RUN composer install --no-dev -n \
     && \
     composer clear-cache \
     && \
     rm -rf ~/.composer/cache ~/.npm/*
-ENV PATH="${PATH}:/var/www/studio"
-ENV STUDIO_IP="0.0.0.0"
-ENV STUDIO_PORT="9999"
-ENV STUDIO_DEBUG=""
-ENV STUDIO_MODE="app"
-ENV STUDIO_APP=""
-ENV STUDIO_APP_ROOT=/opt/studio
-ENV STUDIO_PROJECT_ROOT=/opt/studio
-ENV STUDIO_DATA=/opt/studio/data
-ENV STUDIO_CONFIG=/var/www/studio/app.yml
-ENV STUDIO_AUTOLOAD=/var/www/studio/vendor/autoload.php
-ENV STUDIO_ENV="prod"
-ENV STUDIO_INIT=""
-ENV STUDIO_TAG=""
-ENV STUDIO_CACHE_STORAGE=""
-ENV STUDIO_MAIL_SERVER=""
-ENV PHP_FCGI_CHILDREN="1000"
-ENV PHP_FCGI_START_SERVERS="5"
-ENV PHP_FCGI_SPARE_SERVERS="100"
-ENV PHP_FCGI_MAX_REQUESTS="500"
-ENV FASTCGI_STATUS_LISTEN=""
-
 VOLUME /opt/studio
 ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]
 CMD ["php-fpm"]
