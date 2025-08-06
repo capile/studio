@@ -6,7 +6,7 @@
     "author": "Guilherme Capilé",
     "dependencies": {
         "@fortawesome/fontawesome-free": "5.*",
-        "billboard.js": "*",
+        "billboard.js": "^3.16.0",
         "d3": "*",
         "less": "*",
         "moment": "^2.30.1",
