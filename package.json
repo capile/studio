@@ -16,9 +16,10 @@
         "sass": "*",
         "topojson-client": "^3.1.0",
         "topojson-simplify": "^3.0.3",
-        "uglify-js": "*"
+        "uglify-js": "^3.19"
     },
     "scripts": {
+        "build": "docker build -t tecnodesign/studio:latest -t tecnodesign/studio:v1.3 git@github.com:capile/studio.git && docker push tecnodesign/studio:latest && docker push tecnodesign/studio:v1.3",
         "test": "docker run -it --rm -e STUDIO_ENV=test -v $PWD:/var/www/studio -u $UID tecnodesign/studio:latest composer test",
         "start": "electron ."
     },
