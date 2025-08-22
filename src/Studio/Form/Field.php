@@ -1183,7 +1183,7 @@ class Field extends SchemaObject
         if($message && $message!=static::$defaultErrorMessage) {
             $err = $message;
         }
-        $value = trim($value);
+        $value = trim((string)$value);
         $types = ['SOA'];
         $stype = null;
         if(isset($this->attributes['data-dns-types']) && $this->attributes['data-dns-types']) {
@@ -1252,7 +1252,7 @@ class Field extends SchemaObject
         $types = ['public'];
         $flags = null;
         $stype = null;
-        $value = trim($value);
+        $value = trim((string)$value);
         $range = \IPLib\Factory::parseRangeString($value);
         $valid = false;
         if($range) {

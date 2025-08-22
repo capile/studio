@@ -1530,6 +1530,7 @@ class Model implements ArrayAccess, Iterator, Countable
                     unset($xfn, $xfd);
                 }
             }
+            if(!isset($rfn)) $rfn = $foreign[count($foreign)-1];
             $map = array();
             $oks = array();
 
@@ -2998,7 +2999,8 @@ class Model implements ArrayAccess, Iterator, Countable
             $this->$m(array($ref=>$value));
         // add other options for dotted.names?
         } else if($firstName && $ref && (isset($this->$firstName) || isset(static::$schema->properties[$firstName]))) {
-            if(!($serialize=static::$schema->properties[$firstName]->serialize) && static::$schema->properties[$firstName]->type!='object') {
+            $serialize = false;
+            if(isset(static::$schema->properties[$firstName]) && !($serialize=static::$schema->properties[$firstName]->serialize) && static::$schema->properties[$firstName]->type!='object') {
                 if(is_array($this->$firstName) || is_object($this->$firstName)) {
                     $this->{$firstName}[$ref] = $value;
                 }
