@@ -1,6 +1,6 @@
 ## tecnodesign/studio:v1.3
 #
-# docker build --no-cache -t tecnodesign/studio:v1.3 "git@github.com:capile/studio.git#v1.3" && \
+# docker build --no-cache -t tecnodesign/studio:v1.3 "git@github.com:capile/studio.git#main" && \
 # docker push tecnodesign/studio:v1.3
 FROM php:8.4-fpm-alpine
 ARG PHP_PEAR_PHP_BIN="php -d error_reporting=0"
