@@ -417,7 +417,7 @@ class Api
         if($a=$this->config('token_params')) {
             $url = S::buildUrl($url, [], $a);
         }
-        if(substr($c, -4)==='json') {
+        if(substr($ct, -4)==='json') {
             $data = S::serialize($d, 'json');
         } else {
             $data = http_build_query($d);
