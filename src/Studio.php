@@ -2450,6 +2450,24 @@ class Studio
         return Crypto::hash($str, $salt, $type);
     }
 
+    public static function guid($version=4, $uppercase=false)
+    {
+        $data = Crypto::salt(16, false);
+        if($version===7) {
+            $t = (int)(microtime(true) * 1000);
+            $i = 6;
+            while($i--) $data[$i] = chr(($t >> (8 * (5 - $i))) & 0xff);
+            $data[6] = chr(ord($data[6]) & 0x0f | 0x70); // set version to 0100
+        } else {
+            $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
+        }
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+
+        $r = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+
+        return ($uppercase) ?strtoupper($r) :$r; 
+    }
+
     /**
      * Date and time functions
      */

@@ -11,7 +11,7 @@
  */
 
 use Studio as S;
-use Studio\App;
+use Studio\{App,Collection};
 
 $id = S::slug($url);
 $cPrefix = $Api->config('attrClassPrefix');
@@ -183,7 +183,7 @@ if(isset($attributes) && is_array($attributes)) {
                         $sn = S::scriptName(true);
                         S::scriptName($Api->link());
                         if(!is_object($list)) {
-                            $list = new Tecnodesign_Collection($list, $Api->getModel());
+                            $list = new Collection($list, $Api->getModel());
                         }
                         echo $list->paginate($listLimit, $listRenderer, array('options'=>$options), $Api->config('listPagesOnTop'), $Api->config('listPagesOnBottom'));
                         S::scriptName($sn);

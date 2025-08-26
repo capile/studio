@@ -808,17 +808,19 @@ class Model implements ArrayAccess, Iterator, Countable
         $scope = $cn::pk();
         foreach($fields as $fn) {
             if(!$this->$fn) {
-                $size = (isset(static::$schema->$fn['size'])) ?static::$schema->$fn['size'] :10;
-                $r = null;
-                while(!$r) {
-                    $r = S::salt($size);
-                    if(!static::find([$fn=>$r],1,[$fn])) {
-                        $this[$fn] = $r;
-                        break;
-                    } else {
-                        $r = null;
+                if(isset(static::$schema->$fn->increment) && ($t=static::$schema->$fn->increment) && preg_match('/^[gu]uid[\-_]?(v[0-9])$/', $t, $m)) {
+                    $v = (isset($m[1]) && $m[1]) ?(int)substr($m[1], 1) :4;
+                    $r = S::guid($v);
+                } else {
+                    $size = (isset(static::$schema->$fn['size'])) ?static::$schema->$fn['size'] :10;
+                    $r = null;
+                    $i = 10;
+                    while(!$r && $i--) {
+                        $r = S::salt($size);
+                        if(!static::find([$fn=>$r],1,[$fn])) break;
                     }
                 }
+                if($r) $this[$fn] = $r;
             }
         }
 
