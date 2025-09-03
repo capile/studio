@@ -14,7 +14,7 @@ use Studio\Studio;
 $s = '<li id="e'.$id.'"'.((Studio::$page===$id) ?' class="current"' :'').'>'
    . (($link)?('<a href="'.S::xml($link).'">'.S::xml($title).'</a>'):(S::xml($title)));
 
-if($C=$entry->getChildren()) {
+if($C=$entry->getChildren($search=array(), $scope='link', $asCollection=false, ['Related.position'=>'asc', 'title'=>'asc'])) {
     if(!isset($template)) $template = basename(__FILE__, '.php');
     $s .= '<ul>';
     foreach($C as $i=>$o) {
