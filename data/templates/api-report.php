@@ -14,7 +14,7 @@ use Studio as S;
 use Studio\App;
 use Studio\Model;
 use Studio\Form as Form;
-use Tecnodesign_Excel as Excel;
+use Studio\Excel;
 
 $id = S::slug($url);
 if(strpos($url, '?')!==false) list($url, $qs)=explode('?', $url, 2);

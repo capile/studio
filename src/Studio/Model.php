@@ -1519,9 +1519,8 @@ class Model implements ArrayAccess, Iterator, Countable
         $cn = (isset($rel['className']))?($rel['className']):($relation);
         $rpk = $cn::pk($cn::$schema, true);
 
-
         if($rel['type']=='many') {
-            if(count($rpk)>$lorel) $rfn = $rpk[count($rpk)-1];
+            if(count($rpk)>count($lorel)) $rfn = $rpk[count($rpk)-1];
             else {
                 foreach($cn::$schema->properties as $xfn=>$xfd) {
                     if(!in_array($xfn, $foreign) && isset($cn::$schema->overlay[$xfn]['type']) && in_array($cn::$schema->overlay[$xfn]['type'], static::$_typesChoices)) {
