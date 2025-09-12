@@ -14,14 +14,12 @@
 namespace Studio;
 
 use Studio as S;
-use Studio\Schema;
 use PhpOffice\PhpSpreadsheet\{Settings,IOFactory,Spreadsheet};
 use PhpOffice\Worksheet\{HeaderFooterDrawing,Drawing};
 use Exception;
 
-class Excel
+class Excel extends SchemaObject
 {
-    const SCHEMA_PROPERTY   = 'meta';
     const TYPE_STRING2      = 'str';
     const TYPE_STRING       = 's';
     const TYPE_IMAGE        = 'i';
@@ -68,12 +66,19 @@ class Excel
 
     public static $headerFooter=['OddHeader', 'OddFooter', 'EvenHeader', 'EvenFooter', 'FirstHeader', 'FirstFooter'];
     
-    public function __construct($config=[])
+    public function __construct(array|null $config=[])
     {
         if($config) {
-            if(!static::$meta) static::$meta = Schema::loadSchema('Studio_Excel');
-            $Schema = static::$meta;
-            $Schema::apply($this, $config, $Schema);
+            $prop = (isset($config['properties'])) ?$config['properties'] :[];
+            foreach($config as $n=>$v) {
+                if(!isset(static::$meta->properties[$n])) {
+                    $prop[$n] = $v;
+                    unset($config[$n]);
+                }
+                unset($n, $v);
+            }
+            if($prop) $config['properties'] = $prop;
+            static::$meta::apply($this, $config, static::$meta);
         }
 
         $this->init();        

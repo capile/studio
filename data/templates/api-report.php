@@ -11,10 +11,7 @@
  */
 
 use Studio as S;
-use Studio\App;
-use Studio\Model;
-use Studio\Form as Form;
-use Studio\Excel;
+use Studio\{App,Model,Form,Excel};
 
 $id = S::slug($url);
 if(strpos($url, '?')!==false) list($url, $qs)=explode('?', $url, 2);
