@@ -543,7 +543,7 @@ class Api extends SchemaObject
             $l = count($p) -1;
             // remove extension from last parameter, if there's any
             $ext = null;
-            if(isset($p[$l]) && preg_match('/\.([a-z0-9]{3,4})$/', $p[$l], $m)) {
+            if(isset($p[$l]) && preg_match('/\.([a-z0-9]{3,4})$/', $p[$l], $m) && in_array(strtolower($m[1]), static::$formats)) {
                 $ext = $m[1];
                 $p[$l] = substr($p[$l], 0, strlen($p[$l]) - strlen($m[0]));
             } else if($m=App::request('extension')) {
