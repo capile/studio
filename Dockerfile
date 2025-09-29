@@ -26,6 +26,7 @@ RUN apk add --no-cache --update \
       freetype-dev \
       ldb-dev \
       samba-dev \
+      lexbor-dev \
       libdrm-dev \
       libjpeg-turbo-dev \
       libmemcached-dev \
