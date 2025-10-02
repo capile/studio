@@ -6,14 +6,12 @@
 FROM php:8.4-fpm-alpine
 ARG PHP_PEAR_PHP_BIN="php -d error_reporting=0"
 RUN apk add --no-cache --update \
-      ffmpeg \
       git \
       gnupg \
       libldap \
       libmemcached-libs \
       nodejs \
       npm \
-      openssh-client \
       postgresql-client \
       libzip-dev \
       yarn \
@@ -64,6 +62,7 @@ RUN apk add --no-cache --update \
     && \
     docker-php-ext-install \
       ctype \
+      dom \
       fileinfo \
       gd \
       ldap \
@@ -81,6 +80,8 @@ RUN apk add --no-cache --update \
     rm -rf /tmp/* \
     && \
     apk del .deps \
+    && \
+    apk del unzip \
     && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2
 WORKDIR /var/www/studio
