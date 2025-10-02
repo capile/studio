@@ -26,7 +26,6 @@ RUN apk add --no-cache --update \
       freetype-dev \
       ldb-dev \
       samba-dev \
-      lexbor-dev \
       libdrm-dev \
       libjpeg-turbo-dev \
       libmemcached-dev \
@@ -65,7 +64,6 @@ RUN apk add --no-cache --update \
     && \
     docker-php-ext-install \
       ctype \
-      dom \
       fileinfo \
       gd \
       ldap \
