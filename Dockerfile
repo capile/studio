@@ -5,15 +5,23 @@
 # docker push tecnodesign/studio:v1.3
 FROM php:8.4-fpm-alpine
 ARG PHP_PEAR_PHP_BIN="php -d error_reporting=0"
-RUN apk add --no-cache --update \
+WORKDIR /var/www/studio
+COPY . .
+RUN apk upgrade --update \
+    && \
+    apk add --no-cache --update \
+      freetype \
       git \
       gnupg \
+      libjpeg-turbo \
       libldap \
       libmemcached-libs \
+      libpng \
+      libwebp \
+      libzip-dev \
       nodejs \
       npm \
       postgresql-client \
-      libzip-dev \
       yarn \
       zip \
       zlib \
@@ -62,7 +70,6 @@ RUN apk add --no-cache --update \
     && \
     docker-php-ext-install \
       ctype \
-      dom \
       fileinfo \
       gd \
       ldap \
@@ -79,14 +86,15 @@ RUN apk add --no-cache --update \
     && \
     rm -rf /tmp/* \
     && \
+    cd /var/www/studio \
+    && \
     apk del .deps \
     && \
     apk del unzip \
     && \
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2
-WORKDIR /var/www/studio
-COPY . .
-RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2 \
+    && \
+    cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
     && \
     cp /var/www/studio/data/deploy/opcache.ini /usr/local/etc/php/conf.d/opcache.ini \
     && \
