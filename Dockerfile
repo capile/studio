@@ -23,7 +23,6 @@ RUN apk upgrade --update \
       npm \
       postgresql-client \
       yarn \
-      zip \
       zlib \
       && \
     apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
@@ -48,6 +47,7 @@ RUN apk upgrade --update \
       openldap-dev \
       openssl-dev \
       zlib-dev \
+      zip \
     && \
     pecl install mongodb igbinary redis \
     && \
@@ -89,8 +89,6 @@ RUN apk upgrade --update \
     cd /var/www/studio \
     && \
     apk del .deps \
-    && \
-    apk del unzip \
     && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2 \
     && \
