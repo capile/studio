@@ -37,7 +37,13 @@ foreach($scope as $fn=>$fd) {
     if(!isset($$fn) || !($v = $$fn)) continue;
     $escape = true;
     $el = 'p';
-    $a = ['class'=>'p-'.$fn];
+    $a = ['class'=>'p-'.S::slug($fn)];
+    if(substr($fn, 0, 11)==='identifier:' && $v && preg_match('@^([a-z0-9]+\://|/)@', $v)) {
+        $v = '<a href="'.S::xml($v).'">'.S::buildUrl($v).'</a>';
+        $escape = false;
+        unset($fd['format']);
+        $fn = 'identifier';
+    }
     if($schema) $a['itemprop'] = $fn;
     if(isset($fd['format'])) {
         if($fd['format']=='html') {

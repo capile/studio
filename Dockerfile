@@ -21,6 +21,7 @@ RUN apk upgrade --update \
       libzip-dev \
       nodejs \
       npm \
+      openssh-client \
       postgresql-client \
       yarn \
       zlib \
