@@ -376,7 +376,7 @@ class Client extends SchemaObject
                     }
                     if(!$User) {
                         $User = $Server->requestUserinfo($Client);
-                        if(S::$log>0) S::log('[INFO] Fetch Userinfo from API: '.$User);
+                        if(S::$log>0) S::log('[INFO] Fetch Userinfo from API: '.var_export($User, true));
                     }
                 }
                 if($User) {

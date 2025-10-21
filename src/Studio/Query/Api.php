@@ -1768,7 +1768,7 @@ class Api
 
         if($R && isset($R['limit']) && isset($R['remaining'])) {
             $delay = (float) $this->config('ratelimitDelay');
-            $rate = ($R['remaining']>0) ?(((int)$R['remaining']) / ((int)$R['limit'])) :0;
+            $rate = ($R['remaining']>0 && $R['limit']>0) ?(((int)$R['remaining']) / ((int)$R['limit'])) :0;
             if($delay > $rate) {
                 $reset = (isset($R['reset'])) ?$R['reset'] :time();
                 $toReset = $reset - time();

@@ -14,8 +14,9 @@ all:
         additional-params: true
   studio:
     enable_interfaces: true
-    enable_interface_tokens: true
-    enable_interface_interfaces: true
+    enable_api_index: true
+    enable_api_tokens: true
+    enable_api_interfaces: true
   user:
     model: Studio\Model\Users
     ns:
