@@ -323,8 +323,8 @@ class Field extends SchemaObject
                     $this->value = $M->{$this->bind};
                     if($this->value===false && !property_exists($M, $this->bind)) {
                         $this->value = null;
-                    } else if($this->value && is_string($this->value) && $this->serialize) {
-                        $this->value = S::unserialize($this->value, $this->serialize);
+                    } else if($this->value && is_string($this->value) && $this->serialize && !is_null($r=S::unserialize($this->value, $this->serialize))) {
+                        $this->value = $r;
                     }
                 }
                 if($this->value instanceof Collection) {
