@@ -197,21 +197,24 @@ class Field extends SchemaObject
 
         $schema = $this->getSchema();
 
-        if(($p=strpos($name, '.')) && isset($schema['columns'][substr($name, 0, $p)]['serialize'])) $fd = $schema['columns'][substr($name, 0, $p)];
+        $fd = [];
+        if(($p=strpos($name, '.')) && isset($schema->properties[substr($name, 0, $p)]['serialize'])) {
+            $fd = $schema->properties[substr($name, 0, $p)];
+        }
 
-        if($schema && (isset($fd) || isset($schema['columns'][$name]) || isset($schema['relations'][$name]))) {
+        if($schema && ($fd || isset($schema->properties[$name]) || isset($schema->relations[$name]))) {
             $this->bind = $name;
-            if (isset($schema['relations'][$name]) && $schema['relations'][$name]['type']=='one') {
-                $this->bind = $schema['relations'][$name]['local'];
+            if (isset($schema->relations[$name]) && $schema->relations[$name]['type']=='one') {
+                $this->bind = $schema->relations[$name]['local'];
             }
             if($return) {
                 $return = array();
-                if(!isset($fd) && isset($schema['columns'][$name])) $fd=$schema['columns'][$name];
-                $return['required']=(isset($fd['null']) && !$fd['null']);
-                if(isset($fd)) {
+                if(!$fd && isset($schema->properties[$name])) $fd=$schema->properties[$name];
+                $return['required']=(isset($fd['required']) && $fd['required']);
+                if($fd) {
                     $return = static::properties($fd, $M->isNew());
                 } else {
-                    $rel = $schema['relations'][$name];
+                    $rel = $schema->relations[$name];
                     if($rel['type']=='one') {
                         $return['type']='select';
                         $return['choices']=$name;
@@ -222,8 +225,8 @@ class Field extends SchemaObject
                 unset($M, $name, $schema, $rel, $fd);
                 return $return;
             }
-        } else if(isset($M::$schema['form'][$name]['bind']) && preg_replace('/^.*\s([^\s]+)$/', '$1', $M::$schema['form'][$name]['bind'])!=$name && $recursive--) {
-            return $this->setBind($M::$schema['form'][$name]['bind'], $return, $recursive);
+        } else if(isset($schema->overlay[$name]['bind']) && preg_replace('/^.*\s([^\s]+)$/', '$1', $schema->overlay[$name]['bind'])!=$name && $recursive--) {
+            return $this->setBind($schema->overlay[$name]['bind'], $return, $recursive);
         } else if(substr($name, 0, 1)=='_' || property_exists($M, $name) || $M::$allowNewProperties || (($cm=S::camelize($name, true)) && method_exists($M, 'get'.$cm) && method_exists($M, 'set'.$cm))) {
             $this->bind = $name;
             unset($M, $name, $schema);
@@ -501,8 +504,8 @@ class Field extends SchemaObject
         $serialize = null;
         if(isset($this->prefix) && $this->prefix) {
             $p0 = preg_replace('/[\[\.\]].+/', '', $this->prefix);
-            if(isset($M::$schema['columns'][$p0]['serialize'])) {
-                $serialize = $M::$schema['columns'][$p0]['serialize'];
+            if(isset($M::$schema->properties[$p0]['serialize'])) {
+                $serialize = $M::$schema->properties[$p0]['serialize'];
             }
             if($serialize) {
                 $cn = preg_replace('/[\[\]]+/', '.', $this->prefix).$cn;
@@ -634,7 +637,7 @@ class Field extends SchemaObject
             $new = ($M->isNew())?($rel['foreign']):(false);
             unset($M, $vcount, $schema);
             if(!is_array($scope)) $scope = $cn::columns($scope);
-            if(!$scope) $scope = array_keys($cn::$schema['columns']);
+            if(!$scope) $scope = array_keys($cn::$schema->properties);
             $bnull = array();
             foreach($scope as $label=>$fn) {
                 if(is_array($fn)) {
@@ -645,7 +648,7 @@ class Field extends SchemaObject
                     }
                 }
                 if($p=strrpos($fn, ' ')) $fn = substr($fn, $p+1);
-                if(!isset($add[$fn]) && ((isset($cn::$schema['columns'][$fn]) && !isset($cn::$schema['columns'][$fn]['primary'])) || substr($fn, 0, 1)=='_')) {
+                if(!isset($add[$fn]) && ((isset($cn::$schema->properties[$fn]) && !isset($cn::$schema->properties[$fn]['primary'])) || substr($fn, 0, 1)=='_')) {
                     $bnull[$fn]='';
                 }
                 unset($fn);
@@ -1097,7 +1100,7 @@ class Field extends SchemaObject
             }
         }
         /*
-        if(S::isempty($value) && $this->bind && ($schema=$this->getSchema()) && isset($schema['columns'][$this->bind])) {
+        if(S::isempty($value) && $this->bind && ($schema=$this->getSchema()) && isset($schema->properties[$this->bind])) {
             $value=$this->getModel()->{$this->bind};
             if(S::isempty($value)) $value=null;
         }
@@ -1437,7 +1440,7 @@ class Field extends SchemaObject
             $value = $this->checkFile($value);
         }
         if($this->multiple) {
-            if(is_array($value)) $value = array_filter($value, ['tdz','notEmpty']);
+            if(is_array($value)) $value = array_filter($value, ['Studio','notEmpty']);
             if(S::isempty($value)) $value = null;
         } else if($type!='form') {
             if(is_array($value)) {
@@ -1631,7 +1634,7 @@ class Field extends SchemaObject
         }
         if(!$this->_choicesTranslated) {
             $schema=$this->getSchema();
-            $tlib = ($this->bind)?('model-'.$schema['tableName']):('field');
+            $tlib = ($this->bind)?('model-'.$schema->tableName):('field');
             foreach($this->choices as $k=>$v) {
                 if(is_array($v) && isset($v['value'])) {
                     $v = $v['value'];
@@ -1663,7 +1666,7 @@ class Field extends SchemaObject
             $label = ucwords(strtr(S::uncamelize($id), '-_', '  '));
             $ttable = 'labels';
             if($schema=$this->getSchema()) {
-                $ttable = 'model-'.$schema['tableName'];
+                $ttable = 'model-'.$schema->tableName;
             }
             $this->label = S::t(trim($label), $ttable);
         }
@@ -1933,7 +1936,7 @@ class Field extends SchemaObject
         $prefix ='';
         $bind = $this->bind;
         $schema=$this->getSchema();
-        if($this->choices && is_string($this->choices) && isset($schema['relations'][$this->choices]) && $schema['relations'][$this->choices]['local']==$bind) {
+        if($this->choices && is_string($this->choices) && isset($schema->relations[$this->choices]) && $schema->relations[$this->choices]['local']==$bind) {
             $bind = $this->choices;
             $this->bind = $bind;
             $this->choices=null;
@@ -1959,8 +1962,8 @@ class Field extends SchemaObject
             }
             $fk=array();
             $scope = (!$this->scope)?('subform'):($this->scope);
-            if(isset($schema['relations'][$bind])) {
-                $rel = $schema['relations'][$bind];
+            if(isset($schema->relations[$bind])) {
+                $rel = $schema->relations[$bind];
                 if ($rel['type']=='one') {
                     $this->size=1;
                 }
@@ -2143,7 +2146,7 @@ class Field extends SchemaObject
             $scope = $this->scope;
         }
         $M = $this->getModel();
-        if(is_string($scope) && !isset($M::$schema['scope'][$scope])) return null;
+        if(is_string($scope) && !isset($M::$schema->scope[$scope])) return null;
         $columns = (is_array($scope) && $scope && is_array(array_values($scope)[0])) ?$scope :$M::columns($scope);
         foreach($columns as $fn=>$fd) {
             unset($columns[$fn]);
@@ -3330,7 +3333,7 @@ class Field extends SchemaObject
             $label = false;
             $group = false;
             $attrs = '';
-            if(is_object($v) && $v instanceof Model && isset($v::$schema['scope']['choices']['value']) && isset($v::$schema['scope']['choices']['label'])) {
+            if(is_object($v) && $v instanceof Model && isset($v::$schema->scope['choices']['value']) && isset($v::$schema->scope['choices']['label'])) {
                 $v = $v->asArray('choices');
             }
             if (is_array($v)) {
