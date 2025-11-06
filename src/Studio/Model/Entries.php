@@ -236,7 +236,6 @@ class Entries extends Model
         }
 
         if($this->id===Studio::$page && ($meta=Studio::config('render_meta'))) {
-            $this->refresh(['title', 'summary', 'link']);
             $sm = $this->renderMeta($meta, $bodySlot);
             if(isset($slots[$bodySlot][0])) {
                 if(is_array($slots[$bodySlot][0])) array_unshift($slots[$bodySlot][0], $sm);
@@ -1692,6 +1691,7 @@ class Entries extends Model
         $s = null;
         $after = null;
         if($this->id==Studio::$page) {
+            $this->refresh(['title', 'summary', 'link']);
             if(in_array('title', $meta) && ($m=$this->title)) $s .= '<h1'.((Studio::$schema) ?' itemprop="name"' :'').'>'.S::xml($m).'</h1>';
             if(in_array('summary', $meta) && ($m=$this->summary)) {
                 $m = trim(S::safeHtml($m));
@@ -1703,7 +1703,7 @@ class Entries extends Model
             if(in_array('tags', $meta) && ($m=$this->getTags())) {
                 $after .= '<p class="p-keywords"'.((Studio::$schema) ?' itemprop="keywords"' :'').'>'.S::xml(implode(', ', $m)).'</p>';
             }
-            if(in_array('published', $meta) && ($m=$entry->published)) {
+            if(in_array('published', $meta) && ($m=$this->published)) {
                 $after .= '<p class="p-published"'.((Studio::$schema) ?' itemprop="datePublished" content="'.S::xml($m).'"' :'').'>'.S::date($m).'</p>';
             }
             if($after) S::set('after-'.$bodySlot, S::get('after-'.$bodySlot).$after);

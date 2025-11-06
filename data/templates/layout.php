@@ -80,4 +80,12 @@ if(isset($style)) {
     unset($css);
 }
 
+if(isset($variables)) {
+    $ogp = ['image','video'];
+    $d = [];
+    foreach($ogp as $n) if(isset($variables[$n])) $d[$n] = $variables[$n];
+    if($d) S::openGraph($d);
+    $meta .= S::meta('', $variables);
+}
+
 ?><!doctype html><html lang="<?php echo (S::$lang) ?S::$lang :'en'; ?>"<?php if(isset(S::$variables['html-layout'])) echo ' class="', S::xml(S::$variables['html-layout']), '"';?>><head><meta charset="utf-8" /><title><?php if(isset($title)) echo $title ?></title><?php echo Studio::languageHeaders(), isset($meta)?$meta:'', isset($style)?$style:''; ?><script<?php if(isset($nonce)) echo ' "', $nonce, '"'; ?>>let FF_FOUC_FIX;</script></head><body class="no-js"><?php echo isset($data)?$data:'', isset($content)?$content:'', isset($script)?$script:''; ?></body></html>
