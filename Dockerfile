@@ -15,7 +15,6 @@ RUN apk upgrade --update \
       gnupg \
       libjpeg-turbo \
       libldap \
-      libmemcached-libs \
       libpng \
       libwebp \
       libzip-dev \
@@ -34,7 +33,6 @@ RUN apk upgrade --update \
       samba-dev \
       libdrm-dev \
       libjpeg-turbo-dev \
-      libmemcached-dev \
       libpng-dev \
       libpq-dev \
       libwebp-dev \
@@ -50,17 +48,8 @@ RUN apk upgrade --update \
       zlib-dev \
       zip \
     && \
-    pecl install mongodb igbinary redis \
+    pecl install mongodb redis \
     && \
-    ( \
-        pecl install --nobuild memcached && \
-        cd "$(pecl config-get temp_dir)/memcached" && \
-        phpize && \
-        ./configure --enable-memcached-igbinary && \
-        make -j$(nproc) && \
-        make install && \
-        cd /tmp/ \
-    ) && \
     docker-php-ext-configure gd \
       --enable-gd \
       --with-freetype \
@@ -83,7 +72,7 @@ RUN apk upgrade --update \
       soap \
       zip \
     && \
-    docker-php-ext-enable igbinary memcached mongodb redis \
+    docker-php-ext-enable mongodb redis \
     && \
     rm -rf /tmp/* \
     && \

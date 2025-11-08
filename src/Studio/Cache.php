@@ -23,7 +23,7 @@ use Studio\Model\Tokens;
 
 class Cache
 {
-    public static $expires=0, $lockExpires=10, $lockRetryu=50, $servers=[], $memcachedServers=[], $storage, $preferredStorage=['redis', 'memcached', 'memcache', 'file', 'apc'];
+    public static $expires=0, $lockExpires=10, $lockRetryu=50, $servers=[], $memcachedServers=[], $storage, $preferredStorage=['redis', 'memcached', 'memcache', 'apc', 'file'];
     /**
      * Cache key used for storing this site information in memory, must be a 
      * unique string.
