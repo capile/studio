@@ -14,10 +14,8 @@
 namespace Studio;
 
 use Studio as S;
-use Studio\Asset;
-use Studio\Cache as Cache;
-use Studio\Exception\EndException;
-use Studio\Exception\AppException;
+use Studio\{Asset,Cache};
+use Studio\Exception\{AppException,EndException,RouteException};
 use Studio\Model\Tasks;
 use Exception;
 use ArrayObject;
@@ -861,6 +859,7 @@ class App
         self::$_request['action-name']="$class::$method";
         self::$_response['found']=true;
         self::$_response['route']=$options;
+        $previousLayout = (isset(self::$_response['layout'])) ?self::$_response['layout'] :null;
         if(isset($options['layout'])) {
             self::$_response['layout']=$options['layout'];
         }
@@ -878,19 +877,29 @@ class App
         $template=false;
 
         if(isset($options['arguments']) && (!$params || (!isset($params[0]) || !$params[0]))) $params = $options['arguments'];
-        if(method_exists($o,'preExecute')) {
-            if($static) $o::preExecute($this, $params);
-            else $o->preExecute($this, $params);
-        }
-        if(method_exists($o,$method)) {
-            if($static) $template=$o::$method($params);
-            else $template=$o->$method($params);
-        } else {
+        try {
+            if(method_exists($o,'preExecute')) {
+                if($static) $o::preExecute($this, $params);
+                else $o->preExecute($this, $params);
+            }
+            if(method_exists($o,$method)) {
+                if($static) $template=$o::$method($params);
+                else $template=$o->$method($params);
+            } else {
+                return false;
+            }
+            if(method_exists($o,'postExecute')) {
+                if($static) $o::postExecute($this, $params);
+                else $o->postExecute($this, $params);
+            }
+        } catch (RouteException $e) {
+            // unset the selected route
+            unset(self::$_request['action-name'], self::$_response['route']);
+            self::$_response['found']=false;
+            self::$_response['layout']=$previousLayout;
+            self::$_response['cache']=false;
+
             return false;
-        }
-        if(method_exists($o,'postExecute')) {
-            if($static) $o::postExecute($this, $params);
-            else $o->postExecute($this, $params);
         }
         if($template && is_string($template)) {
             self::$_response['template']=$template;

@@ -12,9 +12,9 @@ all:
     #api-dir: null
     #schema-dir:
     #  - data/schema
-    #document-root: data/web
     #lib-dir:
     #  - vendor
+    document-root: data/web
     controller-options:
       class: Studio\Studio
       static: true

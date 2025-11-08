@@ -15,16 +15,14 @@
 namespace Studio;
 
 use Studio as S;
-use Studio\App;
-use Studio\Model;
+use Studio\{App,Model,Excel};
 use ArrayAccess;
 use Countable;
 use Iterator;
-use Tecnodesign_Excel as Excel;
 
 class Collection implements ArrayAccess, Countable, Iterator
 {
-    protected 
+    protected
       $_count = 0,
       $_items=[],
       $_hint,

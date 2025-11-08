@@ -417,7 +417,7 @@ class Api
         if($a=$this->config('token_params')) {
             $url = S::buildUrl($url, [], $a);
         }
-        if(substr($c, -4)==='json') {
+        if(substr($ct, -4)==='json') {
             $data = S::serialize($d, 'json');
         } else {
             $data = http_build_query($d);
@@ -1634,7 +1634,7 @@ class Api
     /**
      * Gets the timestampable last update
      */
-    public function timestamp()
+    public function timestamp($fns=null, $where=null)
     {
         if(!$this->_schema) return false;
         $cn = $this->schema('className');
@@ -1645,6 +1645,7 @@ class Api
         S::$variables['timestamp'][$cn] = false;
         if(is_null($this->headers)) {
             $this->_limit = 0;
+            if(!is_null($where)) $this->where($where);
             $this->query($this->buildQuery(true));
             $this->_limit = null;
         }
@@ -1767,7 +1768,7 @@ class Api
 
         if($R && isset($R['limit']) && isset($R['remaining'])) {
             $delay = (float) $this->config('ratelimitDelay');
-            $rate = ($R['remaining']>0) ?(((int)$R['remaining']) / ((int)$R['limit'])) :0;
+            $rate = ($R['remaining']>0 && $R['limit']>0) ?(((int)$R['remaining']) / ((int)$R['limit'])) :0;
             if($delay > $rate) {
                 $reset = (isset($R['reset'])) ?$R['reset'] :time();
                 $toReset = $reset - time();

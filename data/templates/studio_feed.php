@@ -31,7 +31,7 @@ if(!isset($entries)) {
         $fetch = false;
         $q = ['|Related.Parent.Related.parent'=>$entry->id] + $q;
     }
-    if(!isset($hpp)) $hpp = 10;
+    if(!isset($hpp)) $hpp = 100;
     $entries = $entry->getChildren($q, 'feed', true);
 }
 if($entries && is_object($entries)) {
@@ -42,15 +42,15 @@ if($entries && is_object($entries)) {
         $entries = null;
     } else {
         $entries = $entries->getItems();
+        $fetch = false;
     }
 }
 if($fetch) {
     $template = 'studio_feed';
     $entries = $entry->getChildren(['type'=>['page', 'feed']], 'feed', false, ['Related.position'=>'asc', 'title'=>'asc']);
 }
-
 if($entries) {
-    $s .= '<div class="hfeed s-page">';
+    $s .= '<div class="hfeed s-entry">';
     foreach($entries as $entry) {
         $s .= $entry->renderEntry($template, ['fetchAll'=>true, 'linkEntry'=>true, 'hpp'=>3]);
         if(isset($limit) && $i++>=$limit)break;

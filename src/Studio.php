@@ -26,7 +26,7 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.3.9';
+    const VERSION = '1.3.20';
     const VER = 1.3;
 
     protected static
@@ -567,7 +567,7 @@ class Studio
      * 
      * Compatible with json_path
      */ 
-    public static function extractValue($a, $p)
+    public static function extractValue($a, $p, $unserialize=false)
     {
         if(!is_array($a) && !is_object($a)) return;
         if(substr($p, 0, 2)=='$.') $p = substr($p, 2);
@@ -607,6 +607,10 @@ class Studio
 
                 } else if(isset($r[$n])) {
                     $r = $r[$n];
+                    if(is_string($r) && $unserialize && ($u=self::unserialize($r))) {
+                        $r = $u;
+                        unset($u);
+                    }
                 } else {
                     $r = null;
                     break;
@@ -2390,6 +2394,24 @@ class Studio
     public static function hash(string $str, string|null $salt=null, int|string $type=40): string
     {
         return Crypto::hash($str, $salt, $type);
+    }
+
+    public static function guid($version=4, $uppercase=false)
+    {
+        $data = Crypto::salt(16, false);
+        if($version===7) {
+            $t = (int)(microtime(true) * 1000);
+            $i = 6;
+            while($i--) $data[$i] = chr(($t >> (8 * (5 - $i))) & 0xff);
+            $data[6] = chr(ord($data[6]) & 0x0f | 0x70); // set version to 0100
+        } else {
+            $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
+        }
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+
+        $r = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+
+        return ($uppercase) ?strtoupper($r) :$r; 
     }
 
     /**

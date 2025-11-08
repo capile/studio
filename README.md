@@ -8,7 +8,9 @@ Ready to start? You'll need:
 - Composer
 - Git
 
-If you already have them, just type:
+or just docker
+
+If you are installing locally and already have the requisites, go for:
 ```
 git clone https://github.com/capile/studio.git studio
 cd studio && composer install
@@ -21,7 +23,7 @@ Different purpose Docker images are available at <data/deploy>, compatible with 
 
 You can start using it directly with:
 ```
-docker run --rm -v studio-data:/opt/studio/data -p 9999:9999 tecnodesign/studio:latest
+docker run --rm -v studio-data:/opt/studio/data -p 9999:9999 tecnodesign/studio:latest ./studio-server
 ```
 
 ### Custom configuration
@@ -51,7 +53,7 @@ If you'd like to work with studio code and repository, you can mount the source 
 docker run --rm -u $UID -e HOME=/tmp -v $PWD:/var/www/studio tecnodesign/studio:latest composer install --no-dev
 find app.yml data/{cache,web*,config} -type f -uid $UID -print0 | xargs -0 chmod 666
 find data/{cache,web*,config} -type d -uid $UID -print0 | xargs -0 chmod 777
-docker run --rm -v studio-data:/opt/studio/data -v $PWD:/var/www/studio --name studio -p 9999:9999 tecnodesign/studio:latest studio-server
+docker run --rm -v $PWD:/var/www/studio --name studio -p 9999:9999 tecnodesign/studio:latest studio-server
 ```
 
 Or using docker-compose:

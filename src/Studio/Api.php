@@ -543,7 +543,7 @@ class Api extends SchemaObject
             $l = count($p) -1;
             // remove extension from last parameter, if there's any
             $ext = null;
-            if(isset($p[$l]) && preg_match('/\.([a-z0-9]{3,4})$/', $p[$l], $m)) {
+            if(isset($p[$l]) && preg_match('/\.([a-z0-9]{3,4})$/', $p[$l], $m) && in_array(strtolower($m[1]), static::$formats)) {
                 $ext = $m[1];
                 $p[$l] = substr($p[$l], 0, strlen($p[$l]) - strlen($m[0]));
             } else if($m=App::request('extension')) {
@@ -2097,7 +2097,13 @@ class Api extends SchemaObject
                 unset($R);
             } else if(isset($def['field'])) {
                 $cn = $this->getModel();
-                $R = $cn::find($this->search,1,array('max(`'.$def['field'].'`) _m'),false,false,true);
+                $fn = $def['field'];
+                if(is_array($fn)) $fn = 'max(greatest(`'.implode('`,`', $fn).'`)) _m';
+                else {
+                    if(strpos($fn, '`')===false) $fn = '`'.$fn.'`';
+                    $fn = 'max('.$fn.') _m';
+                }
+                $R = $cn::find($this->search,1,[$fn],false,false,true);
                 if($R) $lmod = strtotime($R->_m);
                 unset($R, $cn);
             }
@@ -3844,7 +3850,7 @@ class Api extends SchemaObject
                         'fieldset'=>$fieldset,
                         'class'=>'s-search-input s-date s-date-to s-'.$type.'-input',
                     );
-                    $ff[$slug]='date';
+                    $ff[$slug]=$type;
                     if(isset($post[$slug.'-0']) || isset($post[$slug.'-1'])) $active = true;
                     else if(isset($post[$slug])) {
                         if(is_array($post[$slug])) {

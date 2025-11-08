@@ -808,17 +808,19 @@ class Model implements ArrayAccess, Iterator, Countable
         $scope = $cn::pk();
         foreach($fields as $fn) {
             if(!$this->$fn) {
-                $size = (isset(static::$schema->$fn['size'])) ?static::$schema->$fn['size'] :10;
-                $r = null;
-                while(!$r) {
-                    $r = S::salt($size);
-                    if(!static::find([$fn=>$r],1,[$fn])) {
-                        $this[$fn] = $r;
-                        break;
-                    } else {
-                        $r = null;
+                if(isset(static::$schema->$fn->increment) && ($t=static::$schema->$fn->increment) && preg_match('/^[gu]uid[\-_]?(v[0-9])$/', $t, $m)) {
+                    $v = (isset($m[1]) && $m[1]) ?(int)substr($m[1], 1) :4;
+                    $r = S::guid($v);
+                } else {
+                    $size = (isset(static::$schema->$fn['size'])) ?static::$schema->$fn['size'] :10;
+                    $r = null;
+                    $i = 10;
+                    while(!$r && $i--) {
+                        $r = S::salt($size);
+                        if(!static::find([$fn=>$r],1,[$fn])) break;
                     }
                 }
+                if($r) $this[$fn] = $r;
             }
         }
 
@@ -1517,9 +1519,8 @@ class Model implements ArrayAccess, Iterator, Countable
         $cn = (isset($rel['className']))?($rel['className']):($relation);
         $rpk = $cn::pk($cn::$schema, true);
 
-
         if($rel['type']=='many') {
-            if(count($rpk)>$lorel) $rfn = $rpk[count($rpk)-1];
+            if(count($rpk)>count($lorel)) $rfn = $rpk[count($rpk)-1];
             else {
                 foreach($cn::$schema->properties as $xfn=>$xfd) {
                     if(!in_array($xfn, $foreign) && isset($cn::$schema->overlay[$xfn]['type']) && in_array($cn::$schema->overlay[$xfn]['type'], static::$_typesChoices)) {
@@ -1530,6 +1531,7 @@ class Model implements ArrayAccess, Iterator, Countable
                     unset($xfn, $xfd);
                 }
             }
+            if(!isset($rfn)) $rfn = $foreign[count($foreign)-1];
             $map = array();
             $oks = array();
 
@@ -2151,11 +2153,11 @@ class Model implements ArrayAccess, Iterator, Countable
                     if(is_array($v)) {
                         $v = S::implode($v, static::$listSeparator);
                     }
-                    if($showOriginal && array_key_exists($fn, $this->_original)) {
-                        $v0 = (isset($this->_original[$fn]))?($this->_original[$fn]):(null);
-                        $v1 = (isset($this->$fn))?($this->$fn):(null);
+                    if($showOriginal && array_key_exists((strpos($fn, '.')) ?substr($fn, 0, strpos($fn, '.')) :$fn, $this->_original)) {
+                        $v0 = S::extractValue($this->_original, $fn, true);
+                        $v1 = S::extractValue($this, $fn, true);
                         if($v0!=$v1) {
-                            $this->$fn = $v0;
+                            $this->safeSet($fn, $v0, true);
                             $nv = $this->renderField($fn, $fd, $xmlEscape);
                             if(is_array($nv)) {
                                 $nv = S::implode($v, static::$listSeparator);
@@ -2166,7 +2168,7 @@ class Model implements ArrayAccess, Iterator, Countable
                                    ;
                             }
                             unset($nv);
-                            $this->$fn = $v1;
+                            $this->safeSet($fn, $v1, true);
                         }
                         unset($v0, $v1);
                     }
@@ -2998,7 +3000,8 @@ class Model implements ArrayAccess, Iterator, Countable
             $this->$m(array($ref=>$value));
         // add other options for dotted.names?
         } else if($firstName && $ref && (isset($this->$firstName) || isset(static::$schema->properties[$firstName]))) {
-            if(!($serialize=static::$schema->properties[$firstName]->serialize) && static::$schema->properties[$firstName]->type!='object') {
+            $serialize = false;
+            if(isset(static::$schema->properties[$firstName]) && !($serialize=static::$schema->properties[$firstName]->serialize) && static::$schema->properties[$firstName]->type!='object') {
                 if(is_array($this->$firstName) || is_object($this->$firstName)) {
                     $this->{$firstName}[$ref] = $value;
                 }

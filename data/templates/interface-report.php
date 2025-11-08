@@ -1,6 +1,6 @@
 <?php
 /**
- * Tecnodesign_Excel template
+ * Studio\Excel template
  * 
  * PHP version 8.3+
  *
@@ -9,7 +9,10 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
-$id = tdz::slug($url);
+use Studio as S;
+use Studio\{Excel,Model,Collection};
+
+$id = S::slug($url);
 if(strpos($url, '?')!==false) list($url, $qs)=explode('?', $url, 2);
 else $qs='';
 
@@ -41,14 +44,14 @@ $fname = $m['filename'];
 $filename = S_VAR.'/cache/interface-report/'.date('YmdHis', floor(S_TIME)).substr(fmod(S_TIME,1), 1, 5).'-'.$fname;
 if(!is_dir(dirname($filename))) mkdir(dirname($filename), 0777, true);
 if(!isset($m['title'])) $m['title']=$title;
-$R = new Tecnodesign_Excel($m);
+$R = new Excel($m);
 foreach($m as $k=>$v) {
     $r['{'.$k.'}'] = $v;
     unset($m[$k], $k, $v);
 }
 unset($m);
 $R->addReplacement($r);
-if(isset($stylesheet) && file_exists($S=tdz::getApp()->tecnodesign['document-root'].'/'.$stylesheet)) {
+if(isset($stylesheet) && file_exists($S=S::getApp()->tecnodesign['document-root'].'/'.$stylesheet)) {
     $R->addStylesheet(file_get_contents($S));
 }
 unset($S);
@@ -63,7 +66,7 @@ if(isset(${'before-report'}) && is_array(${'before-report'})) {
     unset(${'before-report'});
 }
 // set parameters: envelope, pretty, fields, etc.
-if(isset($list) || (isset($preview) && ($preview instanceof Tecnodesign_Model))) {
+if(isset($list) || (isset($preview) && ($preview instanceof Model))) {
     if(isset($preview)) {
         $scope = $preview::columns($scope);
         $total = 1;
@@ -95,7 +98,7 @@ if(!isset($worksheet)) $worksheet=false;
 $n=0;
 while($list || $worksheet) {
     $sheet=null;
-    if($st) $Api::worker(tdz::t('Fetching records.', 'interface'));
+    if($st) $Api::worker(S::t('Fetching records.', 'interface'));
     if(isset($worksheet) && $worksheet) {
         foreach($worksheet as $sheet=>$so) {
             if(!is_array($so)) {
@@ -108,7 +111,7 @@ while($list || $worksheet) {
                     $rcn = $cn::relate($so['relation'], $f);
                     $scope = $rcn::columns($rs);
                     $list = $rcn::find($f,0,$rs,true,$order);
-                    if($st) $Api::worker(tdz::t('Fetching records.', 'interface'));
+                    if($st) $Api::worker(S::t('Fetching records.', 'interface'));
                     $cn = $rcn;
                 } else if(isset($so['scope'])) {
                     $newscope = $cn::columns($so['scope']);
@@ -121,7 +124,7 @@ while($list || $worksheet) {
                 $scope = $newscope;
                 $order = (is_array($so) && isset($so['order']))?($so['order']):(null);
                 $list = $cn::find($Api['search'],0,$scope,true, $order);
-                if($st) $Api::worker(tdz::t('Fetching records.', 'interface'));
+                if($st) $Api::worker(S::t('Fetching records.', 'interface'));
             }
             unset($worksheet[$sheet], $so, $newscope, $order);
             break;
@@ -140,7 +143,7 @@ while($list || $worksheet) {
                 if(isset($fd['bind'])) $fn=$fd['bind'];
                 else continue;
                 if(isset($fd['credential'])) {
-                    if(!isset($U)) $U=tdz::getUser();
+                    if(!isset($U)) $U=S::getUser();
                     if(!$U || !$U->hasCredentials($fd['credential'], false)) continue;
                 }
                 unset($fd['bind']);
@@ -149,10 +152,10 @@ while($list || $worksheet) {
             if($p=strrpos($fn, ' ')) $fn = substr($fn, $p+1);
             if(is_int($label)) $label = $fn;
             $S[$label]=$fn;
-            if(method_exists($cn, $m='preview'.tdz::camelize($fn, true))) $M[$fn]=$m;
+            if(method_exists($cn, $m='preview'.S::camelize($fn, true))) $M[$fn]=$m;
             unset($label, $fn, $p, $m, $fd);
         }
-        if($st) $Api::worker(tdz::t('Fetching records.', 'interface'));
+        if($st) $Api::worker(S::t('Fetching records.', 'interface'));
         $R->addContent(array(
             'content'=>array_keys($S),
             'use'=>'.header',
@@ -167,14 +170,14 @@ while($list || $worksheet) {
         $o = $listOffset;
         $l = $o + $listLimit;
         while($d && $o<$l) {
-            if($st) $Api::worker(tdz::t('Adding content.', 'interface'));
+            if($st) $Api::worker(S::t('Adding content.', 'interface'));
             foreach($d as $i=>$v) {
                 $o++;
                 $e=array();
                 foreach($S as $k=>$c) {
                     $vc = (isset($M[$c]))?($v->{$M[$c]}()):($v[$c]);
                     if($vc!=='' && $vc!==false && $vc!==null) {
-                        $vc = tdz::raw($vc);
+                        $vc = S::raw($vc);
                         if(is_array($vc)) $vc = implode("; ", $vc);
                         $e[$k] = $vc;
                     } else {
@@ -194,7 +197,7 @@ while($list || $worksheet) {
                 $list=null;
                 break;
             }
-            tdz::tune(__FILE__.': '.__LINE__);
+            S::tune(__FILE__.': '.__LINE__);
             $d = $list->getItems($o, ($l-$o<100)?($l-$o):(100));
             if(!$d || count($d)==0) break;
         }
@@ -204,10 +207,10 @@ while($list || $worksheet) {
         break;
     }
 }
-if($st) $Api::worker(tdz::t('Final touches.', 'interface'));
+if($st) $Api::worker(S::t('Final touches.', 'interface'));
 
 if(isset(${'after-report'}) && is_array(${'after-report'})) {
-    tdz::tune(__FILE__.': '.__LINE__);
+    S::tune(__FILE__.': '.__LINE__);
     foreach(${'after-report'} as $k=>$c) {
         $R->addContent($c);
         unset(${'after-report'}[$k], $k, $c);
@@ -218,10 +221,10 @@ $R->sheet(0);
 
 //Do you need more time to render?
 $mem = $sec = 20 + (10 * (ceil($total/1000)));
-tdz::tune(__FILE__.': '.__LINE__, $mem, $sec);
+S::tune(__FILE__.': '.__LINE__, $mem, $sec);
 
 if($st) {
-    $Api::worker(tdz::t('Packaging...', 'interface'));
+    $Api::worker(S::t('Packaging...', 'interface'));
     $download = false;
     $keepFile = true;
     $fname = $filename.'.'.$format;
@@ -233,7 +236,7 @@ if($st) {
 $s = $R->render($format, $fname, $download, $keepFile);
 
 if($st) {
-    $Api::worker(tdz::t('Download!', 'interface'), $s);
+    $Api::worker(S::t('Download!', 'interface'), $s);
 }
 
 return null;

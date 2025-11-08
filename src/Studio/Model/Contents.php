@@ -530,10 +530,7 @@ class Contents extends Model
 
     public static function renderTxt($code=null)
     {
-        if(is_array($code)) {
-            $code = isset($code['txt'])?($code['txt']):(array_shift($code));
-        }
-        return $code;
+        return self::renderMd($code);
     }
 
     public static function renderText($code=null)

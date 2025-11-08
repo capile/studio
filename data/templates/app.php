@@ -1,6 +1,6 @@
 <?php
 /**
- * Tecnodesign_User template
+ * app basic template
  * 
  * PHP version 8.3+
  *

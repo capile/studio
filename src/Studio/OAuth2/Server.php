@@ -17,7 +17,6 @@ use Studio\App;
 use Studio\Cache;
 use Studio\Studio;
 use OAuth2\Request;
-use OAuth2\Response;
 use OAuth2\Controller\AuthorizeController;
 use OAuth2\OpenID\ResponseType\IdToken;
 use Studio\OAuth2\OpenID\AuthorizeController as OpenIDAuthorizeController;
@@ -160,6 +159,7 @@ class Server extends \OAuth2\Server
 
     public static function app()
     {
+        S::cacheControl('private',0);
         if(($route=App::response('route')) && isset($route['url'])) {
             S::scriptName($route['url']);
         }
@@ -293,20 +293,21 @@ class Server extends \OAuth2\Server
                 }
             }
             $request = Request::createFromGlobals();
-            $R = $this->handleTokenRequest($request);
+            $this->response = new Response();
+            $this->handleTokenRequest($request, $this->response);
         } catch(\Exception $e) {
             S::log('[WARNING] Failed token request: '.$e->getMessage());
         }
-        if(S::$log > 1)S::log('[DEBUG] OAuth2 token request: '.S::requestUri(), "\n{$R}");
-        $R->send();
+        if(S::$log > 1)S::log('[DEBUG] OAuth2 token request: '.S::requestUri(), "\n{$this->response}");
+        $this->response->send();
         exit();
     }
 
     public function executeAuth()
     {
         // Handle a request to a resource and authenticate the access token
-        if (!$this->verifyResourceRequest(Request::createFromGlobals())) {
-            $this->getResponse()->send();
+        if (!$this->verifyResourceRequest(Request::createFromGlobals(), $this->response = new Response())) {
+            $this->response->send();
             die;
         }
 
@@ -316,9 +317,10 @@ class Server extends \OAuth2\Server
     public function executeUserInfo()
     {
         $request = Request::createFromGlobals();
-        $R = $this->handleUserInfoRequest($request);
-        if(S::$log > 1) S::log('[DEBUG] OAuth2 Userinfo request: '.S::requestUri()."\n{$R}");
-        $R->send();
+        $this->response = new Response();
+        $this->handleUserInfoRequest($request, $this->response);
+        if(S::$log > 1) S::log('[DEBUG] OAuth2 Userinfo request: '.S::requestUri()."\n{$this->response}");
+        $this->response->send();
         exit();
     }
 
@@ -326,11 +328,11 @@ class Server extends \OAuth2\Server
     {
         try {
             $request = Request::createFromGlobals();
-            $response = new Response();
+            $this->response = new Response();
 
             // validate the authorize request
-            if (!$this->validateAuthorizeRequest($request, $response)) {
-                $response->send();
+            if (!$this->validateAuthorizeRequest($request, $this->response)) {
+                $this->response->send();
                 die;
             }
         } catch(\Exception $e) {
@@ -381,10 +383,10 @@ class Server extends \OAuth2\Server
         }
 
         $is_authorized = true;
-        $this->handleAuthorizeRequest($request, $response, $is_authorized, $U->uid());
-        if(S::$log > 1) S::log('[DEBUG] OAuth2 Authorize request: '.S::requestUri()."\n{$response}");
+        $this->handleAuthorizeRequest($request, $this->response, $is_authorized, $U->uid());
+        if(S::$log > 1) S::log('[DEBUG] OAuth2 Authorize request: '.S::requestUri()."\n{$this->response}");
 
-        $response->send();
+        $this->response->send();
     }
 
     /**

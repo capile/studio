@@ -489,6 +489,9 @@ class Mail
                 $mail->isSMTP();
                 if(isset($config['encryption']) && $config['encryption']) {
                     $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS;
+                } else {
+                    $mail->SMTPSecure = false;
+                    $mail->SMTPAutoTLS = false;
                 }
             }
             $mail->Host = $config['server'];

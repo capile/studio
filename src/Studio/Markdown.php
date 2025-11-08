@@ -36,6 +36,7 @@ class Markdown extends Parsedown
         $base='';
     protected static $R;
 
+    public $inlineMarkup;
     protected $regexAttribute = '(?:[#.][-\w]+[ ]*)';
 
     public function __construct()
@@ -334,7 +335,7 @@ class Markdown extends Parsedown
 
     #
     # Setext
-    protected function blockSetextHeader($Line, array $Block = null)
+    protected function blockSetextHeader($Line, array|null $Block = null)
     {
         $Block = parent::blockSetextHeader($Line, $Block);
         if ($Block && isset($Block['element']['text']) && preg_match('/[ ]*{('.$this->regexAttribute.'+)}[ ]*$/', $Block['element']['text'], $matches, PREG_OFFSET_CAPTURE))
@@ -1114,7 +1115,7 @@ class Markdown extends Parsedown
      */
     #
     # Table
-    protected function blockTable($Line, array $Block = null)
+    protected function blockTable($Line, array|null $Block = null)
     {
         if ( ! isset($Block) or isset($Block['type']) or isset($Block['interrupted']))
         {

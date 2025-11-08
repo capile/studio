@@ -1,22 +1,29 @@
 ## tecnodesign/studio:v1.3
 #
-# docker build --no-cache -t tecnodesign/studio:v1.3 "git@github.com:capile/studio.git#v1.3" && \
+# docker build -t tecnodesign/studio:latest -t tecnodesign/studio:v1.3 "git@github.com:capile/studio.git#main" && \
+# docker push tecnodesign/studio:latest && \
 # docker push tecnodesign/studio:v1.3
 FROM php:8.4-fpm-alpine
 ARG PHP_PEAR_PHP_BIN="php -d error_reporting=0"
-RUN apk add --no-cache --update \
-      ffmpeg \
+WORKDIR /var/www/studio
+COPY . .
+RUN apk upgrade --update \
+    && \
+    apk add --no-cache --update \
+      freetype \
       git \
       gnupg \
+      libjpeg-turbo \
       libldap \
       libmemcached-libs \
+      libpng \
+      libwebp \
+      libzip-dev \
       nodejs \
       npm \
       openssh-client \
       postgresql-client \
-      libzip-dev \
       yarn \
-      zip \
       zlib \
       && \
     apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
@@ -24,6 +31,7 @@ RUN apk add --no-cache --update \
       cyrus-sasl-dev \
       freetype-dev \
       ldb-dev \
+      samba-dev \
       libdrm-dev \
       libjpeg-turbo-dev \
       libmemcached-dev \
@@ -40,6 +48,7 @@ RUN apk add --no-cache --update \
       openldap-dev \
       openssl-dev \
       zlib-dev \
+      zip \
     && \
     pecl install mongodb igbinary redis \
     && \
@@ -62,7 +71,6 @@ RUN apk add --no-cache --update \
     && \
     docker-php-ext-install \
       ctype \
-      dom \
       fileinfo \
       gd \
       ldap \
@@ -79,12 +87,13 @@ RUN apk add --no-cache --update \
     && \
     rm -rf /tmp/* \
     && \
+    cd /var/www/studio \
+    && \
     apk del .deps \
     && \
-    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2
-WORKDIR /var/www/studio
-COPY . .
-RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
+    curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2 \
+    && \
+    cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
     && \
     cp /var/www/studio/data/deploy/opcache.ini /usr/local/etc/php/conf.d/opcache.ini \
     && \
@@ -164,35 +173,34 @@ RUN cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
     && \
     ln -s "/opt/studio/data/web" /var/www/studio/data/web
 USER www-data
-ENV HOME=/var/www
+ENV HOME=/var/www \
+    PATH="${PATH}:/var/www/studio" \
+    STUDIO_IP="0.0.0.0" \
+    STUDIO_PORT="9999" \
+    STUDIO_DEBUG="" \
+    STUDIO_MODE="app" \
+    STUDIO_APP="" \
+    STUDIO_APP_ROOT=/opt/studio \
+    STUDIO_PROJECT_ROOT=/opt/studio \
+    STUDIO_DATA=/opt/studio/data \
+    STUDIO_CONFIG=/var/www/studio/app.yml \
+    STUDIO_AUTOLOAD=/var/www/studio/vendor/autoload.php \
+    STUDIO_ENV="prod" \
+    STUDIO_INIT="" \
+    STUDIO_TAG="" \
+    STUDIO_CACHE_STORAGE="" \
+    STUDIO_MAIL_SERVER="" \
+    PHP_FCGI_CHILDREN="1000" \
+    PHP_FCGI_START_SERVERS="5" \
+    PHP_FCGI_SPARE_SERVERS="100" \
+    PHP_FCGI_MAX_REQUESTS="500" \
+    FASTCGI_ACCESS_LOG="/dev/stderr" \
+    FASTCGI_STATUS_LISTEN=""
 RUN composer install --no-dev -n \
     && \
     composer clear-cache \
     && \
     rm -rf ~/.composer/cache ~/.npm/*
-ENV PATH="${PATH}:/var/www/studio"
-ENV STUDIO_IP="0.0.0.0"
-ENV STUDIO_PORT="9999"
-ENV STUDIO_DEBUG=""
-ENV STUDIO_MODE="app"
-ENV STUDIO_APP=""
-ENV STUDIO_APP_ROOT=/opt/studio
-ENV STUDIO_PROJECT_ROOT=/opt/studio
-ENV STUDIO_DATA=/opt/studio/data
-ENV STUDIO_CONFIG=/var/www/studio/app.yml
-ENV STUDIO_AUTOLOAD=/var/www/studio/vendor/autoload.php
-ENV STUDIO_ENV="prod"
-ENV STUDIO_INIT=""
-ENV STUDIO_TAG=""
-ENV STUDIO_CACHE_STORAGE=""
-ENV STUDIO_MAIL_SERVER=""
-ENV PHP_FCGI_CHILDREN="1000"
-ENV PHP_FCGI_START_SERVERS="5"
-ENV PHP_FCGI_SPARE_SERVERS="100"
-ENV PHP_FCGI_MAX_REQUESTS="500"
-ENV PHP_MEMORY_LIMIT=""
-ENV FASTCGI_STATUS_LISTEN=""
-
 VOLUME /opt/studio
 ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]
 CMD ["php-fpm"]

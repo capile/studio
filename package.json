@@ -1,12 +1,12 @@
 {
     "name": "Studio",
-    "version": "1.3.9",
+    "version": "1.3.20",
     "description": "Own your data!",
     "main": "studio.js",
     "author": "Guilherme Capilé",
     "dependencies": {
         "@fortawesome/fontawesome-free": "5.*",
-        "billboard.js": "*",
+        "billboard.js": "^3.16.0",
         "d3": "*",
         "less": "*",
         "moment": "^2.30.1",
@@ -16,9 +16,14 @@
         "sass": "*",
         "topojson-client": "^3.1.0",
         "topojson-simplify": "^3.0.3",
-        "uglify-js": "*"
+        "uglify-js": "^3.19"
     },
     "scripts": {
+        "build": "docker build -t tecnodesign/studio:latest -t tecnodesign/studio:v1.3 git@github.com:capile/studio.git",
+        "publish": "docker push tecnodesign/studio:latest && docker push tecnodesign/studio:v1.3",
+        "build-alpine": "docker build -t tecnodesign/alpine:latest git@github.com:capile/studio.git -f data/deploy/containers/alpine.dockerfile && docker push tecnodesign/alpine:latest",
+        "build-nginx": "docker build -t tecnodesign/nginx:latest git@github.com:capile/studio.git -f data/deploy/containers/nginx.dockerfile    && docker push tecnodesign/nginx:latest",
+        "build-all": "npm run build-alpine && npm run build-nginx && npm run build && npm run publish",
         "test": "docker run -it --rm -e STUDIO_ENV=test -v $PWD:/var/www/studio -u $UID tecnodesign/studio:latest composer test",
         "start": "electron ."
     },
