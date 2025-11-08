@@ -1,9 +1,9 @@
-## tecnodesign/studio:v1.3
+## tecnodesign/studio:v2.0
 #
-# docker build -t tecnodesign/studio:latest -t tecnodesign/studio:v1.3 "git@github.com:capile/studio.git#main" && \
-# docker push tecnodesign/studio:latest && \
-# docker push tecnodesign/studio:v1.3
-FROM php:8.4-fpm-alpine
+# docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.0 "git@github.com:capile/studio.git#v2.0" && \
+# docker push tecnodesign/studio:v2 && \
+# docker push tecnodesign/studio:v2.0
+FROM php:8.5-rc-fpm-alpine
 ARG PHP_PEAR_PHP_BIN="php -d error_reporting=0"
 WORKDIR /var/www/studio
 COPY . .

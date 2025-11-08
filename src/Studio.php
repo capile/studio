@@ -26,8 +26,8 @@ use Studio\Mail;
 
 class Studio
 {
-    const VERSION = '1.3.20';
-    const VER = 1.3;
+    const VERSION = '2.0.0';
+    const VER = 2.0;
 
     protected static
     $_app = null,

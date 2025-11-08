@@ -3,7 +3,7 @@ services:
   studio:
     hostname: studio
     container_name: studio
-    image: tecnodesign/studio:latest
+    image: tecnodesign/studio:v2
     volumes:
       - studio-config:/opt/studio/config:Z
       - studio-data:/opt/studio/data:Z
