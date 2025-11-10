@@ -11,6 +11,7 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio;
 
 use Studio as S;
@@ -21,26 +22,16 @@ use Spyc;
 
 class Yaml
 {
-    /**
-     * Current parser
-     * @var string
-     */
     private static $currentParser;
-
-    /**
-     * @var boolean
-     */
-    public static $cache = true;
+    public static $cache = false;
 
     const PARSE_NATIVE = 'php-yaml';
     const PARSE_SPYC = 'Spyc';
 
     /**
      * Defines/sets current Yaml parser
-     * @param string $parser
-     * @return string|null
      */
-    public static function parser($parser = null)
+    public static function parser(string|null $parser = null) :string
     {
         if ($parser !== null) {
             if (!in_array($parser, [self::PARSE_NATIVE, self::PARSE_SPYC], true)) {
@@ -69,13 +60,8 @@ class Yaml
 
     /**
      * Loads YAML text and converts to a PHP array
-     *
-     * @param string $string file name or YAML string to load
-     * @param int $cacheTimeout
-     *
-     * @return array contents of the YAML text
      */
-    public static function load($string, $cacheTimeout = 1800, $isFile = null)
+    public static function load(string $string, int $cacheTimeout = 1800, bool|null $isFile = null): mixed
     {
         // Initialize the default parser
         self::parser();
@@ -129,12 +115,8 @@ class Yaml
 
     /**
      * Loads YAML file and converts to a PHP array
-     *
-     * @param string $s YAML file to load
-     *
-     * @return array contents of the YAML text
      */
-    public static function loadFile($s, $cacheTimeout = 1800)
+    public static function loadFile(string $s, int $cacheTimeout = 1800) :mixed
     {
         if(!file_exists($s)) return false;
         return self::load($s, $cacheTimeout, true);
@@ -143,12 +125,8 @@ class Yaml
 
     /**
      * Loads YAML text and converts to a PHP array
-     *
-     * @param string $s YAML string to load
-     *
-     * @return array contents of the YAML text
      */
-    public static function loadString($s)
+    public static function loadString(string $s) :mixed 
     {
         // Initialize the default parser
         self::parser();
@@ -168,7 +146,7 @@ class Yaml
      * @param int $wordwrap
      * @return string YAML formatted string
      */
-    public static function dump($data, $indent = 2, $wordwrap = 0)
+    public static function dump(mixed $data, int $indent = 2, int $wordwrap = 0) :string
     {
         // Initialize the default parser
         self::parser();
@@ -184,12 +162,9 @@ class Yaml
     }
 
     /**
-     * @param string $filename
-     * @param mixed $data Arguments to be converted to YAML
-     * @param int $timeout OPTIONAL Cache timeout
-     * @return bool
+     * Saves data as YAML file
      */
-    public static function save($filename, $data, $timeout = 1800)
+    public static function save(string $filename, mixed $data, int $timeout = 1800) :bool
     {
         $cacheKey = 'yaml/' . md5($filename);
         if ($timeout && self::$cache) {
@@ -204,44 +179,16 @@ class Yaml
      *
      * This is used with Studio::t(). It should be used with caution since it will not
      * merge correctly all files. Interfaces configurations for example
-     *
-     * @param string $yaml file name or YAML string to load
-     * @param array $append
-     * @param int $timeout
-     *
-     * @return array contents of the YAML text
      */
-    public static function append($yaml, $append, $timeout = 1800)
+    public static function append(string $yaml, array $append, int $timeout = 1800) :array
     {
-        if (!is_array($append)) {
-            throw new InvalidArgumentException('$append must be an array');
-        }
-
         $yamlArray = self::load($yaml);
         $yamlMerged = array_replace_recursive($yamlArray, $append);
         if ($yamlMerged !== $yamlArray) {
             self::save($yaml, $yamlMerged, $timeout);
         }
-
-        unset($yaml, $append, $timeout, $yamlArray);
+        unset($yamlArray);
 
         return $yamlMerged;
     }
-
-    /**
-     * @return bool
-     */
-    public static function isAutoInstall()
-    {
-        return static::$autoInstall;
-    }
-
-    /**
-     * @param bool $autoInstall
-     */
-    public static function setAutoInstall($autoInstall)
-    {
-        static::$autoInstall = $autoInstall;
-    }
-
 }

@@ -11,19 +11,15 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio;
-
 use Studio as S;
-use Studio\Cache\Apc;
-use Studio\Cache\File;
-use Studio\Cache\Memcache;
-use Studio\Cache\Memcached;
-use Studio\Cache\Redis;
+use Studio\Cache\{Apc,File,Memcache,Memcached,Redis};
 use Studio\Model\Tokens;
 
 class Cache
 {
-    public static $expires=0, $lockExpires=10, $lockRetryu=50, $servers=[], $memcachedServers=[], $storage, $preferredStorage=['redis', 'memcached', 'memcache', 'apc', 'file'];
+    public static $expires=0, $lockExpires=10, $lockRetryu=50, $servers=[], $memcachedServers=[], $storage, $preferredStorage=['redis', 'memcached', 'memcache', 'file', 'apc'];
     /**
      * Cache key used for storing this site information in memory, must be a 
      * unique string.
@@ -32,12 +28,12 @@ class Cache
      */
     private static $_siteKey=null;
 
-    public static function getLastModified($key, $expires=0, $method=null)
+    public static function getLastModified(string $key, int $expires=0, string|null $method=null) :int|false
     {
         return self::lastModified($key, $expires, $method);
     }
 
-    public static function lastModified($key, $expires=0, $method=null)
+    public static function lastModified(string $key, int $expires=0, string|null $method=null) :int|false
     {
         $cn = self::storage($method, true);
         if(is_array($key) && $key) {
@@ -57,7 +53,7 @@ class Cache
         return $ret;
     }
 
-    public static function preferredStorage()
+    public static function preferredStorage() :string
     {
         if(is_null(self::$storage)) {
             $m = null;
@@ -93,7 +89,7 @@ class Cache
         return self::$storage;
     }
 
-    public static function storage($method=null, $className=false)
+    public static function storage(string|null $method=null, bool $className=false) :string
     {
         $r = null;
         if(!is_null($method) && is_string($method) && in_array($method, static::$preferredStorage)) {
@@ -105,7 +101,7 @@ class Cache
         return ($className) ?'Studio\\Cache\\'.ucfirst($r) :$r;
     }
 
-    public static function unlock($key, $lock, $method=null, $keepLocked=false)
+    public static function unlock(string $key, string $lock, string|null $method=null, bool $keepLocked=false) :string|null
     {
         $cn = self::storage($method, true);
         $lockExpires = microtime(true)-(float)self::$lockExpires;
@@ -125,12 +121,8 @@ class Cache
 
     /**
      * Gets currently stored key-pair value
-     *
-     * @param $key     mixed  key to be retrieved or array of keys to be tried (first available is returned)
-     * @param $expires int    timestamp to be compared. If timestamp is newer than cached key, false is returned.
-     * @param $method  mixed  Storage method to be used. Should be either a key or a value in self::$_methods
      */
-    public static function get($key, $expires=0, $method=null, $fileFallback=false, $lock=null)
+    public static function get(array|string $key, int $expires=0, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :mixed
     {
         $cn = self::storage($method, true);
         if($expires && $expires<2592000) $expires = microtime(true)-(float)$expires;
@@ -162,13 +154,8 @@ class Cache
 
     /**
      * Sets currently stored key-pair value
-     *
-     * @param $key     mixed  key(s) to be stored
-     * @param $value   mixed  value to be stored
-     * @param $expires int    timestamp to be set as expiration date.
-     * @param $method  mixed  Storage method to be used. Should be either a key or a value in self::$_methods
      */
-    public static function set($key, $value, $expires=0, $method=null, $fileFallback=false, $lock=null)
+    public static function set(array|string $key, mixed $value, int $expires=0, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :bool
     {
         if($lock) self::unlock($key, $lock, $method, true);
         $cn = self::storage($method, true);
@@ -181,7 +168,7 @@ class Cache
         return $ret;
     }
 
-    public static function delete($key, $method=null, $fileFallback=false, $lock=null)
+    public static function delete(array|string $key, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :bool
     {
         if($lock) self::unlock($key, $lock, $method, true);
         $cn = self::storage($method, true);
@@ -191,7 +178,7 @@ class Cache
         return $cn::delete($key);
     }
 
-    public static function size($key, $expires=0, $method=null, $fileFallback=false)
+    public static function size(array|string $key, int $expires=0, string|null $method=null, bool $fileFallback=false) :int|false
     {
         $cn = self::storage($method, true);
         if($expires && $expires<2592000) $expires = microtime(true)+(float)$expires;
@@ -205,7 +192,7 @@ class Cache
     /**
      * Defines a scope for this server cache space
      */
-    public static function siteKey($s=null)
+    public static function siteKey(string|null $s=null) :string
     {
         if (!is_null($s) && is_null(self::$_siteKey)) {
             self::$_siteKey = $s;
@@ -217,7 +204,7 @@ class Cache
         return self::$_siteKey;
     }
 
-    public static function filename($key)
+    public static function filename(string $key) :string|false
     {
         return File::filename($key);
     }

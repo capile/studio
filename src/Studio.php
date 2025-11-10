@@ -981,7 +981,7 @@ class Studio
         }
     }
 
-    public static function meta(array|string|null $s='', bool $og=false): string
+    public static function meta(array|string|null $s='', bool|array $og=false): string
     {
         if(is_array($s)) $s = implode('', $s);
         else if(is_null($s)) $s = '';
@@ -1523,7 +1523,7 @@ class Studio
         return $cacheControl;
     }
 
-    public static function download(string $file, string $format='', string $fname='', int $speed=0, bool $attachment=false, bool $nocache=false, bool $exit=true): void
+    public static function download(string $file, string $format='', string|null $fname=null, int $speed=0, bool $attachment=false, bool $nocache=false, bool $exit=true): void
     {
         if (connection_status() != 0 || !$file)
             return;
@@ -2039,21 +2039,23 @@ class Studio
         return $s;
     }
 
-    public static function markdown(string $s, bool $safe=true): string
+    public static function markdown(string|null $s, bool $safe=true): string
     {
         static $P;
         if(is_null($P)) {
             $cn = self::$markdown;
             $P = new $cn();
         }
-        if($safe && method_exists($P, 'safeText')) {
+        if(!$s) {
+            return '';
+        } else if($safe && method_exists($P, 'safeText')) {
             return $P->safeText($s);
         } else {
             return $P->text($s);
         }
     }
 
-    public static function text(string $s): string
+    public static function text(string|null $s): string
     {
         static $c;
         if(is_null($c)) {
@@ -2063,7 +2065,7 @@ class Studio
                 $c = new League\HTMLToMarkdown\HtmlConverter();
             }
         }
-        $r = strip_tags(($c)?($c->convert($s)):(str_replace(array('</p>','</div>'), "\n", $s)));
+        $r = ($s) ?strip_tags(($c)?($c->convert($s)):(str_replace(array('</p>','</div>'), "\n", $s))) :'';
         if(!$r && $s) {
             $r = strip_tags(html_entity_decode($s));
         }
@@ -2079,7 +2081,7 @@ class Studio
             );
     }
 
-    public static function buildUrl(array|string $url, array $parts=[], array $params=[]): string
+    public static function buildUrl(array|string|null $url, array $parts=[], array $params=[]): string
     {
         if (!is_array($url)) {
             $url = parse_url((string)$url);

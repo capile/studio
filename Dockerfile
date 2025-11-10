@@ -64,7 +64,6 @@ RUN apk upgrade --update \
       gd \
       ldap \
       mbstring \
-      opcache \
       pdo \
       pdo_mysql \
       pdo_pgsql \
@@ -72,9 +71,9 @@ RUN apk upgrade --update \
       soap \
       zip \
     && \
-    docker-php-ext-enable mongodb redis \
-    && \
     rm -rf /tmp/* \
+    && \
+    docker-php-ext-enable mongodb redis \
     && \
     cd /var/www/studio \
     && \

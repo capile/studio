@@ -17,7 +17,7 @@ $after='';$before='';
 $pub = null;
 if($entry && ($meta=Studio::config('render_meta'))) {
     $s .= $entry->renderMeta($meta);
-    if(!is_array($meta) || in_array('published', $meta) && ($m=$entry->published)) $pub = S::strtotime($m);
+    if((!is_array($meta) && ($m=$entry->published)) || (is_array($meta) && isset($meta['published']) && ($m=$meta['published']))) $pub = S::strtotime($m);
 }
 
 $i=1;
