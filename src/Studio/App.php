@@ -1005,7 +1005,7 @@ class App
             } else {
                 $arg = $S['argv'];
                 self::$_request['shell'] = array_shift($arg);
-                $uri = array_shift($arg);
+                $uri = (string) array_shift($arg);
                 $ui=parse_url($uri);
                 if(!$ui || !isset($ui['path'])) $ui = ['path'=>$uri];
                 self::$_request['scheme'] = (isset($ui['scheme'])) ?$ui['scheme'] :self::$defaultScheme;

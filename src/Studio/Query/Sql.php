@@ -523,7 +523,7 @@ class Sql
         return $fn;
     }
 
-    protected function getAlias($f, $ref=null, $noalias=null)
+    protected function getAlias(string $f, string|object|null $ref='', bool $noalias=false) :string|bool|null
     {
         $sc = null;
         $cn = null;
@@ -619,7 +619,7 @@ class Sql
             }
         } else if(isset($sc->overlay[$fn]['bind']) && $sc->overlay[$fn]['bind']!=$fn) {
             $fn = $this->getAlias($sc->overlay[$fn]['bind'], $ref, $noalias);
-            if(!$fn) return;
+            if(!$fn) return null;
         } else {
             $rnf = (string)$ref;
             if(strpos($fn, '.')) {
@@ -724,7 +724,7 @@ class Sql
             if(isset($sc->className) && $cn!=$sc->className) $cn = $sc->className;
             if (isset($sc->relations[$fn]) || strtolower($fn)==='null') {
                 // ignore
-                return;
+                return null;
             } else if(isset($sc->properties[$fn])) {
                 if($sc->properties[$fn]->alias) {
                     $qfn = ($quote) ?"{$quote[0]}{$sc->properties[$fn]->alias}{$quote[1]}" :$sc->properties[$fn]->alias;
@@ -749,7 +749,7 @@ class Sql
         return $fn;
     }
 
-    protected function getWhere($w, $xor='and', $ref=null)
+    protected function getWhere($w, $xor='and', object|string|null $ref='')
     {
         $r='';
         $sc = null;

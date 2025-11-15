@@ -247,7 +247,7 @@ class Studio
     /**
      * User authentication and management shortcuts
      */
-    public static function user(string|int $uid=null): object
+    public static function user(string|int|null $uid=null): object
     {
         if(!is_null($uid) && $uid) {
             $cn = self::getApp()->config('user', 'className');
@@ -2260,13 +2260,18 @@ class Studio
 
     public static function env(bool $asArray=false, bool $output=false): array|string
     {
-        if(is_null(self::$_env)) {
-            if(defined('S_ENV')) self::$_env = S_ENV;
-            else {
-                if(isset($_SERVER['STUDIO_ENV']) && $_SERVER['STUDIO_ENV']) self::$_env = $_SERVER['STUDIO_ENV'];
-                else if(defined('TDZ_ENV')) self::$_env = TDZ_ENV;
-                else self::$_env = 'prod';
-                define('S_ENV', self::$_env);
+        static $init=false;
+        if(!$init) {
+            $init = true;
+            if(is_null(self::$_env)) {
+                if(defined('S_ENV')) {
+                    self::$_env = S_ENV;
+                } else {
+                    if(isset($_SERVER['STUDIO_ENV']) && $_SERVER['STUDIO_ENV']) self::$_env = $_SERVER['STUDIO_ENV'];
+                    else if(defined('TDZ_ENV')) self::$_env = TDZ_ENV;
+                    else self::$_env = 'prod';
+                    define('S_ENV', self::$_env);
+                }
             }
             // initialize environment variables and constants
             $locale = setlocale(LC_ALL, '0');
@@ -2352,7 +2357,7 @@ class Studio
             ]
             :self::$_env;
 
-        if($output) self::debug($r);
+        if($output) self::output($r);
 
         return $r;
     }
