@@ -328,7 +328,7 @@ class Api extends SchemaObject
             if($d) {
                 $this->text += $d;
             }
-            $notm=['api', 'title'];
+            $notm=['api', 'title', 'prepare', 'stylesheet'];
             foreach($this->text as $k=>$v) {
                 if(is_string($v) && !in_array($k, $notm)) $this->text[$k] = S::markdown($v);
             }
@@ -612,7 +612,7 @@ class Api extends SchemaObject
             static::headers();
             throw $e;
         } catch(AppException $e) {
-            S::log('[ERROR] '.__METHOD__.'->'.get_class($e).':'.$e);
+            S::log('[ERROR] Api::run->'.get_class($e).':'.$e);
             static::error(500);
         }
     }
@@ -2145,7 +2145,7 @@ class Api extends SchemaObject
             $t = microtime(true);
             $s['s'] = $t;
             if(isset($s['m']) && $msg && substr($s['m'], 0, strlen($msg))==$msg) $msg = $s['m'].'.';
-            $s['l'][$t] = $s['m'] = $msg;
+            $s['l'][(string)$t] = $s['m'] = $msg;
             if($f) $s['f'] = $f;
             if(!Cache::set(self::$proc, $s, static::$procTimeout)) {
                 $s = false;

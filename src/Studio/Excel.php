@@ -537,7 +537,7 @@ class Excel extends SchemaObject
                     if(isset($this->style[$oy])) $style += $this->style[$oy];
                 }
                 if(isset($this->style[$sn])) $style += $this->style[$sn];
-                unset($i, $sn);
+                unset($sn);
             }
 
             if($i>0) {
@@ -692,11 +692,13 @@ class Excel extends SchemaObject
         $P=array($this->x, $this->y);
         if($p && is_array($p)) {
             if(isset($p[0]) && $p[0]!='') {
+                if(!is_string($p[0])) $p[0] = (string)$p[0];
                 if($p[0][0]=='{') $p[0]=$this->val($p[0]);
                 if($p[0]<0 || $p[0][0]=='+') $P[0] += (int) $p[0];
                 else $P[0] = $p[0];
             }
             if(isset($p[1]) && $p[1]!='') {
+                if(!is_string($p[1])) $p[1] = (string)$p[1];
                 if($p[1][0]=='{') $p[1]=$this->val($p[1]);
                 if($p[1]<0 || $p[1][0]=='+') $P[1] += (int) $p[1];
                 else $P[1] = $p[1];

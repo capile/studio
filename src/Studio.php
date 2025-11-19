@@ -1970,7 +1970,7 @@ class Studio
         }
         $return = '';
         for ($i = 1; $number >= 0 && $i < 10; $i++) {
-            $return = chr(0x41 + ($number % (26 ** $i) / (26 ** ($i - 1)))) . $return;
+            $return = chr(0x41 + floor($number % (26 ** $i) / (26 ** ($i - 1)))) . $return;
             $number -= 26 ** $i;
         }
         return $uppercase ? $return : strtolower($return);
