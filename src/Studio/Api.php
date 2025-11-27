@@ -113,6 +113,7 @@ class Api extends SchemaObject
                 'identified'=> false,
                 'batch'     => false,
                 'query'     => false,
+                'create'    => true,
                 'additional-params'=>false,
                 'renderer'  => 'renderNew',
                 'next'      => 'preview'
@@ -2008,6 +2009,18 @@ class Api extends SchemaObject
         } else {
             if(static::$ext) $this->options['extension'] = static::$ext;
             if(isset($this->options['last-modified'])) $this->lastModified();
+            $cn = $this->model;
+            $M = null;
+            if(property_exists($cn, 'schema')) {
+                if(isset($cn::$schema->events[$a='before-api'])) {
+                    $M = $this->model();
+                    $M->runEvent($a, $this);
+                }
+                if($this->action && isset($cn::$schema->events[$a='before-api-'.$this->action])) {
+                    if(!$M) $M = $this->model();
+                    $M->runEvent($a, $this);
+                }
+            }
             if(isset($this->actions[$this->action]['action'])) {
                 $action = $this->actions[$this->action]['action'];
                 $data = null;
@@ -2034,6 +2047,16 @@ class Api extends SchemaObject
                 }
             } else {
                 $data = $this->execute($this->options);
+            }
+            if(property_exists($cn, 'schema')) {
+                if(isset($cn::$schema->events[$a='after-api'])) {
+                    if(!$M) $M = $this->model();
+                    $M->runEvent($a, $this);
+                }
+                if($this->action && isset($cn::$schema->events[$a='after-api-'.$this->action])) {
+                    if(!$M) $M = $this->model();
+                    $M->runEvent($a, $this);
+                }
             }
         }
 
@@ -2436,18 +2459,8 @@ class Api extends SchemaObject
         }
         //$scope = $this->scope($scope);
         $this->options['scope'] = $this->scope($scope);
-        $a=($this->source)?($this->source):(array());
-        if($this->config('newFromQueryString') && ($req=App::request('get'))) {
-            foreach($req as $fn=>$v) {
-                if(!isset($a[$fn]) && !S::isempty($v) && ($cn::$allowNewProperties || property_exists($cn, $fn))) {
-                    $a[$fn] = $v;
-                }
-                unset($req[$fn], $fn, $v);
-            }
-            unset($req);
-        }
 
-        if(!$o) $o = new $cn($a, true, false);
+        if(!$o) $o = $this->model();
         $fo = $this->getForm($o, $scope);
         //$fo['c_s_r_f'] = new FormField(array('id'=>'c_s_r_f', 'type'=>'hidden', 'value'=>1234));
         try {
@@ -3564,9 +3577,31 @@ class Api extends SchemaObject
             $a = 'review';
         }
 
-        if($max==1 && !S::isempty($this->id)) {
-            $key = $cn.'::'.$this->id.'::'.$a;
-            if(isset($current[$key])) {
+        if($max==1) {
+            if(!S::isempty($this->id)) {
+                $key = $cn.'::'.$this->id.'::'.$a;
+
+                if(isset($current[$key])) {
+                    return $current[$key];
+                }
+            } else if($this->action && isset($this->actions[$this->action]['create']) && $this->actions[$this->action]['create']) {
+                $key = $cn.'::::'.$this->action;
+                if(!isset($current[$key])) {
+                    if($this->source) $a = $this->source;
+                    else if(isset($this->options[$this->action.'-default'])) $a = $this->options[$this->action.'-default'];
+                    else $a = [];
+                    if($this->config('newFromQueryString') && ($req=App::request('get'))) {
+                        foreach($req as $fn=>$v) {
+                            if(!isset($a[$fn]) && !S::isempty($v) && ($cn::$allowNewProperties || property_exists($cn, $fn))) {
+                                $a[$fn] = $v;
+                            }
+                            unset($req[$fn], $fn, $v);
+                        }
+                        unset($req);
+                    }
+                    $current[$key] = new $cn($a, true, false);
+                }
+
                 return $current[$key];
             }
         }
@@ -3791,6 +3826,7 @@ class Api extends SchemaObject
             foreach($scope as $k=>$fn) {
                 $label = $k;
                 $fd0 = null;
+                if(is_bool($fn) && $fn===false) continue;
                 if(is_array($fn)) {
                     $fd0 = $fn;
                     if(isset($fd0['bind'])) {

@@ -3313,7 +3313,7 @@ class Field extends SchemaObject
                 }
             }
             if($ref && is_array($ref) && isset($ref['bind'])) $ref = $ref['bind'];
-            if(strpos($ref, ' ')) $ref = preg_replace('/\s+(as\s+)?[a-z0-9\_]+$/i', '', $ref);
+            if($ref && is_string($ref) && strpos($ref, ' ')) $ref = preg_replace('/\s+(as\s+)?[a-z0-9\_]+$/i', '', $ref);
             foreach($values as $k=>$v) {
                 if(is_object($v) && $v instanceof Model) {
                     $values[$k] = ($ref && isset($v->$ref))?($v->$ref):($v->pk);
