@@ -707,8 +707,8 @@ class Model implements ArrayAccess, Iterator, Countable
      */
     public function runEvent($e, $conn=null)
     {
-        if(isset(static::$schema['events'][$e])) {
-            $eo = (!is_array(static::$schema['events'][$e]))?(array(static::$schema['events'][$e])):(static::$schema['events'][$e]);
+        if(isset(static::$schema->events[$e])) {
+            $eo = (!is_array(static::$schema->events[$e]))?(array(static::$schema->events[$e])):(static::$schema->events[$e]);
             try {
                 foreach($eo as $i=>$fn) {
                     $result=true;
@@ -737,7 +737,7 @@ class Model implements ArrayAccess, Iterator, Countable
                     }
                     if (!$result) {
                         if(S::$log<=0) return false;
-                        throw new Exception("{$fn} ({$e}) failed on [".static::$schema['tableName'].']');
+                        throw new Exception("{$fn} ({$e}) failed on [".static::$schema->tableName.']');
                     }
                     unset($eo[$i], $i, $fn);
                 }
