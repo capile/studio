@@ -49,18 +49,6 @@ class File extends Api
         $schemas = [],
         $conn = [];
 
-    public function __construct($s=null)
-    {
-        if($s) {
-            if(is_object($s)) {
-                $this->_schema = get_class($s);
-            } else {
-                $this->_schema = $s;
-            }
-        }
-        // should throw an exception if no schema is found?
-    }
-
     public function __toString()
     {
         return (string) $this->buildQuery();
@@ -115,9 +103,10 @@ class File extends Api
 
     public function schema($prop=null, $object=true)
     {
+        if(!$this->_schema) return null;
         $cn = $this->_schema;
         if($prop) {
-            if(isset($cn::$schema[$prop])) return $cn::$schema[$prop];
+            if(strpos($cn, ':')===false && isset($cn::$schema[$prop])) return $cn::$schema[$prop];
             return null;
         }
         if($object) {
@@ -234,7 +223,6 @@ class File extends Api
 
     public function fetch($o=null, $l=null, $scope = null, $callback = null, $args = null) // @TODO: updated for compatibility, need to adjust $scope = null, $callback = null, $args = null
     {
-        if(!$this->_schema) return false;
         if(!$this->_last) {
             $this->buildQuery();
         }

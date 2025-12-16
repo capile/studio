@@ -353,7 +353,7 @@ class Field extends SchemaObject
 
     public function setValue($value=false, $outputError=true, $validation=null)
     {
-        static $textChecks=['checkDns', 'checkEmail', 'checkIp', 'checkIpBlock'];
+        static $textChecks=['checkDns', 'checkEmail', 'checkIp', 'checkIpBlock', 'checkGuid'];
         if($validation && in_array($this->type, static::$typesNotForValidation)) return true;
         else if($validation===false) {
             $this->value = $value;
@@ -1315,6 +1315,18 @@ class Field extends SchemaObject
         if($value != '' && !preg_match('/^[0-9]{4}(-[0-9]{1,2}(-[0-9]{1,2}([ T][0-9]{1,2}(:[0-9]{1,2}(:[0-9]{1,2}(\.[0-9]+)?)?)?)?)?)?$/', $value)) {
             $value = date('Y-m-d H:i:s', S::strtotime($value));
         }
+        return $value;
+    }
+
+    public function checkGuid($value, $message='')
+    {
+        if($value && is_string($value) && !($value=S::checkGuid($value))) {
+            if(!$message) {
+                $message = S::t('This is not a valid e-mail address.', 'exception');
+            }
+            $this->error[$message]=$message;
+        }
+
         return $value;
     }
 
