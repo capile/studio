@@ -108,10 +108,10 @@ class Query extends SchemaObject
             $name = $ext = 'json';
             if(substr($data, 0, 1)!=='{') {
                 $name = $ext = 'yaml';
-                if(strpos($data, "\n")===false && strpos($data, '"')===false && file_exists($data)) {
+                if(strpos($data, "\n")===false && strpos($data, '"')===false && (file_exists($f=$data) || file_exists($f=S_PROJECT_ROOT.'/'.$data) || file_exists($f=S_APP_ROOT.'/'.$data))) {
                     if(substr($data, -5)==='.json') $ext = 'json';
                     $name = $data.' as '.$ext;
-                    $data = file_get_contents($data);
+                    $data = file_get_contents($f);
                 }
             }
             $data = S::unserialize($data, $ext);
@@ -120,23 +120,34 @@ class Query extends SchemaObject
             if($name && S::$log>0) S::log("[WARNING] Can't import: {$name}");
             return false;
         }
+        if(S::$log>0) S::log('[INFO] Importing '.$name);
+        $t = 0;
+        $cs = 0;
         try {
             $replace = array();
             foreach($data as $cn=>$records) {
                 $create = null;
+                $cni = 0;
                 if(substr($cn, -1)=='!') {
                     $cn = substr($cn, 0, strlen($cn)-1);
                     $create = true;
                 }
                 if(!class_exists($cn)) continue;
                 $sc = $cn::$schema;
+                if(S::$log>0) S::log('[INFO] Processing: '.$cn);
 
                 if($create) {
                     $Q = $cn::queryHandler();
                     $tns = $Q->getTables($sc->database);
                     if(!$tns || !in_array($sc->tableName, $tns)) {
                         $Q->create($sc);
+                        if(S::$log>0) S::log('[INFO]   + '.$sc->tableName);
                     }
+                }
+                if(is_string($records)) {
+                    $records = static::handler($records)->fetchArray();
+                } else if(is_array($records) && $records) {
+                    $cs++;
                 }
                 foreach($records as $k=>$r) {
                     $L=null;
@@ -190,6 +201,7 @@ class Query extends SchemaObject
 
                         if($d=$o->asArray()) {
                             $o->save();
+                            $cni++;
                         }
 
                         if($set) {
@@ -200,8 +212,10 @@ class Query extends SchemaObject
                         unset($L[$i], $o, $i);
                     }
                 }
+                if(S::$log>0) S::log('[INFO]   - '.$sc->tableName.': '.$cni.' records');
+                $t += $cni;
             }
-            if($name && S::$log>0) S::log("[INFO] Imported: {$name}");
+            if($name && S::$log>0) S::log("[INFO] Imported: {$t} records");
         } catch(Exception $e) {
             S::log("[ERROR] Can't import data: {$e->getMessage()}", $r, (string)$e);
             return false;

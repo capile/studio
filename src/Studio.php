@@ -165,7 +165,9 @@ class Studio
         $logDir,
         $sqlUnicode,
         $noeval,
-        $translit
+        $translit,
+        $guidUppercase=true,
+        $guidEnvelope=false
         ;
 
     /**
@@ -2450,7 +2452,7 @@ class Studio
         return Crypto::hash($str, $salt, $type);
     }
 
-    public static function guid($version=4, $uppercase=false)
+    public static function guid(int $version=4, bool|null $uppercase=null, bool|null $envelope=null): string
     {
         $data = Crypto::salt(16, false);
         if($version===7) {
@@ -2464,8 +2466,30 @@ class Studio
         $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
 
         $r = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+        if(is_null($uppercase)) $uppercase = self::$guidUppercase;
+        if($uppercase) $r = strtoupper($r);
+        if(is_null($envelope)) $envelope = self::$guidEnvelope;
+        if($envelope) $r = '{'.$r.'}';
 
-        return ($uppercase) ?strtoupper($r) :$r; 
+        return $r; 
+    }
+
+    public static function checkGuid(string $guid): string|false
+    {
+        if(strlen($guid)>=32 && preg_match('/^[\{]?([0-9a-fA-F]{8}-?([0-9a-fA-F]{4}-?){3}[0-9a-fA-F]{12})[\}]?$/', $guid)) {
+            if(self::$guidUppercase) $guid = strtoupper($guid);
+            $s = (self::$guidEnvelope) ?38 :36;
+            if(strlen($guid)!=$s) {
+                $guid = preg_replace('/[^0-9a-fA-F]+/', '', $guid);
+                $guid = substr($value, 0, 8).'-'.substr($guid, 8, 4).'-'.substr($guid, 12, 4).'-'.substr($guid, 16, 4).'-'.substr($guid, 16);
+                if(self::$guidEnvelope) $guid = '{'.$guid.'}';
+            }
+            unset($s);
+
+            return $guid;
+        } else {
+            return false;
+        }
     }
 
     /**

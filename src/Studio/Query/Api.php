@@ -602,8 +602,8 @@ class Api
             $url = substr($url, 0, $p);
         }
 
-        if($k=$this->config('queryPath')) {
-            $qp = sprintf($this->_expand($k), $this->schema('tableName'), null);
+        if($k=$this->config('queryPath') && ($tn=$this->schema('tableName'))) {
+            $qp = sprintf($this->_expand($k), $tn, null);
             if($p=strpos($qp, '?')) {
                 $qs = static::urlParam($qs, substr($qp, $p+1));
                 $url .= substr($qp, 0, $p);
