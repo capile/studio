@@ -3,7 +3,7 @@
 # docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.0 "git@github.com:capile/studio.git#v2.0" && \
 # docker push tecnodesign/studio:v2 && \
 # docker push tecnodesign/studio:v2.0
-FROM php:8.5-rc-fpm-alpine
+FROM php:8.5-fpm-alpine
 ARG PHP_PEAR_PHP_BIN="php -d error_reporting=0"
 WORKDIR /var/www/studio
 COPY . .
