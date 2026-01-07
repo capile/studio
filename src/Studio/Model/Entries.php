@@ -786,7 +786,9 @@ class Entries extends Model
             unset($repo);
         }
 
-        if(preg_match('/('.self::$indexFile.')?\.(md|php|feed|media|html)$/', basename($source), $m)) {
+        $lang = (Studio::$languages) ?implode('|', Studio::$languages) :S::$lang;
+        if($lang) $lang = "(\.($lang))?";
+        if(preg_match('/('.self::$indexFile.')?'.$lang.'\.(md|php|feed|media|html)$/', basename($source), $m)) {
             $source = substr($source, 0, strlen($source) - strlen($m[0]));
         }
 
