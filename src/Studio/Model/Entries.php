@@ -994,6 +994,9 @@ class Entries extends Model
             'type' => ($isPage)?('page'):('file'),
             'updated' => $t,
         ];
+        if(!$multiview && $url!==$d['link'] && preg_match('@^'.preg_replace('/[\.\-]/', '[\\.\\-]', $url).'$@', $d['link'])) {
+            $d['link'] = $url;
+        }
         if($extAttr) {
             $d['title'] = str_replace(['_', '-'], ' ', basename($url));
             $d['created'] = date('Y-m-d\TH:i:s', filectime($page));
