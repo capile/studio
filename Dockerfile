@@ -20,7 +20,6 @@ RUN apk upgrade --update \
       libwebp \
       libzip-dev \
       nodejs \
-      npm \
       openssh-client \
       postgresql-client \
       yarn \
@@ -44,6 +43,7 @@ RUN apk upgrade --update \
       libxml2-dev \
       libxrandr-dev \
       libxshmfence-dev \
+      npm \
       oniguruma-dev \
       openldap-dev \
       openssl-dev \
@@ -89,9 +89,15 @@ RUN apk upgrade --update \
     && \
     cd /var/www/studio \
     && \
-    apk del .deps \
-    && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2 \
+    && \
+    HOME=/var/www composer install --no-dev -n \
+    && \
+    composer clear-cache \
+    && \
+    rm -rf /var/www/.composer/cache /var/www/.npm/* \
+    && \
+    apk del .deps \
     && \
     cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
     && \
@@ -194,11 +200,5 @@ ENV HOME=/var/www \
     PHP_FCGI_MAX_REQUESTS="500" \
     FASTCGI_ACCESS_LOG="/dev/stderr" \
     FASTCGI_STATUS_LISTEN=""
-RUN composer install --no-dev -n \
-    && \
-    composer clear-cache \
-    && \
-    rm -rf ~/.composer/cache ~/.npm/*
-VOLUME /opt/studio
 ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]
 CMD ["php-fpm"]
