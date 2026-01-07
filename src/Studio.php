@@ -249,7 +249,7 @@ class Studio
     /**
      * User authentication and management shortcuts
      */
-    public static function user(string|int|null $uid=null): object
+    public static function user(string|array|int|null $uid=null): object|false
     {
         if(!is_null($uid) && $uid) {
             $cn = self::getApp()->config('user', 'className');
@@ -504,7 +504,7 @@ class Studio
     public static function expandVariables(mixed $a, $vars=null, bool|string $dottedProperties=''): mixed
     {
         if(!is_array($a) && !is_object($a)) {
-            if(preg_match_all('/\$(([A-Za-z0-9\_]+\:\:)?[A-Za-z0-9\_]+)/', $a, $m)) {
+            if(is_string($a) && preg_match_all('/\$(([A-Za-z0-9\_]+\:\:)?[A-Za-z0-9\_]+)/', $a, $m)) {
                 foreach($m[1] as $i=>$o) {
                     $r = null;
                     if($vars && is_object($vars)) $r = $vars->$o;
@@ -1964,15 +1964,12 @@ class Studio
 
     public static function numberToLetter(int $number, bool $uppercase = false): string
     {
-        if (!is_int($number)) {
-            $number = (int)$number;
-        }
         if ($number < 0) {
             $number = 0;
         }
         $return = '';
         for ($i = 1; $number >= 0 && $i < 10; $i++) {
-            $return = chr(0x41 + floor($number % (26 ** $i) / (26 ** ($i - 1)))) . $return;
+            $return = chr((int) (0x41 + floor($number % (26 ** $i) / (26 ** ($i - 1))))) . $return;
             $number -= 26 ** $i;
         }
         return $uppercase ? $return : strtolower($return);
