@@ -2,6 +2,6 @@
 all:
   model: Studio\Model\Groups
   options:
-    list-parent: i
+    list-parent: users
     priority: 20
     index: true

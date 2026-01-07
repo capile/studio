@@ -9,8 +9,8 @@ all:
     update: false
     new: false
   options:
-    priority: 1008
-    list-parent: ~
+    priority: 10
+    list-parent: apis
     default-filter:
       type:
         - client_credentials

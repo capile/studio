@@ -27,7 +27,7 @@ all:
   search:
     type: server
   options:
-    priority: 1010
+    priority: 20
     list-parent: tokens
     index: true
     scope:

@@ -1,6 +1,6 @@
 ---
 all:
-  title: "*Interfaces"
+  title: "*APIs"
   model: Studio\Model\Interfaces
   actions:
     import:
@@ -14,7 +14,7 @@ all:
   #search:
   #  type: server
   options:
-    list-parent: site
+    list-parent: ~
     priority: 1060
     index: true
     scope:

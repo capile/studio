@@ -3,7 +3,7 @@ all:
   title: "*Users"
   model: Studio\Model\Users
   options:
-    list-parent: site
+    list-parent: ~
     priority: 1040
     index: true
     scope:

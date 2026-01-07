@@ -2,6 +2,6 @@
 all:
   model: Studio\Model\Permissions
   options:
-    list-parent: i
+    list-parent: users
     priority: 50
     index: true
