@@ -11,13 +11,13 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio\Cache;
 
 use Studio as S;
 use Redis as RedisServer;
 use RedisException;
-use Studio\Cache;
-use Studio\Cache\File;
+use Studio\{Cache,Cache\File};
 
 class Redis
 {
@@ -26,7 +26,7 @@ class Redis
     ];
     private static $_server;
 
-    public static function redis()
+    public static function redis() :RedisServer|false
     {
         if(is_null(self::$_server)) {
             self::$_server = false;
@@ -79,11 +79,11 @@ class Redis
         return self::$_server;
     }
 
-    public static function lastModified($key, $expires=0)
+    public static function lastModified(string $key, int|float $expires=0) :int|false
     {
         if(!($S = self::redis())) return File::lastModified($key, $expires);
         $t = time();
-        if($expires && strlen($expires)>9) $expires -= $t;
+        if($expires && strlen((string)$expires)>9) $expires -= $t;
         $ttl = $S->ttl($key);
         unset($S);
         if ($ttl && (!$expires || $ttl > $expires)) {
@@ -92,26 +92,22 @@ class Redis
         return false;
     }
 
-    public static function size($key, $expires=0)
+    public static function size(string $key, int|float $expires=0) :int|false
     {
         return self::get($key, $expires, 'size');
     }
 
     /**
      * Gets currently stored key-pair value
-     *
-     * @param $key     mixed  key to be retrieved or array of keys to be tried (first available is returned)
-     * @param $expires int    timestamp to be compared. If timestamp is newer than cached key, false is returned.
-     * @param $method  mixed  Storage method to be used. Should be either a key or a value in self::$_methods
      */
-    public static function get($key, $expires=0, $m=null)
+    public static function get(string $key, int|float $expires=0, string|null $m=null) :mixed
     {
         if(!($S = self::redis())) {
             if(!$m) $m = 'get';
             return File::$m($key, $expires);
         }
         $t = time();
-        if($expires && strlen($expires)<10) $expires += $t;
+        if($expires && strlen((string)$expires)<10) $expires += $t;
         if ($expires || $m) {
             $meta = $S->get($key.'.meta');
             if($meta && is_string($meta)) $meta = S::unserialize($meta, 'json');
@@ -134,19 +130,14 @@ class Redis
     
     /**
      * Sets currently stored key-pair value
-     *
-     * @param $key     mixed  key(s) to be stored
-     * @param $value   mixed  value to be stored
-     * @param $expires int    timestamp to be set as expiration date.
-     * @param $method  mixed  Storage method to be used. Should be either a key or a value in self::$_methods
      */
-    public static function set($key, $value, $expires=0)
+    public static function set(string $key, mixed $value, int|float $expires=0) :bool
     {
         if(!($S = self::redis())) {
             return File::set($key, $expires);
         }
         $t = time();
-        if($expires && strlen($expires)>9) $expires -= $t;
+        if($expires && strlen((string)$expires)>9) $expires -= $t;
         if($expires<0) return false;
         $meta = ['modified'=>$t, 'size'=>((is_object($value)||is_array($value))?(1):(strlen((string)$value)))];
         if($expires) {
@@ -164,13 +155,74 @@ class Redis
         return true;
     }
 
-    public static function delete($key)
+    public static function delete(string $key) :bool
     {
         if(!($S = self::redis())) {
             return File::delete($key);
         }
         $ret = ($S->del($key.'.meta') && $S->del($key));
         unset($S);
+
+        return $ret;
+    }
+
+    /**
+     * Queue value in list
+     */
+    public static function queue(string $key, mixed $value) :bool
+    {
+        if(!($S = self::redis())) return false;
+
+        $ret = $S->rpush($key, $value);
+
+        return ($ret > 0);
+    }
+
+    /**
+     * Count values in a list
+     */
+    public static function count(string $key) :int|false
+    {
+        if(!($S = self::redis())) return false;
+
+        $ret = $S->llen($key);
+
+        return $ret;
+    }
+
+    /**
+     * Get the first value from a list and removes it
+     */
+    public static function shift(string $key) :mixed
+    {
+        if(!($S = self::redis())) return null;
+
+        $ret = ($S->llen($key)===0) ?null :$S->lpop($key);
+
+        return $ret;
+    }
+
+    /**
+     * Get the last inserted value from a list and removes it
+     */
+    public static function pop(string $key) :mixed
+    {
+        if(!($S = self::redis())) return false;
+
+        $ret = ($S->llen($key)===0) ?null :$S->rpop($key);
+
+        return $ret;
+    }
+
+    /**
+     * Lists the values from a list without removing them
+     */
+    public static function range(string $key, int $start=0, int $limit=-1) :array|false
+    {
+        if(!($S = self::redis())) return false;
+
+        $ret = $S->lrange($key, $start, $limit);
+        if(!isset($ret[0])) $ret = false;
 
         return $ret;
     }

@@ -28,12 +28,12 @@ class Cache
      */
     private static $_siteKey=null;
 
-    public static function getLastModified(string $key, int $expires=0, string|null $method=null) :int|false
+    public static function getLastModified(string $key, int|float $expires=0, string|null $method=null) :int|false
     {
         return self::lastModified($key, $expires, $method);
     }
 
-    public static function lastModified(string $key, int $expires=0, string|null $method=null) :int|false
+    public static function lastModified(string $key, int|float $expires=0, string|null $method=null) :int|false
     {
         $cn = self::storage($method, true);
         if(is_array($key) && $key) {
@@ -101,7 +101,7 @@ class Cache
         return ($className) ?'Studio\\Cache\\'.ucfirst($r) :$r;
     }
 
-    public static function unlock(string $key, string $lock, string|null $method=null, bool $keepLocked=false) :string|null
+    public static function unlock(string $key, string $lock, string|null $method=null, bool $keepLocked=false) :string|false
     {
         $cn = self::storage($method, true);
         $lockExpires = microtime(true)-(float)self::$lockExpires;
@@ -122,7 +122,7 @@ class Cache
     /**
      * Gets currently stored key-pair value
      */
-    public static function get(array|string $key, int $expires=0, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :mixed
+    public static function get(array|string $key, int|float $expires=0, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :mixed
     {
         $cn = self::storage($method, true);
         if($expires && $expires<2592000) $expires = microtime(true)-(float)$expires;
@@ -155,7 +155,7 @@ class Cache
     /**
      * Sets currently stored key-pair value
      */
-    public static function set(array|string $key, mixed $value, int $expires=0, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :bool
+    public static function set(array|string $key, mixed $value, int|float $expires=0, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :bool
     {
         if($lock) self::unlock($key, $lock, $method, true);
         $cn = self::storage($method, true);
@@ -165,6 +165,110 @@ class Cache
             $ret = File::set($key, $value);
         }
         unset($cn,$key,$value,$expires,$method);
+        return $ret;
+    }
+
+    /**
+     * Queue value in list
+     */
+    public static function queue(string $key, mixed $value, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :bool
+    {
+        if($lock) self::unlock($key, $lock, $method, true);
+        $cn = self::storage($method, true);
+        if(method_exists($cn, 'queue')) {
+            $ret = $cn::queue($key, $value);
+        } else {
+            $fileFallback = true;
+            $ret = false;
+        }
+        unset($cn);
+        if($fileFallback && $method!='file') {
+            $retf = File::queue($key, $value);
+            $ret = ($ret || $retf);
+            unset($retf);
+        }
+        return $ret;
+    }
+
+    /**
+     * Count values in a list
+     */
+    public static function count(string $key, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :int|false
+    {
+        if($lock) self::unlock($key, $lock, $method, true);
+        $cn = self::storage($method, true);
+        if(method_exists($cn, 'count')) {
+            $ret = $cn::count($key);
+        } else {
+            $fileFallback = true;
+            $ret = false;
+        }
+        unset($cn);
+        if($ret===false && $fileFallback && $method!='file') {
+            $ret = File::count($key);
+        }
+        return $ret;
+    }
+
+    /**
+     * Get the first value from a list and removes it
+     */
+    public static function shift(string $key, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :mixed
+    {
+        if($lock) self::unlock($key, $lock, $method, true);
+        $cn = self::storage($method, true);
+        $ret = null;
+        if(method_exists($cn, 'shift')) {
+            $ret = $cn::shift($key);
+        } else if(!$fileFallback) {
+            $fileFallback = true;
+        }
+        unset($cn);
+        if($fileFallback && $method!='file') {
+            $retf = File::shift($key);
+            if(!isset($ret) && !is_null($retf)) $ret = $retf;
+        }
+        return $ret;
+    }
+
+    /**
+     * Get the last inserted value from a list and removes it
+     */
+    public static function pop(string $key, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :mixed
+    {
+        if($lock) self::unlock($key, $lock, $method, true);
+        $cn = self::storage($method, true);
+        $ret = null;
+        if(method_exists($cn, 'pop')) {
+            $ret = $cn::pop($key);
+        } else if(!$fileFallback) {
+            $fileFallback = true;
+        }
+        unset($cn);
+        if($fileFallback && $method!='file') {
+            $retf = File::pop($key);
+            if(!isset($ret) && !is_null($retf)) $ret = $retf;
+        }
+        return $ret;
+    }
+
+    /**
+     * Lists the values from a list without removing them
+     */
+    public static function range(string $key, int $start=0, int $limit=-1, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :array|false
+    {
+        if($lock) self::unlock($key, $lock, $method, true);
+        $cn = self::storage($method, true);
+        if(method_exists($cn, 'range')) {
+            $ret = $cn::range($key, $start, $limit);
+        } else {
+            $fileFallback = true;
+            $ret = false;
+        }
+        unset($cn);
+        if($ret===false && $fileFallback && $method!='file') {
+            $ret = File::range($key, $start, $limit);
+        }
         return $ret;
     }
 
@@ -178,7 +282,7 @@ class Cache
         return $cn::delete($key);
     }
 
-    public static function size(array|string $key, int $expires=0, string|null $method=null, bool $fileFallback=false) :int|false
+    public static function size(array|string $key, int|float $expires=0, string|null $method=null, bool $fileFallback=false) :int|false
     {
         $cn = self::storage($method, true);
         if($expires && $expires<2592000) $expires = microtime(true)+(float)$expires;

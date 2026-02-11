@@ -152,7 +152,7 @@ if(!isset($action)) $action = $Api['action'];
     endif;
 
     // .s-api-actions
-    if($buttons && $content && $Api::$listPagesOnBottom): ?><div class="s-api-standalone-buttons"><?php
+    if(isset($buttons) && $buttons && $content && $Api::$listPagesOnBottom): ?><div class="s-api-standalone-buttons"><?php
         echo $buttons; 
     ?></div><?php endif;
 

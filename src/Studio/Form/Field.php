@@ -3006,7 +3006,9 @@ class Field extends SchemaObject
         }*/
         $oValue = $arg['value'];
 
-        if (!is_array($oValue)) {
+        if(!$oValue) {
+            if(!is_array($oValue)) $oValue = [];
+        } else if (!is_array($oValue)) {
             if($this->serialize) {
                 $unserialized=S::unserialize($oValue, $this->serialize);
                 if(S::isempty($unserialized) && var_export($unserialized, true)!=$oValue) {
