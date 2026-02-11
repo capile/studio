@@ -67,12 +67,15 @@ class App
         $healthcheckUri='/_me?healthcheck',
         $lockCache=true,
         $afterRunOnHealthcheck=true,
-        $link;
+        $link,
+        $status,
+        $queueBatch=500;
     protected static $configMap = ['tecnodesign'=>'app'];
     protected $_o=null;
 
     public function __construct($s, $name=null, $env=null)
     {
+        static::$status='init';
         if(!$name) {
             $name = S::appName();
         }
@@ -210,6 +213,7 @@ class App
      */
     public function start()
     {
+        static::$status='start';
         if(!S::$logDir && isset($this->_vars['app']['log-dir'])) {
             S::$logDir = $this->_vars['app']['log-dir'];
         }
@@ -253,6 +257,7 @@ class App
 
     public static function end($output='', $status=200)
     {
+        static::$status='end';
         throw new EndException($output, $status);
     }
 
@@ -300,6 +305,7 @@ class App
 
     public function run()
     {
+        static::$status='run';
         // run internals first...
         $this->renew();
         foreach(self::$beforeRun as $exec) {
@@ -418,6 +424,7 @@ class App
         } else if($exec) {
             App::$afterRun[]=$exec;
         } else {
+            static::$status='afterRun';
             $run = App::$afterRun;
             $sn = S::requestUri();
             if(!static::$afterRunOnHealthcheck || $sn===static::$healthcheckUri) {
@@ -435,6 +442,7 @@ class App
                 S::exec($exec);
             }
             if($sn===static::$healthcheckUri) {
+                static::$status='tasks';
                 Tasks::check(false);
             }
         }
@@ -1167,6 +1175,41 @@ class App
             }
         }
         return $o;
+    }
+
+
+    public static function queue(array|true|null $executable=null) :int|false
+    {
+        static $qkey;
+        if(is_null($qkey)) $qkey = 'queue/'.S::appName().'/'.S::env();
+
+        if($executable===true) {
+            static::$status='queue';
+            // run queue for the first self::$queueBatch entries
+            if($total = Cache::count($qkey)) {
+                if(S::$log>=0) S::log('[INFO] Processing queued actions... '.$total);
+                if($total > static::$queueBatch) $total = static::$queueBatch;
+                for($i=0;$i<$total;$i++) {
+                    $E = Cache::shift($qkey);
+                    try {
+                        if($E) {
+                            S::exec($E);
+                        } else {
+                            break;
+                        }
+                    } catch (Exception $e) {
+                        S::save($f=S_VAR.'/cache/app-queue.'.microtime(true), S::serialize($E, 'json'));
+                        S::log('[ERROR] Could not run queued batch: '.basename($f));
+                    }
+                }
+            }
+        } else if($executable) {
+            if(!Cache::queue($qkey, $executable)) {
+                S::log('[ERROR] Could not queue task '.substr(S::serialize($executable, 'json'), 0, 100)).' pushing to immediate action:';
+                self::afterRun($executable);
+            }
+        }
+        return Cache::count($qkey);
     }
 
     /**

@@ -52,6 +52,7 @@ class Tasks extends Model
                 unset($L[$i], $i, $o);
             }
         }
+        App::queue(true); // flush task queue
 
         if(!$enableBackground) {
             if(($w=Cache::get('tasks/worker')) && $w===self::$worker) {
