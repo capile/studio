@@ -343,6 +343,7 @@ class Field extends SchemaObject
             } catch(Exception $e) {
                 $this->value = false;
             }
+
             if(($this->value===false || is_null($this->value)) && !is_null($this->default)) {
                 $this->value = $this->default;
             }
@@ -3005,8 +3006,7 @@ class Field extends SchemaObject
             $ovalue = $this->value;
         }*/
         $oValue = $arg['value'];
-
-        if(!$oValue) {
+        if(S::isempty($oValue)) {
             if(!is_array($oValue)) $oValue = [];
         } else if (!is_array($oValue)) {
             if($this->serialize) {
