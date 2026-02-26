@@ -29,6 +29,7 @@ class Jwt extends BaseJwt
      */
     public function encode($payload, $key, $algo = 'HS256')
     {
+        if(isset($payload['sub']) && !is_string($payload['sub'])) $payload['sub'] = (string) $payload['sub'];
         $header = $this->generateJwtHeader($payload, $algo);
         if(($K=openssl_pkey_get_private($key)) && ($K=openssl_pkey_get_details($K))) {
             $header['kid']=S::compress64(md5(preg_replace('/[\s\n\r]+/', '', $K['key'])));
