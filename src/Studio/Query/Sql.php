@@ -1460,8 +1460,12 @@ class Sql
             } else {
                 $q .= $type;
             }
-            if($fd->required) $q .= ' not';
-            $q .= ' null';
+            if($fd->virtual) {
+                $q .= ' as ('.$fd->virtual.') virtual';
+            } else {
+                if($fd->required) $q .= ' not';
+                $q .= ' null';
+            }
             if($fd->increment==="auto" && !$pk) {
                 $q .= ' '.static::$tableAutoIncrement;
             }

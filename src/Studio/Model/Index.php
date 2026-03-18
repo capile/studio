@@ -331,7 +331,8 @@ class Index extends Model
         $continue = true;
 
         if($R) {
-            $countable = (method_exists($R, 'config')) ?$R->config('countable') :true;
+            $configurable = method_exists($R, 'config');
+            $countable = ($configurable) ?$R->config('countable') :true;
             $count = ($countable) ?$R->count() :10000;
             if(!$count) $count = 10000;
             $limit = $cn::$queryBatchLimit;
@@ -440,7 +441,9 @@ class Index extends Model
                         S::log('[ERROR] There were a few problems while indexing '.$cn.': '.$e->getMessage());
                     }
                 }
-                if(method_exists($R, 'config') && !$R->config('enableOffset')) break;
+                if($configurable && !$R->config('enableOffset')) {
+                    break;
+                }
                 if(S::$log > 0 && $count > $offset) S::log('[INFO] Ongoing index offset for '.$cn.': '.$offset.' / '.$count);
             }
             unset($R, $L);

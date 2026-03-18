@@ -210,7 +210,9 @@ class Api
         ];
         if($n) {
             $r = null;
-            if(isset($this->_options[$n])) {
+            if($this->_schema && S::notEmpty($r=$this->schema("_apiOptions/$n"))) {
+                if(!is_null($newValue)) $this->schema()['_apiOptions'][$n] = $newValue;
+            } else if(isset($this->_options[$n])) {
                 $r = $this->_options[$n];
                 if(!is_null($newValue)) $this->_options[$n] = $newValue;
             } else if(in_array($n, $options)) {
@@ -272,7 +274,7 @@ class Api
             $this->authorizationHeader($c);
         }
         if($c = $this->config('connectionCallback')) {
-            self::$C[$n] = call_user_func($c, self::$C[$n], $n);
+            self::$C[$n] = (is_string($c) && method_exists($this, $c)) ?$this->$c(self::$C[$n], $n) :call_user_func($c, self::$C[$n], $n);
             unset($c);
         }
         if($c=$this->config('requestHeaders')) {
@@ -529,6 +531,23 @@ class Api
         $this->headers = null;
         $this->_count = null;
         $this->_unique = null;
+        if($this->_requestBody) {
+            if($this->_cid && isset(self::$C[$this->_cid])) {
+                // reset method and post data
+                $conn = self::$C[$this->_cid];
+                curl_setopt($conn, CURLOPT_CUSTOMREQUEST, 'GET');
+                curl_setopt($conn, CURLOPT_POST, false);
+                curl_setopt($conn, CURLOPT_POSTFIELDS, null);
+                unset($conn);
+            }
+            if($this->_method && isset(self::$C[$this->_cid])) {
+                $conn = self::$C[$this->_cid];
+                curl_setopt($conn, CURLOPT_CUSTOMREQUEST, 'GET');
+                unset($conn);
+            }
+            $this->_requestBody = null;
+        }
+        $this->_method = null;
     }
 
 
@@ -1821,5 +1840,11 @@ class Api
                 $this->exec($conn, $decode, $disconnect);
             }
         }
+    }
+
+    public function apiEndpoint(string|null $url): string
+    {
+        if($url && $url!==$this->_url) $this->_url = $url;
+        return $this->_url;
     }
 }

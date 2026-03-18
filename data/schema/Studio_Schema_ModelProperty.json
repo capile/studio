@@ -225,6 +225,9 @@
         },
         "callback": {
             "type": "array"
+        },
+        "virtual": {
+            "type": "string"
         }
     }
 }
