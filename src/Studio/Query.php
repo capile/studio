@@ -336,7 +336,7 @@ class Query extends SchemaObject
                             unset($r['options']['api_options']);
                         }
                         if(isset($r['options']['className'])) {
-                            $r['class'] = $r['options']['className'];
+                            $r['className'] = $r['options']['className'];
                         }
                         S::$database[$db] = $r;
                     }
@@ -378,6 +378,9 @@ class Query extends SchemaObject
             if(is_object($s)) {
                 $s = (isset($s::$schema->className))?($s::$schema->className):(get_class($s));
             }
+            if(isset($s::$schema->_apiOptions['className']) && class_exists($cn=$s::$schema->_apiOptions['className'])) {
+                return new $cn($s);
+            }
         } else if(is_string($s)) {
             $t = $s;
         }
@@ -407,7 +410,7 @@ class Query extends SchemaObject
         return new $cn($s);
     }
 
-    public static function databaseHandler($n)
+    public static function databaseHandler($n, $overlay=null)
     {
         if(!($db = self::database($n))) {
             if((is_string($n) && $n && property_exists($n, 'schema')) || $n instanceof Model) {
