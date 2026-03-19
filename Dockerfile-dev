@@ -18,7 +18,6 @@ RUN apk upgrade --update \
       nodejs \
       npm \
       openssh-client \
-      postgresql-client \
       yarn \
       zlib \
       && \
