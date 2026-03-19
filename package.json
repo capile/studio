@@ -19,9 +19,9 @@
         "uglify-js": "^3.19"
     },
     "scripts": {
-        "build": "docker build -t tecnodesign/studio:v2-dev git@github.com:capile/studio.git -f Dockerfile-dev && docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.0 'git@github.com:capile/studio.git#v2.0'",
+        "build": "docker build -t tecnodesign/studio:v2-dev 'git@github.com:capile/studio.git#v2.0' -f Dockerfile-dev && docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.0 'git@github.com:capile/studio.git#v2.0'",
         "publish": "docker push tecnodesign/studio:v2-dev && docker push tecnodesign/studio:v2 && docker push tecnodesign/studio:v2.0",
-        "build-nginx": "docker build -t tecnodesign/nginx:latest git@github.com:capile/studio.git -f data/deploy/containers/nginx.dockerfile && docker push tecnodesign/nginx:latest",
+        "build-nginx": "docker build -t tecnodesign/nginx:latest 'git@github.com:capile/studio.git#v2.0' -f data/deploy/containers/nginx.dockerfile && docker push tecnodesign/nginx:latest",
         "build-all": "npm run build-nginx && npm run build && npm run publish",
         "test": "docker run -it --rm -e STUDIO_ENV=test -v $PWD:/var/www/studio -u $UID tecnodesign/studio:v2 composer test",
         "start": "electron ."
