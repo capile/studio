@@ -3,7 +3,7 @@
 # docker build -t tecnodesign/studio:latest -t tecnodesign/studio:v1.3 "git@github.com:capile/studio.git#main" && \
 # docker push tecnodesign/studio:latest && \
 # docker push tecnodesign/studio:v1.3
-FROM dhi.io/php:8.4-alpine3.22
+FROM dhi.io/php:8.4-alpine3.22-dev
 ARG PHP_PEAR_PHP_BIN="php -d error_reporting=0"
 WORKDIR /var/www/studio
 COPY . .
@@ -20,6 +20,7 @@ RUN apk upgrade --update \
       libwebp \
       libzip-dev \
       nodejs \
+      npm \
       openssh-client \
       postgresql-client \
       yarn \
@@ -43,7 +44,6 @@ RUN apk upgrade --update \
       libxml2-dev \
       libxrandr-dev \
       libxshmfence-dev \
-      npm \
       oniguruma-dev \
       openldap-dev \
       openssl-dev \
