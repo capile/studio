@@ -11,7 +11,7 @@ RUN apk upgrade --update --no-cache \
     && \
     mv /etc/nginx/http.d /etc/nginx/conf.d \
     && \
-    mkdir /var/www \
+    mkdir -p /var/www \
     && \
     chown -R nginx:nginx /var/www \
     && \
