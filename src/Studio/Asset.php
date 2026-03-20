@@ -638,7 +638,7 @@ class Asset
     {
         $a = [];
         $asset = true;
-        $force = null;
+        $force = false;
         $image = null;
         $gitp  = null;
         $publish = null;
