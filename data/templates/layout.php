@@ -36,10 +36,11 @@ if(($accept=App::request('headers', 'accept')) && preg_match('#^(text|applicatio
     exit();
 }
 
-if((!isset($script) || !$script || (count($script)==1 && isset($script[700]))) && isset($variables['script'])) $script = ($script) ?$script+$variables['script'] :$variables['script'];
-if((!isset($style) || !$style || (count($style)==1 && isset($style[700]))) && isset($variables['style']))  $style  = $variables['style'];
-
-if(isset($script)) {
+if(!isset($script)) $script = '';
+if((!$script || (count($script)==1 && isset($script[700]))) && isset($variables['script'])) $script = ($script) ?$script+$variables['script'] :$variables['script'];
+if(!isset($style)) $style = '';
+if((!$style || (count($style)==1 && isset($style[700]))) && isset($variables['style']))  $style  = $variables['style'];
+if(S::notEmpty($script)) {
     $js = '';
     if(!is_array($script)) $script = explode(',', $script);
     foreach($script as $k=>$v) {
@@ -62,8 +63,7 @@ if(isset($script)) {
     $script = $js;
     unset($js);
 }
-
-if(isset($style)) {
+if(S::notEmpty($style)) {
     $css = '';
     if(!is_array($style)) $style = explode(',', $style);
     foreach($style as $k=>$v) {
@@ -79,7 +79,7 @@ if(isset($style)) {
     $style = $css;
     unset($css);
 }
-
+if(!isset($meta)) $meta = '';
 if(isset($variables)) {
     $ogp = ['image','video'];
     $d = [];
