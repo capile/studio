@@ -12,7 +12,7 @@ RUN apk upgrade --update --no-cache \
     && \
     mv /etc/nginx/http.d /etc/nginx/conf.d \
     && \
-    printf "\nserver {\n  listen 80;\n  listen [::]:80;\n  server_name _;\n  location / {\n    return 404;\n  }\n  location = /404.html {\n    internal;\n  }\n}" > /etc/nginx/conf.d/default.conf
+    printf "server {\n  listen 80;\n  listen [::]:80;\n  server_name _;\n  location / {\n    return 404;\n  }\n  location = /404.html {\n    internal;\n  }\n}" > /etc/nginx/conf.d/default.conf \
     && \
     mkdir -p /var/www \
     && \
