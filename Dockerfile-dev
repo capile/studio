@@ -184,3 +184,4 @@ ENV HOME=/var/www \
     FASTCGI_ACCESS_LOG="/dev/stderr" \
     FASTCGI_STATUS_LISTEN=""
 ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]
+CMD ["php-fpm"]
