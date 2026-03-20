@@ -13,6 +13,7 @@ RUN apk upgrade --update \
       libldap \
       libpng \
       libwebp \
+      libpq-dev \
       libzip-dev \
       nodejs \
       npm \
@@ -29,7 +30,6 @@ RUN apk upgrade --update \
       libdrm-dev \
       libjpeg-turbo-dev \
       libpng-dev \
-      libpq-dev \
       libwebp-dev \
       libxcomposite-dev \
       libxdamage-dev \
@@ -183,9 +183,4 @@ ENV HOME=/var/www \
     PHP_FCGI_MAX_REQUESTS="500" \
     FASTCGI_ACCESS_LOG="/dev/stderr" \
     FASTCGI_STATUS_LISTEN=""
-RUN composer install --no-dev -n \
-    && \
-    composer clear-cache \
-    && \
-    rm -rf ~/.composer/cache ~/.npm/*
 ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]
