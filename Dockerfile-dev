@@ -11,7 +11,6 @@ RUN apk upgrade --update \
       gnupg \
       libjpeg-turbo \
       libldap \
-      libmemcached-libs \
       libpng \
       libwebp \
       libzip-dev \
@@ -21,6 +20,29 @@ RUN apk upgrade --update \
       yarn \
       zlib \
       && \
+    apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
+      curl-dev \
+      cyrus-sasl-dev \
+      freetype-dev \
+      ldb-dev \
+      samba-dev \
+      libdrm-dev \
+      libjpeg-turbo-dev \
+      libpng-dev \
+      libpq-dev \
+      libwebp-dev \
+      libxcomposite-dev \
+      libxdamage-dev \
+      libxkbcommon-dev \
+      libxml2-dev \
+      libxrandr-dev \
+      libxshmfence-dev \
+      oniguruma-dev \
+      openldap-dev \
+      openssl-dev \
+      zlib-dev \
+      zip \
+    && \
     pecl install mongodb redis \
     && \
     docker-php-ext-configure gd \
@@ -44,15 +66,19 @@ RUN apk upgrade --update \
       soap \
       zip \
     && \
-    rm -rf /tmp/* \
-    && \
     docker-php-ext-enable mongodb redis \
     && \
     cd /var/www/studio \
     && \
-    apk del .deps \
-    && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2 \
+    && \
+    HOME=/var/www composer install --no-dev -n \
+    && \
+    composer clear-cache \
+    && \
+    rm -rf /var/www/.composer/cache /var/www/.npm/* /tmp/* \
+    && \
+    apk del .deps \
     && \
     cp $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini \
     && \
@@ -119,6 +145,19 @@ RUN apk upgrade --update \
     && \
     chmod 775 \
       /var/www/studio \
+      /var/www/.cache \
+      /var/www/.composer \
+      /var/www/.npm \
+      /opt/studio/data \
+      /opt/studio/data/web \
+      /opt/studio/config \
+      /usr/local/etc/php-fpm.d/ \
+    && \
+    chmod 664 \
+      /usr/local/etc/php-fpm.conf \
+      && \
+    rm -rf /var/www/studio/data/web \
+    && \
     ln -s "/opt/studio/data/web" /var/www/studio/data/web
 USER www-data
 ENV HOME=/var/www \
@@ -144,5 +183,9 @@ ENV HOME=/var/www \
     PHP_FCGI_MAX_REQUESTS="500" \
     FASTCGI_ACCESS_LOG="/dev/stderr" \
     FASTCGI_STATUS_LISTEN=""
+RUN composer install --no-dev -n \
+    && \
+    composer clear-cache \
+    && \
+    rm -rf ~/.composer/cache ~/.npm/*
 ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]
-CMD ["php-fpm"]
