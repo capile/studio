@@ -5,8 +5,14 @@ PHP_FCGI_CHILDREN=${PHP_FCGI_CHILDREN:="1000"}
 PHP_FCGI_START_SERVERS=${PHP_FCGI_START_SERVERS:="5"}
 PHP_FCGI_SPARE_SERVERS=${PHP_FCGI_SPARE_SERVERS:="100"}
 PHP_FCGI_MAX_REQUESTS=${PHP_FCGI_MAX_REQUESTS:="500"}
+PHP_FCGI_QUIT_TIMEOUT=${PHP_FCGI_QUIT_TIMEOUT:="0"}
 FASTCGI_STATUS_LISTEN=${FASTCGI_STATUS_LISTEN:=""}
 FASTCGI_ACCESS_LOG=${FASTCGI_ACCESS_LOG:=""}
+
+sed -E \
+    -e "s/^process_control_timeout .*//g" \
+    -e "s/\[global\]/[global]\nprocess_control_timeout = $PHP_FCGI_QUIT_TIMEOUT/" \
+    -i /usr/local/etc/php-fpm.d/docker.conf
 
 sed -E \
     -e "s/^pm.max_children = .*/pm.max_children = $PHP_FCGI_CHILDREN/" \

@@ -193,6 +193,7 @@ ENV HOME=/var/www \
     PHP_FCGI_START_SERVERS="5" \
     PHP_FCGI_SPARE_SERVERS="100" \
     PHP_FCGI_MAX_REQUESTS="500" \
+    PHP_FCGI_QUIT_TIMEOUT="5" \
     FASTCGI_ACCESS_LOG="/dev/stderr" \
     FASTCGI_STATUS_LISTEN=""
 ENTRYPOINT ["/var/www/studio/data/deploy/entrypoint.sh"]
