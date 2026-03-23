@@ -11,6 +11,7 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio;
 
 use Studio as S;
@@ -374,9 +375,9 @@ class Asset
         $parser = null;
     }
 
-    public static function html($src)
+    public static function html(array|string $src): string
     {
-        $s = null;
+        $s = '';
         if(!is_array($src)) $src=[$src];
         foreach($src as $i=>$url) {
             if(is_array($url)) {
@@ -400,10 +401,10 @@ class Asset
     /**
      * Compress Javascript & CSS
      */
-    public static function minify($src, $root=false, $compress=true, $before=true, $raw=false, $output=false, $force=null)
+    public static function minify(array|string $src, string|null $root=null, bool $compress=true, bool $before=true, bool $raw=false, bool|string $output=false, bool $force=false): string|bool
     {
         static $vroot;
-        if($root===false) {
+        if(is_null($root)) {
             $root = S_DOCUMENT_ROOT;
         }
         if(is_null($vroot)) {
@@ -520,13 +521,13 @@ class Asset
         else $r .= $s;
 
         if($raw) {
-            return $s;
+            return (string) $s;
         } else if($output===true) {
             return $updated;
         }
         unset($s);
 
-        return $r;
+        return (string) $r;
     }
  
 

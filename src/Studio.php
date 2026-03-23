@@ -702,7 +702,7 @@ class Studio
     /**
      * Compress Javascript & CSS
      */
-    public static function minify(array|string $s, string|null $root=null, bool $compress=true, bool $before=true, bool $raw=false, bool|string $output=false): string
+    public static function minify(array|string $s, string|null $root=null, bool $compress=true, bool $before=true, bool $raw=false, bool|string $output=false): string|bool
     {
         $build = self::getApp()->config('app', 'asset-build-strategy');
         if(!$build) $build = App::$assetsBuildStrategy;
@@ -711,7 +711,6 @@ class Studio
         } else {
             return Asset::html((is_string($output)) ?$output :$s);
         }
-
     }
 
     /**
