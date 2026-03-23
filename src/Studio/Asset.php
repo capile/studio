@@ -119,8 +119,8 @@ class Asset
 
         if(!$outputFile) $outputFile = $this->output;
         if(file_exists($lock=$this->output.'.lock')) {
-            if(filemtime($lock) - S_TIME < 3600) {
-                if(true || S::$log>0) S::log('[INFO] There is another process building the file '.$outputFile.' skipping...');
+            if(S_TIME - filemtime($lock) < 3600) {
+                if(S::$log>0) S::log('[INFO] There is another process building the file '.$outputFile.' skipping...');
                 return file_exists($outputFile);
             }
         }
