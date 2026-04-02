@@ -14,19 +14,8 @@
 namespace Studio;
 
 use Studio as S;
-use Studio\App;
-use Studio\Asset;
-use Studio\Collection;
-use Studio\Form;
-use Studio\Model\Entries;
-use Studio\Model\Contents;
-use Studio\Model\Config;
-use Studio\Model\Permissions;
-use Studio\Model\Relations;
-use Studio\Model\Index;
-use Studio\Query;
-use Studio\Translate;
-use Studio\Yaml;
+use Studio\{App,Asset,Collection,Form,Query,Translate,Yaml};
+use Studio\Model\{Entries,Contents,Config,Permissions,Relations,Index};
 
 class Studio
 {
@@ -38,7 +27,7 @@ class Studio
         $app,               // updated at runtime, this is the main application alias, used internally (also by other classes)
         $automatedInstall,  // deprecated
         $internal,
-        $webInterface       = true,
+        $webInterface=true,
         $webButton,         // deprecated, use $webInterface instead
         $webInteractive,    // deprecated, use $webInterface instead
         $cliInterface=true, // enable command-line interface

@@ -11,20 +11,12 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio;
 
 use Studio as S;
-use Studio\App;
-use Studio\Cache;
-use Studio\Calendar;
-use Studio\Exception\AppException;
-use Studio\Exception\EndException;
-use Studio\Form;
-use Studio\Model;
-use Studio\Model\Interfaces;
-use Studio\Schema;
-use Studio\Studio;
-use Studio\Yaml;
+use Studio\{App,Cache,Calendar,Collection,Form,Model,Model\Interfaces,Schema,Studio,Yaml};
+use Studio\Exception\{AppException,EndException};
 use ArrayAccess;
 use DateTime;
 
@@ -245,7 +237,7 @@ class Api extends SchemaObject
         $instances=array(),
         $is=0,
         $base,
-        $formats=array( 'html', 'json', 'xls', 'xlsx', 'csv', 'yml', 'xml' ),
+        $formats=[ 'html', 'json', 'xls', 'xlsx', 'csv', 'yml', 'xml' ],
         $format,
         $ext,
         $msg;
@@ -271,14 +263,14 @@ class Api extends SchemaObject
      *                          then the interface is checked at S_VAR/interfaces/{$action}.yml
      *   (string) actionsDefault: list of actions to be tried as default options
      */
-    public function __construct($d=null)
+    public function __construct(string|array|null $d=null)
     {
         $d = static::loadInterface($d);
         $a = func_get_args();
         $expand = (count($a)>2) ?(int)$a[2] :1; 
         if(self::$className!=get_called_class()) self::$className = get_called_class();
         if(isset($d['enable']) && !$d['enable']) {
-            return static::error(404, static::t('errorNotFound'));
+            static::error(404, static::t('errorNotFound'));
         }
         $this->register();
         $this->setParent((count($a)>1) ?$a[1] :null);
@@ -335,16 +327,6 @@ class Api extends SchemaObject
             }
             unset($d);
         }
-        /*
-        if(!is_null($this->parent) && isset($d['relation'])) {
-            $pcn = $this->getParent()->getModel();
-            if(isset($pcn::$schema['relations'][$d['relation']])) {
-                $this->relation = $d['relation'];
-                $d['model'] = (isset($pcn::$schema['relations'][$d['relation']]['className']))?($pcn::$schema['relations'][$d['relation']]['className']):($d['relation']);
-            }
-            unset($d['relation']);
-        }
-        */
         $cn = null;
         if($this->model && class_exists($this->model)) {
             $cn = $this->model;
@@ -359,7 +341,7 @@ class Api extends SchemaObject
         } else if($this->text) {
             $this->originalText = true;
         } else if(!$this->run) {
-            return static::error(404, static::t('errorNotFound'));
+            static::error(404, static::t('errorNotFound'));
         }
 
         if(!$this->auth) {
@@ -370,7 +352,7 @@ class Api extends SchemaObject
         }
         if(is_null($this->config)) $this->config = [];
         if(isset($this->config['formats']) && is_array($this->config['formats']) && static::$format && !in_array(static::$format, $this->config['formats'])) {
-            return static::error(400, static::t('errorNotSupported'));
+            static::error(400, static::t('errorNotSupported'));
         }
         if($this->options && is_array($this->options)) {
             if(isset($this->options['headers'])) static::$headers += $this->options['headers'];
@@ -394,7 +376,7 @@ class Api extends SchemaObject
         }
     }
 
-    public function setRun($r)
+    public function setRun(string|array $r): void
     {
         if(is_string($r)) {
             if(method_exists($this, $r)) {
@@ -410,7 +392,7 @@ class Api extends SchemaObject
         }
     }
 
-    public function config($n=null)
+    public function config(?string $n=null): mixed
     {
         if($n) {
             if($this->config && isset($this->config[$n])) $r = $this->config[$n];
@@ -431,7 +413,7 @@ class Api extends SchemaObject
         return $this->config;
     }
 
-    public function checkScope($a=array())
+    public function checkScope(array $a=[]): void
     {
         if(!$a || !is_array($a)) return;
         foreach($a as $sn=>$scope) {
@@ -451,7 +433,7 @@ class Api extends SchemaObject
         }
     }
 
-    public static function base()
+    public static function base(): ?string
     {
         return static::$base;
     }
@@ -462,22 +444,40 @@ class Api extends SchemaObject
         return static::run();
     }
 
-    public static function format($format=null)
+    public static function format(?string $format=null): string
     {
-        $formats = ($I=static::current()) ? $I->config('formats') : static::$formats;
-        unset($I);
-        if($format && in_array($format, $formats)) static::$format = $format;
+        static $textFormats = ['txt', 'yaml', 'json', 'csv'];
+        $formats = ($Api=static::current()) ? $Api->config('formats') : static::$formats;
+        unset($Api);
+        if($format && in_array($format, $formats)) {
+            static::$format = $format;
+        } else if(is_null(static::$format)) {
+            if(($e=App::request('extension')) && in_array($e, $formats)) {
+                static::$format = $e;
+            } else if(S_CLI && ($m=array_intersect($formats, $textFormats))) {
+                static::$format = array_shift($m);
+                unset($m);
+            } else if($f=App::request('headers', 'content-type')) {
+                $f = preg_replace('/\;.*/', '', $f);
+                if(($e=array_search($f, S::$formats)) && in_array($e, $formats)) {
+                    static::$format = $e;
+                }
+            }
+            if(is_null(static::$format)) static::$format = array_shift($formats);
+        }
+        unset($formats);
+
         return static::$format;
     }
 
-    public static function checkFormat($ext=null)
+    public static function checkFormat(?string $ext=null): string
     {
         $formats = ($I=static::current()) ? $I->config('formats') : static::$formats;
         if($ext) {
             static::$ext = '.'.$ext;
             unset($I);
             if(!in_array($ext, $formats)) {
-                return static::error(400, static::t('errorNotSupported'));
+                static::error(400, static::t('errorNotSupported'));
             } else {
                 static::$format = $ext;
             }
@@ -506,7 +506,7 @@ class Api extends SchemaObject
         return static::$format;
     }
 
-    public static function loadAssets()
+    public static function loadAssets(): void
     {
         App::$assets[] = 'S.Api';
         App::$assets[] = '!'.Form::$assets;
@@ -514,7 +514,7 @@ class Api extends SchemaObject
         App::$assets[] = '!S.Calendar';
     }
 
-    public static function action()
+    public static function action(): ?string
     {
         $a = ($I=static::current())?($I->action):(null);
         unset($I);
@@ -527,7 +527,7 @@ class Api extends SchemaObject
      *   (string) $url optional base url
      *
      */
-    public static function run($n=null, $url=null)
+    public static function run($n=null, $url=null): string|false|null
     {
         if(self::$className!=get_called_class()) {
             self::$className = get_called_class();
@@ -618,7 +618,7 @@ class Api extends SchemaObject
         }
     }
 
-    public function output($p=null)
+    public function output(string|array|null $p=null): string
     {
         $s = $this->render($p);
 
@@ -631,30 +631,29 @@ class Api extends SchemaObject
 
         if(App::request('headers', 'x-studio-action')=='api') {
             App::end($s);
-            //exit($s);
         }
         return $s;
     }
 
-    protected function __clone()
+    protected function __clone(): void
     {
         $this->register();
     }
 
-    public static function current()
+    public static function current(): ?Api
     {
         if(is_null(self::$instances) || !self::$instances) return null;
         return array_values(self::$instances)[count(self::$instances)-1];
     }
 
-    private function register()
+    private function register(): void
     {
         $this->uid=self::$is++;
         if(is_null(self::$instances)) self::$instances = new ArrayObject();
         self::$instances[$this->uid] = $this;
     }
 
-    public function getParent()
+    public function getParent(): ?Api
     {
         if(!is_null($this->parent) && isset(self::$instances[$this->parent])) {
             return self::$instances[$this->parent];
@@ -662,7 +661,7 @@ class Api extends SchemaObject
         return null;
     }
 
-    public function setParent($pI)
+    public function setParent($pI): Api
     {
         if(!is_null($pI) && $pI!==false) {
             if(is_object($pI) && $pI instanceof Api) {
@@ -678,13 +677,12 @@ class Api extends SchemaObject
         return $this;
     }
 
-    public function setActions($actions=true, $expand=0)
+    public function setActions(array $actions=[], $expand=0): Api
     {
-        if(!is_array($actions)) $actions=array();
-        if(is_null($this->actions) && !$this->model) {
-            $this->actions = array();
-        } else if(is_null($this->actions)) {
-            $this->actions = array();
+        if(is_null($this->actions)) {
+            $this->actions = [];
+        }
+        if($this->model) {
             $cn = $this->model;
             if(is_null($this->auth)) $this->getAuth();
             $b = (isset($cn::$schema['ui-credentials']))?($cn::$schema['ui-credentials']):(array());
@@ -782,18 +780,18 @@ class Api extends SchemaObject
         return $this;
     }
 
-    public function getActions($an=null, $expand=0)
+    public function getActions(?string $an=null, int $expand=0): array
     {
         if(is_null($this->actions)) {
             $this->setActions($this->actions, $expand);
         }
         if(!is_null($an)) {
-            return (isset($this->actions[$an]))?($this->actions[$an]):(false);
+            return (isset($this->actions[$an]))?($this->actions[$an]):([]);
         }
         return $this->actions;
     }
 
-    public function redirect($url=null, $oldurl=null)
+    public function redirect(?string $url=null, ?string $oldurl=null): void
     {
         if(is_null($url)) $url = $this->link();
         // ajax handlers
@@ -803,7 +801,7 @@ class Api extends SchemaObject
         S::redirect($url);
     }
 
-    public function message($m=null)
+    public function message(string|false|null $m=null): string
     {
         $U = S::getUser();
         $clean = null;
@@ -827,7 +825,7 @@ class Api extends SchemaObject
         return static::$msg;
     }
 
-    public function getModel()
+    public function getModel(): ?string
     {
         if($this->model && isset($this->options['view'])) {
             $cn = $this->model;
@@ -837,7 +835,7 @@ class Api extends SchemaObject
         return $this->model;
     }
 
-    public function getAuth($action=null)
+    public function getAuth(?string $action=null): string|array|bool
     {
         if(is_null($this->auth)) {
             if(!is_null($this->parent)) {
@@ -855,26 +853,18 @@ class Api extends SchemaObject
         return $this->auth;
     }
 
-    /*
-    public function hasCredential($action=null)
+    public function auth(?string $action=null, bool $setHeaders=false): bool
     {
-        $c = $this->getCredential($action);
-        return (!$c || S::getUser()->hasCredential($c, false));
-    }
-    */
-
-    public function auth($action=null, $setStatus=null)
-    {
-        return static::checkAuth($this->getAuth($action), $setStatus);
+        return static::checkAuth($this->getAuth($action), $setHeaders);
     }
 
-    public static function authHeaders($U=null, $h='private')
+    public static function authHeaders($cacheControl='private'): void
     {
-        S::cacheControl($h, static::$expires);
-        self::$headers[static::H_CACHE_CONTROL] = $h;
+        S::cacheControl($cacheControl, static::$expires);
+        self::$headers[static::H_CACHE_CONTROL] = $cacheControl;
     }
 
-    public static function checkAuth($c, $setHeaders=null)
+    public static function checkAuth(string|array|bool $c, bool $setHeaders=false): bool
     {
         static $H, $U;
         if(is_null($U)) {
@@ -887,7 +877,7 @@ class Api extends SchemaObject
             if(!$c) return true;
             if($U->isAuthenticated()) {
                 if($setHeaders) {
-                    self::authHeaders($U);
+                    self::authHeaders();
                 }
                 return true;
             } else {
@@ -918,7 +908,7 @@ class Api extends SchemaObject
                 return true;
             } else {
                 if($setHeaders) {
-                    self::authHeaders($U);
+                    self::authHeaders();
                 }
                 if($U->hasCredential($c['credential'], false)) {
                     return true;
@@ -932,14 +922,14 @@ class Api extends SchemaObject
     }
 
 
-    public static function currentInterface($p, $I=null)
+    public static function currentInterface(array $p, ?Api $Api=null): Api|false
     {
         if(!isset(static::$base)) static::$base = S::scriptName();
 
         if(self::$className!=get_called_class()) self::$className = get_called_class();
         // first fetch any interface from the $p
         $n=null;
-        if(is_null($I)) {
+        if(is_null($Api)) {
             $f=null;
             $rn = null;
             if($p) {
@@ -973,29 +963,28 @@ class Api extends SchemaObject
             }
             unset($f);
             $cn = self::$className;
-            $I = new $cn($n);
-            if(!$I->auth(null, true)) {
+            $Api = new $cn($n);
+            if(!$Api->auth(null, true)) {
                 return false;
             }
             if($rn) {
                 $n = substr($n, 0, strlen($n) - strlen($rn));
             }
-            $I->url = ($n)?(static::$base.'/'.$n):(static::$base);
+            $Api->url = ($n)?(static::$base.'/'.$n):(static::$base);
             unset($cn);
         }
-        //static::$urls[$I->link()] = array('title'=>$I->getTitle(),'action'=>$I->action);
-        if($I->run) {
-            return $I;
+        if($Api->run) {
+            return $Api;
         }
-        if(is_null($I->actions)) {
-            $I->setActions(true, 1);
+        if(is_null($Api->actions)) {
+            $Api->setActions(true, 1);
         }
 
         $a = $n = null;
         if($p) $n = array_shift($p);
         if($n) {
-            if($a = $I->config('actionAlias', $n)) {
-            } else if(isset($I->actions[$n]) && !in_array($n, $I->config('actionAlias'))) {
+            if($a = $Api->config('actionAlias', $n)) {
+            } else if(isset($Api->actions[$n]) && !in_array($n, $Api->config('actionAlias'))) {
                 $a = $n;
             } else {
                 array_unshift($p, $n);
@@ -1003,21 +992,21 @@ class Api extends SchemaObject
             }
         }
         if($a) {
-            $A=$I->setAction($a, $p);
+            $A=$Api->setAction($a, $p);
         } else {
             // try default actions
-            foreach($I->config('actionsDefault') as $a) {
-                if($A=$I->setAction($a, $p)) {
+            foreach($Api->config('actionsDefault') as $a) {
+                if($A=$Api->setAction($a, $p)) {
                     break;
                 }
                 unset($a, $A);
             }
         }
         if(!isset($A) || !$A) {
-            if($I->originalText) {
-                return $I;
+            if($Api->originalText) {
+                return $Api;
             } else {
-                return static::error(404, static::t('errorNotFound'));
+                static::error(404, static::t('errorNotFound'));
             }
         } else if(is_object($A) && $A instanceof Api) {
             static::$urls[$A->link()] = array('title'=>$A->getTitle(),'action'=>$A->action);
@@ -1031,7 +1020,7 @@ class Api extends SchemaObject
         }
     }
 
-    public function setId($id=null)
+    public function setId(?string $id=null): Api|false
     {
         if(!$this->model) return false;
         $cn = $this->model;
@@ -1045,23 +1034,23 @@ class Api extends SchemaObject
         return $this;
     }
 
-    public function getId()
+    public function getId(): ?string
     {
         return $this->id;
     }
 
-    public function setUrl($url=null)
+    public function setUrl(?string $url=null): Api
     {
         $this->url = $url;
         return $this;
     }
 
-    public function getUrl()
+    public function getUrl(): ?string
     {
         return $this->url;
     }
 
-    public function setAction($a, &$p=null)
+    public function setAction(string $a, array &$p=[]): mixed
     {
         if(isset($this->actions[$a])) {
             static::$urls[$link=$this->link()] = [ 'title' => $this->getTitle(), 'interface' => false ];
@@ -1122,7 +1111,7 @@ class Api extends SchemaObject
                     $this->action = $a;
                     return $this->relation($n, $p);
                 }
-                array_unshift($p, $n);
+                array_unshinullft($p, $n);
                 return false;
             } else if($p) {
                 $this->params = implode('/', $p);
@@ -1134,7 +1123,7 @@ class Api extends SchemaObject
         return false;
     }
 
-    public static function status($code=null)
+    public static function status(?int $code=null): void
     {
         if(!$code) {
             if(!static::$status) $code = 200;
@@ -1158,7 +1147,7 @@ class Api extends SchemaObject
         }
     }
 
-    public static function error($code=500, $msg=null)
+    public static function error(int $code=500, string|array|null $msg=null): void
     {
         //for compatibility
         if(is_null(static::$format)) {
@@ -1194,12 +1183,12 @@ class Api extends SchemaObject
         if(isset(static::$errorModule)) {
             $cn = static::$errorModule;
             static::$errorModule=null;
-            return $cn::error($code);
+            $cn::error($code);
         }
         S::getApp()->runError($code);
     }
 
-    public static function toXml($ret)
+    public static function toXml(mixed $ret): string
     {
         $a = $b = '';
         $a = '<?xml version="1.0" encoding="utf-8" ?'.'>';
@@ -1289,7 +1278,7 @@ class Api extends SchemaObject
         return $a;
     }
 
-    public static function toJson($ret)
+    public static function toJson(mixed $ret): string
     {
         if(static::$envelope) {
             $ret = static::envelope($ret);
@@ -1305,7 +1294,7 @@ class Api extends SchemaObject
         return str_replace("\n\n", "\n", $b.json_encode($ret, $flags).$a)."\n";
     }
 
-    public static function toYml($ret)
+    public static function toYml(mixed $ret): string
     {
         if(static::$envelope) {
             $ret = static::envelope($ret);
@@ -1314,7 +1303,7 @@ class Api extends SchemaObject
         return Yaml::dump($ret, 2, 80);
     }
 
-    public static function toCsv($ret)
+    public static function toCsv(mixed $ret): string
     {
         $r='';
         if(!isset($ret[0])) $ret = array($ret);
@@ -1379,7 +1368,7 @@ class Api extends SchemaObject
         //self::output($r, 'application/csv; charset=utf-8', false);
     }
 
-    public static function csv(array $fields, $delimiter = ',', $enclosure = '"', $encloseAll = false, $nullToMysqlNull = false )
+    public static function csv(array $fields, string $delimiter = ',', string $enclosure = '"', bool $encloseAll = false, bool $nullToMysqlNull = false ): string
     {
         $delimiter_esc = preg_quote($delimiter, '/');
         $enclosure_esc = preg_quote($enclosure, '/');
@@ -1404,7 +1393,7 @@ class Api extends SchemaObject
         return implode( $delimiter, $output );
     }
 
-    public static function ldif($a, $dn=false)
+    public static function ldif(string|array $a, bool $dn=false): string
     {
         if(!is_array($a)) {
             if($dn) {
@@ -1442,7 +1431,7 @@ class Api extends SchemaObject
         }
     }
 
-    public static function envelope($a)
+    public static function envelope(mixed $a): array
     {
         $r = array();
         if(isset(static::$headers)) {
@@ -1461,11 +1450,10 @@ class Api extends SchemaObject
         return $r;
     }
 
-
-    public function getTitle($displayAction=true)
+    public function getTitle(bool $displayAction=true): string
     {
         $cn = $this->getModel();
-        $s = null;
+        $s = '';
         $xml = null;
         if(!S::isempty($this->id)) {
             $w = $this->search;
@@ -1531,12 +1519,12 @@ class Api extends SchemaObject
         return $s;
     }
 
-    public function setTitle($title)
+    public function setTitle(string $title): void
     {
         $this->text['title'] = $title;
     }
 
-    public function getSearch($relation=null)
+    public function getSearch(string $relation=''): array
     {
         if($relation) {
             $cn = $this->getModel();
@@ -1570,16 +1558,16 @@ class Api extends SchemaObject
         return $this->search;
     }
 
-    public function setSearch($arr)
+    public function setSearch(array $arr): Api
     {
-        $this->search = array();
+        $this->search = [];
         $this->addSearch($arr);
         return $this;
     }
 
-    public function addSearch($arr)
+    public function addSearch(array $arr): Api
     {
-        if(!is_array($this->search)) $this->search = array();
+        if(!is_array($this->search)) $this->search = [];
         if(is_array($arr)) {
             foreach($arr as $fn=>$fv) {
                 $this->search[$fn] = $fv;
@@ -1588,7 +1576,7 @@ class Api extends SchemaObject
         return $this;
     }
 
-    public static function t($s, $alt=null)
+    public static function t(string $s, ?string $alt=null): string
     {
         $self = self::$className;
         if(property_exists($self, $s)) {
@@ -1601,7 +1589,7 @@ class Api extends SchemaObject
         return (static::$translate || $alt===null)?(S::t($s, 'api')):($s);
     }
 
-    public static function template()
+    public static function template(): string|false
     {
         if(!in_array($d=S_ROOT.'/data/templates', S::templateDir())) {
             S::$tplDir[] = $d;
@@ -1610,7 +1598,7 @@ class Api extends SchemaObject
         return S::templateFile(func_get_args());
     }
 
-    public function referer()
+    public function referer(): string
     {
         if(($url=App::request('headers', 'x-studio-referer')) || ($url=App::request('headers', 'referer'))) {
             $ref = parse_url($url);
@@ -1622,7 +1610,7 @@ class Api extends SchemaObject
         return $this->link(false, true);
     }
 
-    public function link($a=null, $id=null, $ext=true, $qs=null)
+    public function link(?string $a=null, string|false|null $id=null, bool $ext=true, string|false|null $qs=null): string
     {
         if(is_null($this->url)) {
             $this->url = static::$base.'/'.$this->api;
@@ -1678,7 +1666,7 @@ class Api extends SchemaObject
         return $url;
     }
 
-    public function isOne()
+    public function isOne(): bool
     {
         if(!S::isempty($this->id)) return true;
 
@@ -1700,7 +1688,7 @@ class Api extends SchemaObject
         return false;
     }
 
-    public function execute()
+    public function execute(): void
     {
         static::$currentAction = $this->action;
         if(!isset($this->text)) $this->text = array();
@@ -1851,7 +1839,7 @@ class Api extends SchemaObject
         unset($m, $cn);
     }
 
-    public function executeMethod()
+    public function executeMethod(): void
     {
         static::$currentAction = $this->action;
         if(!isset($this->text)) $this->text = array();
@@ -1870,7 +1858,6 @@ class Api extends SchemaObject
                 $req = $this->options['default-filter'];
             }
         }
-
         $cn = $this->getModel();
         if(isset($this->options['scope']) && is_array($this->options['scope'])) {
             $cn::$schema->scope = $this->options['scope'] + $cn::$schema->scope;
@@ -1884,14 +1871,6 @@ class Api extends SchemaObject
             $scope = 'list';
         }
         $this->options['scope'] = $this->scope($scope);
-
-        /*
-        // this should be deprecated
-        if(isset($this->options['messages'])) {
-            $this->config += $this->options['messages'];
-        }
-        */
-
         if(($this->action=='list' || !isset($this->id)) && $this->config('displaySearch') &&
             (
                 (isset($this->options['search']) && $this->options['search'])
@@ -1899,9 +1878,7 @@ class Api extends SchemaObject
             )) {
             $this->searchForm($req);
         }
-
         if(isset($this->options['group-by'])) $this->groupBy = $this->options['group-by'];
-
         $r = null;
         if(method_exists($o=$this->model, $a='execute'.S::camelize($this->action, true))) {
             if($this->id) {
@@ -1919,55 +1896,50 @@ class Api extends SchemaObject
 
             return;
         }
-
         if(!isset($this->text['buttons'])) {
             $this->getButtons();
         }
-
         if(!isset($this->text['summary'])) {
             $this->text['summary'] = $this->getSummary();
         }
-
         if(is_string($r)) {
             $this->text['preview'] = $r;
         }
-
         static::status(200);
-
         unset($req);
         unset($m, $cn, $r);
     }
 
-    public function executeInterface()
+    public function executeInterface(): void
     {
-        return $this->execute();
+        $this->execute();
     }
-    public function executeNew()
+    public function executeNew(): void
     {
-        return $this->execute();
+        $this->execute();
     }
-    public function executeList()
+    public function executeList(): void
     {
-        return $this->execute();
+        $this->execute();
     }
-    public function executeReport()
+    public function executeReport(): void
     {
-        return $this->execute();
+        $this->execute();
     }
-    public function executePreview()
+    public function executePreview(): void
     {
-        return $this->execute();
+        $this->execute();
     }
-    public function executeUpdate()
+    public function executeUpdate(): void
     {
-        return $this->execute();
+        $this->execute();
     }
-    public function executeDelete()
+    public function executeDelete(): void
     {
-        return $this->execute();
+        $this->execute();
     }
 
-    public function render()
+    public function render(): string
     {
         S::$variables['Interface'] = $this;
         $title = $this->getTitle();
@@ -2071,7 +2043,7 @@ class Api extends SchemaObject
         return S::exec(array('script'=>$f, 'variables'=>$vars));
     }
 
-    public static function headers()
+    public static function headers(): void
     {
         $r = array();
         $headers = [];
@@ -2098,7 +2070,7 @@ class Api extends SchemaObject
                 }
             }
             if($x) {
-                $v = preg_replace('/[\n\r\t]+/', '', strip_tags((is_array($v))?(implode(';',$v)):($v)));
+                $v = preg_replace('/[\n\r\t]+/', '', strip_tags((is_array($v))?(implode(';',$v)):((string)$v)));
                 @header('x-'.$k.': '.$v);
                 $r[] = 'x-'.$k.': '.$v;
             }
@@ -2109,7 +2081,7 @@ class Api extends SchemaObject
         }
     }
 
-    public function lastModified($lmod=null)
+    public function lastModified(string|int|float|null $lmod=null): void
     {
         if(!$lmod && isset($this->options['last-modified'])) {
             $def = $this->options['last-modified'];
@@ -2149,7 +2121,7 @@ class Api extends SchemaObject
     }
 
     protected static $proc, $procTimeout=180;
-    public static function workerProcess($proc=null)
+    public static function workerProcess(string|false|null $proc=null): ?string
     {
         if($proc) {
             self::$proc = $proc;
@@ -2159,7 +2131,7 @@ class Api extends SchemaObject
         }
         return self::$proc;
     }
-    public static function worker($msg=false, $f=false)
+    public static function worker(string $msg='', ?string $f=null): array|bool|null
     {
         static $s;
         if(!$s && self::$proc) $s = Cache::get(self::$proc, static::$procTimeout);
@@ -2177,7 +2149,7 @@ class Api extends SchemaObject
         return $s;
     }
 
-    public function backgroundWorker($m, $prefix='w/', $download=true, $redirect=null, $unload=null)
+    public function backgroundWorker(string $m, string $prefix='w/', bool $download=true, bool $redirect=false, string|bool $unload=false): string|null
     {
         if(App::request('headers', 'x-studio-action')==='api') {
             $uri = ($redirect && is_string($redirect)) ?$redirect :$this->link();
@@ -2230,10 +2202,12 @@ class Api extends SchemaObject
             return $r;
         } else if($download && ($uid=App::request('get', '-bgd')) && ($st=Cache::get($prefix.$uid)) && isset($st['f'])) {
             Cache::delete($prefix.$uid);
-            S::download($st['f'], null, preg_replace('/^[0-9]+\.[0-9]+\-/', '', basename($st['f'])), 0, true, false, false);
+            S::download($st['f'], null, preg_replnullace('/^[0-9]+\.[0-9]+\-/', '', basename($st['f'])), 0, true, false, false);
             unlink($st['f']);
             exit();
         }
+
+        return null;
     }
 
     public function renderShare($object = null, $scope = 'share', $class = null, $translate = false, $xmlEscape = true)
@@ -2309,8 +2283,6 @@ class Api extends SchemaObject
         }
         $form = new Form($formConfig);
         $this->text['summary'] = 'Sharing query';
-
-        //$fo['c_s_r_f'] = new FormField(array('id'=>'c_s_r_f', 'type'=>'hidden', 'value'=>1234));
         try {
             $post = App::request('post');
             if ($post) {
@@ -2341,7 +2313,7 @@ class Api extends SchemaObject
         return $form;
     }
 
-    public function renderReport($o=null, $scope=null, $class=null, $translate=false, $xmlEscape=true)
+    public function renderReport(): void
     {
         $pid = $this->backgroundWorker(S::t('Building report...','api'), 'irs/', true, false, $this->link($this->action, null, true, false));
 
@@ -2358,7 +2330,7 @@ class Api extends SchemaObject
         $this->text['listLimit']=50000;
     }
 
-    public function download($f, $msg='Download...', $unload=null)
+    public function download(string $f, string $msg='Download...', ?string $unload=null): void
     {
         $fn = preg_replace('/^[0-9\.]+\-/', '', basename($f));
         if(App::request('headers', 'x-studio-action')=='api') {
@@ -2383,11 +2355,10 @@ class Api extends SchemaObject
             Cache::delete('bgd/'.$uid);
             S::download($f, null, $fn, 0, true, false, false);
             unlink($f);
-            //exit($f);
         }
     }
 
-    public static function checkRequestScope($rs, $ps)
+    public static function checkRequestScope(string $rs, array $ps): bool
     {
         if(in_array($rs, $ps)) return true;
 
@@ -2398,9 +2369,11 @@ class Api extends SchemaObject
                 }
             }
         }
+
+        return false;
     }
 
-    public function requestScope()
+    public function requestScope(): ?string
     {
         if(($rs=S::slug(App::request('get', static::REQ_SCOPE))) && isset($this->options['scope'][$rs]) && !$this->config('actionsAvailable', $rs)) {
             // check if $this->options['scope'][$this->action] requires authentication
@@ -2416,9 +2389,11 @@ class Api extends SchemaObject
             }
             return $rs;
         }
+
+        return null;
     }
 
-    public function renderPreview($o=null, $scope=null, $class=null, $translate=false, $xmlEscape=true)
+    public function renderPreview(?Model $o=null, array|string|null $scope=null, ?string $class=null, bool $translate=false, bool $xmlEscape=true): ?Model
     {
         $cn = $this->getModel();
 
@@ -2450,7 +2425,7 @@ class Api extends SchemaObject
         return $o;
     }
 
-    public function renderNew($o=null, $scope=null)
+    public function renderNew(?Model $o=null, array|string|null $scope=null): Form
     {
         $cn = $this->getModel();
         if(!$scope) {
@@ -2525,9 +2500,9 @@ class Api extends SchemaObject
         return $fo;
     }
 
-    public function renderGraph()
+    public function renderGraph(): string
     {
-        if(!($displayGraph=$this->config('displayGraph'))) return;
+        if(!($displayGraph=$this->config('displayGraph'))) return '';
         $cn = $this->getModel();
         if(!$this->graph && $displayGraph==='auto') {
             // autobuild graph based on index values
@@ -2591,8 +2566,8 @@ class Api extends SchemaObject
                 Cache::set($ckey, $this->graph, S::$timeout);
             }
         }
-        if(!$this->graph) return;
         $s = '';
+        if(!$this->graph) return $s;
         foreach($this->graph as $n=>$g) {
             $g['model'] = $cn;
             $g['id'] = S::slug($this->url).'-'.S::slug($n);
@@ -2608,7 +2583,7 @@ class Api extends SchemaObject
         return $s;
     }
 
-    public function renderGraphCalendar($g, $n=null)
+    public function renderGraphCalendar(?array $g, ?string $n=null): ?string
     {
         $s = null;
         App::$assets[] = 'S.Calendar';
@@ -2680,7 +2655,7 @@ class Api extends SchemaObject
         return $s;
     }
 
-    public static function graph($g, $n=null)
+    public static function graph(array $g, ?string $n=null): string
     {
         $cn = $g['model'];
         if(!$n) $n=uniqid('g');
@@ -2812,7 +2787,7 @@ class Api extends SchemaObject
         return $s;
     }
 
-    public function renderUpdate($o=null, $scope=null)
+    public function renderUpdate(?Model $o=null, string|array|null $scope=null): Form
     {
         $cn = $this->getModel();
         if(!$o) $o = $this->model([], 1, false, true);
@@ -2905,7 +2880,7 @@ class Api extends SchemaObject
         return $fo;
     }
 
-    public function renderDelete($o=null, $scope=null)
+    public function renderDelete(?Model $o=null, string|array|null $scope=null): void
     {
         try {
             if(($M = $this->model([], 1, false, true))) {
@@ -2921,7 +2896,7 @@ class Api extends SchemaObject
                 if(isset($this->options['next'])) {
                     if(is_array($this->options['next'])) {
                         if(isset($this->options['next'][$this->action])) {
-                            $next = $this->options['next'][$this->action];
+                            $nextModel = $this->options['next'][$this->action];
                         }
                     } else {
                         $next = $this->options['next'];
@@ -2951,7 +2926,7 @@ class Api extends SchemaObject
                 }
                 $this->text['summary'] .= $msg;
 
-                return $this->redirect($this->link(false, false), $oldurl);
+                $this->redirect($this->link(false, false), $oldurl);
             }
         } catch(AppException $e) {
             S::log('[INFO] User error while processing '.__METHOD__.': '.$e);
@@ -2963,10 +2938,10 @@ class Api extends SchemaObject
         } else {
             $this->message('<div class="s-msg s-msg-error"><p>'.$msg.'</p></div>');
         }
-        return $this->redirect($this->link(false, false));
+        $this->redirect($this->link(false, false));
     }
 
-    public function renderSchema($o=null, $scope=null)
+    public function renderSchema(?Model $o=null, string|array|null $scope=null): void
     {
         $qs = null;
         if(!$scope) {
@@ -2982,7 +2957,7 @@ class Api extends SchemaObject
                 $o = null;
             }
             if(!$scope) {
-                return static::error(404, static::t('errorNotFound'));
+                static::error(404, static::t('errorNotFound'));
             }
         }
 
@@ -3053,9 +3028,9 @@ class Api extends SchemaObject
         App::end();
     }
 
-    public function getForm($o=null, $scope=null)
+    public function getForm(?Model $o=null, string|array|null $scope=null): Form
     {
-        if(!$o || !($o instanceof Model)) {
+        if(!$o) {
             $o = $this->model();
             if(!$o) {
                 $this->message('<div class="s-msg s-msg-error"><p>'.static::t('previewNoResult').'</p></div>');
@@ -3159,7 +3134,7 @@ class Api extends SchemaObject
         return $fo;
     }
 
-    public function preview()
+    public function preview(): string
     {
         if(static::$format && static::$format!='html') {
             App::response(array('headers'=>array('Content-Type'=>'application/'.static::$format.'; charset=utf-8')));
@@ -3169,7 +3144,7 @@ class Api extends SchemaObject
         return $this->render();
     }
 
-    protected function renderSub($r)
+    protected function renderSub(string $r): string
     {
         $I = $this->relation($r);
         $I->template = 'api-sub';
@@ -3187,7 +3162,7 @@ class Api extends SchemaObject
         return $s;
     }
 
-    protected function relation($r)
+    protected function relation(string $r): ?Api
     {
         if(strpos($r, '::')!==false) {
             list($id, $n) = explode('::', $r, 2);
@@ -3195,7 +3170,7 @@ class Api extends SchemaObject
             $id = $n = $r;
         }
         if(!isset($this->actions[$n]['relation']) && !isset($this->actions[$n]['interface'])) {
-            return '';
+            return null;
         }
 
         $url = $this->url;
@@ -3237,7 +3212,7 @@ class Api extends SchemaObject
         return $I;
     }
 
-    public function expand($call=null)
+    public function expand(string|array|null $call=null): array
     {
         if($this->isOne()) {
             return array($this);
@@ -3276,7 +3251,7 @@ class Api extends SchemaObject
         return $r;
     }
 
-    public function getSummary($title=null)
+    public function getSummary(?string $title=null): string
     {
         $cn = $this->getModel();
         if(!$title && ($l=$this->link()) && isset(static::$urls[$l]['title'])) {
@@ -3298,12 +3273,12 @@ class Api extends SchemaObject
 
     }
 
-    public function hasAction($n)
+    public function hasAction(string $n): bool
     {
         return isset($this->actions[$n]);
     }
 
-    public function getButtons()
+    public function getButtons(): void
     {
         $s = '';
         if(!isset($this->options)) $this->options = array();
@@ -3422,7 +3397,7 @@ class Api extends SchemaObject
         unset($s, $sn);
     }
 
-    public function qs($asArray=false)
+    public function qs(bool $asArray=false): string|array|null
     {
         static $qs;
         if(is_null($qs)) {
@@ -3432,7 +3407,7 @@ class Api extends SchemaObject
         return ($asArray) ?$qs :http_build_query($qs);
     }
 
-    public function getList($req=array())
+    public function getList(array $req=array()): Collection|false
     {
         if(!isset($this->text['count'])) $this->text['count']=$this->count();
         if(!isset($this->text['error'])) $this->text['error']=array();
@@ -3557,7 +3532,7 @@ class Api extends SchemaObject
         return $this->text['list'];
     }
 
-    public function model($req=array(), $max=1, $collection=false, $setId=null)
+    public function model(array $req=array(), int $max=1, bool $collection=false, ?bool $setId=null): Collection|Model|array|false
     {
         static $current=[];
         $cn = $this->getModel();
@@ -3617,7 +3592,7 @@ class Api extends SchemaObject
         return $r;
     }
 
-    public function scope($a=null, $clean=false, $pk=false, $expand=null)
+    public function scope(string|array|null $a=null, bool $clean=false, bool $pk=false, ?int $expand=null): array
     {
         if(!is_null($a)) {
             if(is_array($a)) {
@@ -3667,7 +3642,7 @@ class Api extends SchemaObject
                     if(!isset($U)) $U=S::getUser();
                     if(!$U || !$U->hasCredentials($v['credential'], false)) continue;
                 }
-                if(substr($k, 0, 10)=='Interface:') {
+                if(is_string($k) && substr($k, 0, 10)=='Interface:') {
                     $p = substr($k, 10);
                     if(isset($propMap[$p])) {
                         if($propMap[$p]) {
@@ -3743,7 +3718,7 @@ class Api extends SchemaObject
         return $this->scope;
     }
 
-    public function count()
+    public function count(): int
     {
         $r = 0;
         if(!$this->searchError && ($cn=$this->getModel())) {
@@ -3779,7 +3754,7 @@ class Api extends SchemaObject
         return $r;
     }
 
-    public function searchForm($post=array(), $render=true)
+    public function searchForm(array $post=array(), bool $render=true): int
     {
         foreach(array(static::REQ_ORDER, static::REQ_PAGE) as $p) {
             if(isset($post[$p])) unset($post[$p]);
@@ -4158,7 +4133,7 @@ class Api extends SchemaObject
         return (isset($this->text['searchCount']))?($this->text['searchCount']):($this->text['count']);
     }
 
-    public static function listInterfaces($base=null, $array=false, $checkAuth=true)
+    public static function listInterfaces(?string $base=null, bool $array=false, bool $checkAuth=true): string|array|false
     {
         if(!is_null($base)) static::$base = $base;
         else if(is_null(static::$base)) static::$base = S::scriptName();
@@ -4175,7 +4150,7 @@ class Api extends SchemaObject
             } else if(static::$translate && substr($I['title'], 0, 1)=='*') {
                 $I['title'] = static::t(substr($I['title'], 1));
             }
-            $p = str_pad((isset($I['options']['priority']))?($I['options']['priority']):(''), 5, '0', STR_PAD_LEFT).S::slug($I['title']);
+            $p = str_pad((isset($I['options']['priority']))?((string)$I['options']['priority']):(''), 5, '0', STR_PAD_LEFT).S::slug($I['title']);
             if(isset($I['api'])) $api = $I['api'];
             else if(isset($I['interface'])) $api = $I['interface'];
             else $api = $k;
@@ -4214,7 +4189,7 @@ class Api extends SchemaObject
         }
     }
 
-    protected static function _li($o)
+    protected static function _li(array $o): string
     {
         if(isset($o[1])) {
             $s = '<li id="s-nav-'.S::slug($o[2]).'" class="s-children s-toggle-active" data-toggler-options="child,storage">'.$o[0].'<ul>';
@@ -4230,7 +4205,7 @@ class Api extends SchemaObject
         return $s;
     }
 
-    public static function find($q=null, $checkAuth=true)
+    public static function find(string|array|null $q=null, bool $checkAuth=true): array
     {
         if($q) {
             if(is_string($q)) return array(static::loadInterface($q));
@@ -4299,7 +4274,7 @@ class Api extends SchemaObject
         return $Is;
     }
 
-    public static function configFile($s, $skip=[])
+    public static function configFile(string $s, array $skip=[]): ?string
     {
         static $dd;
         if(is_null($dd)) $dd = App::config('app', 'data-dir');
@@ -4335,9 +4310,10 @@ class Api extends SchemaObject
         }
 
         unset($s);
+        return null;
     }
 
-    public static function loadInterface($a=array(), $prepare=true)
+    public static function loadInterface(string|array $a=array(), bool $prepare=true): array
     {
         if(!is_array($a) && $a) {
             $a = array('api'=>$a);
