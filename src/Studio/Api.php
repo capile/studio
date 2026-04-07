@@ -15,7 +15,7 @@ declare(strict_types=1);
 namespace Studio;
 
 use Studio as S;
-use Studio\{App,Cache,Calendar,Collection,Form,Model,Model\Interfaces,Schema,Studio,Yaml};
+use Studio\{App,Cache,Calendar,Collection,Form,Model,Model\Apis,Schema,Studio,Yaml};
 use Studio\Exception\{AppException,EndException};
 use ArrayAccess;
 use DateTime;
@@ -172,7 +172,7 @@ class Api extends SchemaObject
         $indexFile          = 'index',
         $baseInterface = [
             'api'           => 'index',
-            'run'           => 'listInterfaces',
+            'run'           => 'listApis',
         ],
         $authDefault        = false,
         $optionsDefault,
@@ -250,9 +250,9 @@ class Api extends SchemaObject
      *
      *   (string) model:        instanceof Studio\Model that should be loaded
      *   (string) key:          key to use for URLs and links, if not the $model::pk()
-     *   (string) relation:     for sub-interfaces, which relation this interface refers to — might replace model information
+     *   (string) relation:     for sub-api, which relation this interface refers to — might replace model information
      *    (array) search:       $model::find() parameters for restricting the scope of this interface.
-     *                          this parameter is automatically filled when sub-interfaces are called
+     *                          this parameter is automatically filled when sub-api are called
      *    (array) options:      different options for controlling the interface, is also set as the action parameter[0]
      * (callable) action:       action definition. If it's a string, then it's checked for a method of $model
      *                          or an Api action. Arrays might contain the className/Object in the first parameter.
@@ -260,7 +260,7 @@ class Api extends SchemaObject
      *     (bool) batch:        if this action might be performed in batch actions
      *     (bool) identified:   if this action should be performed only when at least one record is identified
      *    (array) actions:      array of dependent actions: ( $url => $action ). For each action, if it's a string,
-     *                          then the interface is checked at S_VAR/interfaces/{$action}.yml
+     *                          then the interface is checked at S_VAR/apis/{$action}.yml
      *   (string) actionsDefault: list of actions to be tried as default options
      */
     public function __construct(string|array|null $d=null)
@@ -573,9 +573,7 @@ class Api extends SchemaObject
                 $sf = (static::$share===true || static::$share===1)?('api-shared'):(S::slug(static::$share, '_', true));
                 if(!in_array($sf, static::$dir)) static::$dir[] = $sf;
             }
-
             $I = static::currentInterface($p);
-
             static::checkFormat($ext);
 
             if(!$I) return false;
@@ -783,7 +781,7 @@ class Api extends SchemaObject
     public function getActions(?string $an=null, int $expand=0): array
     {
         if(is_null($this->actions)) {
-            $this->setActions($this->actions, $expand);
+            $this->setActions([], $expand);
         }
         if(!is_null($an)) {
             return (isset($this->actions[$an]))?($this->actions[$an]):([]);
@@ -934,7 +932,7 @@ class Api extends SchemaObject
             $rn = null;
             if($p) {
                 $p0 = $p;
-                $n = preg_replace('#[^a-z0-9\-\_\@]#i', '', array_shift($p));// find a file
+                $n = rawurlencode(array_shift($p));
                 while(!($f=static::configFile($n)) && $p) {
                     $n .= '/'.rawurlencode(array_shift($p));
                     $f = null;
@@ -945,10 +943,10 @@ class Api extends SchemaObject
                 if(!$p && ($f=static::configFile(static::$indexFile))) {
                     $n = static::$indexFile;
                 } else if($p) {
-                    $n = preg_replace('#[^a-z0-9\-\_\@]#i', '', array_shift($p));
+                    $n = rawurlencode(array_shift($p));
                     $rn = '/'.static::$indexFile;
                     while(!($f=static::configFile($n.'/'.static::$indexFile)) && $p) {
-                        $n .= '/'.array_shift($p);
+                        $n .= '/'.rawurlencode(array_shift($p));
                     }
                     if($f) $n .= $rn;
                 }
@@ -977,7 +975,7 @@ class Api extends SchemaObject
             return $Api;
         }
         if(is_null($Api->actions)) {
-            $Api->setActions(true, 1);
+            $Api->setActions([], 1);
         }
 
         $a = $n = null;
@@ -2304,7 +2302,7 @@ class Api extends SchemaObject
                 $this->redirect("/a/$fileName");
             }
         } catch (AppException $e) {
-            S::log('[INFO] User error while processing ' . __METHOD__ . ': ' . $e);
+            S::log('[INFO] User error while processing renderShare: ' . $e);
             $this->text['error'] = static::t('newError');
             $this->text['errorMessage'] = $e->getMessage();
             $this->text['summary'] .= '<div class="s-msg s-msg-error"><p>' . $this->text['error'] . '</p>' . $this->text['errorMessage'] . '</div>';
@@ -2488,7 +2486,7 @@ class Api extends SchemaObject
             }
             unset($post);
         } catch(AppException $e) {
-            S::log('[INFO] User error while processing '.__METHOD__.': '.$e->getMessage());
+            S::log('[INFO] User error while processing renderNew: '.$e->getMessage());
             $this->text['error'] = static::t('newError');
             $this->text['errorMessage'] = $e->getMessage();
             $this->text['summary'] .= '<div class="s-msg s-msg-error"><p>'.$this->text['error'].'</p>'.$this->text['errorMessage'].'</div>';
@@ -2867,7 +2865,7 @@ class Api extends SchemaObject
             }
             unset($post);
         } catch(AppException $e) {
-            S::log('[INFO] User error while processing '.__METHOD__.': '.$e);
+            S::log('[INFO] User error while processing renderUpdate: '.$e);
             $this->text['error'] = static::t('updateError');
             $this->text['errorMessage'] = $e->getMessage();
             $this->text['summary'] .= '<div class="s-msg s-msg-error"><p>'.$this->text['error'].'</p>'.$this->text['errorMessage'].'</div>';
@@ -2929,7 +2927,7 @@ class Api extends SchemaObject
                 $this->redirect($this->link(false, false), $oldurl);
             }
         } catch(AppException $e) {
-            S::log('[INFO] User error while processing '.__METHOD__.': '.$e);
+            S::log('[INFO] User error while processing renderDelete: '.$e);
         }
         $msg = static::t('deleteError');
         if(static::$format!='html') {
@@ -3818,7 +3816,7 @@ class Api extends SchemaObject
                     $scope[$k]=$fn;
                 }
 
-                if(substr($label, 0, 1)=='*' && static::$translate) {
+                if(is_string($label) && substr($label, 0, 1)=='*' && static::$translate) {
                     $label = S::t(substr($label, 1), 'model-'.$cn::$schema->tableName);
                 } else if(is_int($label)) {
                     $label = $cn::fieldLabel($fn);
@@ -4133,7 +4131,12 @@ class Api extends SchemaObject
         return (isset($this->text['searchCount']))?($this->text['searchCount']):($this->text['count']);
     }
 
+    // deprecated, should be removed in next major version
     public static function listInterfaces(?string $base=null, bool $array=false, bool $checkAuth=true): string|array|false
+    {
+        return static::listApis($base, $array, $checkAuth);
+    }
+    public static function listApis(?string $base=null, bool $array=false, bool $checkAuth=true): string|array|false
     {
         if(!is_null($base)) static::$base = $base;
         else if(is_null(static::$base)) static::$base = S::scriptName();
@@ -4214,6 +4217,7 @@ class Api extends SchemaObject
         $dd = App::config('app', 'data-dir');
         $da = (!static::$authDefault)?(true):(static::checkAuth(static::$authDefault));
         $base = static::base();
+        $index = Studio::config('enable_api_index');
         foreach(static::$dir as $d) {
             $b0 = ((substr($d, 0, 1)!='/')?($dd.'/'):('')).$d;
             $b = $b0.$base.'/*.yml';
@@ -4252,21 +4256,31 @@ class Api extends SchemaObject
                 unset($I, $i, $a);
             }
         }
-        if(Studio::config('enable_api_index')) {
-            if($L = Interfaces::find($q,null,null,false)) {
+        if($index) {
+            $toIndex = $Is;
+            if($L = Apis::find($q,null,null,false)) {
                 foreach($L as $i=>$o) {
-                    if($o->indexed) {
-                        if($f = $o->cacheFile()) {
-                            $a = S::config($f, S::env());
-                            $oid = basename($f, '.yml');
-                            if(isset($Is[$oid])) {
-                                $Is[$oid] = $a + $Is[$oid];
-                            } else {
-                                $Is[$oid] = $a;
-                            }
+                    $oid = $o->id;
+                    if(isset($toIndex[$oid])) unset($toIndex[$oid]);
+                    if($f = $o->cacheFile()) {
+                        $a = S::config($f, S::env());
+                        if(isset($Is[$oid])) {
+                            $Is[$oid] = $a + $Is[$oid];
+                        } else {
+                            $Is[$oid] = $a;
                         }
                     }
                     unset($L[$i], $i, $o);
+                }
+            }
+            if($toIndex) {
+                foreach($toIndex as $oid=>$o) {
+                    $a = ['id'=>$oid, 'title'=>$o['title']];
+                    if(isset($o['model'])) $a['model'] = $o['model'];
+                    // new Apis([
+                    //     'id'=>$id,
+                    //     ''
+                    // ])
                 }
             }
         }
@@ -4280,7 +4294,7 @@ class Api extends SchemaObject
         if(is_null($dd)) $dd = App::config('app', 'data-dir');
         if(substr($s, 0, 7)==='studio:' && file_exists($f=S_ROOT.'/data/api/_studio/'.S::slug(substr($s,7), '/_').'.yml') && !in_array($f, $skip)) {
             return $f;
-        } else if(Studio::config('enable_api_index') && ($r=Interfaces::findCacheFile($s)) && !in_array($r, $skip)) {
+        } else if(Studio::config('enable_api_index') && ($r=Apis::findCacheFile($s)) && !in_array($r, $skip)) {
             return $r;
         }
 
@@ -4339,6 +4353,7 @@ class Api extends SchemaObject
                     if($na) $a = S::mergeRecursive($a, $na);
                     if($i-- <=0) break;
                 }
+                unset($a['base']);
             }
 
             static $r;

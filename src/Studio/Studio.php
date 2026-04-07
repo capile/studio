@@ -64,7 +64,7 @@ class Studio
         $cliSkipScriptName=[],
         $apiClass='Studio\\Api',
         $apiListParent = [
-            'apis'=>'interfaces',
+            'apis'=>'apis',
         ],
         $invalidUrlPattern='/[\$\|&\[\]\{\}\#\`\?\;]|\/\.|\/\/+/',
         $headersTemplate,
@@ -81,7 +81,7 @@ class Studio
             'task'=>['Studio\\Model\\Tasks', 'check'],
             'version'=>['Studio', 'env', [true, true]],
         ];
-    const VERSION = 1.3;    // should match the development branch
+    const VERSION = 2.0;    // should match the development branch
 
     /**
      * This is a App, the constructor is loaded once and then cached (until configuration changes)
@@ -300,8 +300,8 @@ class Studio
             }
         } else {
             static $methods = array(
-                '/s'=>'listInterfaces',
-                //'/q'=>'listInterfaces',
+                '/s'=>'listApis',
+                //'/q'=>'listApis',
             );
             if(!($U=S::getUser()) || !$U->isAuthenticated() || !($U->isSuperAdmin() || !($c=self::credential(array('studio','edit','previewUnpublished'))) || $U->hasCredential($c, false))) {
                 return self::error(403);
@@ -332,7 +332,7 @@ class Studio
         self::error(404);
     }
 
-    public static function listInterfaces()
+    public static function listApis(): void
     {
         $R = array();
         $p = App::request('post');
@@ -348,6 +348,11 @@ class Studio
         $In=self::$apiClass;
         $In::headers();
         App::end($In::toJson($R));
+    }
+
+    public static function listInterfaces(): void
+    {
+        static::listApis();
     }
 
     public static function listProperties()
@@ -1100,7 +1105,7 @@ class Studio
                     'Studio\\Model\\Credentials',
                 ],
                 'index'=>[
-                    'Studio\\Model\\Interfaces',
+                    'Studio\\Model\\Apis',
                     'Studio\\Model\\Tokens',
                     'Studio\\Model\\Index',
                     'Studio\\Model\\IndexBlob',

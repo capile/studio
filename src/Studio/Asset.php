@@ -639,6 +639,7 @@ class Asset
     {
         $a = [];
         $asset = true;
+        $database = true;
         $force = false;
         $image = null;
         $gitp  = null;
@@ -657,6 +658,8 @@ class Asset
                             S::$log = strlen($m[1]);
                         } else  if(substr($o, 1)==='q') {
                             S::$log = 0;
+                        } else  if(substr($o, 1)==='d') {
+                            $database = false;
                         } else  if(substr($o, 1)==='f') {
                             $force = true;
                         } else  if(substr($o, 1)==='i') {

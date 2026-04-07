@@ -1,7 +1,7 @@
 ---
 all:
   title: "*APIs"
-  model: Studio\Model\Interfaces
+  model: Studio\Model\Apis
   actions:
     import:
       action: executeMethod
@@ -21,9 +21,9 @@ all:
       uid:
         - id
       list:
-        - id
         - title
         - indexed
+        - updated
       preview:
         - scope::m
         - scope::s

@@ -18,7 +18,7 @@ use Studio\Cache;
 use Studio\Git;
 use Studio\Model;
 use Studio\Model\Migration;
-use Studio\Model\Interfaces;
+use Studio\Model\Apis;
 use Studio\Query;
 use Studio\Studio;
 use Studio\Yaml;
@@ -94,7 +94,7 @@ class Index extends Model
         }
         Cache::set(static::$pidKey, S_TIME, 60);
         if($q) {
-            $index = Interfaces::find($q,null,null,false);
+            $index = Apis::find($q,null,null,false);
             if(!$index) $index = [];
         }
 
@@ -102,7 +102,7 @@ class Index extends Model
             if(!$q) {
                 $index = static::$interfaces;
                 if(!$index) {
-                    $index = Interfaces::find(['index_interval>'=>0],null,null,false);
+                    $index = Apis::find(['index_interval>'=>0],null,null,false);
                     if(!$index) $index = [];
                 }
             }
@@ -205,9 +205,9 @@ class Index extends Model
 
         if(!$api && !($api=$M::$schema->_indexId)) return;
         if(!isset($apiIndex[$api])) {
-            $I = Interfaces::find(['id'=>$api],1,['id']);
+            $I = Apis::find(['id'=>$api],1,['id']);
             if(!$I) {
-                $I = new Interfaces([
+                $I = new Apis([
                     'id' => $api,
                     'title' => $M::label(),
                     'model' => $M::$schema->className,
@@ -262,11 +262,11 @@ class Index extends Model
 
         if(S::$log>0) S::log('[INFO] Indexing: '.$id.' (time: '.S::number($t0-S_TIME, 5).', mem: '.S::bytes(memory_get_peak_usage(true)).')');
 
-        if(!$II) $II = Interfaces::find(['id'=>$id],1);
+        if(!$II) $II = Apis::find(['id'=>$id],1);
         $lmod = null;
 
         if(!$II) {
-            $II = Interfaces::replace([
+            $II = Apis::replace([
                 'id'=>$id,
                 'title'=>(isset($a['label'])) ?$a['label'] :$cn::label(),
                 'model'=>$cn,
@@ -668,7 +668,7 @@ class Index extends Model
 
     public static function prepareApi($a)
     {
-        if(isset($a['search']['interface']) && ($A=Interfaces::find(['id'=>$a['search']['interface'], 'model!='=>'' ],1,['model'])) && (method_exists($M=$A->model, 'prepareIndexApi'))) {
+        if(isset($a['search']['interface']) && ($A=Apis::find(['id'=>$a['search']['interface'], 'model!='=>'' ],1,['model'])) && (method_exists($M=$A->model, 'prepareIndexApi'))) {
             return $M::prepareIndexApi($a);
         }
         return $a;

@@ -1,21 +1,25 @@
 {
-    "title": "*Index Interfaces",
+    "title": "*Apis",
     "database": "studio",
-    "tableName": "studio_interfaces",
-    "className": "Studio\\Model\\Interfaces",
+    "tableName": "studio_apis",
+    "className": "Studio\\Model\\Apis",
     "properties": {
-        "id": { "type": "string", "required": true, "primary": true },
-        "title": { "type": "string", "required": true, "size": 200 },
+        "id": { "type": "string", "size": 100, "required": true, "primary": true },
+        "title": { "type": "string", "required": true, "size": 200, "index": [ "studio_apis__title_idx" ] },
         "model": { "type": "string", "size": 500 },
         "connection": { "type": "string", "size": 100 },
         "source": { "type": "string", "size": 500 },
         "schema_source": { "type": "string", "size": 500 },
         "schema_data": { "type": "string", "size": 8000 },
-        "credential": { "type": "string", "size": 2000 },
+        "app": { "type": "string", "size": 100, "index": [ "studio_apis__applisting_idx" ] },
+        "listed": { "type": "string", "size": 100, "index": [ "studio_apis__applisting_idx" ] },
+        "overlay": { "type": "string", "serialize": "json" },
+        "credential": { "type": "string", "serialize": "json", "size": 2000 },
         "index_interval": { "type": "int" },
         "indexed": { "type": "datetime" },
         "created": { "type": "datetime", "required": true },
-        "updated": { "type": "datetime", "required": true }
+        "updated": { "type": "datetime", "required": true },
+        "expired": { "type": "datetime", "index": [ "studio_apis__expired_idx" ] }
     },
     "relations": {
         "Index": { "local": "id", "foreign": "interface", "type": "many", "className": "Studio\\Model\\Index" }
@@ -29,13 +33,14 @@
     "events": {
         "before-insert": [ "actAs" ],
         "before-update": [ "actAs" ],
-        "before-delete": [ "actAs" ]
+        "before-delete": [ "actAs" ],
+        "active-records": [ "`expired` is null"]
     },
     "overlay": {
     },
     "actAs": {
         "before-insert": { "timestampable": [ "created", "updated" ] },
         "before-update": { "timestampable": [ "updated" ] },
-        "before-delete": { "timestampable": [ "updated" ] }
+        "before-delete": { "timestampable": [ "updated" ], "soft-delete": [ "expired" ] }
     }
 }

@@ -72,5 +72,16 @@ class Migration
                 'sql' => 'insert into studio_users(id,username,name,password,email,details,accessed,created,updated,expired) select * from tdz_users group by id',
             ],
         ],
+        'studio_apis' => [
+            'studio_interfaces' => [
+                'sql' => 'insert into studio_apis(id,title,model,connection,source,schema_source,schema_data,credential,index_interval,indexed,created,updated) select * from studio_interfaces',
+            ],
+            'studio_index' => [
+                'sql' => 'alter table studio_index drop constraint `fk_studio_index__interfaces`, add constraint `fk_studio_index__apis` foreign key (`interface`) references `studio_apis` (`id`) on delete cascade on update cascade',
+            ],
+            'studio_index_text' => [
+                'sql' => 'alter table studio_index drop constraint `fk_studio_index__interfaces`',
+            ]
+        ],
     ];
 }

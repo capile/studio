@@ -2280,9 +2280,13 @@ class Studio
             }
             unset($locale);
             define('STUDIO_VERSION', Studio::VERSION);
+            if(!defined('S_APP')) {
+                if(isset($_SERVER['STUDIO_APP']) && $_SERVER['STUDIO_APP']) define('S_APP', $_SERVER['STUDIO_APP']);
+                else define('S_APP', 'studio');
+            }
             if(!defined('S_TAG')) {
                 if(isset($_SERVER['STUDIO_TAG']) && $_SERVER['STUDIO_TAG']) define('S_TAG', $_SERVER['STUDIO_TAG']);
-                else define('S_TAG', 'studio');
+                else define('S_TAG', S_APP);
             }
             if(!defined('S_CLI')) {
                 if(defined('TDZ_CLI')) define('S_CLI', TDZ_CLI);

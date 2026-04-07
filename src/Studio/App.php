@@ -323,6 +323,7 @@ class App
             $defaults = $this->_vars['app']['controller-options'];
             $request = self::request();
             $valid = false;
+
             if (isset($routes[$request['script-name']])) {
                 $valid = $this->runRoute($request['script-name'], $request);
             }
