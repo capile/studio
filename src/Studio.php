@@ -163,7 +163,7 @@ class Studio
         $database,
         $useDatabaseHandlers=true,
         $log,
-        $logDir,
+        $logDir='error_log',
         $sqlUnicode,
         $noeval,
         $translit,
@@ -179,17 +179,15 @@ class Studio
         self::env();
         self::$_env = $env;
         if ($siteMemKey) {
-            if(!isset($_SERVER['STUDIO_TAG']) || !$_SERVER['STUDIO_TAG'] || $_SERVER['STUDIO_TAG']!=$siteMemKey) $_SERVER['STUDIO_TAG']=$siteMemKey;
             Cache::siteKey($siteMemKey);
         }
         $timeout = static::$timeout;
-        if(isset($_SERVER['STUDIO_APP']) && $_SERVER['STUDIO_APP']) {
-            self::$_app = $_SERVER['STUDIO_APP'];
-        } else if(is_string($s) && file_exists($s)) {
+        self::$_app = S_APP;
+        if(is_string($s) && file_exists($s)) {
             self::$_app = basename($s, '.yml');
             $timeout = filemtime($s);
-        } else {
-            self::$_app = md5sum((is_array($s)) ?implode(':', $s) :$s);
+        } else if(is_array($s)) {
+            self::$_app = md5sum(implode(':', $s));
         }
         if($cache=App::getInstance(self::$_app, $env, $timeout)) {
             return $cache;
@@ -201,17 +199,14 @@ class Studio
     public static function appName(): string
     {
         if(is_null(self::$_app)) {
-            if(isset($_SERVER['STUDIO_APP']) && $_SERVER['STUDIO_APP']) {
-                self::$_app = $_SERVER['STUDIO_APP'];
-            } else if(isset($_SERVER['STUDIO_CONFIG']) && $_SERVER['STUDIO_CONFIG']) {
+            self::$_app = S_APP;
+            if(isset($_SERVER['STUDIO_CONFIG']) && $_SERVER['STUDIO_CONFIG']) {
                 $s = $_SERVER['STUDIO_CONFIG'];
                 if(is_string($s) && file_exists($s)) {
                     self::$_app = basename($s, '.yml');
-                } else {
-                    self::$_app = md5sum((is_array($s)) ?implode(':', $s) :$s);
+                } else if(is_array($s)) {
+                    self::$_app = md5sum(implode(':', $s));
                 }
-            } else {
-                self::$_app = 'studio';
             }
         }
 

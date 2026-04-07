@@ -4,6 +4,8 @@
     "tableName": "studio_apis",
     "className": "Studio\\Model\\Apis",
     "properties": {
+        "app": { "type": "string", "size": 100, "min_size": 0, "required": true, "default": "", "primary": true },
+        "listed": { "type": "string", "size": 100, "min_size": 0, "required": true, "default": "", "primary": true },
         "id": { "type": "string", "size": 100, "required": true, "primary": true },
         "title": { "type": "string", "required": true, "size": 200, "index": [ "studio_apis__title_idx" ] },
         "model": { "type": "string", "size": 500 },
@@ -11,8 +13,6 @@
         "source": { "type": "string", "size": 500 },
         "schema_source": { "type": "string", "size": 500 },
         "schema_data": { "type": "string", "size": 8000 },
-        "app": { "type": "string", "size": 100, "index": [ "studio_apis__applisting_idx" ] },
-        "listed": { "type": "string", "size": 100, "index": [ "studio_apis__applisting_idx" ] },
         "overlay": { "type": "string", "serialize": "json" },
         "credential": { "type": "string", "serialize": "json", "size": 2000 },
         "index_interval": { "type": "int" },
@@ -26,6 +26,7 @@
     },
     "scope": {
         "string": [ "title" ],
+        "api": { "api": "id", "title": "title", "model": "model", "credential": "credential", "app": "app", "listed": "listed" },
         "interface": { "api": "id", "title": "title", "model": "model", "credential": "credential" }
     },
     "order": {
@@ -37,6 +38,8 @@
         "active-records": [ "`expired` is null"]
     },
     "overlay": {
+        "app": { "bind": "app", "required": false },
+        "listed": { "bind": "listed", "required": false }
     },
     "actAs": {
         "before-insert": { "timestampable": [ "created", "updated" ] },

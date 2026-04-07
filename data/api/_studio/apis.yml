@@ -17,13 +17,17 @@ all:
     list-parent: ~
     priority: 1060
     index: true
+    group-by: id
     scope:
       uid:
         - id
       list:
-        - title
-        - indexed
-        - updated
+        "*Title": title
+        "*Indexed": indexed
+        "*Indexed Records":
+          bind: count(distinct `Index.id`) _index_count
+          format: number
+        "*Updated": updated
       preview:
         - scope::m
         - scope::s
@@ -54,21 +58,36 @@ all:
       n:
         __default:
           type: text
-          fieldset: Interface Definition
+          fieldset: API Definition
+          class: i1s2
+        "*Application":
+          class: i1s4
+          bind: app
+        "*Base Endpoint":
+          class: i1s4
+          bind: listed
         "*ID": id
         "*Title": title
         "*Class Model": model
         "*Connection": connection
-        "*Endpoint (Table/API base)": source
+        "*Endpoint": source
         "*Indexing Interval": index_interval
       m:
         __default:
           type: text
-          fieldset: Interface Definition
+          fieldset: API Definition
+          class: i1s2
+        "*Application":
+          class: i1s4
+          bind: app
+        "*Base Endpoint":
+          class: i1s4
+          bind: listed
+        "*ID": id
         "*Title": title
         "*Class Model": model
         "*Connection": connection
-        "*Endpoint (Table/API base)": source
+        "*Endpoint": source
         "*Indexing Interval": index_interval
       s:
         __default:

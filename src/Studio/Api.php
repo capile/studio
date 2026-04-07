@@ -3045,7 +3045,7 @@ class Api extends SchemaObject
 
         $cn = get_class($o);
         $d = $cn::columns($scope);
-        if(!$d) $d = array_keys($cn::$schema['columns']);
+        if(!$d) $d = array_keys($cn::$schema->properties);
         $o->refresh($d);
         $link = $this->link();
         //static::$urls[$link] = static::t('labelUpdate', 'Update').': '.static::$urls[$link];
@@ -4258,6 +4258,8 @@ class Api extends SchemaObject
         }
         if($index) {
             $toIndex = $Is;
+            if(!$q) $q = [];
+            $q += ['app' => S_APP, 'listed='=>$base];
             if($L = Apis::find($q,null,null,false)) {
                 foreach($L as $i=>$o) {
                     $oid = $o->id;
@@ -4355,7 +4357,16 @@ class Api extends SchemaObject
                 }
                 unset($a['base']);
             }
-
+            if(Studio::config('enable_api_index')) {
+                $q = ['id'=>$a['api'], 'app' => S_APP, 'listed='=>static::base()];
+                if($A = Apis::find($q,1)) {
+                    if(($f = $A->cacheFile()) && !in_array($f, $not)) {
+                        if($b = S::config($f, S::env())) {
+                            $a = $b + $a;
+                        }
+                    }
+                }
+            }
             static $r;
             if(!$r) {
                 $r = array('$DATE'=>date('Y-m-d\TH:i:s'), '$TODAY'=>date('Y-m-d'), '$NOW'=>date('H:i:s'));

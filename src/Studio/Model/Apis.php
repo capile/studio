@@ -26,7 +26,7 @@ use Studio\Query\Api as QueryApi;
 class Apis extends Model
 {
     public static $schema, $pkids=['id', 'uid', 'Id', 'ID', 'pkId', 'UUID', 'uuid'];
-    protected $id, $title, $model, $connection, $source, $schema_source, $schema_data, $credential, $index_interval, $indexed, $created, $updated;
+    protected $id, $title, $model, $connection, $source, $schema_source, $schema_data, $credential, $app, $listed, $index_interval, $indexed, $created, $updated;
 
     public function model()
     {
@@ -154,9 +154,13 @@ class Apis extends Model
             if(!$cacheDir) $cacheDir = S_VAR.'/cache';
             $d = $cacheDir.'/apis';
         }
+        $this->refresh('api');
 
         $id = S::slug($this->id, '_', true);
-        $f =  $d.'/'.$id.'.yml';
+        $app = ($this->app) ?$this->app :S_APP;
+        $f = $d.'/'.$app;
+        if($this->listed) $f .= (substr($this->listed, 0, 1)!=='/') ?'/'.$this->listed :$this->listed;
+        $f .=  '/'.$id.'.yml';
         $f0 = Api::configFile($id, [$f]);
         $lmod = false;
         if($this->updated) $lmod = strtotime($this->updated);
@@ -200,8 +204,14 @@ class Apis extends Model
 
     public static function findCacheFile($file)
     {
+        static $base0;
         static $avoidRecursive;
-        if(!$avoidRecursive && ($A = self::find(['id'=>$file],1))) {
+        $base = Api::base();
+        if(!$base) {
+            if(is_null($base0)) $base0 = S::scriptName();
+            $base = $base0;
+        }
+        if(!$avoidRecursive && ($A = self::find(['id'=>$file, 'app'=>S_APP, 'listed'=>$base],1))) {
             $avoidRecursive = true;
             $r = $A->cacheFile();
             $avoidRecursive = false;

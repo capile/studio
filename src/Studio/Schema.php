@@ -510,7 +510,9 @@ class Schema implements ArrayAccess
         } else {
             $nullable = true;
         }
-        if (($value==='' || $value===null) && !$nullable) {
+        if ($value==='' && isset($def['min_size']) && $def['min_size']===0) {
+            // allow empty values when min_size is 0
+        } else if (($value==='' || $value===null) && !$nullable) {
             $label = (isset($def['label']))?($def['label']):(S::t(ucwords(str_replace('_', ' ', $name)), 'labels'));
             throw new AppException(sprintf(S::t(static::$errorMandatory, 'exception'), $label));
         } else if($value==='') {

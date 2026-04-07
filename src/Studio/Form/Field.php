@@ -111,6 +111,9 @@ class Field extends SchemaObject
             $val = $def['value'];
             unset($def['value']);
         }
+        if(isset($def['primary']) && isset($def['required']) && $def['required']!=$def['primary']) {
+            unset($def['primary']);
+        }
         if($def) {
             $def = static::properties($def);
             foreach ($def as $name=>$value) {

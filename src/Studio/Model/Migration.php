@@ -77,10 +77,7 @@ class Migration
                 'sql' => 'insert into studio_apis(id,title,model,connection,source,schema_source,schema_data,credential,index_interval,indexed,created,updated) select * from studio_interfaces',
             ],
             'studio_index' => [
-                'sql' => 'alter table studio_index drop constraint `fk_studio_index__interfaces`, add constraint `fk_studio_index__apis` foreign key (`interface`) references `studio_apis` (`id`) on delete cascade on update cascade',
-            ],
-            'studio_index_text' => [
-                'sql' => 'alter table studio_index drop constraint `fk_studio_index__interfaces`',
+                'sql' => 'alter table studio_index drop constraint if exists `fk_studio_index__interfaces`',
             ]
         ],
     ];

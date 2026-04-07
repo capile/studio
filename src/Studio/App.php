@@ -173,7 +173,7 @@ class App
         $this->start();
     }
 
-    public static function getInstance(string|null $name=null, string|null $env=null, int $expires=0): App|false
+    public static function getInstance(?string $name=null, ?string $env=null, int $expires=0): App|false
     {
         if(is_null($env)) {
             if(defined('S_ENV')) $env = S_ENV;
@@ -294,11 +294,12 @@ class App
             return false;
         }
         $instance="{$this->_name}/{$this->_env}";
-        $ckey="app/{$instance}";
+        $ckey='app-'.S::VER.'/'.$instance;
         if(is_null(App::$_instances)) {
-            App::$_instances = array();
+            App::$_instances = new ArrayObject();
         }
         App::$_instances[$instance]=$this;
+
         return Cache::set($ckey, $this, $this->_timeout);
     }
 

@@ -1321,10 +1321,18 @@ class Sql
         }
         $sql = '';
         $quote = static::QUOTE;
+        $pks = S::sql($M->getPk(true));
         foreach($fs as $fn=>$fv) {
             $original=$M->getOriginal($fn, false);
-            if(is_object($fv) && ($fv->primary || $fv->alias || $fv->readonly)) continue;
-            if(!is_object($fv)) $fv=new stdClass();
+            if(is_object($fv)) {
+                if($fv->primary) {
+                    if(isset($pks[$fn]) || $M->$fn===$original) continue;
+                } else {
+                    if($fv->alias || $fv->readonly) continue;
+                }
+            } else if(!is_object($fv)) {
+                $fv=new stdClass();
+            }
 
             if (!isset($odata[$fn]) && $original===false) {
                 continue;
@@ -1352,7 +1360,6 @@ class Sql
         if($sql) {
             $tn = $M::$schema->tableName;
             $wsql = '';
-            $pks = S::sql($M->getPk(true));
             foreach($pks as $fn=>$fv) {
                 if($quote) $fn = "{$quote[0]}{$fn}{$quote[1]}";
                 $wsql .= (($wsql!='')?(' and '):(''))
@@ -1465,6 +1472,9 @@ class Sql
             } else {
                 if($fd->required) $q .= ' not';
                 $q .= ' null';
+            }
+            if(isset($fd->default)) {
+                $q .= ' default '.S::sql($fd->default);
             }
             if($fd->increment==="auto" && !$pk) {
                 $q .= ' '.static::$tableAutoIncrement;
