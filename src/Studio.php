@@ -8,21 +8,11 @@
  * @author    Tecnodesign <ti@tecnodz.com>
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
- * @version   1.3
+ * @version   2.0
  */
 declare(strict_types=1);
-use Studio\App;
-use Studio\Asset;
-use Studio\Asset\Image;
-use Studio\Cache;
-use Studio\Collection;
-use Studio\Crypto;
-use Studio\Model;
-use Studio\Model\Entries;
-use Studio\Yaml;
-use Studio\Query;
+use Studio\{App,Asset,Asset\Image,Cache,Collection,Crypto,Model,Model\Entries,Yaml,Query,Mail};
 use Studio\Exception\AppException;
-use Studio\Mail;
 
 class Studio
 {
@@ -328,10 +318,10 @@ class Studio
     /**
      * Translator shortcut
      */
-    public static function t(string|array $message, string $table='', string $to='', string $from=''): string|array
+    public static function t(string|array $message, string $table='', string $to='', string $from=''): string|array|null
     {
         list($cn, $m) = explode('::', self::$translator);
-        //$r = $cn::$m($message, $table, $to, $from);
+
         return $cn::$m($message, $table, $to, $from);
     }
 
@@ -1733,7 +1723,7 @@ class Studio
         // caveats: increments numeric indexes
     }
 
-    protected static function setLastKey(array|string $a, string $name, array $post=[]): array
+    protected static function setLastKey(array|string|int $a, string $name, array $post=[]): array
     {
         if(is_array($a)) {
             foreach($a as $k=>$v) {

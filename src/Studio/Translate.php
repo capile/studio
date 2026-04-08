@@ -4,19 +4,19 @@
  * 
  * Automatic translation methods.
  * 
- * PHP version 8.1+
+ * PHP version 8.3+
  *
  * @package   capile/studio
  * @author    Tecnodesign <ti@tecnodz.com>
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio;
 
 use Studio as S;
 use Studio\Yaml;
 use Studio\Exception\AppException;
-
 
 class Translate
 {
@@ -30,7 +30,7 @@ class Translate
     protected static $_t=null;
     protected $_from='en', $_lang='en', $_table=[], $_keys=[];
 
-    public function __construct($language=null)
+    public function __construct(?string $language=null)
     {
         if(is_null($language)) {
             $language = S::$lang;
@@ -47,7 +47,7 @@ class Translate
      * @param string $to      destination language, defaults to S::$lang
      * @param string $from    original language, defaults to 'en'
      */
-    public static function message($message, $table=null, $to=null, $from=null)
+    public static function message(string|array $message, ?string $table=null, ?string $to=null, ?string $from=null): string|array
     {
         if(is_null($to)) {
             $to = S::$lang;
@@ -64,7 +64,7 @@ class Translate
         return self::$_t[$to]->getMessage($message, $table);
     }
     
-    public function getMessage($message, $table=null)
+    public function getMessage(string|array $message, ?string $table=null): string|array
     {
         if(is_array($message)) {
             foreach ($message as $mi=>$mv) {
@@ -75,10 +75,11 @@ class Translate
                 }
             }
             return $message;
-        } else if(!$message) {
-            return $message;
         } else if(!is_string($message)) {
             $message = (string) $message;
+        }
+        if(!$message) {
+            return (string) $message;
         }
         if(is_null($table)) {
             $table = 'default';
@@ -152,6 +153,6 @@ class Translate
                 }
             }
         }
-        return $this->_table[$table][$message];
+        return (string) $this->_table[$table][$message];
     }
 }
