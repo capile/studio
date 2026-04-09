@@ -551,7 +551,6 @@ class Api extends SchemaObject
                 $ext = $m;
             }
             unset($m);
-
             static::$base = S::scriptName();
             if($n) {
                 array_unshift($p, $n);
@@ -919,8 +918,12 @@ class Api extends SchemaObject
         return false;
     }
 
-
     public static function currentInterface(array $p, ?Api $Api=null): Api|false
+    {
+        return static::currentApi($p, $Api);
+    }
+
+    public static function currentApi(array $p, ?Api $Api=null): Api|false
     {
         if(!isset(static::$base)) static::$base = S::scriptName();
 
@@ -4267,7 +4270,7 @@ class Api extends SchemaObject
                     if($f = $o->cacheFile()) {
                         $a = S::config($f, S::env());
                         if(isset($Is[$oid])) {
-                            $Is[$oid] = $a + $Is[$oid];
+                            $Is[$oid] = S::mergeRecursive($a, $Is[$oid]);
                         } else {
                             $Is[$oid] = $a;
                         }
@@ -4277,12 +4280,15 @@ class Api extends SchemaObject
             }
             if($toIndex) {
                 foreach($toIndex as $oid=>$o) {
-                    $a = ['id'=>$oid, 'title'=>$o['title']];
-                    if(isset($o['model'])) $a['model'] = $o['model'];
-                    // new Apis([
-                    //     'id'=>$id,
-                    //     ''
-                    // ])
+                    $api = [
+                        'app' => S_APP,
+                        'listed' => $base,
+                        'id'=>$oid,
+                        'title' => (isset($o['title'])) ?$o['title'] :$id,
+                        'model' => (isset($o['model'])) ?$o['model'] :null,
+                    ];
+                    new Apis($api, true, true);
+                    unset($api, $toIndex[$oid], $oid, $o);
                 }
             }
         }
@@ -4294,7 +4300,10 @@ class Api extends SchemaObject
     {
         static $dd;
         if(is_null($dd)) $dd = App::config('app', 'data-dir');
-        if(substr($s, 0, 7)==='studio:' && file_exists($f=S_ROOT.'/data/api/_studio/'.S::slug(substr($s,7), '/_').'.yml') && !in_array($f, $skip)) {
+        if(substr($s, 0, 5)==='file:') {
+            if(!file_exists($f=substr($s, 5)) || in_array($f, $skip)) $f = null;
+            return $f;
+        } else if(substr($s, 0, 7)==='studio:' && file_exists($f=S_ROOT.'/data/api/_studio/'.S::slug(substr($s,7), '/_').'.yml') && !in_array($f, $skip)) {
             return $f;
         } else if(Studio::config('enable_api_index') && ($r=Apis::findCacheFile($s)) && !in_array($r, $skip)) {
             return $r;

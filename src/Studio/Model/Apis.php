@@ -161,38 +161,30 @@ class Apis extends Model
         $f = $d.'/'.$app;
         if($this->listed) $f .= (substr($this->listed, 0, 1)!=='/') ?'/'.$this->listed :$this->listed;
         $f .=  '/'.$id.'.yml';
-        $f0 = Api::configFile($id, [$f]);
+        $Api = Api::$className;
+        $f0 = $Api::configFile($id, [$f]);
         $lmod = false;
         if($this->updated) $lmod = strtotime($this->updated);
         if($f0 && file_exists($f0) && ($t=filemtime($f0)) && $t>$lmod) $lmod = $t;
         if(!file_exists($f) || $lmod>filemtime($f)) {
-            S::log(__METHOD__.' --> '.$f);
-            $a = ['all'=>[
-                'api'=>$id,
-                'model'=>'Studio\\Model\\Index',
-                'search'=>['interface'=>$this->id],
-                'key'=>'id',
-                'options'=>[
-                    'scope'=>['uid'=>'id'],
-                    'link-encode'=>true,
-                ],
-                'prepare'=>'prepareApi',
-            ]];
+            $a = ['all'=>$this->asArray('api')];
             $addParent = true;
             if($f0 && $f0!==$f) {
-                //$a['all']['base'] = $id;
-                if(($a0 = Yaml::loadFile($f0)) && (!isset($a['all']['api']) || $a['all']['api']==$id)) {
-                    $addParent = false;
-                    $a = $a0;
-                }
-                unset($a0);
+                $a['all']['base'] = 'file:'.$f0;
+                $addParent = false;
             }
-            $a['all'] += $this->asArray('interface');
             if(!isset($a['all']['options'])) $a['all']['options'] = [];
+            if(!isset($a['all']['model']) && !isset($a['all']['base'])) {
+                $a['all']['model'] = 'Studio\\Model\\Index';
+                $a['all']['search'] = ['interface'=>$this->id];
+                $a['all']['key'] = 'id';
+                $a['all']['options'] += ['scope'=>['uid'=>'id'], 'link-encode'=>true];
+                $a['all']['prepare'] = 'prepareApi';
+                $a['all']['options'] += ['index'=>($this->index_interval > 0)];
+            }
             if($addParent) {
                 $a['all']['options'] += ['list-parent'=>$n, 'priority'=>$i++];
             }
-            $a['all']['options'] += ['index'=>($this->index_interval > 0)];
 
             if(!S::save($f, S::serialize($a, 'yaml'), true)) {
                 $f = null;
@@ -206,7 +198,8 @@ class Apis extends Model
     {
         static $base0;
         static $avoidRecursive;
-        $base = Api::base();
+        $Api = Api::$className;
+        $base = $Api::base();
         if(!$base) {
             if(is_null($base0)) $base0 = S::scriptName();
             $base = $base0;
@@ -230,7 +223,7 @@ class Apis extends Model
         self::$headingTemplate = $Interface::$headingTemplate;
         self::$previewTemplate = $Interface::$previewTemplate;
         S::$variables['form-field-template'] = self::$previewTemplate;
-
+        $Api = Api::$className;
         $S = new Apis();
         $F = $S->getForm('import');
         $s = '';
@@ -245,7 +238,7 @@ class Apis extends Model
                 }
             } catch(\Exception $e) {
                 S::log('[ERROR] Could not import '.S::serialize($d, 'json').': '.$e->getMessage()."\n{$e}");
-                $msg = '<div class="s-msg s-msg-error">'.S::t(Api::$importError).'<br />'.S::xml($e->getMessage()).'</div>';
+                $msg = '<div class="s-msg s-msg-error">'.S::t($Api::$importError).'<br />'.S::xml($e->getMessage()).'</div>';
             }
         }
 
@@ -280,6 +273,7 @@ class Apis extends Model
 
         // import connections
         $cid = null;
+        $Api = Api::$className;
         if(isset($d['securityDefinitions'])) {
             foreach($d['securityDefinitions'] as $i=>$o) {
                 if(isset($o['type']) && $o['type']!='oauth2') continue;
@@ -300,7 +294,7 @@ class Apis extends Model
 
                 $T->options = $options;
                 $T->save();
-                $msg .= '<div class="s-msg s-msg-success">'.sprintf(S::t(Api::$importSuccess), $T::label(), (string)$T).'</div>';
+                $msg .= '<div class="s-msg s-msg-success">'.sprintf(S::t($Api::$importSuccess), $T::label(), (string)$T).'</div>';
             }
         }
         // loop through paths and import APIs
@@ -327,7 +321,7 @@ class Apis extends Model
                     $a['schema_data'] = S::serialize($sc, 'json');
 
                     $A = self::replace($a);
-                    $msg .= '<div class="s-msg s-msg-success">'.sprintf(S::t(Api::$importSuccess), $A::label(), (string)$A).'</div>';
+                    $msg .= '<div class="s-msg s-msg-success">'.sprintf(S::t($Api::$importSuccess), $A::label(), (string)$A).'</div>';
                 }
             }
         }
