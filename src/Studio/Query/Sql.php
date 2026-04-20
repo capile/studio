@@ -533,6 +533,8 @@ class Sql
         } else if($ref && ($ref instanceof Model)) {
             $sc = $ref::$schema;
             $ref = $sc->className;
+        } else if(is_null($ref)) {
+            $ref = '';
         }
         if(!$sc) $sc = $this->schema();
 
