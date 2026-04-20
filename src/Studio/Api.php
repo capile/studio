@@ -1112,7 +1112,7 @@ class Api extends SchemaObject
                     $this->action = $a;
                     return $this->relation($n, $p);
                 }
-                array_unshinullft($p, $n);
+                array_unshift($p, $n);
                 return false;
             } else if($p) {
                 $this->params = implode('/', $p);
@@ -1618,7 +1618,7 @@ class Api extends SchemaObject
         }
         $url = $this->url;
         // add action to URL
-        if(is_null($a)) $a = $this->action;
+        if(is_null($a)) $a = (string) $this->action;
         $rel='';
         if(isset($this->actions[$a]['relation'])) {
             $rel = '/'.$a;

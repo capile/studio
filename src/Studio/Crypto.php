@@ -7,6 +7,7 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio;
 
 use Studio as S;
@@ -38,7 +39,7 @@ class Crypto
      *
      * @return  string        an encrypted version of $str
      */
-    public static function hash($str, $salt=null, $type=null, $encode=true)
+    public static function hash(string $str, ?string $salt=null, bool|int|string|null $type=null, bool $encode=true): string
     {
         if(is_null($type) || $type===true) { // guess based on $salt
             if($salt) {
@@ -108,12 +109,12 @@ class Crypto
         }
     }
 
-    public static function sign($input, $secret, $alg='HS256', $encode=true)
+    public static function sign(string $input, ?string $secret, bool|int|string|null $alg='HS256', bool $encode=true): string
     {
         return self::hash($input, $secret, $alg, $encode);
     }
 
-    public static function verify($signature, $input, $key, $algo='HS256', $encode=true)
+    public static function verify(string $signature, string $input, ?string $key, bool|int|string|null $algo='HS256', bool $encode=true): bool
     {
         if(substr($algo, 0, 2)==='RS') {
             if($encode) $signature = S::decodeBase64Url($signature);
@@ -130,7 +131,7 @@ class Crypto
         return $valid;
     }
 
-    public static function salt($length=40, $safe=true)
+    public static function salt(int $length=40, bool $safe=true): string
     {
         if(self::$useOpenssl) {
             $rnd = openssl_random_pseudo_bytes($length);
@@ -164,7 +165,7 @@ class Crypto
      * @param   string $alg       (optional) the algorithm to use
      * @return  string            the encoded string
      */
-    public static function encrypt($s, $salt=null, $alg=null, $encode=true)
+    public static function encrypt(mixed $s, ?string $salt=null, string|int|bool|null $alg=null, bool $encode=true): string
     {
         if($alg) {
             // unique random ids per string
@@ -224,7 +225,7 @@ class Crypto
      *
      * @return mixed the encoded information
      */
-    public static function decrypt($r, $salt=null, $alg=null, $encoded=true)
+    public static function decrypt(string $r, ?string $salt=null, string|int|bool|null $alg=null, bool $encoded=true): mixed
     {
         if($alg) {
             // unique random ids per string

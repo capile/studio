@@ -499,7 +499,12 @@ class Studio
                     else if($o==='PATH_INFO') $r = self::scriptName(true);
                     else if($o==='REQUEST_URI') $r = self::requestUri();
                     if(!is_null($r)) {
-                        $a = str_replace([ '{'.$m[0][$i].'}', $m[0][$i] ], $r, $a);
+                        if($m[0][$i]===$a) {
+                            $a = $r;
+                        } else {
+                            if(!is_string($r) && !is_array($r)) $r = (string)$r;
+                            $a = str_replace([ '{'.$m[0][$i].'}', $m[0][$i] ], $r, $a);
+                        }
                     }
                     unset($m[1][$i], $m[0][$i], $i, $o);
                 }
@@ -524,7 +529,7 @@ class Studio
                         }
                     }
                     unset($r);
-                } else {
+                } else if(!is_int($o) && !is_float($o)) {
                     $a[$i] = self::expandVariables($o, $vars);
                 }
                 unset($i, $o);
@@ -2385,7 +2390,7 @@ class Studio
         return ($urlSafe) ?self::decodeBase64Url($s) :base64_decode($s);
     }
 
-    public static function hash(string $str, string|null $salt=null, int|string $type=40): string
+    public static function hash(string $str, string|null $salt=null, bool|int|string|null $type=40): string
     {
         return Crypto::hash($str, $salt, $type);
     }

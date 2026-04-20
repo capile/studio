@@ -272,7 +272,7 @@ class Collection implements ArrayAccess, Countable, Iterator
         /**
          * Add Data
          */
-        $reg = $this->getItem($this->_current, $fc, false);
+        $reg = $this->getItem($this->_current, $fc, false, false);
         while (isset($reg[0])) {
             $r = array_shift($reg);
             if(!$header) {
@@ -545,6 +545,28 @@ class Collection implements ArrayAccess, Countable, Iterator
         }
 
         return $ret;
+    }
+
+    public function asArray(?string $property=null, bool $unique=false): array
+    {
+        $r = [];
+        $L = $this->getItem($this->_current, $this->_max, false, false);
+        if($L) {
+            foreach($L as $i=>$o) {
+                if(is_string($property) && $property) {
+                    $v = $o[$property];
+                } else if(is_array($property)) {
+                    $v = (is_object($o)) ?$o->asArray($property) :array_intersect_key($o, array_flip($property));
+                } else {
+                    $v = (is_object($o)) ?$o->asArray() :$o;
+                }
+                if(!$unique || !in_array($v, $r)) $r[] = $v;
+                unset($L[$i], $i, $o);
+            }
+            unset($L);
+        }
+
+        return $r;
     }
     
     public function getLast()
