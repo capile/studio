@@ -121,7 +121,7 @@ class Crypto
             if(is_string($key) && strpos($key, '-----BEGIN')===false) {
                 $key="-----BEGIN CERTIFICATE-----\n".strtr($key, '-_', '+/')."\n-----END CERTIFICATE-----";
             }
-            $valid = openssl_verify($input, $signature, $key, defined($c='OPENSSL_ALGO_SHA'.substr($algo,2)) ? constant($c) : str_replace('RS', 'sha', $algo));
+            $valid = (openssl_verify($input, $signature, $key, defined($c='OPENSSL_ALGO_SHA'.substr($algo,2)) ? constant($c) : str_replace('RS', 'sha', $algo)) > 0);
         } else {
             $sign = Crypto::sign($input, $key, $algo, $encode);
             $valid = ($sign===$signature);

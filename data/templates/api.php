@@ -131,8 +131,6 @@ if(isset($attributes) && is_array($attributes)) {
 
                 echo $Api->message();
 
-                if(isset($app)) echo $app;
-
                 if(isset($list) && ($g=$Api->renderGraph())):
                     ?><div class="<?php echo $Api->config('attrGraphClass'); ?>"><?php
                         echo $g;

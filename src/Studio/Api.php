@@ -321,7 +321,7 @@ class Api extends SchemaObject
             if($d) {
                 $this->text += $d;
             }
-            $notm=['api', 'title', 'prepare', 'stylesheet'];
+            $notm=['api', 'app', 'title', 'prepare', 'stylesheet'];
             foreach($this->text as $k=>$v) {
                 if(is_string($v) && !in_array($k, $notm)) $this->text[$k] = S::markdown($v);
             }
@@ -2656,7 +2656,7 @@ class Api extends SchemaObject
         return $s;
     }
 
-    public static function graph(array $g, ?string $n=null): string
+    public static function graph(array $g, ?string $n=null): ?string
     {
         $cn = $g['model'];
         if(!$n) $n=uniqid('g');
@@ -3261,6 +3261,7 @@ class Api extends SchemaObject
         unset($l);
         $a = ucfirst($this->action);
         $s = '<p class="s-api-labels">'
+           . ((isset($this->text['app'])) ?'<span class="s-api-label-app">'.static::t($this->text['app']).'</span>' :'')
            . ((isset($this->text['title'])) ?'<span class="s-api-label-model">'.S::xml($this->text['title']).'</span>' :'')
            . '<span class="s-api-label-action">'.static::t('label'.$a, $a).'</span>'
            . (($this->id) ?'<span class="s-api-label-uid"><span class="s-api-label-key">'.$cn::fieldLabel($this->key).'</span><span class="s-api-label-id">'.S::xml($this->id).'</span></span>' :'')
