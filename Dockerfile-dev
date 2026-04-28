@@ -40,10 +40,11 @@ RUN apk upgrade --update \
       oniguruma-dev \
       openldap-dev \
       openssl-dev \
+      yaml-dev \
       zlib-dev \
       zip \
     && \
-    pecl install mongodb redis \
+    pecl install mongodb redis yaml \
     && \
     docker-php-ext-configure gd \
       --enable-gd \

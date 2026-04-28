@@ -798,7 +798,7 @@ class Api extends SchemaObject
         S::redirect($url);
     }
 
-    public function message(string|false|null $m=null): string
+    public function message(string|false|null $m=null): ?string
     {
         $U = S::getUser();
         $clean = null;
@@ -1611,7 +1611,7 @@ class Api extends SchemaObject
         return $this->link(false, true);
     }
 
-    public function link(?string $a=null, string|false|null $id=null, bool $ext=true, string|false|null $qs=null): string
+    public function link(?string $a=null, string|int|bool|null $id=null, bool $ext=true, string|false|null $qs=null): string
     {
         if(is_null($this->url)) {
             $this->url = static::$base.'/'.$this->api;
@@ -1651,6 +1651,7 @@ class Api extends SchemaObject
             if($id===true || (S::isempty($id) && isset($A['identified']) && $A['identified'])) {
                 $id = $this->id;
             }
+            if(!is_string($id)) $id = (string) $id;
             if(!S::isempty($id)) $url .= '/'.(!preg_match('/^\{[a-z0-9\-\_]+\}$/i', $id) ?rawurlencode($id) :$id);
         } else if(!S::isempty($this->params)) {
             $url .= '/'.$this->params;
@@ -2608,7 +2609,7 @@ class Api extends SchemaObject
                 $dt = $o->asArray($scope);
                 if(isset($dt['start'])) {
                     if(isset($dt[$pk])) {
-                        $dt['url'] = $this->link('preview', $dt[$pk]);
+                        $dt['url'] = $this->link('preview', (string)$dt[$pk]);
                         $dt['class'] = 's-api-a s-api-link';
                     }
                     $d['events'][] = $dt;
@@ -2637,7 +2638,7 @@ class Api extends SchemaObject
             $t1 = date('Ym', $di[1]);
             $ms = [$t0];
             while($t0++ < $t1) {
-                if(substr($t0, -2)>12) $t0 += 88;
+                if(substr((string)$t0, -2)>12) $t0 += 88;
                 $ms[] = $t0;
             }
             $c = '';
@@ -3325,9 +3326,9 @@ class Api extends SchemaObject
                 $aa = $an;
             }
             //$href = ($bt||$id)?('data-url="'.$sn.'/'.$aa.'/{id}'.'"'):('href="'.$sn.'/'.$aa.'"');
-            if($id && !S::isempty($this->id)) $sid = $this->id;
+            if($id && !S::isempty($this->id)) $sid = (string) $this->id;
             else if($id) $sid = '{id}';
-            else $sid = false;
+            else $sid = '';
 
             if(isset($action['on']) && is_array($action['on'])) {
                 if(S::isempty($this->id) || !$this->model([], 1, false, true) || !$this->model()->checkObjectProperties($action['on'])) {
@@ -3349,9 +3350,9 @@ class Api extends SchemaObject
                     } else {
                         $qs = '';
                     }
-                    $href = 'href="'.$this->link($an, $sid).$qs.'"';
+                    $href = 'href="'.$this->link($an, $sid, true, $qs).'"';
                 } else {
-                    $href = 'href="'.S::xml($this->link($an, ($id)?($sid):(false), true, $qs)).'"';
+                    $href = 'href="'.S::xml($this->link($an, $sid, true, $qs)).'"';
                 }
                 $s .= '<a '.$href.' class="'.$ac.'">'
                     . '<span class="s-api-label">'
@@ -3368,7 +3369,7 @@ class Api extends SchemaObject
                 }
                 $href = 'href="'.$this->link($an, $sid).$qs.'"';
             } else {
-                $href = 'data-url="'.S::xml($this->link($an, ($id)?($sid):(false), true, $qs)).'"';
+                $href = 'data-url="'.S::xml($this->link($an, $sid, true, $qs)).'"';
                 if(isset($action['query']) && $action['query'] && $qs) {
                     $href .= ' data-qs="'.str_replace(',', '%3A', S::xml($qs)).'"';
                 }
