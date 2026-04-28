@@ -67,7 +67,7 @@ RUN apk upgrade --update \
       soap \
       zip \
     && \
-    docker-php-ext-enable mongodb redis \
+    docker-php-ext-enable mongodb redis yaml \
     && \
     cd /var/www/studio \
     && \
