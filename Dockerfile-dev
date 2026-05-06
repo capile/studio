@@ -19,6 +19,7 @@ RUN apk upgrade --update \
       npm \
       openssh-client \
       yarn \
+      yaml-dev \
       zlib \
       && \
     apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
@@ -40,7 +41,6 @@ RUN apk upgrade --update \
       oniguruma-dev \
       openldap-dev \
       openssl-dev \
-      yaml-dev \
       zlib-dev \
       zip \
     && \

@@ -1,7 +1,7 @@
 /*! Studio Calendar v1.2 | (c) 2024 Capile Tecnodesign <ti@tecnodz.com> */
 @charset "utf8";
-@import (reference) "interface-vars-default.less";
-@import (optional) "interface-vars.less";
+@import "api-vars-default.less";
+@import (optional) "api-vars.less";
 
 .s-calendar {
   position:relative;
@@ -14,14 +14,14 @@
     margin: 0 1em 1em 0;
     h3 {
       font-size: 1em;
-      background: @calendarMonthBackground;
-      color:@calendarMonthForeground;
+      background: var(--s-calendarMonthBackground);
+      color:var(--s-calendarMonthForeground);
       padding:0.25em 0.5em;
       margin:0;
     }
     &.has-event h3 {
-      background:@calendarMonthActiveBackground;
-      color:@calendarMonthActiveForeground;
+      background:var(--s-calendarMonthActiveBackground);
+      color:var(--s-calendarMonthActiveForeground);
     }
   }
   .s-c-day {
@@ -32,18 +32,18 @@
     padding: 0.5em;
     text-align: center;
     display:inline-block;
-    background: @calendarDayBackground;
-    color:@calendarDayForeground;
+    background: var(--s-calendarDayBackground);
+    color:var(--s-calendarDayForeground);
     &.s-c-on {
-      background: @calendarDayActiveBackground;
-      color:@calendarDayActiveForeground;
+      background: var(--s-calendarDayActiveBackground);
+      color:var(--s-calendarDayActiveForeground);
       &:after {
         content:' ';
         display:block;
         width:~"calc(100% + 1em)";
         height:~"calc(100% + 1em)";
         margin:0 -0.5em -0.5em -0.5em;
-        background: @calendarDayActiveBackground;
+        background: var(--s-calendarDayActiveBackground);
       }
     }
   }
@@ -76,11 +76,11 @@
   */
   .s-c-header {
     font-weight:bold;
-    border-bottom: @calendarWeekBorder;
+    border-bottom: var(--s-calendarWeekBorder);
     .s-c-day {
       text-align:center;
-      background: @calendarWeekBackground;
-      color:@calendarWeekForeground;
+      background: var(--s-calendarWeekBackground);
+      color:var(--s-calendarWeekForeground);
     }
   }
 
@@ -100,9 +100,9 @@
     height:1em;
     margin: -0.5em;
     padding: 0.25em 0;
-    background: @calendarEventBackground;
-    color:@calendarEventForeground;
-    border: @calendarEventBorder;
+    background: var(--s-calendarEventBackground);
+    color:var(--s-calendarEventForeground);
+    border: var(--s-calendarEventBorder);
     text-decoration:none;
     border-radius: 2em;
     position:relative;
@@ -116,8 +116,8 @@
       padding:0 !important;
     }
     &:hover, &:active, &.s-active {
-      background: @calendarEventActiveBackground;
-      color:@calendarEventActiveForeground;
+      background: var(--s-calendarEventActiveBackground);
+      color:var(--s-calendarEventActiveForeground);
       text-decoration:none;
       & + .s-c-summary {
         display:block;
@@ -134,8 +134,8 @@
     z-index:1;
     margin-left:1.5%;
     border-radius:0.25em;
-    color: @colorTabText;
-    background: @colorTab;
+    color: var(--s-colorTabText);
+    background: var(--s-colorTab);
     */
 
     /*
@@ -199,10 +199,10 @@
   }
   .s-c-next, .s-c-previous {
     font-size:2em;
-    color: @calendarButton;
+    color: var(--s-calendarButton);
     cursor:pointer;
     &.s-disabled {
-      color: @calendarButtonDisabled;
+      color: var(--s-calendarButtonDisabled);
       cursor: not-allowed;
     }
   }

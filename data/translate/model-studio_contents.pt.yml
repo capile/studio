@@ -17,8 +17,6 @@ Attributes: Atributos
 Entry URL: URL da publicação
 Metadata: Metadados
 Feed: Lista de publicações
-Number of items: Quantidade de publicações
-Items per page: Publicações por página
 Options: Opções
 Related: Incluir publicações relacionadas
 Include link to page: Incluir link para página
@@ -46,8 +44,6 @@ Property: Atributo
 Value: Valor
 Text: Texto Simples
 Html: Texto em HTML
-Feed: Lista de publicações
-Entry: Publicação
 Media: Arquivo de mídia
 Body: Corpo de conteúdo
 Header: Cabeçalho

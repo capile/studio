@@ -419,11 +419,11 @@ class Api extends SchemaObject
         foreach($a as $sn=>$scope) {
             if(!is_array($scope)) continue;
             foreach($scope as $fn=>$fd) {
-                if(is_array($fd) && isset($fd['interface']) && isset($fd['bind'])) {
-                    $fid = $fd['interface'];
+                if(is_array($fd) && (isset($fd['api']) || isset($fd['interface'])) && isset($fd['bind'])) {
+                    $fid = $fd['api'] ?? $fd['interface'];
                     if(!isset($this->actions[$fid])) {
                         $this->actions[$fid] = array(
-                            'interface'=>$fd['interface'],
+                            'api'=>$fid,
                             'relation'=>$fd['bind'],
                             'position'=>false,
                         ) + $this->config('relationAction');
@@ -433,8 +433,9 @@ class Api extends SchemaObject
         }
     }
 
-    public static function base(): ?string
+    public static function base(?string $url=null): ?string
     {
+        if(!is_null($url)) static::$base = $url;
         return static::$base;
     }
 
@@ -539,7 +540,6 @@ class Api extends SchemaObject
             if(!is_null($url)) S::scriptName($url);
             else if(($route=App::response('route')) && isset($route['url']) && !preg_match('/[\*\|\(\)]/', $route['url'])) S::scriptName($route['url']);
             static::$request = S::requestUri();
-
             $p = S::urlParams(null, true);
             $l = count($p) -1;
             // remove extension from last parameter, if there's any
@@ -556,8 +556,11 @@ class Api extends SchemaObject
                 array_unshift($p, $n);
                 if(substr(static::$base, -1*strlen('/'.$n))==='/'.$n) {
                     static::$base = substr(static::$base, 0, strlen(static::$base) - strlen($n) -1);
+                    S::scriptName(static::$base ?static::$base :'/');
                 }
-            } else if(static::$base=='/') static::$base='';
+            } else if(static::$base=='/') {
+                static::$base='';
+            }
 
             if($apid=App::config('app', 'api-dir')) {
                 if(!is_array($apid)) {
@@ -572,17 +575,16 @@ class Api extends SchemaObject
                 $sf = (static::$share===true || static::$share===1)?('api-shared'):(S::slug(static::$share, '_', true));
                 if(!in_array($sf, static::$dir)) static::$dir[] = $sf;
             }
-            $I = static::currentInterface($p);
+            $I = static::currentApi($p);
             static::checkFormat($ext);
-
             if(!$I) return false;
 
             if(static::$breadcrumbs && isset($I->options['list-parent'])) {
                 $pi = $I->options['list-parent'];
                 $urls = [];
-                while($pi && ($Pi=static::find($pi)) && isset($Pi[0]['interface']) && isset($Pi[0]['title'])) {
+                while($pi && ($Pi=static::find($pi)) && isset($Pi[0]['api']) && isset($Pi[0]['title'])) {
                     $pi = null;
-                    $urls[static::$base.'/'.$Pi[0]['interface']] = ['title'=> $Pi[0]['title'],'interface'=>false];
+                    $urls[static::$base.'/'.$Pi[0]['api']] = ['title'=> $Pi[0]['title'],'api'=>false];
                     if(isset($Pi[0]['options']['list-parent'])) {
                         $pi = $Pi[0]['options']['list-parent'];
                     }
@@ -731,7 +733,7 @@ class Api extends SchemaObject
             }
 
             foreach($actions as $an=>$a) {
-                if(isset($a['relation']) || isset($a['interface'])) $a += $this->config('relationAction');
+                if(isset($a['relation']) || isset($a['interface']) || isset($a['api'])) $a += $this->config('relationAction');
 
                 if(isset($a['expire']) && ($t=strtotime($a['expire'])) && $t<S_TIME) {
                     continue;
@@ -1012,12 +1014,12 @@ class Api extends SchemaObject
         } else if(is_object($A) && $A instanceof Api) {
             static::$urls[$A->link()] = array('title'=>$A->getTitle(),'action'=>$A->action);
             if($p) {
-                return static::currentInterface($p, $A);
+                return static::currentApi($p, $A);
             } else {
                 return $A;
             }
         } else {
-            return static::currentInterface($A);
+            return static::currentApi($A);
         }
     }
 
@@ -1054,7 +1056,7 @@ class Api extends SchemaObject
     public function setAction(string $a, array &$p=[]): mixed
     {
         if(isset($this->actions[$a])) {
-            static::$urls[$link=$this->link()] = [ 'title' => $this->getTitle(), 'interface' => false ];
+            static::$urls[$link=$this->link()] = [ 'title' => $this->getTitle(), 'api' => false ];
 
             if(isset($this->actions[$a]['identified']) && $this->actions[$a]['identified']) {
                 $n = ($p) ?array_shift($p) :null;
@@ -1103,12 +1105,12 @@ class Api extends SchemaObject
             if(!$this->auth($a, true)) {
                 return false;
             }
-            if(isset($this->actions[$a]['relation']) || isset($this->actions[$a]['interface'])) {
+            if(isset($this->actions[$a]['relation']) || isset($this->actions[$a]['api']) || isset($this->actions[$a]['interface'])) {
                 return $this->relation($a);
             }
             if((!isset($this->actions[$a]['additional-params']) || !$this->actions[$a]['additional-params']) && $p) {
                 $n = array_shift($p);
-                if(isset($this->actions[$n]['relation']) || isset($this->actions[$n]['interface'])) {
+                if(isset($this->actions[$n]['relation']) || isset($this->actions[$n]['api']) || isset($this->actions[$n]['interface'])) {
                     $this->action = $a;
                     return $this->relation($n, $p);
                 }
@@ -1786,8 +1788,11 @@ class Api extends SchemaObject
                                 $ta = $target[$v]['action'];
                                 if(!is_array($ta)) $ta = [$ta];
                                 if(in_array($this->action, $ta)) {
-                                    if(isset($target[$v]['interface'])) {
-                                        $redirect = $target[$v]['interface'];
+                                    $tapi = null;
+                                    if(isset($target[$v]['api'])) $tapi = $target[$v]['api'];
+                                    if(isset($target[$v]['interface'])) $tapi = $target[$v]['interface'];
+                                    if($tapi) {
+                                        $redirect = $tapi;
                                         if(isset($target[$v]['key'])) {
                                             $redirectKey = $o[$target[$v]['key']];
                                         }
@@ -3171,7 +3176,7 @@ class Api extends SchemaObject
         } else {
             $id = $n = $r;
         }
-        if(!isset($this->actions[$n]['relation']) && !isset($this->actions[$n]['interface'])) {
+        if(!isset($this->actions[$n]['relation']) && !isset($this->actions[$n]['api']) && !isset($this->actions[$n]['interface'])) {
             return null;
         }
 
@@ -3184,8 +3189,11 @@ class Api extends SchemaObject
             $f = $this->search;
             $cn = $this->getModel();
             $rcn = $cn::relate($this->actions[$n]['relation'], $f);
+            if(isset($this->actions[$n]['api'])) $tapi=$this->actions[$n]['api'];
+            else if(isset($this->actions[$n]['interface']))$tapi=$this->actions[$n]['interface'];
+            else $tapi = $rcn::$schema['tableName'];
             $a = array(
-                'interface'=>(isset($this->actions[$n]['interface']))?($this->actions[$n]['interface']):($rcn::$schema['tableName']),
+                'api'=>$tapi,
                 'model'=>$rcn,
                 'url'=>$this->link($n, $this->id),
                 //'action'=>$this->action,
@@ -3195,7 +3203,7 @@ class Api extends SchemaObject
             unset($rcn, $cn);
         } else {
             $a = array(
-                'interface'=>$this->actions[$n]['interface'],
+                'api'=>$this->actions[$n]['api'] ?? $this->actions[$n]['interface'],
                 'url'=>$this->link($n, $this->id),
                 'relation'=>(!S::isempty($this->id))?($cn.'#'.$this->id):($cn),
                 'enable'=>true,
@@ -3289,9 +3297,13 @@ class Api extends SchemaObject
         $this->options['radio'] = false;
         $sn = $this->url;
         // strip id
-        if(!S::isempty($this->id)) $sn = substr($sn, 0, strrpos($sn, '/'));
+        if(!S::isempty($this->id)) {
+            $lastd = strrpos($sn, '/');
+            $sn = substr($sn, 0, $lastd!==false ?$lastd :null);
+        }
         // strip current action, leave only the model
-        $sn = substr($sn, 0, strrpos($sn, '/'));
+        $lastd = strrpos($sn, '/');
+        $sn = substr($sn, 0, $lastd!==false ?$lastd :null);
         $attrButtonClass = $this->config('attrButtonClass');
         $cPrefix = $this->config('attrClassPrefix');
         if($attrButtonClass) $attrButtonClass = ' '.$attrButtonClass;

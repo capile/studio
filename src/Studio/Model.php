@@ -11,6 +11,7 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio;
 
 use Studio as S;
@@ -76,7 +77,7 @@ class Model implements ArrayAccess, Iterator, Countable
 
     private $_collection;
 
-    public static function staticInitialize()
+    public static function staticInitialize(): void
     {
         static $Q=[];
         $scn = static::$schemaClass;
@@ -110,7 +111,7 @@ class Model implements ArrayAccess, Iterator, Countable
         }
     }
 
-    public function choicesBool()
+    public function choicesBool(): array
     {
         static $o;
         if(!$o) $o = S::t(['No', 'Yes'], 'api');
@@ -121,7 +122,7 @@ class Model implements ArrayAccess, Iterator, Countable
     /**
      * Class constructor: you can create a new instance based on an associative array with the values
      */
-    public function __construct($vars=array(), $insert=null, $save=null)
+    public function __construct(array $vars=array(), ?bool $insert=null, ?bool $save=null)
     {
         if(!isset(self::$stats[get_class($this)])) self::$stats[get_class($this)]=1;
         else self::$stats[get_class($this)]++;
@@ -160,12 +161,12 @@ class Model implements ArrayAccess, Iterator, Countable
     /**
      * Gets the timestampable last update
      */
-    public static function timestamp($tns=null)
+    public static function timestamp(array|string|null $tns=null)
     {
         return static::queryHandler()->timestamp($tns);
     }
 
-    public function __sleep()
+    public function __sleep(): array
     {
         if(!is_null($this->_collection)) {
             $this->_collection=null;
@@ -177,7 +178,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return array_keys($ret);
     }
 
-    public function __wakeup()
+    public function __wakeup(): void
     {
         foreach($this->asArray() as $k=>$v) {
             if(!array_key_exists($k, $this->_original)) {
@@ -186,9 +187,9 @@ class Model implements ArrayAccess, Iterator, Countable
         }
     }
 
-    public function initialize()
+    public function initialize(): void
     {
-        if($this->_connected) return false;
+        if($this->_connected) return;
         $this->_connected = true;
     }
 
@@ -200,7 +201,7 @@ class Model implements ArrayAccess, Iterator, Countable
      *
      * return array $schema array
      */
-    public static function schema($cn=null, $base=array())
+    public static function schema(?string $cn=null, array $base=array()): Schema|array
     {
         if(is_null($cn) || !class_exists($cn)) {
             $cn = get_called_class();
@@ -237,7 +238,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return $schema;
     }
 
-    public static function sourceSchema($tn=null, $base=[])
+    public static function sourceSchema(?string $tn=null, array $base=[]): Schema|false|null
     {
         if(!$tn && isset($base['tableName'])) $tn=$base['tableName'];
         else if(!$tn && isset(static::$schema)) $tn=static::$schema->tableName;
@@ -256,7 +257,7 @@ class Model implements ArrayAccess, Iterator, Countable
      * Unless $array evals to true or there are multiple PKs this will return the
      * result as a string (array otherwise)
      */
-    public static function pk($schema=null, $array=null, $skipUid=false)
+    public static function pk(?Schema $schema=null, ?bool $array=null, bool $skipUid=false): mixed
     {
         $update=false;
         if(!$schema) {
@@ -297,7 +298,7 @@ class Model implements ArrayAccess, Iterator, Countable
      * Unless $array evals to true this will return the PK(s) as
      * a string (associative array otherwise)
      */
-    public function getPk($array=null)
+    public function getPk(?bool $array=null): string|array
     {
         $pk = static::pk(static::$schema, true);
         $r = array();
@@ -310,7 +311,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return implode(static::$keySeparator, $r);
     }
 
-    public static function formFields($scope=false, $allowText=false)
+    public static function formFields(array|string|null $scope=null, bool $allowText=false): array
     {
         $cn = get_called_class();
         if(!static::$schema->overlay) {
@@ -433,7 +434,7 @@ class Model implements ArrayAccess, Iterator, Countable
     /**
      * retrieves the properties for the given scope
      */
-    public static function columns($scope='default', $type=null, $expand=3, $clean=false)
+    public static function columns(string|array|null $scope='default', string|array|null $type=null, int|false $expand=3, bool $clean=false): array
     {
         if(!$scope) $scope = 'default';
         if(is_string($scope) && strpos($scope, '.') && !isset(static::$schema->scope[$scope]) && file_exists($f=S_APP_ROOT.'/config/'.$scope)) {
@@ -603,7 +604,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return $scope;
     }
 
-    public static function column($s, $applyForm=false, $relation=false)
+    public static function column($s, bool $applyForm=false, bool $relation=false): array|false
     {
         $cn = get_called_class();
         $add = [];
@@ -619,7 +620,7 @@ class Model implements ArrayAccess, Iterator, Countable
             }
         }
         if(strpos($s, ' ')) $s = substr($s, 0, strpos($s, ' '));
-        $d=false;
+        $d=null;
         if(isset($cn::$schema->properties[$s])) {
             $d = $cn::$schema->properties[$s];
             $i = 10;
@@ -655,7 +656,7 @@ class Model implements ArrayAccess, Iterator, Countable
      *
      * @return Form instance
      */
-    public function getForm($scope=null, $pk=false, $parentForm=null)
+    public function getForm(array|string|null $scope=null, bool $pk=false, $parentForm=null): Form
     {
         if(is_null($scope)) {
             $scope = 0;
@@ -693,7 +694,7 @@ class Model implements ArrayAccess, Iterator, Countable
 
     }
 
-    public function lastQuery()
+    public function lastQuery(): string
     {
         if(isset($this->_query)) return $this->_query->lastQuery();
     }
@@ -705,7 +706,7 @@ class Model implements ArrayAccess, Iterator, Countable
      *
      * @return bool
      */
-    public function runEvent($e, $conn=null)
+    public function runEvent(string $e, mixed $conn=null): bool
     {
         if(isset(static::$schema->events[$e])) {
             $eo = (!is_array(static::$schema->events[$e]))?(array(static::$schema->events[$e])):(static::$schema->events[$e]);
@@ -864,10 +865,10 @@ class Model implements ArrayAccess, Iterator, Countable
     /**
      * Timestampable Behavior
      */
-    public function timestampableTrigger($fields, $conn=null)
+    public function timestampableTrigger(array $fields, mixed $conn=null): bool
     {
         list($u, $t) = explode(' ', (string) microtime());
-        $tstamp = date('Y-m-d H:i:s', $t).substr($u,1,6);
+        $tstamp = date('Y-m-d H:i:s', (int)$t).substr($u,1,6);
         unset($t, $u);
         foreach($fields as $fn) {
             if(isset($this->{'__skip_timestamp_'.$fn}) && $this->{'__skip_timestamp_'.$fn}) continue;
@@ -882,7 +883,7 @@ class Model implements ArrayAccess, Iterator, Countable
      *
      * Makes all updates a new entry
      */
-    public function insertableTrigger($fields, $conn=null)
+    public function insertableTrigger(array $fields, mixed $conn=null): bool
     {
         $this->_new = true;
         return true;
@@ -893,7 +894,7 @@ class Model implements ArrayAccess, Iterator, Countable
      *
      * Check if this is a new entry
      */
-    public function replaceableTrigger($fields, $conn=null)
+    public function replaceableTrigger(array $fields, mixed $conn=null): bool
     {
         $new = true;
         $q = [];
@@ -915,7 +916,7 @@ class Model implements ArrayAccess, Iterator, Countable
     /**
      * Sortable Behavior
      */
-    public function sortableTrigger($fields, $conn=null)
+    public function sortableTrigger(array $fields, mixed $conn=null): bool
     {
         $cn = get_class($this);
         $schema = $cn::$schema;
@@ -954,7 +955,7 @@ class Model implements ArrayAccess, Iterator, Countable
     /**
      * Soft Delete Behavior
      */
-    public function softDeleteTrigger($fields, $conn=null)
+    public function softDeleteTrigger(array $fields, mixed $conn=null): bool
     {
         if($this->_delete && !(isset($this->__skip_soft_delete) && $this->__skip_soft_delete)) {
             $tstamp = date('Y-m-d H:i:s');
@@ -975,7 +976,7 @@ class Model implements ArrayAccess, Iterator, Countable
      *
      * @return type
      */
-    public function actAs($e, $conn=null)
+    public function actAs(string $e, mixed $conn=null): bool
     {
         if(!isset(static::$schema['actAs'][$e])) {
             return true;
@@ -995,7 +996,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return true;
     }
 
-    public function isNew($new=null)
+    public function isNew(?bool $new=null): bool
     {
         if (!is_null($new)) {
             $this->_new = $new;
@@ -1029,10 +1030,10 @@ class Model implements ArrayAccess, Iterator, Countable
         return $this->_new;
     }
 
-    public function isUpdated($update=null)
+    public function isUpdated(?bool $update=null): bool
     {
         if (!is_null($update)) {
-            $this->_update = $delete;
+            $this->_update = $update;
         }
         if(is_null($this->_update)) {
             $update = false;
@@ -1045,10 +1046,10 @@ class Model implements ArrayAccess, Iterator, Countable
             }
             return $update;
         }
-        return $this->_delete;
+        return $this->_update;
     }
 
-    public function isDeleted($delete=null)
+    public function isDeleted(?bool $delete=null): bool
     {
         if (!is_null($delete)) {
             $this->_delete = $delete;
@@ -1056,7 +1057,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return $this->_delete;
     }
 
-    public function refresh($scope=null)
+    public function refresh(array|string|null $scope=null): Model
     {
         $scope = static::columns($scope);
         $f = array();
@@ -1087,12 +1088,12 @@ class Model implements ArrayAccess, Iterator, Countable
         return $this;
     }
 
-    public function asHtml($preview=null)
+    public function asHtml(): string
     {
         return S::xml((string)$this);
     }
 
-    public function asArray($scope=null, $keyFormat=null, $valueFormat=false, $serialize=null)
+    public function asArray(array|string|null $scope=null, string|bool|null $keyFormat=null, string|bool|null $valueFormat=false, ?bool $serialize=null): array
     {
         $noscope = (is_null($scope));
         $schema = $this->schema();
@@ -1963,7 +1964,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return $cn::$schema['form'][$fn]['label'];
     }
 
-    public static function find($s=null, $limit=0, $scope=null, $collection=true, $orderBy=null, $groupBy=null)
+    public static function find(mixed $s=null, ?int $limit=0, array|string|null $scope=null, bool $collection=true, string|array|bool|null $orderBy=null, string|array|bool|null $groupBy=null): Collection|Model|array|false
     {
         $q=array();
         if(!$groupBy && ($c = static::pk(null, true, true))) {
@@ -2004,14 +2005,14 @@ class Model implements ArrayAccess, Iterator, Countable
         }
     }
 
-    public static function query($q=null, $cn=null, $asArray=false)
+    public static function query(?array $q=null, Model|string|null $cn=null, bool $asArray=false): mixed
     {
         if(!$cn) $cn = get_called_class();
         if($q) return static::queryHandler($cn)->find($q, $asArray);
         else return static::queryHandler($cn);
     }
 
-    public static function fetch($pk)
+    public static function fetch(array|string $pk): mixed
     {
         if(method_exists($H=Query::handler($cn=get_called_class()),'preview')) {
             if(is_array($pk)) $pk = implode(static::$keySeparator, $pk);
@@ -2021,19 +2022,17 @@ class Model implements ArrayAccess, Iterator, Countable
         }
     }
 
-    public function setCollection($c)
+    public function setCollection(Collection $c): void
     {
-        if($c instanceof Collection) {
-            $this->_collection=$c;
-        }
+        $this->_collection = $c;
     }
 
-    public function getCollection()
+    public function getCollection(): ?Collection
     {
         return $this->_collection;
     }
 
-    public function renderScope($scope=null, $xmlEscape=true, $box=null, $tpl=null, $sep=null, $excludeEmpty=null, $showOriginal=null)
+    public function renderScope(string|array|null $scope=null, bool $xmlEscape=true, ?string $box=null, ?string $tpl=null, ?string $sep=null, bool $excludeEmpty=null, $showOriginal=null): string
     {
         static $flabel;
         $id = $scope;
@@ -2200,7 +2199,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return $s;
     }
 
-    public function checkObjectProperties($a)
+    public function checkObjectProperties(mixed $a): bool
     {
         if(!is_array($a)) return true;
 
@@ -2234,7 +2233,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return true;
     }
 
-    public function renderUi($o=array())
+    public function renderUi(array $o=array()): string
     {
         static $group;
         $s = '';
@@ -2486,7 +2485,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return $s;
     }
 
-    public function renderField($fn, $fd=null, $xmlEscape=false)
+    public function renderField(string $fn, ?array $fd=null, bool $xmlEscape=false): mixed
     {
         $cn=get_class($this);
         if(is_null($fd)) {
@@ -2500,7 +2499,7 @@ class Model implements ArrayAccess, Iterator, Countable
         }
 
         if(isset($fd['credential'])) {
-            if(!($U=S::getUser()) || !$U->hasCredentials($fd['credential'], false)) return;
+            if(!($U=S::getUser()) || !$U->hasCredentials($fd['credential'], false)) return null;
             unset($fd['credential']);
         }
         $pm='preview'.ucfirst(S::camelize($fn));
@@ -2626,9 +2625,9 @@ class Model implements ArrayAccess, Iterator, Countable
         return $v;
     }
 
-    public function renderRelation($v, $rn=null, $rd=null, $xmlEscape=false)
+    public function renderRelation(mixed $v, ?string $rn=null, ?array $rd=null, bool $xmlEscape=false): mixed
     {
-        if(!$v) return;
+        if(!$v) return null;
         if(is_object($v) && ($v instanceof Collection)) $v=$v->getItems();
         if(is_array($v)) $v=implode(', ', $v);
         else $v=(string)$v;
@@ -2638,7 +2637,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return $v;
     }
 
-    public static function renderAs($val, $fn, $fd=null)
+    public static function renderAs(mixed $val, string $fn, ?array $fd=null): mixed
     {
         $cn=get_called_class();
         if(is_null($fd)) {
@@ -2709,13 +2708,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return $val;
     }
 
-
-    /**
-     * Magic terminator. Returns the page contents, ready for output.
-     *
-     * @return string page output
-     */
-    public function __toString()
+    public function __toString(): string
     {
         $cn = get_called_class();
         $scope = $cn::$schema->scope;
@@ -2733,7 +2726,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return '';
     }
 
-    public function validate($def, $value, $name=null)
+    public function validate(array|Schema $def, mixed $value, ?string $name=null): mixed
     {
         $ovalue = $value;
         if (!is_null($name) && method_exists($this, $m='validate'.S::camelize($name, true))) {
@@ -2746,7 +2739,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return Schema::validateProperty($def, $value, $name);
     }
 
-    public static function __set_state($a)
+    public static function __set_state(array|object $a): Model
     {
         $M = new static();
         if(!is_array($a) && $a) {
@@ -2762,7 +2755,8 @@ class Model implements ArrayAccess, Iterator, Countable
         return $M;
     }
 
-    public function __call($name, $arguments) {
+    public function __call(string $name, array $arguments): mixed
+    {
         $column = S::uncamelize($name);
         $fn = substr($column, 0, 4);
         $column = substr($column, 4);
@@ -2774,7 +2768,8 @@ class Model implements ArrayAccess, Iterator, Countable
         throw new AppException(array("Method %s is not available at %s", $name, get_called_class()));
     }
 
-    public static function __callStatic($name, $arguments) {
+    public static function __callStatic(string $name, array $arguments): mixed
+    {
         if(substr($name, 0, 6)=='findBy' && strlen($name)>6) {
             $name = explode('-', preg_replace('/(Or|And)([A-Z])/', '-$1-$2', substr($name,6)));
             $pipe = '';
@@ -2795,37 +2790,39 @@ class Model implements ArrayAccess, Iterator, Countable
             if(isset($arguments[0])){
                 throw new Exception("Wrong argument count for [{$m}]. Need less arguments.");
             }
+
             return static::find($args, 0);
         }
     }
 
-
-    public function getOriginal($fn, $fallback=true, $serialize=null)
+    public function getOriginal(mixed $name, ?bool $fallback=true, ?bool $serialize=null): mixed
     {
-        if(!array_key_exists($fn, $this->_original)) {
+        if(!array_key_exists($name, $this->_original)) {
             if($fallback) {
-                $this->_original[$fn] = $this->$fn;
+                $this->_original[$name] = $this->$name;
             } else {
                 return $fallback;
             }
         }
-        $v = $this->_original[$fn];
+        $v = $this->_original[$name];
         if($serialize && !is_string($v) && !is_null($v) && !is_bool($v)) {
-            if(isset(static::$schema->properties[$fn]->serialize)) $serialize=static::$schema->properties[$fn]->serialize;
+            if(isset(static::$schema->properties[$name]->serialize)) $serialize=static::$schema->properties[$name]->serialize;
+
             return S::serialize($v, $serialize);
         }
+
         return $v;
     }
 
-    public function setOriginal($n, $v)
+    public function setOriginal(mixed $name, mixed $value): void
     {
-        $this->_original[$n] = $v;
+        $this->_original[$name] = $value;
     }
 
-    public function get($fn)
+    public function get(mixed $name): mixed
     {
-        if (isset($this->$fn)) {
-            return $this->$fn;
+        if (isset($this->$name)) {
+            return $this->$name;
         } else {
             return false;
         }
@@ -2834,12 +2831,8 @@ class Model implements ArrayAccess, Iterator, Countable
     /**
      * Magic getter. Searches for a get$Name method, or gets the stored value in
      * $_vars.
-     *
-     * @param string $name parameter name, should start with lowercase
-     *
-     * @return mixed the stored value, or method results
      */
-    public function __get($name)
+    public function __get(mixed $name): mixed
     {
         $m='get'.S::camelize($name, true);
         $ret = false;
@@ -2932,27 +2925,22 @@ class Model implements ArrayAccess, Iterator, Countable
      * @see __get()
      */
     #[\ReturnTypeWillChange]
-    public function offsetGet($name)
+    public function offsetGet(mixed $name): mixed
     {
         return $this->__get($name);
     }
     /**
      * Magic setter. Searches for a set$Name method, and stores the value in $_vars
      * for later use.
-     *
-     * @param string $name  parameter name, should start with lowercase
-     * @param mixed  $value value to be set
-     *
-     * @return void
      */
-    public function __set($name, $value)
+    public function __set(mixed $name, mixed $value): void
     {
-        return $this->safeSet($name, $value);
+        $this->safeSet($name, $value);
     }
 
-    public function batchSet($values, $skipValidation=false)
+    public function batchSet(Model|array $values, bool $skipValidation=false): Model
     {
-        if(is_object($values) && ($values instanceof $this)) {
+        if(is_object($values)) {
             $fns = array_merge(array_keys(static::$schema->properties), array_keys(static::$schema->relations));
             foreach($fns as $fn) {
                 if(isset($values->$fn) && $values->$fn!==$this->$fn) {
@@ -2967,7 +2955,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return $this;
     }
 
-    public function safeSet($name, $value, $skipValidation=false)
+    public function safeSet(mixed $name, mixed $value, bool $skipValidation=false): Model
     {
         if($name=='ROWSTAT') return $this;
         if(substr($name,0, 1)=='`' && substr($name, -1)=='`') $name = substr($name, 1, strlen($name)-2);
@@ -3043,26 +3031,16 @@ class Model implements ArrayAccess, Iterator, Countable
     }
     /**
      * ArrayAccess abstract method. Sets parameters to the PDF.
-     *
-     * @param string $name  parameter name, should start with lowercase
-     * @param mixed  $value value to be set
-     *
-     * @return void
-     * @see __set()
      */
-    public function offsetSet($name, $value): void
+    public function offsetSet(mixed $name, mixed $value): void
     {
         $this->__set($name, $value);
     }
 
     /**
      * ArrayAccess abstract method. Searches for stored parameters.
-     *
-     * @param string $name parameter name, should start with lowercase
-     *
-     * @return bool true if the parameter exists, or false otherwise
      */
-    public function __isset($name): bool
+    public function __isset(mixed $name): bool
     {
         return isset($this->$name);
     }
@@ -3074,22 +3052,16 @@ class Model implements ArrayAccess, Iterator, Countable
     /**
      * ArrayAccess abstract method. Unsets parameters to the PDF. Not yet implemented
      * to the PDF classes — only unsets values stored in $_vars
-     *
-     * @param string $name parameter name, should start with lowercase
-     *
-     * @return void
      */
-    public function __unset($name): void
+    public function __unset(mixed $name): void
     {
         if(isset($this->$name)) unset($this->$name);
     }
 
-    public function offsetUnset($name): void
+    public function offsetUnset(mixed $name): void
     {
         $this->__unset($name);
     }
-
-
 
     /**
      * Iterator
@@ -3100,15 +3072,15 @@ class Model implements ArrayAccess, Iterator, Countable
     }
 
     #[\ReturnTypeWillChange]
-    public function current()
+    public function current(): mixed
     {
         return $this->{$this->key()};
     }
 
     #[\ReturnTypeWillChange]
-    public function key()
+    public function key(): string
     {
-        return implode('', array_slice(array_keys(self::$schema['columns']), $this->_p, 1));
+        return implode('', array_slice(array_keys(self::$schema->properties), $this->_p, 1));
     }
 
     public function next(): void
@@ -3126,7 +3098,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return count(self::$schema->properties);
     }
 
-    public function objectId($tpl=null, $className=null)
+    public function objectId(?string $tpl=null, ?string $className=null): string
     {
         static $hash='sha1';
         static $compress=true;

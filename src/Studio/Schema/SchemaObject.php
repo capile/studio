@@ -11,6 +11,7 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio\Schema;
 
 use Studio as S;
@@ -41,7 +42,7 @@ class SchemaObject implements ArrayAccess
         }
     }
 
-    public static function staticInitialize()
+    public static function staticInitialize(): void
     {
         $schema = static::SCHEMA_PROPERTY;
         if(property_exists(get_called_class(), $schema)) {
@@ -50,7 +51,7 @@ class SchemaObject implements ArrayAccess
         }
     }
 
-    public function resolveAlias($name)
+    public function resolveAlias(string $name): string
     {
         if(($schema = static::SCHEMA_PROPERTY) && is_object($Schema=static::${$schema}) && property_exists($Schema, 'properties')) {
             $i = 10;
@@ -63,7 +64,7 @@ class SchemaObject implements ArrayAccess
         return $name;
     }
 
-    public function value($serialize=null)
+    public function value(?bool $serialize=null): mixed
     {
         $schema = static::SCHEMA_PROPERTY;
         $r = null;
@@ -98,15 +99,8 @@ class SchemaObject implements ArrayAccess
         return $r;
     }
 
-    /**
-     * ArrayAccess abstract method. Gets stored parameters.
-     *
-     * @param string $name parameter name, should start with lowercase
-     *
-     * @return mixed the stored value, or method results
-     */
     #[\ReturnTypeWillChange]
-    public function &offsetGet($name)
+    public function &offsetGet(mixed $name): mixed
     {
         $name = $this->resolveAlias($name);
         if (method_exists($this, $m='get'.ucfirst(S::camelize($name)))) {
@@ -118,17 +112,17 @@ class SchemaObject implements ArrayAccess
         return $n;
     }
 
-    public function __get($name)
+    public function __get(mixed $name): mixed
     {
         return $this->offsetGet($name);
     }
 
-    public function __set($name, $value)
+    public function __set(mixed $name, mixed $value): mixed
     {
         return $this->offsetSet($name, $value);
     }
 
-    public function batchSet($values, $skipValidation=false)
+    public function batchSet(array $values, bool $skipValidation=false): SchemaObject
     {
         foreach($values as $name=>$value) {
             if($skipValidation) $this->$name = $value;
@@ -137,15 +131,7 @@ class SchemaObject implements ArrayAccess
         return $this;
     }
 
-    /**
-     * ArrayAccess abstract method. Sets parameters to the PDF.
-     *
-     * @param string $name  parameter name, should start with lowercase
-     * @param mixed  $value value to be set
-     *
-     * @return void
-     */
-    public function offsetSet($name, $value): void
+    public function offsetSet(mixed $name, mixed $value): void
     {
         $name = $this->resolveAlias($name);
         if (method_exists($this, $m='set'.S::camelize($name))) {
@@ -169,26 +155,13 @@ class SchemaObject implements ArrayAccess
         unset($m);
     }
 
-    /**
-     * ArrayAccess abstract method. Searches for stored parameters.
-     *
-     * @param string $name parameter name, should start with lowercase
-     *
-     * @return bool true if the parameter exists, or false otherwise
-     */
-    public function offsetExists($name): bool
+    public function offsetExists(mixed $name): bool
     {
         $name = $this->resolveAlias($name);
         return isset($this->$name);
     }
 
-    /**
-     * ArrayAccess abstract method. Unsets parameters to the PDF. Not yet implemented
-     * to the PDF classes — only unsets values stored in $_vars
-     *
-     * @param string $name parameter name, should start with lowercase
-     */
-    public function offsetUnset($name): void
+    public function offsetUnset(mixed $name): void
     {
         $schema = static::SCHEMA_PROPERTY;
         if(isset(static::${$schema}[$name]['alias'])) $name = static::${$schema}[$name]['alias'];

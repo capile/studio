@@ -25,7 +25,7 @@ if(!isset($action)) $action = $Api['action'];
 $nav = null;
 if($Api->config('navigation')) {
     if(!App::request('ajax') || App::request('headers', 'x-studio-navigation')) {
-        $nav = $Api::listInterfaces();
+        $nav = $Api::listApis();
     }
 }
 
@@ -43,7 +43,6 @@ if(isset($attributes) && is_array($attributes)) {
     $a += $attributes;
 }
 
-
 // .s-api-header
 ?><div class="s-api-header"<?php 
     if($nav) echo ' data-toggler="off"';
@@ -53,7 +52,7 @@ if(isset($attributes) && is_array($attributes)) {
     $urls = $Api::$urls;
     if(App::request('ajax')) {
         foreach(array_reverse($urls) as $iurl=>$t) {
-            if($iurl!='/' && (!isset($t['interface']) || $t['interface'])) {
+            if($iurl!='/' && (!isset($t['api']) || $t['api'])) {
                 $urls = [$iurl=>$t];
                 break;
             }
@@ -66,7 +65,7 @@ if(isset($attributes) && is_array($attributes)) {
         if($iurl==$url) $tclass .= ' s-api-title-active';
         $taction = (isset($t['action']) && $t['action']) ?$t['action'] :'text';
         $tclass .= ' '.$cPrefix.'--'.$taction;
-        if($iurl!='/' && (!isset($t['interface']) || $t['interface'])):
+        if($iurl!='/' && (!isset($t['api']) || $t['api'])):
             ?><a href="<?php echo $iurl ?>" class="<?php echo $tclass; ?>" data-url="<?php echo $iurl ?>"<?php if($iqs) echo 'data-qs="', str_replace(',', '%2C', S::xml($iqs)), '"' ?>><span class="s-text"><?php echo S::xml($t['title']); ?></span></a><?php
         endif;
         unset($tclass, $taction);

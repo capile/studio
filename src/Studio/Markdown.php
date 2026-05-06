@@ -241,7 +241,7 @@ class Markdown extends Parsedown
     protected function blockHeader($Line)
     {
         $Block = parent::blockHeader($Line);
-        if (preg_match('/[ #]*{('.$this->regexAttribute.'+)}[ ]*$/', $Block['element']['text'], $matches, PREG_OFFSET_CAPTURE))
+        if (isset($Block['element']['text']) && preg_match('/[ #]*{('.$this->regexAttribute.'+)}[ ]*$/', $Block['element']['text'], $matches, PREG_OFFSET_CAPTURE))
         {
             $attributeString = $matches[1][0];
             $Block['element']['attributes'] = $this->parseAttributeData($attributeString);

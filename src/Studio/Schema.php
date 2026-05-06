@@ -11,7 +11,7 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
-
+declare(strict_types=1);
 namespace Studio;
 
 use Studio as S;
@@ -56,7 +56,7 @@ class Schema implements ArrayAccess
         }
     }
 
-    public static function staticInitialize()
+    public static function staticInitialize(): void
     {
         $schema = static::SCHEMA_PROPERTY;
         if(property_exists(get_called_class(), $schema)) {
@@ -65,7 +65,7 @@ class Schema implements ArrayAccess
         }
     }
 
-    public function resolveAlias($name)
+    public function resolveAlias(string $name): string
     {
         if(($schema = static::SCHEMA_PROPERTY) && is_object($Schema=static::$$schema) && property_exists($Schema, 'properties')) {
             $i = 10;
@@ -78,7 +78,7 @@ class Schema implements ArrayAccess
         return $name;
     }
 
-    public function value($serialize=null)
+    public function value(?bool $serialize=null): mixed
     {
         $schema = static::SCHEMA_PROPERTY;
         $r = null;
@@ -124,13 +124,9 @@ class Schema implements ArrayAccess
 
     /**
      * ArrayAccess abstract method. Gets stored parameters.
-     *
-     * @param string $name parameter name, should start with lowercase
-     *
-     * @return mixed the stored value, or method results
      */
     #[\ReturnTypeWillChange]
-    public function &offsetGet($name)
+    public function &offsetGet(mixed $name): mixed
     {
         $name = $this->resolveAlias($name);
         if (method_exists($this, $m='get'.ucfirst(S::camelize($name)))) {
@@ -142,17 +138,17 @@ class Schema implements ArrayAccess
         return $n;
     }
 
-    public function __get($name)
+    public function __get(mixed $name): mixed
     {
         return $this->offsetGet($name);
     }
 
-    public function __set($name, $value)
+    public function __set(mixed $name, mixed $value): void
     {
-        return $this->offsetSet($name, $value);
+        $this->offsetSet($name, $value);
     }
 
-    public function batchSet($values, $skipValidation=false)
+    public function batchSet(array|object $values, bool $skipValidation=false)
     {
         foreach($values as $name=>$value) {
             if($skipValidation) $this->$name = $value;
@@ -163,13 +159,8 @@ class Schema implements ArrayAccess
 
     /**
      * ArrayAccess abstract method. Sets parameters to the PDF.
-     *
-     * @param string $name  parameter name, should start with lowercase
-     * @param mixed  $value value to be set
-     *
-     * @return void
      */
-    public function offsetSet($name, $value): void
+    public function offsetSet(mixed $name, mixed $value): void
     {
         $name = $this->resolveAlias($name);
         if (method_exists($this, $m='set'.S::camelize($name))) {
@@ -195,12 +186,8 @@ class Schema implements ArrayAccess
 
     /**
      * ArrayAccess abstract method. Searches for stored parameters.
-     *
-     * @param string $name parameter name, should start with lowercase
-     *
-     * @return bool true if the parameter exists, or false otherwise
      */
-    public function offsetExists($name): bool
+    public function offsetExists(mixed $name): bool
     {
         $name = $this->resolveAlias($name);
         return isset($this->$name);
@@ -209,23 +196,21 @@ class Schema implements ArrayAccess
     /**
      * ArrayAccess abstract method. Unsets parameters to the PDF. Not yet implemented
      * to the PDF classes — only unsets values stored in $_vars
-     *
-     * @param string $name parameter name, should start with lowercase
      */
-    public function offsetUnset($name): void
+    public function offsetUnset(mixed $name): void
     {
         $schema = static::SCHEMA_PROPERTY;
         if(isset(static::${$schema}[$name]['alias'])) $name = static::${$schema}[$name]['alias'];
         $this->offsetSet($name, null);
     }
 
-    public static function isSchema($o)
+    public static function isSchema(object|string $o): bool
     {
     	$cn = (is_object($o)) ?get_class($o) :$o;
     	return (defined($cn.'::OBJECT_TYPE') && $cn::OBJECT_TYPE=='schema');
     }
 
-    public static function loadSchema($cn, $meta=null)
+    public static function loadSchema(string $cn, array|Schema|null $meta=null): ?Schema
     {
         static $schemas=[];
         // load from cache
@@ -278,7 +263,7 @@ class Schema implements ArrayAccess
         return $Schema;
     }
 
-    public static function expandSchemaRefs(&$src)
+    public static function expandSchemaRefs(array &$src): array
     {
         if(isset($src['ref'])) {
             if(class_exists($src['ref']) && static::isSchema($src['ref'])) {
@@ -294,7 +279,7 @@ class Schema implements ArrayAccess
         return $src;
     }
 
-    public static function loadSchemaRef($ref)
+    public static function loadSchemaRef(string $ref): array
     {
         if(is_null(static::$schemaDir)) {
             static::$schemaDir = S::getApp()->config('app', 'schema-dir');
@@ -329,7 +314,7 @@ class Schema implements ArrayAccess
         return $src;
     }
 
-    public static function apply($Model, $values, $meta=null, $throw=true)
+    public static function apply(mixed $Model, mixed $values, array|Schema|null $meta=null, bool $throw=true): mixed
     {
         // move this to validateProperty of type object
         $allowUndeclared = false;
@@ -371,7 +356,7 @@ class Schema implements ArrayAccess
         else return $values;
     }
 
-    public static function validateProperty($def, $value, $name=null)
+    public static function validateProperty(array|object $def, mixed $value, ?string $name=null): mixed
     {
         if(!isset($def['type'])) $def['type'] = 'string';
         if($def['type']=='string') {
@@ -458,7 +443,7 @@ class Schema implements ArrayAccess
                         } else {
                             $value[$n] = static::validateProperty($meta[$n], $pvalue, $n);
                         }
-                    } else if($nreg && !preg_match($nreg, $n) && !static::$allowUndeclared) {
+                    } else if($nreg && !preg_match($nreg, (string)$n) && !static::$allowUndeclared) {
                         unset($value[$n]);
                     }
                 }
@@ -521,7 +506,7 @@ class Schema implements ArrayAccess
         return $value;
     }
 
-    public function uid($expand=false)
+    public function uid(bool $expand=false): array
     {
         //return $this->properties(null, false, array('primary'=>true), $expand);
         $r = array();
@@ -535,7 +520,7 @@ class Schema implements ArrayAccess
         return $r;
     }
 
-    public function properties($scope=null, $overlay=false, $filter=null, $expand=10, $add=array())
+    public function properties(array|string|null $scope=null, bool $overlay=false, ?array $filter=null, int $expand=10, array $add=array()): array
     {
         $R = array();
         if(is_string($scope)) {
@@ -671,13 +656,11 @@ class Schema implements ArrayAccess
         return $R;
     }
 
-    public static function import($source, &$R=[])
+    public static function import(array|string $source, array &$R=[]): array
     {
         static $fetch = [];
 
         $cache = false;
-        if(!is_array($R)) $R = [];
-
         if(is_string($source)) {
             if(!$R) {
                 $cache = 'schemaref/'.md5($source);
@@ -709,6 +692,7 @@ class Schema implements ArrayAccess
             }
         } else {
             $S = $source;
+        if($Model) return $Model;
         }
 
         if(!is_array($S)) return $R;
@@ -740,7 +724,7 @@ class Schema implements ArrayAccess
 
     }
 
-    public function toJsonSchema($scope=null, &$R=array())
+    public function toJsonSchema(string|array|null $scope=null, array &$R=array()): array
     {
         // available scopes might form full definitions (?)
         $fo = $this->properties($scope);
@@ -811,12 +795,12 @@ class Schema implements ArrayAccess
         return $R;
     }
 
-    protected function _jsonSchemaInteger($fd, &$R=array())
+    protected function _jsonSchemaInteger(array $fd, array &$R=array()): void
     {
-        return $this->_jsonSchemaNumber($fd, $R);
+        $this->_jsonSchemaNumber($fd, $R);
     }
 
-    protected function _jsonSchemaNumber($fd, &$R=array())
+    protected function _jsonSchemaNumber(array $fd, array &$R=array()): void
     {
         if(isset($fd['min_size'])) $R['minimum'] = $fd['min_size'];
         if(isset($fd['size'])) $R['maximum'] = $fd['size'];
@@ -825,7 +809,7 @@ class Schema implements ArrayAccess
         // multipleOf
     }
 
-    protected function _jsonSchemaString($fd, &$R=array())
+    protected function _jsonSchemaString(array $fd, array &$R=array()): void
     {
         if(isset($fd['min_size'])) $R['minLength'] = $fd['min_size'];
         if(isset($fd['size'])) $R['maxLength'] = $fd['size'];
@@ -843,7 +827,7 @@ class Schema implements ArrayAccess
         if(isset($fd['type']) && isset($format[$fd['type']])) $R['format'] = $format[$fd['type']];
     }
 
-    protected function _jsonSchemaArray($fd, &$R=array())
+    protected function _jsonSchemaArray(array $fd, array &$R=array()): void
     {
         if(isset($fd['scope'])) {
             $R['items'] = $this->toJsonSchema($fd['scope'], $R);
@@ -856,7 +840,7 @@ class Schema implements ArrayAccess
         // contains
     }
 
-    protected function _jsonSchemaObject($fd, &$R=array())
+    protected function _jsonSchemaObject(array $fd, array &$R=array()): void
     {
         if(isset($fd['scope'])) {
             $R = $this->toJsonSchema($fd['scope'], $R);
