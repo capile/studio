@@ -10,7 +10,7 @@
 @fieldPaddingLeft: 0.5em;
 @fieldPaddingRight: 0.5em;
 
-html {
+:root {
 --s-fontAwesomePath: ~"@{studio-url}";
 --s-studio-logo: "@{studio-url}/studio-logo.svg";
 --s-iconFont: "@icon-font-name";
@@ -84,13 +84,15 @@ html {
 --s-colorBody: transparent;
 --s-colorHeader: linear-gradient(to bottom, transparent 0,transparent 2em,var(--s-color1) 2em,var(--s-color1) 100%) no-repeat;
 --s-colorHeaderBorder: var(--s-color1);
---s-headerBorder: 0.2em;
+--s-headerBorder: @borderSize;
 --s-headerMargin: 2em;
 --s-colorHighlight: #fd9;
 --s-colorActive: #ff8000;
 --s-colorActiveOn: #ffaa33;
+--s-colorActiveOnText: var(--s-link);
 --s-color: #f0f3f6;
 --s-colorText: #000;
+--s-colorGray: #999;
 --s-colorBorder: #aaa;
 --s-colorSummary: var(--s-color);
 --s-colorSummaryText: var(--s-colorText);
@@ -113,7 +115,7 @@ html {
 --s-colorButtonSubmitActiveText: var(--s-colorTabActiveText);
 --s-labelNavigation: ' ';
 --s-colorNavigation: var(--s-colorBackground);
---s-colorNavigationSub: rgba(0,0,0,0.05);
+--s-colorNavigationSub: rgba(0,0,0,0.15);
 --s-colorNavigationText: var(--s-color2);
 --s-colorNavigationLink: var(--s-colorForeground);
 --s-colorNavigationVisited: var(--s-colorForeground) + #111;

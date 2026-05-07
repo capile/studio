@@ -13,7 +13,6 @@
   overflow-y:hidden;
   overflow-x:hidden;
   a {
-    color: var(--s-link);
     &:link, &:visited, &:hover, &:active {
       text-decoration:none;
     }
@@ -1125,16 +1124,15 @@ input.s-switch{
   }
   li {margin:0.25em 0;padding:0;}
 }
-
 input,select,textarea,.s-textarea,.s-input,.s-input-choices {
   font-size:1em;
   padding:0.25em 0;
-  color: #000;
-  background: rgba(255,255,255,0.5);
+  color: var(--s-colorText);
+  background: ~"color(from var(--s-color) srgb r g b / 0.5)";
   border:none;
   width: calc(~"100% - 2px");
   &:focus {
-    background: #fff;
+    background: var(--s-color);
     outline: none;
     box-shadow: 0 0 0.25em 0.25em var(--s-colorActive);
   }
@@ -1167,7 +1165,6 @@ input[type=search] {
 textarea,.s-textarea,.s-input-choices[data-type="select-multiple"] {
   min-height:4em;
 }
-
 button .i-label {
   display:inline-block;
   margin-left:0.25em;
@@ -1186,6 +1183,7 @@ button .i-label {
   input.s-omnibar {
     width: calc(~"100% - 8em") !important;
     margin: 0 0.5em 0.5em 0;
+    background-color: var(--s-colorBackgroundLight) !important;
   }
   fieldset{
     padding:0;
@@ -1466,14 +1464,14 @@ select, input {
       padding: 6px 12px;
       font-size: 14px;
       line-height: 16px;
-      background:rgba(var(--s-colorNavigation),0.05);
+      background:~"color(from var(--s-colorNavigation) srgb r g b / 0.05)";
       color:var(--s-colorText);
   }
   li:nth-child(odd), &:hover li:nth-child(odd) {
-    background:rgba(var(--s-colorNavigation),0.25);
+    background:~"color(from var(--s-colorNavigation) srgb r g b / 0.25)";
   }
   li.s-selected {
-    background:rgba(var(--s-colorActive), 0.75);
+    background:~"color(from var(--s-colorActive) srgb r g b / 0.75)";
     color:var(--s-colorText);
   }
   li:hover {
@@ -1842,7 +1840,7 @@ form .i-mono dd {
 .s-type-toggler {
   position:relative;
   display: inline-block;
-  background:#999;
+  background:var(--s-colorGray);
   border: 1px solid #888;
   border-radius: 1em;
   height:1em;
@@ -1860,7 +1858,7 @@ form .i-mono dd {
   }
   &:before {
     color:var(--s-colorTabActive);
-    background:#fff;
+    background:var(--s-color);
     text-align:center;
     border-radius:1em;
     width:1em;
@@ -1874,12 +1872,12 @@ form .i-mono dd {
   .i-toggler-0 {
     position:absolute;
     left:-1.5em;
-    &:before {color:#999;}
+    &:before {color:var(--s-colorGray)}
   }
   .i-toggler-1 {
     position:absolute;
     right:-1.5em;
-    &:before {color:#999;}
+    &:before {color:var(--s-colorGray);}
   }
   &[data-toggler-option="0"] .i-toggler-0:before {
     color: var(--s-colorTabActive);
@@ -2108,14 +2106,14 @@ th > input[type=checkbox], td > input[type=checkbox] {
     width:100%;border:none;border-collapse:collapse;
   }
   tr {
-    background: rgba(var(--s-colorTab), 0.08);
+    background: ~"color(from var(--s-colorTab) srgb r g b / 0.2)";
     &:nth-child(even) {
-      background: rgba(var(--s-colorTab), 0.04);
+      background: ~"color(from var(--s-colorTab) srgb r g b / 0.1)";
     }
     &:hover, &.on {
       background:var(--s-colorActiveOn);
       a:hover,a:active {
-        color:var(--s-link);
+        color:var(--s-colorActiveOnText);
       }
     }
   }
@@ -2337,3 +2335,20 @@ th > input[type=checkbox], td > input[type=checkbox] {
   }
 }
 @import "Calendar.less";
+
+@media only screen and (min-width: @mobileBreakPoint) {
+
+.s-graph.s-active {
+  &.i1s2, &.i1s4, &.i3s4, &.i1s3, &.i2s3 {
+      display: inline-block;
+  }
+  &.i1s2 {width:50%;}
+  &.i1s4 {width:25%;}
+  &.i3s4 {width:75%;}
+  &.i1s3 {width:33.3%;}
+  &.i2s3 {width:66.6%;}
+}
+
+
+
+}

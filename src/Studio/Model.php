@@ -1054,7 +1054,7 @@ class Model implements ArrayAccess, Iterator, Countable
         if (!is_null($delete)) {
             $this->_delete = $delete;
         }
-        return $this->_delete;
+        return (bool) $this->_delete;
     }
 
     public function refresh(array|string|null $scope=null): Model

@@ -2077,8 +2077,8 @@ class Field extends SchemaObject
 
             $value = $this->getValue();
 
-            if(!is_array($value)) {
-                $value = S::unserialize($value, $this->serialize);
+            if($value && !is_array($value)) {
+                $value = S::unserialize((string)$value, $this->serialize);
             }
 
             // loop for each entry and add to $input
