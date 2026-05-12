@@ -40,7 +40,7 @@
 .s-input-choices[data-type*='select-one'] .s-choices-input {
   display: block;
   border-bottom: 1px solid var(--s-colorBackgroundDark);
-  background-color: var(--s-colorBackground);
+  background-color: var(--s-color);
   margin: 0;
 }
 
@@ -135,12 +135,12 @@
   width: 100%;
   padding: 0;
   overflow: hidden;
-  color: #000;
+  color: var(--s-colorText);
 }
 
 .is-focused .s-choices-inner,
 .is-open .s-choices-inner {
-  border-color: var(--s-colorBackgroundLight);
+  border-color: var(--s-colorBackgroundDark);
 }
 
 .is-open .s-choices-inner {
@@ -200,7 +200,7 @@
 }
 
 .is-disabled .s-choices-list--multiple .s-choices-item {
-  background-color: var(--s-colorBackgroundDark);
+  background-color: var(--s-colorBackgroundLight);
   border: 1px solid var(--s-colorGray);
 }
 
@@ -209,7 +209,7 @@
   z-index: 11;
   position: absolute;
   width: 100%;
-  background-color: var(--s-colorBackground);
+  background-color: var(--s-color);
   border: 1px solid var(--s-colorBackgroundDark);
   top: 100%;
   margin-top: -1px;
@@ -225,7 +225,7 @@
 }
 
 .is-open .s-choices-list--dropdown {
-  border-color: var(--s-colorBackgroundLight);
+  border-color: var(--s-colorBackgroundDark);
 }
 
 .is-flipped .s-choices-list--dropdown {
@@ -279,7 +279,7 @@
 }
 
 .s-choices-list--dropdown .s-choices-item--selectable.is-highlighted {
-  background-color: var(--s-colorBackgroundDark);
+  background-color: var(--s-colorBackgroundLight);
 }
 
 .s-choices-list--dropdown .s-choices-item--selectable.is-highlighted:after {
@@ -336,7 +336,7 @@
   border: 0;
   border-radius: 0;
   max-width: 100%;
-}
+}BackgroundLight
 
 .s-choices-input:focus {
   outline: 0;
