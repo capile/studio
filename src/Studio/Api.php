@@ -1846,7 +1846,7 @@ class Api extends SchemaObject
         unset($m, $cn);
     }
 
-    public function executeMethod(): void
+    public function executeMethod(): mixed
     {
         static::$currentAction = $this->action;
         if(!isset($this->text)) $this->text = array();
@@ -1901,7 +1901,7 @@ class Api extends SchemaObject
             }
             static::status(200);
 
-            return;
+            return $r;
         }
         if(!isset($this->text['buttons'])) {
             $this->getButtons();
@@ -1914,7 +1914,9 @@ class Api extends SchemaObject
         }
         static::status(200);
         unset($req);
-        unset($m, $cn, $r);
+        unset($m, $cn);
+
+        return $r;
     }
 
     public function executeInterface(): void

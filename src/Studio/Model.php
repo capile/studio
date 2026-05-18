@@ -2366,7 +2366,7 @@ class Model implements ArrayAccess, Iterator, Countable
                     $soa = 'o='.urlencode($so).'&d=asc';
                     $sod = 'o='.urlencode($so).'&d=desc';
                 }
-                $s .= '<th class="c-'.$so.' f-'.$fid.(($sc==$sf)?(' ui-order ui-order-'.$sd):('')).'">'
+                $s .= '<th class="c-'.$so.' f-'.$fid.(($sc==$sf)?(' ui-order ui-order-'.$sd):('')).((isset($first) && $checkbox==='checkbox')?(' s-check'):('')).'">'
                     . ((isset($first) && $checkbox==='checkbox')?('<input type="checkbox" data-callback="toggleInput" label="'.S::t('Select all', 'ui').'" data-label-alternative="'.S::t('Clear selection', 'ui').'" />'):(''))
                     ;
                 if($sort && isset($o['show-sort-icons']) && $o['show-sort-icons']) {
