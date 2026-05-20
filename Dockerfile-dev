@@ -45,7 +45,7 @@ RUN apk upgrade --update \
       zlib-dev \
       zip \
     && \
-    pecl install mongodb igbinary redis \
+    pecl install igbinary redis \
     && \
     ( \
         pecl install --nobuild memcached && \
@@ -78,7 +78,7 @@ RUN apk upgrade --update \
       soap \
       zip \
     && \
-    docker-php-ext-enable igbinary memcached mongodb redis \
+    docker-php-ext-enable igbinary memcached redis \
     && \
     rm -rf /tmp/* \
     && \
