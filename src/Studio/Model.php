@@ -122,7 +122,7 @@ class Model implements ArrayAccess, Iterator, Countable
     /**
      * Class constructor: you can create a new instance based on an associative array with the values
      */
-    public function __construct(array $vars=array(), ?bool $insert=null, ?bool $save=null)
+    public function __construct(?array $vars=array(), ?bool $insert=null, ?bool $save=null)
     {
         if(!isset(self::$stats[get_class($this)])) self::$stats[get_class($this)]=1;
         else self::$stats[get_class($this)]++;

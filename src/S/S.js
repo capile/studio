@@ -193,7 +193,7 @@ S.init=function(o)
                 } else if(!n) {
                     if(!(i in _pending)) _pending[i] = [];
                     _pending[i].push(c);
-                    setTimeout(initPending, 500);
+                    setTimeout(initPending, 500);ifn
                 }
             }
         }
@@ -226,7 +226,7 @@ function initPending()
             }
 
         } else {
-            delete(_pending[ifn]);
+            delete(_pending[i]);
         }
     }
 }
@@ -1424,7 +1424,7 @@ S.initToggleActive=function(o)
         toggler=(control && control.indexOf('no-toggler')>-1) ?false :true,
         storage=(control && control.indexOf('storage')>-1) ?true :false,
         drag=(control && control.indexOf('draggable')>-1) ?true :false,
-        load=false, a, i, tw;
+        load=false, a, i, tw, dp;
     if((sibling && o.parentNode.querySelector(':scope > .s-toggler')) || (child && o.querySelector(':scope > .s-toggler'))) {
         return;
     }
@@ -1432,10 +1432,12 @@ S.initToggleActive=function(o)
         storage = false;
         id='_n'+(_got++);
         o.setAttribute('id', id);
-    } else if(S.storage('s-toggler/#'+id)) {
-        load = true;
-    } else if(tw=S.nodeData(o, 'toggler-default')) {
-        load = (tw==='on' || (tw>0 && tw<window.innerWidth))
+    } else {
+        tw = S.storage('s-toggler/#'+id);
+        if(tw===1) load = true;
+        else if(tw===null && (tw=S.nodeData(o, 'toggler-default'))) {
+            load = (tw==='on' || (tw>0 && tw<window.innerWidth))
+        }
     }
 
     if(child) {
@@ -1458,8 +1460,14 @@ S.initToggleActive=function(o)
             S.bind(el, 'dragstart', toggleDragStart);
             S.bind(el, 'dragend', toggleDragEnd);
             if(o.getAttribute('data-toggler-drag-target')) el.setAttribute('data-drag-target', o.getAttribute('data-toggler-drag-target'));
-            if(o.getAttribute('data-toggler-drag')) el.setAttribute('data-drag', o.getAttribute('data-toggler-drag'));
+            if(dp=o.getAttribute('data-toggler-drag')) el.setAttribute('data-drag', o.getAttribute('data-toggler-drag'));
             if(o.getAttribute('data-draggable-default-style')) el.setAttribute('data-draggable-style', o.getAttribute('data-draggable-default-style'));
+            if(storage && dp && (tw=S.storage('s-toggler/drag/'+dp))) {
+                toggleDragStart.call(el);
+                _drag[dp].x = tw.x;
+                _drag[dp].y = tw.y;
+                applyDrag(dp);
+            }
         }
     }
     if(load) {
@@ -1538,6 +1546,7 @@ function applyDrag(id)
             s = ds.replace('{w0}', w0+'%').replace('{w1}', w1+'%').replace('{x}', x+'px').replace('{y}',y+'px');
         }
         el.setAttribute('style',s);
+        S.storage('s-toggler/drag/'+id, {x:_drag[id].x,y:_drag[id].y});
     }
 }
 
@@ -1648,7 +1657,7 @@ function ToggleActive()
             if(d && t.className.search(rd)<0) t.className += ' '+d;
             if(k=t.getAttribute('data-toggler-cookie-disable')) S.cookie(k, true, null, '/');
             if(k=t.getAttribute('data-toggler-cookie-enable'))  S.cookie(k, null, new Date(2000, 1, 1), '/');
-            if(storage) S.storage('s-toggler/'+storage, null);
+            if(storage) S.storage('s-toggler/'+storage, 0);
             if(drag) removeDrag();
             st='off';
         } else { // enable
