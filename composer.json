@@ -12,7 +12,6 @@
         "bshaffer/oauth2-server-php": "^1.14",
         "ext-mbstring": "*",
         "phpmailer/phpmailer": "^6.10",
-        "mongodb/mongodb": "2.3.1",
         "mlocati/ip-lib": "^1.20",
         "dragonmantank/cron-expression": "^3.4"
     },

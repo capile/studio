@@ -44,7 +44,7 @@ RUN apk upgrade --update \
       zlib-dev \
       zip \
     && \
-    pecl install mongodb redis yaml \
+    pecl install redis yaml \
     && \
     docker-php-ext-configure gd \
       --enable-gd \
@@ -67,7 +67,7 @@ RUN apk upgrade --update \
       soap \
       zip \
     && \
-    docker-php-ext-enable mongodb redis yaml \
+    docker-php-ext-enable redis yaml \
     && \
     cd /var/www/studio \
     && \
