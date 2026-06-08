@@ -27,6 +27,7 @@ RUN apk upgrade --update \
       cyrus-sasl-dev \
       freetype-dev \
       ldb-dev \
+      libtool \
       samba-dev \
       libdrm-dev \
       libjpeg-turbo-dev \
@@ -44,7 +45,13 @@ RUN apk upgrade --update \
       zlib-dev \
       zip \
     && \
-    pecl install redis yaml \
+    curl -fsL --output /usr/local/bin/pie https://github.com/php/pie/releases/latest/download/pie.phar && chmod +x /usr/local/bin/pie \
+    && \
+    pie install -n mongodb/mongodb-extension \
+    && \
+    pie install -n phpredis/phpredis \
+    && \
+    pie install -n pecl/yaml \
     && \
     docker-php-ext-configure gd \
       --enable-gd \
@@ -67,8 +74,6 @@ RUN apk upgrade --update \
       soap \
       zip \
     && \
-    docker-php-ext-enable redis yaml \
-    && \
     cd /var/www/studio \
     && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2 \
@@ -77,7 +82,7 @@ RUN apk upgrade --update \
     && \
     composer clear-cache \
     && \
-    rm -rf /var/www/.composer/cache /var/www/.npm/* /tmp/* \
+    rm -rf /var/www/.composer/cache /var/www/.npm/* /tmp/* /usr/local/bin/pie \
     && \
     apk del .deps \
     && \
