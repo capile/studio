@@ -265,29 +265,33 @@ function datalistQueryTimeout()
 function datalistQuery(e)
 {
     /*jshint validthis: true */
-    var o=this, v=datalistVal(o), t=new Date().getTime(), focus=(e && ('type' in e) && e.type=='focus');
     if(_dq) clearTimeout(_dq);
+    var o=this,
+        v=datalistVal(o),
+        t=new Date().getTime(),
+        focus=(e && ('type' in e) && e.type=='focus'),
+        x=(o.getAttribute('id').search(/^q__/)>-1)?o.getAttribute('id').replace(/^q__/, '') :null,
+        T=(x) ?o.form.querySelector('#'+x) :null,
+        Tv=(T) ?S.val(T) :'';
     if(o.getAttribute('data-datalist-visible') && !o.parentNode.querySelector('.s-datalist-container')) {
-    } else if(v==o.getAttribute('data-datalist-q') || o.getAttribute('data-datalist-t')>t) {
+    } else if(v==o.getAttribute('data-datalist-q') && Tv!=='') {
+        if(o.getAttribute('data-datalist-query')) o.removeAttribute('data-datalist-query');
+        return;
+    } else if(o.getAttribute('data-datalist-t')>t) {
         if(!focus || o.getAttribute('data-datalist-visible')) {
             return;
         }
     }
-
-    var x;
-    if(o.getAttribute('id').search(/^q__/)>-1) {
-        x=o.getAttribute('id').replace(/^q__/, '');
-        var T=o.form.querySelector('#'+x);
-        if(!focus && T && S.val(T)!='') {
-            S.val(T, '');
-            S.fire(T, 'change');
-        }
-    } else {
+    if(!focus && Tv!='') {
+        S.val(T, '');
+        S.fire(T, 'change');
+    } else if(!x) {
         x = o.getAttribute('id');
     }
     if(!v) {
         datalistClear.apply(o);
     }
+    o.setAttribute('data-datalist-query',t);
 
     var u=o.getAttribute('data-datalist-api'), api=(u!=''), h={accept:'application/json'};
     if(u) {
@@ -487,6 +491,7 @@ function datalistOption()
                 }
             }
         }
+        if(o.getAttribute('data-datalist-query')) o.removeAttribute('data-datalist-query');
     }
     datalistClear.call(o);
 }

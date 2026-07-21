@@ -1621,7 +1621,7 @@ class Model implements ArrayAccess, Iterator, Countable
                 $O = $value;
             } else {
                 if(!$O || !($O instanceof Model)) {
-                    $O = new $cn($O);
+                    $O = (!$O) ?new $cn() :new $cn((array)$O);
                 }
                 foreach($value as $k=>$v){
                     $O[$k] = $v;
@@ -2958,6 +2958,7 @@ class Model implements ArrayAccess, Iterator, Countable
     public function safeSet(mixed $name, mixed $value, bool $skipValidation=false): Model
     {
         if($name=='ROWSTAT') return $this;
+        if(!is_string($name)) $name = (string)$name;
         if(substr($name,0, 1)=='`' && substr($name, -1)=='`') $name = substr($name, 1, strlen($name)-2);
         if(isset(static::$schema->properties[$name]) && ($a=static::$schema->properties[$name]->alias)) {
             $name = $a;

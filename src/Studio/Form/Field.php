@@ -1578,6 +1578,9 @@ class Field extends SchemaObject
                     if(isset($cn::$schema[$n])) $Q[$t] = $cn::$schema[$n];
                     unset($n, $t);
                 }
+                $scope = (isset($this->scope)) ?$this->scope :null;
+                if(!$scope && isset($cn::$schema->scope['choices'])) $scope = 'choices';
+                if($scope) $Q['scope'] = $scope;
             }
             $this->query = new Query($Q);
             unset($Q);
@@ -1594,7 +1597,11 @@ class Field extends SchemaObject
         $noexec = null;
         if(!isset($this->choices) && !isset($this->query)) {
             if($this->bind && ($M=$this->getModel()) && method_exists($M, ($m='choices'.S::camelize($this->bind,true)))) {
-                $this->query = new Query([ 'model'=> $M, 'method' => $m ]);
+                $qa = [ 'model'=> $M, 'method' => $m ];
+                $scope = (isset($this->scope)) ?$this->scope :null;
+                if(!$scope && isset($M::$schema->scope['choices'])) $scope = 'choices';
+                if($scope) $qa['scope'] = 'choices';
+                $this->query = new Query($qa);
             }
             unset($M, $m);
         }
