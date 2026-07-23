@@ -1969,7 +1969,6 @@ class Model implements ArrayAccess, Iterator, Countable
         $q=array();
         if(!$groupBy && ($c = static::pk(null, true, true))) {
             $q['select'] = $c;
-            //$q['select'] = array_merge($c, static::columns($scope, null, 3, true));
             unset($c);
         }
         $q['scope'] = $scope;

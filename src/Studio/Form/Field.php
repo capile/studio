@@ -1579,8 +1579,14 @@ class Field extends SchemaObject
                     unset($n, $t);
                 }
                 $scope = (isset($this->scope)) ?$this->scope :null;
-                if(!$scope && isset($cn::$schema->scope['choices'])) $scope = 'choices';
-                if($scope) $Q['scope'] = $scope;
+                if(!$scope && isset($cn::$schema->scope['form-field-choices'])) $scope = 'form-field-choices';
+                if($scope) {
+                    if(!isset($Q['groupBy']) && ($c=$cn::pk(null, true, true))) {
+                        $Q['select'] = $c;
+                        unset($c);
+                    }
+                    $Q['scope'] = $scope;
+                }
             }
             $this->query = new Query($Q);
             unset($Q);
@@ -1599,8 +1605,11 @@ class Field extends SchemaObject
             if($this->bind && ($M=$this->getModel()) && method_exists($M, ($m='choices'.S::camelize($this->bind,true)))) {
                 $qa = [ 'model'=> $M, 'method' => $m ];
                 $scope = (isset($this->scope)) ?$this->scope :null;
-                if(!$scope && isset($M::$schema->scope['choices'])) $scope = 'choices';
-                if($scope) $qa['scope'] = 'choices';
+                if(!$scope && isset($M::$schema->scope['form-field-choices'])) $scope = 'form-field-choices';
+                if($scope) {
+                    if($c=$M::pk(null, true, true)) $qa['select'] = $c;
+                    $qa['scope'] = 'form-field-choices';
+                }
                 $this->query = new Query($qa);
             }
             unset($M, $m);
