@@ -267,7 +267,6 @@ class Api extends SchemaObject
     {
         $d = static::loadInterface($d);
         $a = func_get_args();
-        $expand = (count($a)>2) ?(int)$a[2] :1; 
         if(self::$className!=get_called_class()) self::$className = get_called_class();
         if(isset($d['enable']) && !$d['enable']) {
             static::error(404, static::t('errorNotFound'));
@@ -676,7 +675,7 @@ class Api extends SchemaObject
         return $this;
     }
 
-    public function setActions(array $actions=[], $expand=0): Api
+    public function setActions(array $actions=[]): Api
     {
         if(is_null($this->actions)) {
             $this->actions = [];
@@ -768,21 +767,13 @@ class Api extends SchemaObject
             }
         }
 
-        // should relations be expanded? why?
-        /*
-        $self = get_called_class();
-        foreach($actions as $an=>$action) {
-            if(!$action) continue;
-            $this->actions[$an] = ($expand && !is_object($action) && (isset($action['model']) || isset($action['relation'])))?(new $self($action, $this, $expand-1)):($action);
-        }
-        */
         return $this;
     }
 
-    public function getActions(?string $an=null, int $expand=0): array
+    public function getActions(?string $an=null): array
     {
         if(is_null($this->actions)) {
-            $this->setActions([], $expand);
+            $this->setActions([]);
         }
         if(!is_null($an)) {
             return (isset($this->actions[$an]))?($this->actions[$an]):([]);
@@ -3609,7 +3600,7 @@ class Api extends SchemaObject
         return $r;
     }
 
-    public function scope(string|array|null $a=null, bool $clean=false, bool $pk=false, ?int $expand=null): array
+    public function scope(string|array|null $a=null, bool $clean=false, bool $pk=false, bool $expand=false): array
     {
         if(!is_null($a)) {
             if(is_array($a)) {
@@ -3719,18 +3710,6 @@ class Api extends SchemaObject
                 return $r;
             }
         }
-        /*
-        if($clean) {
-            $scope = $this->scope;
-            foreach($scope as $k=>$v) {
-                if(!is_string($v) || strpos($v, '::')!==false || (substr($v, 0, 2)=='--' && substr($v, -2)=='--')) {
-                    unset($scope[$k]);
-                }
-                unset($k, $v);
-            }
-            return $scope;
-        }
-        */
 
         return $this->scope;
     }
