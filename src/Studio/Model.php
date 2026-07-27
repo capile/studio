@@ -535,7 +535,10 @@ class Model implements ArrayAccess, Iterator, Countable
                     }
                     $fd = $fn + $base;
                     $fn=$fn['bind'];
+                } else if(!is_string($fn)) {
+                    $fn = (string)$fn;
                 }
+                if(!$fn) continue;
                 if(is_null($fd)) $fd = array('bind'=>$fn)+$base;
                 if(strpos($fn, ' ')) {
                     $fn0 = $fn;
@@ -649,6 +652,26 @@ class Model implements ArrayAccess, Iterator, Countable
         return $d;
     }
 
+    public function currentForm(?string $fieldName=null) :Form|Field|null
+    {
+        if(!is_null($this->_forms)) {
+            foreach($this->_forms as $hash=>$instance) {
+                if($Form = Form::getInstance($instance)) {
+                    if(!is_null($fieldName)) {
+                        if(isset($Form[$fieldName])) {
+                            return $Form[$fieldName];
+                        }
+                    } else {
+                        return $Form;
+                    }
+                    $Form = null;
+                }
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Form renderer
      *
@@ -659,7 +682,7 @@ class Model implements ArrayAccess, Iterator, Countable
     public function getForm(array|string|null $scope=null, bool $pk=false, $parentForm=null): Form
     {
         if(is_null($scope)) {
-            $scope = 0;
+            $scope = '';
         }
         if (is_null($this->_forms)) {
             $this->_forms=array();

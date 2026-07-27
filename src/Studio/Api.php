@@ -466,7 +466,6 @@ class Api extends SchemaObject
             if(is_null(static::$format)) static::$format = array_shift($formats);
         }
         unset($formats);
-
         return static::$format;
     }
 
