@@ -1005,7 +1005,7 @@ class App
                 }
                 $uri = S::requestUri();
                 $ui=@parse_url($uri);
-                if(!$ui) {
+                if(!$ui || !isset($ui['path'])) {
                     $ui=array();
                     if(strpos($uri, '?')!==false) {
                         $ui['path']=substr($uri, 0, strpos($uri, '?'));

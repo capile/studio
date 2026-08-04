@@ -847,7 +847,7 @@ class Api extends SchemaObject
         return static::checkAuth($this->getAuth($action), $setHeaders);
     }
 
-    public static function authHeaders($cacheControl='private'): void
+    public static function authHeaders(string $cacheControl='private'): void
     {
         S::cacheControl($cacheControl, static::$expires);
         self::$headers[static::H_CACHE_CONTROL] = $cacheControl;

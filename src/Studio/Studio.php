@@ -710,9 +710,9 @@ class Studio
      * @param  bool   $published    If only published pages should be retrieved
      * @return        false || Entries
      */
-    public static function page($url, $exact=false, $published=null)
+    public static function page(?string $url, bool $exact=false, ?bool $published=null)
     {
-        $url = S::validUrl($url, false);
+        $url = S::validUrl((string) $url, false);
         if ($url=='') {
             return false;
         }
