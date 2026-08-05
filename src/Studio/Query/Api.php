@@ -236,7 +236,7 @@ class Api
             $this->config('cookieJar', true);
         }
         if(isset(self::$C[$n])) {
-            curl_close(self::$C[$n]);
+            self::$C[$n] = null;
             unset(self::$C[$n]);
         }
     }
@@ -246,7 +246,7 @@ class Api
         $this->_cid = $n;
         if(isset(self::$expires[$n]) && time()>self::$expires[$n]) {
             if(isset(self::$C[$n])) {
-                curl_close(self::$C[$n]);
+                self::$C[$n] = null;
                 unset(self::$C[$n]);
             }
             unset(self::$expires[$n]);
@@ -430,7 +430,7 @@ class Api
         curl_setopt($conn, CURLOPT_POSTFIELDS, $data);
         curl_setopt($conn, CURLOPT_HTTPHEADER, $headers);
         $R = $this->_exec($conn, 'json');
-        curl_close($conn);
+        $conn = null;
 
         return $R;
     }

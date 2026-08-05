@@ -28,7 +28,7 @@ class Markdown extends Parsedown
     public static 
         $htmlMarkup=true,
         $allBreaksEnabled=false,
-        $syntaxHighlight='pygmentize',//'geshi',
+        $syntaxHighlight,// 'pygmentize'||'geshi',
         $cacheSyntaxHighlight=3600,
         $index=[],
         $indexElements=['h1', 'h2', 'h3', 'h4'],
@@ -716,8 +716,7 @@ class Markdown extends Parsedown
                             $pl = $l;
                             while($pl-- >1) {
                                 if(isset($levels[$pl])) {
-                                    // pegar o último elemento
-                                    $lk = array_pop(array_keys($levels[$pl]));
+                                    $lk = (string) array_pop(array_keys($levels[$pl]));
                                     $level =& $levels[$pl][$lk];
                                     break;
                                 }
@@ -735,9 +734,7 @@ class Markdown extends Parsedown
                         $levels[$l] =& $level;
                         $levels[$l+1] =& $level[$index];
                     }
-
                     static::$index['h'][]=$index;
-
                 }
             }
         }

@@ -3116,6 +3116,7 @@ class Api extends SchemaObject
         if(preg_match('/\&ajax=[0-9]+\b/', $fo->action)) $fo->action = preg_replace('/\&ajax=[0-9]+\b/', '', $fo->action);
         $fo->id = S::slug($this->api).'--'.(($o->isNew())?('n'):(S::slug(@implode('-',$o->getPk(true)))));
         $fo->attributes['class'] = $this->config('attrFormClass');
+        $btnLabel = '';
         if(isset($this->t[$btn='button'.ucwords($this->action)])) {
             $btnLabel = $this->t[$btn='button'.ucwords($this->action)];
         } else if($this->action=='update' || $this->action=='new') {
@@ -3551,7 +3552,7 @@ class Api extends SchemaObject
         } else if(isset($this->options['order'])) {
             $order=$this->options['order'];
         }
-        if(isset($this->options['scope'][$this->action])) {
+        if($this->action && isset($this->options['scope'][$this->action])) {
             $a = $this->action;
         } else if($max==1) {
             $a = 'preview';

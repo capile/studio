@@ -65,7 +65,7 @@ if(!isset($action)) $action = $Api['action'];
 
         echo $Api->message(), (isset($app))?($app):('');
 
-        if($buttons && $Api::$listPagesOnTop): ?><div class="<?php echo $cPrefix ?>-standalone-buttons"><?php
+        if(isset($buttons) && $buttons && $Api::$listPagesOnTop): ?><div class="<?php echo $cPrefix ?>-standalone-buttons"><?php
             echo $buttons; 
         ?></div><?php endif;
 
@@ -138,7 +138,7 @@ if(!isset($action)) $action = $Api['action'];
                 $preview::$boxTemplate = $box;
                 unset($preview);
             } else if(is_object($preview) && $preview instanceof Form) {
-                if($buttons && $Api::$listPagesOnTop) {
+                if(isset($buttons) && $buttons && $Api::$listPagesOnTop) {
                     $preview->buttons[] = $buttons;
                     $buttons = null;
                 }
