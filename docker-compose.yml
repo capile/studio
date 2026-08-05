@@ -43,7 +43,7 @@ services:
   web.studio:
     hostname: web.studio
     container_name: web.studio
-    image: tecnodesign/nginx:latest
+    image: tecnodesign/nginx:v2
     volumes:
       - ./data/deploy/nginx:/etc/nginx/conf.d:Z
     ports:
