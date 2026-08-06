@@ -24,6 +24,7 @@ use Studio\Form\Field;
 use Studio\Asset\Image;
 use Studio\Studio;
 use Studio\Schema;
+use Studio\Schema\Model as SchemaModel;
 use Studio\Schema\ModelProperty;
 use Studio\Yaml;
 use Studio\Query;
@@ -262,6 +263,10 @@ class Model implements ArrayAccess, Iterator, Countable
         $update=false;
         if(!$schema) {
             $schema = static::$schema;
+            if(is_array($schema)) {
+                $schema = new SchemaModel($schema);
+                static::$schema = $schema;
+            }
             $update = !$array;
         }
 
@@ -443,9 +448,12 @@ class Model implements ArrayAccess, Iterator, Countable
             } else if(substr($scope, -5)==='.json') {
                 $S = S::unserialize(file_get_contents($f), 'json');
             }
-            if($S) {
+            if($S && is_array($S)) {
                 static::$schema->scope[$scope] = $S;
                 $scope = $S;
+            } else {
+                S::log('[WARNING] Could not load schema scope "'.$scope.'" on '.get_called_class());
+                $scope = [];
             }
             unset($S, $f);
         }
