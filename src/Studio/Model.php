@@ -449,15 +449,13 @@ class Model implements ArrayAccess, Iterator, Countable
             }
             unset($S, $f);
         }
-
-        $base = array();
-
+        $base = [];
         if(!is_array($scope)) {
             if($scope==='uid') {
                 $scope = static::pk(static::$schema, true);
             } else {
+                $labels = [];
                 if (!isset(static::$schema->scope[$scope])) {
-                    $labels = array();
                     foreach(static::$schema->properties as $fn=>$fd) {
                         if(is_array($fd)) {
                             $fd = new ModelProperty($fd);
@@ -469,11 +467,11 @@ class Model implements ArrayAccess, Iterator, Countable
                         unset($fn, $fd);
                     }
                     static::$schema->scope[$scope] = $labels;
-                    unset($labels);
                 }
-                $scope = static::$schema->scope[$scope];
+                $scope = $labels;
             }
         }
+        if(!is_array($scope)) $scope = [];
         if(isset($scope['__default'])) {
             $base = $scope['__default'];
             unset($scope['__default']);

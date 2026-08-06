@@ -1600,10 +1600,10 @@ class Api extends SchemaObject
             }
         }
 
-        return $this->link(false, true);
+        return $this->link(null, true);
     }
 
-    public function link(?string $a=null, string|int|bool|null $id=null, bool $ext=true, string|false|null $qs=null): string
+    public function link(string|false|null $a=null, string|int|bool|null $id=null, bool $ext=true, string|false|null $qs=null): string
     {
         if(is_null($this->url)) {
             $this->url = static::$base.'/'.$this->api;
@@ -2411,7 +2411,7 @@ class Api extends SchemaObject
                 static::error(404, static::t('previewNoResult'));
             }
             $this->message('<div class="s-msg s-msg-error"><p>'.static::t('previewNoResult').'</p></div>');
-            return $this->redirect($this->link(false, false), $this->link());
+            return $this->redirect($this->link(null, false), $this->link());
         }
         if(!$scope && isset($this->options['preview-scope-property']) && ($n=$this->options['preview-scope-property']) && ($rs=S::slug($o->$n)) && isset($cn::$schema->scope[$rs])) {
             $scope = array('scope::'.$rs);
@@ -2925,7 +2925,7 @@ class Api extends SchemaObject
                 }
                 $this->text['summary'] .= $msg;
 
-                $this->redirect($this->link(false, false), $oldurl);
+                $this->redirect($this->link(null, false), $oldurl);
             }
         } catch(AppException $e) {
             S::log('[INFO] User error while processing renderDelete: '.$e);
@@ -2937,7 +2937,7 @@ class Api extends SchemaObject
         } else {
             $this->message('<div class="s-msg s-msg-error"><p>'.$msg.'</p></div>');
         }
-        $this->redirect($this->link(false, false));
+        $this->redirect($this->link(null, false));
     }
 
     public function renderSchema(?Model $o=null, string|array|null $scope=null): void
@@ -3033,7 +3033,7 @@ class Api extends SchemaObject
             $o = $this->model();
             if(!$o) {
                 $this->message('<div class="s-msg s-msg-error"><p>'.static::t('previewNoResult').'</p></div>');
-                return $this->redirect($this->link(false, false));
+                return $this->redirect($this->link(null, false));
             }
         }
         if(is_null($scope) && $this->action) {
