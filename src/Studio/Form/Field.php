@@ -1352,7 +1352,7 @@ class Field extends SchemaObject
             }
             if($this->bind) {
                 $rules['model']=static::$defaultErrorMessage;
-            } else if ($this->form && $this->getModel() && method_exists($this->getModel(), ($m='validate'.S::camelize($this->id, true)))) {
+            } else if ($this->form && $this->id && $this->getModel() && method_exists($this->getModel(), ($m='validate'.S::camelize($this->id, true)))) {
                 $rules['model:'.$m]=static::$defaultErrorMessage;
             }
             if($this->choices) {
