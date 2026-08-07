@@ -157,6 +157,7 @@ class Api extends SchemaObject
         $additionalActions  = [ ],
         $listAction         = 'preview',
         $modelRenderPrefix  = 'render',
+        $standaloneOneCount = false,
         $actionsDefault     = [ 'list', 'preview' ],
         $share              = null,
         $boxTemplate        = '<div class="s-api-scope-block scope-$ID" data-action-scope="$ID">$INPUT</div>',
@@ -1664,7 +1665,7 @@ class Api extends SchemaObject
     {
         if(!S::isempty($this->id)) return true;
 
-        if(static::$standalone && $this->search) {
+        if(static::$standalone && $this->search && $this->config('standaloneOneCount')) {
             return ($this->count()==1);
         }
         if(!is_array($this->key)) {

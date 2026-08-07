@@ -2824,6 +2824,8 @@ class Model implements ArrayAccess, Iterator, Countable
 
             return static::find($args, 0);
         }
+
+        return null;
     }
 
     public function getOriginal(mixed $name, ?bool $fallback=true, ?bool $serialize=null): mixed
