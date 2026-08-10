@@ -4,15 +4,15 @@
     "tableName": "studio_index",
     "className": "Studio\\Model\\Index",
     "properties": {
-        "interface": { "type": "string", "required": true, "primary": true },
-        "id": { "type": "string", "required": true, "primary": true },
+        "interface": { "type": "string", "size": 100, "required": true, "primary": true },
+        "id": { "type": "string", "size": 100, "required": true, "primary": true },
         "summary": { "type": "string", "size": 2000 },
         "indexed": { "type": "datetime", "required": true, "index": [ "studio_index__indexed_idx" ] },
         "created": { "type": "datetime", "required": true },
         "updated": { "type": "datetime", "required": true }
     },
     "relations": {
-        "Interfaces": { "local": "interface", "foreign": "id", "type": "one", "className": "Studio\\Model\\Apis", "constraint": { "fk_studio_index__apis": "cascade" } },
+        "Interfaces": { "local": "interface", "foreign": "id", "type": "one", "className": "Studio\\Model\\Apis" },
         "IndexText": { "local": [ "interface", "id" ], "foreign": [ "interface", "id" ], "type": "many", "className": "Studio\\Model\\IndexText" },
         "IndexDate": { "local": [ "interface", "id" ], "foreign": [ "interface", "id" ], "type": "many", "className": "Studio\\Model\\IndexDate" },
         "IndexBool": { "local": [ "interface", "id" ], "foreign": [ "interface", "id" ], "type": "many", "className": "Studio\\Model\\IndexBool" },

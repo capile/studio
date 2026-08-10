@@ -4,14 +4,15 @@
     "tableName": "studio_index_bool",
     "className": "Studio\\Model\\IndexBool",
     "properties": {
-        "interface": { "type": "string", "required": true, "primary": true },
-        "id": { "type": "string", "required": true, "primary": true },
+        "interface": { "type": "string", "size": 100, "required": true, "primary": true },
+        "id": { "type": "string", "size": 100, "required": true, "primary": true },
         "name": { "type": "string", "required": true, "primary": true, "size": 200 },
         "value": { "type": "bool", "format": "bool" },
         "created": { "type": "datetime", "required": true },
         "updated": { "type": "datetime", "required": true }
     },
     "relations": {
+        "Api": { "local": "interface", "foreign": "id", "type": "one", "className": "Studio\\Model\\Apis" },
         "Index": { "local": [ "interface", "id"], "foreign": [ "interface", "id"], "type": "one", "className": "Studio\\Model\\Index", "constraint": { "fk_studio_index_bool__index": "cascade" } }
     },
     "scope": {

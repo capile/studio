@@ -588,10 +588,13 @@ class Index extends Model
         }
         // check studio and index database, and create tables if required
         $check = Studio::enabledModels();
+        if($check) $check = array_flip($check);
+        if(file_exists($f=S_VAR.'/deploy/models.yml') && ($models=Yaml::loadFile($f))) $check += $models;
         $H = [];
         $T = [];
         $load = [];
-        foreach($check as $cn) {
+        foreach($check as $cn => $ref) {
+            if(!class_exists($cn) || !is_a($cn, 'Studio\\Model', true) || $cn::$schema->type==='view') continue;
             $dbn = $cn::$schema->database;
             if(!($cdb=Query::database($dbn))) continue;
             if(!isset($H[$dbn])) $H[$dbn] = $cn::queryHandler();
@@ -613,8 +616,10 @@ class Index extends Model
                             }
                         }
                     }
-                    if(file_exists($f=S_VAR.'/deploy/data/'.str_replace('\\', '_', $cn).'.yml') || file_exists($f=S_ROOT.'/data/deploy/data/'.str_replace('\\', '_', $cn).'.yml')) {
-                        $load[] = $f;
+                    if(is_string($ref) && $ref) {
+                        $load[$cn] = $ref;
+                    } else if(file_exists($f=S_VAR.'/deploy/data/'.str_replace('\\', '_', $cn).'.yml') || file_exists($f=S_ROOT.'/data/deploy/data/'.str_replace('\\', '_', $cn).'.yml')) {
+                        $load[$cn] = $f;
                     }
                 } catch(Exception $e) {
                     S::log('[WARNING] Error while creating table: '.$e->getMessage(), $H[$dbn]->lastQuery());
@@ -656,7 +661,7 @@ class Index extends Model
                 unset($rel, $idx);
             }
         }
-        foreach($load as $f) {
+        foreach($load as $cn=>$f) {
             if($D = Yaml::loadFile($f)) {
                 Query::import($D);
             }
