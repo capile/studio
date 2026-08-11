@@ -16,7 +16,7 @@ use Studio\Exception\AppException;
 
 class Studio
 {
-    const VERSION = '2.0.1';
+    const VERSION = '2.0.2';
     const VER = 2.0;
 
     protected static
