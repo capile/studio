@@ -155,7 +155,7 @@ class Contents extends Model
         }
     }
 
-    public static function find(mixed $s=null, ?int $limit=0, array|string|null $scope=null, bool $collection=true, string|array|bool|null $orderBy=null, string|array|bool|null $groupBy=null): Collection|Model|array|false
+    public static function find(mixed $q=null, ?int $limit=0, array|string|null $scope=null, bool $collection=true, string|array|bool|null $orderBy=null, string|array|bool|null $groupBy=null): Collection|Model|array|false
     {
         if((is_string($q) && ($page=S::decrypt($q, null, 'uuid'))) 
             || (is_array($q) && isset($q['source']) && count($q)===1 && ($page=$q['source']))
