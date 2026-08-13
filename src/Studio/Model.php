@@ -2840,6 +2840,7 @@ class Model implements ArrayAccess, Iterator, Countable
         $v = $this->_original[$name];
         if($serialize && !is_string($v) && !is_null($v) && !is_bool($v)) {
             if(isset(static::$schema->properties[$name]->serialize)) $serialize=static::$schema->properties[$name]->serialize;
+            if(!is_string($serialize)) $serialize = 'json';
 
             return S::serialize($v, $serialize);
         }

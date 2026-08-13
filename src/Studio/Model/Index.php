@@ -667,6 +667,28 @@ class Index extends Model
             }
             unset($D, $f);
         }
+        if(file_exists($f=S_VAR.'/deploy/views.yml') && ($views=Yaml::loadFile($f))) {
+            foreach($views as $cn => $def) {
+                if(!class_exists($cn) || !is_a($cn, 'Studio\\Model', true)) continue;
+                if(!is_string($def) || stripos($def, 'select ')===false) $def = $cn::$schema->view;
+                if(!$def || !is_string($def)) continue;
+                $dbn = $cn::$schema->database;
+                if(!($cdb=Query::database($dbn))) continue;
+                if(!isset($H[$dbn])) $H[$dbn] = $cn::queryHandler();
+                if(!isset($T[$dbn])) {
+                    $T[$dbn] = [];
+                    foreach($H[$dbn]->getTables($dbn) as $t) {
+                        if(is_array($t)) $t = $t['table_name'];
+                        $T[$dbn][$t] = $t;
+                    }
+                }
+                if(!isset($T[$dbn][$cn::$schema->tableName])) {
+                    if(S::$log>0) S::log('[INFO] Creating view '.$dbn.'.'.$cn::$schema->tableName);
+                    $sql = 'create view '.$cn::$schema->tableName.' as '.$def;
+                    var_export($H[$dbn]->run($sql));
+                }
+            }
+        }
 
         return $db;
     }
