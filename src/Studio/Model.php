@@ -2063,7 +2063,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return $this->_collection;
     }
 
-    public function renderScope(string|array|null $scope=null, bool $xmlEscape=true, ?string $box=null, ?string $tpl=null, ?string $sep=null, bool $excludeEmpty=null, $showOriginal=null): string
+    public function renderScope(string|array|null $scope=null, bool $xmlEscape=true, ?string $box=null, ?string $tpl=null, ?string $sep=null, ?bool $excludeEmpty=null, $showOriginal=null): string
     {
         static $flabel;
         $id = $scope;
