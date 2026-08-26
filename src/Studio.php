@@ -2037,10 +2037,8 @@ class Studio
         if(!$s) {
             return '';
         } else if($safe && method_exists($P, 'safeText')) {
-            $P->setSafeMode(true);
             return $P->safeText($s);
         } else {
-            $P->setSafeMode(false);
             return $P->text($s);
         }
     }
