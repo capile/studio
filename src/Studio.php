@@ -1458,13 +1458,13 @@ class Studio
     public static function output(array|string $s, string $format='', bool $exit=true): void
     {
         self::unflush();
-        if($format==='json') {
-            if(!is_string($s)) {
-                $s = json_encode($s, JSON_FORCE_OBJECT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
-            }
-            $format = 'application/json; charset=utf-8';
+        if(!is_string($s)) {
+            $hint = ($format) ?preg_replace('@^application/|[\+;].*$@', '', $format) :'';
+            $s = self::serialize($s, $hint);
         }
-
+        if($format && strpos($format, '/')===false) {
+            $format = 'application/'.$format.'; charset=utf-8';
+        }
         if ($format != '') {
             @header('content-type: ' . $format);
         } else {
