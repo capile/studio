@@ -16,7 +16,7 @@ use Studio\Exception\AppException;
 
 class Studio
 {
-    const VERSION = '2.0.5';
+    const VERSION = '2.0.6';
     const VER = 2.0;
 
     protected static
@@ -2037,8 +2037,10 @@ class Studio
         if(!$s) {
             return '';
         } else if($safe && method_exists($P, 'safeText')) {
+            $P->setSafeMode(true);
             return $P->safeText($s);
         } else {
+            $P->setSafeMode(false);
             return $P->text($s);
         }
     }

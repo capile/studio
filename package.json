@@ -1,6 +1,6 @@
 {
     "name": "Studio",
-    "version": "2.0.5",
+    "version": "2.0.6",
     "description": "Own your data!",
     "main": "studio.js",
     "author": "Guilherme Capilé",
@@ -19,6 +19,8 @@
         "uglify-js": "^3.19"
     },
     "scripts": {
+        "composer-install": "docker run -it -u root -v $PWD:/var/www/studio:z tecnodesign/studio:v2-dev composer install --no-dev",
+        "composer-update": "docker run -it -u root -v $PWD:/var/www/studio:z tecnodesign/studio:v2-dev composer update --no-dev",
         "build": "docker build -t tecnodesign/studio:v2-dev 'git@github.com:capile/studio.git#main' -f Dockerfile-dev && docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.0 -t tecnodesign/studio:latest 'git@github.com:capile/studio.git#main'",
         "publish": "docker push tecnodesign/studio:v2-dev && docker push tecnodesign/studio:v2 && docker push tecnodesign/studio:v2.0 && docker push tecnodesign/studio:latest",
         "build-nginx": "docker build -t tecnodesign/nginx:latest 'git@github.com:capile/studio.git#v2.0' -f data/deploy/containers/nginx.dockerfile && docker push tecnodesign/nginx:latest",

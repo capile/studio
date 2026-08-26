@@ -241,12 +241,20 @@ class Markdown extends Parsedown
     protected function blockHeader($Line)
     {
         $Block = parent::blockHeader($Line);
-        if (isset($Block['element']['text']) && preg_match('/[ #]*{('.$this->regexAttribute.'+)}[ ]*$/', $Block['element']['text'], $matches, PREG_OFFSET_CAPTURE))
-        {
-            $attributeString = $matches[1][0];
-            $Block['element']['attributes'] = $this->parseAttributeData($attributeString);
-            $Block['element']['text'] = substr($Block['element']['text'], 0, $matches[0][1]);
+        $target = null;
+        if(isset($Block['element']['text'])) {
+            $target =& $Block['element']['text'];
+        } else if(isset($Block['element']['handler']['argument'])) {
+            $target =& $Block['element']['handler']['argument'];
         }
+
+        if ($target && preg_match('/[ #]*{('.$this->regexAttribute.'+)}[ ]*$/', $target, $matches)) {
+            $attributeString = $matches[1];
+            $Block['element']['attributes'] = $this->parseAttributeData($attributeString);
+            $target = substr($target, 0, strlen($target) - strlen($matches[0]));
+        }
+        unset($target);
+
         return $Block;
     }
 
@@ -338,12 +346,20 @@ class Markdown extends Parsedown
     protected function blockSetextHeader($Line, array|null $Block = null)
     {
         $Block = parent::blockSetextHeader($Line, $Block);
-        if ($Block && isset($Block['element']['text']) && preg_match('/[ ]*{('.$this->regexAttribute.'+)}[ ]*$/', $Block['element']['text'], $matches, PREG_OFFSET_CAPTURE))
-        {
+        if(!$Block) return $Block;
+
+        $target = null;
+        if(isset($Block['element']['text'])) {
+            $target =& $Block['element']['text'];
+        } else if(isset($Block['element']['handler']['argument'])) {
+            $target =& $Block['element']['handler']['argument'];
+        }
+        if ($target && preg_match('/[ ]*{('.$this->regexAttribute.'+)}[ ]*$/', $target, $matches, PREG_OFFSET_CAPTURE)) {
             $attributeString = $matches[1][0];
             $Block['element']['attributes'] = $this->parseAttributeData($attributeString);
-            $Block['element']['text'] = substr($Block['element']['text'], 0, $matches[0][1]);
+            $target = substr($target, 0, $matches[0][1]);
         }
+        unset($target);
         return $Block;
     }
 
@@ -655,15 +671,10 @@ class Markdown extends Parsedown
 
     protected function element(array $Element)
     {
-        $index = null;
         if(!isset($Element['name'])) {
-            if(isset($Element['rawHtml'])) {
-                return $Element['rawHtml'];
-            } else {
-                $Element['name'] = 'span';
-            }
+            return parent::element($Element);
         }
-
+        $index = null;
         if(static::$indexElements && in_array($Element['name'], static::$indexElements)) {
             if(!isset($Element['attributes']['class']) || strpos($Element['attributes']['class'], 'noindex')===false) {
                 if(!isset($Element['attributes']['id'])) {
@@ -673,9 +684,14 @@ class Markdown extends Parsedown
                         $index = 1;
                         static::$index[$Element['name']]=array();
                     }
-
-                    if(isset($Element['text']) && substr($Element['name'], 0, 1)==='h') {
-                        $indexTxt = static::$indexPrefix.S::slug(strip_tags($this->innerText($Element['text'])), '_-', true);
+                    $text = '';
+                    if(substr($Element['name'], 0, 1)==='h') {
+                        if(isset($Element['text'])) $text = $Element['text'];
+                        else if(isset($Element['handler']['argument'])) $text = $Element['handler']['argument'];
+                        $text = ($text) ?strip_tags(trim($text)) :'';
+                    }
+                    if($text) {
+                        $indexTxt = static::$indexPrefix.S::slug(strip_tags($this->innerText($text)), '_-', true);
                         if(isset(static::$index[$Element['name']][$index])) {
                             $indexTxt .= '_'.$index;
                         }
