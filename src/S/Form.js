@@ -1667,36 +1667,38 @@ function initChoicesJs()
     new Choices(this, {
         silent: true,
         duplicateItemsAllowed: false,
-        removeItems: true,
         removeItemButton: true,
-        searchEnabled: true,
         classNames: {
-          containerOuter: 's-input-choices',
-          containerInner: 's-choices-inner',
-          input: 's-choices-input',
-          inputCloned: 's-choices-input--cloned',
-          list: 's-choices-list',
-          listItems: 's-choices-list--multiple',
-          listSingle: 's-choices-list--single',
-          listDropdown: 's-choices-list--dropdown',
-          item: 's-choices-item',
-          itemSelectable: 's-choices-item--selectable',
-          itemDisabled: 's-disabled-input',
-          itemChoice: 's-choices-item--choice',
-          placeholder: 's-choices-placeholder',
-          group: 's-choices-group',
-          groupHeading: 's-choices-heading',
-          button: 's-choices-button',
-          activeState: 'is-active',
-          focusState: 'is-focused',
-          openState: 'is-open',
-          disabledState: 'is-disabled',
-          highlightedState: 'is-highlighted',
-          selectedState: 'is-selected',
-          flippedState: 'is-flipped',
-          loadingState: 'is-loading',
-          noResults: 'has-no-results',
-          noChoices: 'has-no-choices'
+          containerOuter: ['s-input-choices'],              // choices
+          containerInner: ['s-choices-inner'],              // choices__inner
+          input: ['s-choices-input'],                       // choices__input
+          inputCloned: ['s-choices-input--cloned'],         // choices__input--cloned
+          list: ['s-choices-list'],                         // choices__list
+          listItems: ['s-choices-list--multiple'],          // choices__list--multiple
+          listSingle: ['s-choices-list--single'],           // choices__list--single
+          listDropdown: ['s-choices-list--dropdown'],       // choices__list--dropdown
+          item: ['s-choices-item'],                         // choices__item
+          itemSelectable: ['s-choices-item--selectable'],   // choices__item--selectable
+          itemDisabled: ['s-disabled-input'],               // choices__item--disabled *
+          itemChoice: ['s-choices-item--choice'],           // choices__item--choice
+          description: ['s-choices-description'],           // choices__description
+          placeholder: ['s-choices-placeholder'],           // choices__placeholder
+          group: ['s-choices-group'],                       // choices__group
+          groupHeading: ['s-choices-heading'],              // choices__heading
+          button: ['s-choices-button'],                     // choices__button
+          activeState: ['is-active'],
+          focusState: ['is-focused'],
+          openState: ['is-open'],
+          disabledState: ['is-disabled'],
+          highlightedState: ['is-highlighted'],
+          selectedState: ['is-selected'],
+          flippedState: ['is-flipped'],
+          loadingState: ['is-loading'],
+          invalidState: ['is-invalid'],
+          notice: ['s-choices-notice'],                     // choices__notice
+          addChoice: ['s-choices-item--selectable','add-choice'], // ['choices__item--selectable', 'add-choice']
+          noResults: ['has-no-results'],
+          noChoices: ['has-no-choices']
         },
     });
 }
