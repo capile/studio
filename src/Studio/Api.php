@@ -266,7 +266,7 @@ class Api extends SchemaObject
      */
     public function __construct(string|array|null $d=null)
     {
-        $d = static::loadInterface($d);
+        $d = static::configure($d);
         $a = func_get_args();
         if(self::$className!=get_called_class()) self::$className = get_called_class();
         if(isset($d['enable']) && !$d['enable']) {
@@ -2099,7 +2099,7 @@ class Api extends SchemaObject
                     $fn = 'max('.$fn.') _m';
                 }
                 $R = $cn::find($this->search,1,[$fn],false,false,true);
-                if($R) $lmod = strtotime($R->_m);
+                if($R && $R->_m) $lmod = strtotime($R->_m);
                 unset($R, $cn);
             }
         }
@@ -4214,7 +4214,7 @@ class Api extends SchemaObject
     public static function find(string|array|null $q=null, bool $checkAuth=true): array
     {
         if($q) {
-            if(is_string($q)) return array(static::loadInterface($q));
+            if(is_string($q)) return array(static::configure($q));
         }
         $Is = array();
         $dd = App::config('app', 'data-dir');
@@ -4241,7 +4241,7 @@ class Api extends SchemaObject
             if(!$L) continue;
             foreach($L as $i) {
                 $a = basename($i, '.yml');
-                $I = static::loadInterface($a);
+                $I = static::configure($a);
                 if(isset($I['enable']) && !$I['enable']) {
                     $I = null;
                 } else if($checkAuth) {
@@ -4267,14 +4267,8 @@ class Api extends SchemaObject
                 foreach($L as $i=>$o) {
                     $oid = $o->id;
                     if(isset($toIndex[$oid])) unset($toIndex[$oid]);
-                    if($f = $o->cacheFile()) {
-                        $a = S::config($f, S::env());
-                        if(isset($Is[$oid])) {
-                            $Is[$oid] = S::mergeRecursive($a, $Is[$oid]);
-                        } else {
-                            $Is[$oid] = $a;
-                        }
-                    }
+                    if(!isset($Is[$oid])) $Is[$oid] = [];
+                    $Is[$oid] = $o->cacheFile(S::env(), $Is[$oid]);
                     unset($L[$i], $i, $o);
                 }
             }
@@ -4340,6 +4334,10 @@ class Api extends SchemaObject
 
     public static function loadInterface(string|array $a=array(), bool $prepare=true): array
     {
+        return static::configure($a, $prepare);
+    }
+    public static function configure(string|array $a=array(), bool $prepare=true): array
+    {
         if(!is_array($a) && $a) {
             $a = array('api'=>$a);
         }
@@ -4368,12 +4366,8 @@ class Api extends SchemaObject
             }
             if(Studio::config('enable_api_index')) {
                 $q = ['id'=>$a['api'], 'app' => S_APP, 'listed='=>static::base()];
-                if($A = Apis::find($q,1)) {
-                    if(($f = $A->cacheFile()) && !in_array($f, $not)) {
-                        if($b = S::config($f, S::env())) {
-                            $a = $b + $a;
-                        }
-                    }
+                if($A = Apis::find($q,1,'api')) {
+                    $a = $A->cacheFile(S::env(), $a, $not);
                 }
             }
             static $r;

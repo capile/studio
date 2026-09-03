@@ -20,6 +20,7 @@ use Studio\Model;
 use Studio\Model\Migration;
 use Studio\Model\Apis;
 use Studio\Query;
+use Studio\Schema;
 use Studio\Studio;
 use Studio\Yaml;
 use Studio\Exception\AppException;
@@ -516,7 +517,7 @@ class Index extends Model
         return $r;
     }
 
-    public static function propToRel($value, $name, $schema, &$output=[], $base=[])
+    public static function propToRel(mixed $value, string $name, array|Schema $schema, array &$output=[], array $base=[]): ?array
     {
         static $map = ['string'=>'text', 'int64'=>'number', 'int'=>'number', 'float'=>'number', 'decimal'=>'number', 'char'=>'text', 'varchar'=>'text', 'nvarchar'=>'text', 'bit'=>'bool', 'boolean'=>'bool'];
         static $skip = ['_new', '_original', '_update', '_delete', '_relation', '_query', '_connected', '_p', '_forms'];
@@ -530,7 +531,7 @@ class Index extends Model
             $type = 'text';
         }
         if(is_array($value)) {
-            $subs = ($schema && $type=='object' && isset($schema['properties'])) ?$schema['properties'] :null;
+            $subs = ($schema && $type=='object' && isset($schema->properties)) ?$schema->properties :null;
             $fd = (!$subs && $schema && $type=='array' && isset($schema['items'])) ?$schema['items'] :null;
             foreach($value as $k=>$v) {
                 if($subs) {
@@ -550,7 +551,7 @@ class Index extends Model
         else if(is_bool($value)) $type = 'bool';
 
         $rel = 'Index'.ucwords($type);
-        if(!isset($output[$rel])) $rel = 'IndexText';
+        if(!isset(static::$schema->relations[$rel])) $rel = 'IndexText';
         $output[$rel][] = $base + ['name'=>(string)$name, 'value'=>$value];
 
         return $output;
@@ -695,8 +696,28 @@ class Index extends Model
 
     public static function prepareApi($a)
     {
-        if(isset($a['search']['interface']) && ($A=Apis::find(['id'=>$a['search']['interface'], 'model!='=>'' ],1,['model'])) && (method_exists($M=$A->model, 'prepareIndexApi'))) {
-            return $M::prepareIndexApi($a);
+        if(isset($a['_indexApiOptions']['model']) && is_string($M=$a['_indexApiOptions']['model'])) {
+            if(is_a($M, 'Studio\\Model', true)) {
+                if(isset($M::$schema->scope['review']) && is_array($M::$schema->scope['review'])) {
+                    $pk = ['interface','id'];
+                    if(!isset($a['options']['group-by'])) $a['options']['group-by'] = $pk;
+                    $a['options']['scope']['review'] = [];
+                    foreach($M::$schema->scope['review'] as $label=>$fn) {
+                        if(!isset($M::$schema->properties[$fn])) continue;
+                        if(is_int($label)) $label = $fn;
+                        $fd = static::propToRel(null, $fn, $M::$schema->properties[$fn]);
+                        foreach($fd as $rn=>$rv) break;
+                        $rnc = S::compress64($rn.'.'.$rv[0]['name']);
+                        if(!isset(static::$schema->relations[$rnc])) {
+                            static::$schema->relations[$rnc] = ['local'=>$pk, 'foreign'=>$pk, 'type'=>'one', 'className'=>'Studio\\Model\\'.$rn, 'on'=>['`name`='.S::sql($rv[0]['name'])]];
+                        }
+                        $a['options']['scope']['review'][$label] = "$rnc.value _{$rv[0]['name']}";
+                    }
+                }
+            }
+            if(method_exists($M, 'prepareIndexApi')) {
+                $a = $M::prepareIndexApi($a);
+            }
         }
         return $a;
     }

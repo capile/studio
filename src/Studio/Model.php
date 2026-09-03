@@ -2350,11 +2350,12 @@ class Model implements ArrayAccess, Iterator, Countable
         $ba = array();
         $groupBy = $groupClass=null;
         foreach($labels as $label=>$fn) {
-            if(substr($label, 0, 2)=='a:') {
+            $lp = (is_string($label)) ?substr($label, 0, 2) :'';
+            if($lp==='a:') {
                 $fn = ($p=strrpos($fn, ' '))?(substr($fn, $p+1)):($fn);
                 $ba[substr($label,2)] = $this->$fn;
                 unset($labels[$label], $p);
-            } else if(substr($label, 0, 2)=='g:') {
+            } else if($lp==='g:') {
                 $fn = ($p=strrpos($fn, ' '))?(substr($fn, $p+1)):($fn);
                 $groupBy = $fn;
                 $groupClass = substr($label, 2);
@@ -2711,19 +2712,21 @@ class Model implements ArrayAccess, Iterator, Countable
                     }
                 }
             }
-            if($choices && is_array($val)) {
-                foreach($val as $k=>$v) {
-                    if(isset($choices[$v])) $val[$k] = (string) $choices[$v];
-                    else if(is_array($v)) $val[$k] = array_shift($v);
-                    else if(is_object($v)) $val[$k] = (string) $v;
-                }
-                $val = implode(', ', $val);
+            if($choices) {
+                if(is_array($val)) {
+                    foreach($val as $k=>$v) {
+                        if(isset($choices[$v])) $val[$k] = (string) $choices[$v];
+                        else if(is_array($v)) $val[$k] = array_shift($v);
+                        else if(is_object($v)) $val[$k] = (string) $v;
+                    }
+                    $val = implode(', ', $val);
 
-            } else if(isset($choices[$val])) {
-                $val = $choices[$val];
-                if(is_array($val)) $val = array_shift($val);
+                } else if(isset($choices[$val])) {
+                    $val = $choices[$val];
+                    if(is_array($val)) $val = array_shift($val);
+                }
+                unset($choices);
             }
-            unset($choices);
         } else if(isset($fd['format']) && substr($fd['format'],0,4)=='date') {
             if($t=strtotime($val)) {
                 $df = ($fd['format']=='datetime')?(S::$dateFormat.' '.S::$timeFormat):(S::$dateFormat);

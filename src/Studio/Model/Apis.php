@@ -142,7 +142,7 @@ class Apis extends Model
         return '<code style="white-space:pre">'.S::xml(preg_replace('#^---\n#', '', S::serialize($this->loadSchema(), 'yaml'))).'</code>';
     }
 
-    public function cacheFile()
+    public function cacheFile(?string $loadEnv=null, array $patch=[], array $skip=[]): string|array|null
     {
         static $n;
         static $d;
@@ -163,9 +163,10 @@ class Apis extends Model
         $f .=  '/'.$id.'.yml';
         $Api = Api::$className;
         $f0 = $Api::configFile($id, [$f]);
-        $lmod = false;
-        if($this->updated) $lmod = strtotime($this->updated);
+        $lmod = filemtime(__FILE__);
+        if($this->updated && ($t=strtotime($this->updated)) && $t>$lmod) $lmod = $t;
         if($f0 && file_exists($f0) && ($t=filemtime($f0)) && $t>$lmod) $lmod = $t;
+        $a = [];
         if(!file_exists($f) || $lmod>filemtime($f)) {
             $a = ['all'=>$this->asArray('api')];
             $addParent = true;
@@ -174,13 +175,15 @@ class Apis extends Model
                 $addParent = false;
             }
             if(!isset($a['all']['options'])) $a['all']['options'] = [];
-            if(!isset($a['all']['model']) && !isset($a['all']['base'])) {
+            $indexed = (bool) ($this->indexed || $this->index_interval > 0);
+            if(!isset($a['all']['base']) && (!isset($a['all']['model']) || $indexed)) {
+                $a['all']['_indexApiOptions'] = $a['all'];
                 $a['all']['model'] = 'Studio\\Model\\Index';
                 $a['all']['search'] = ['interface'=>$this->id];
                 $a['all']['key'] = 'id';
                 $a['all']['options'] += ['scope'=>['uid'=>'id'], 'link-encode'=>true];
                 $a['all']['prepare'] = 'prepareApi';
-                $a['all']['options'] += ['index'=>($this->index_interval > 0)];
+                $a['all']['options'] += ['index'=>$indexed];
             }
             if($addParent) {
                 $a['all']['options'] += ['list-parent'=>$n, 'priority'=>$i++];
@@ -189,6 +192,20 @@ class Apis extends Model
             if(!S::save($f, S::serialize($a, 'yaml'), true)) {
                 $f = null;
             }
+        }
+
+        if($f && $skip && in_array($f, $skip)) $f = null;
+        if($loadEnv) {
+            if(!$f) {
+                $r = $patch;
+            } else {
+                $r = S::config($f, $loadEnv);
+                if($patch && $r) {
+                    $r = S::mergeRecursive($r, $patch);
+                }
+            }
+
+            return $r;
         }
 
         return $f;

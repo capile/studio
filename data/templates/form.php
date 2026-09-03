@@ -27,6 +27,7 @@ foreach($fields as $fn=>$fo) {
             $fieldsets[$fs] .= $s;
         }
     }
+    unset($fn, $fo);
 }
 
 if(!isset($before)) $before = '';

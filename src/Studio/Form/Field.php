@@ -2063,6 +2063,9 @@ class Field extends SchemaObject
             }
 
             if($arg['value']) {
+                // this recipe uses increasingly more memory for each sub-form instance, so for each value we top it up with more memory/time
+                $i = count($arg['value']);
+                S::tune('', 5*$i, 5*$i);
                 foreach ($arg['value'] as $i=>$model) {
                     $form = $model->getForm($scope, !$model->isNew(), $this->form);
                     $input .= '<div class="item '.(($i%2)?('even'):('odd')).'">';
@@ -2073,9 +2076,10 @@ class Field extends SchemaObject
                         }
                         $f->prefix = "{$this->getName()}[{$i}]";
                         $input .= $f->render();
+                        unset($fn, $f);
                     }
                     $input .= '</div>';
-                    unset($model, $i);
+                    unset($model, $i, $form);
                 }
             }
         } else if($fo=$this->getSubForm()) {

@@ -26,7 +26,7 @@
     },
     "scope": {
         "string": [ "title" ],
-        "api": { "api": "id", "title": "title", "model": "model", "credential": "credential", "app": "app", "listed": "listed" },
+        "api": { "api": "id", "title": "title", "model": "model", "credential": "credential", "app": "app", "listed": "listed", "index_interval": "index_interval", "indexed": "indexed" },
         "interface": { "api": "id", "title": "title", "model": "model", "credential": "credential" }
     },
     "order": {
