@@ -9,6 +9,7 @@ RUN apk upgrade --update \
       freetype \
       git \
       gnupg \
+      icu \
       libjpeg-turbo \
       libldap \
       libpng \
@@ -26,6 +27,7 @@ RUN apk upgrade --update \
       curl-dev \
       cyrus-sasl-dev \
       freetype-dev \
+      icu-dev \
       ldb-dev \
       libtool \
       samba-dev \
@@ -58,6 +60,8 @@ RUN apk upgrade --update \
       --with-freetype \
       --with-jpeg \
       --with-webp \
+    && \
+    docker-php-ext-configure intl \
     && \
     docker-php-ext-configure ldap \
     && \
