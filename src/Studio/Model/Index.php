@@ -517,7 +517,7 @@ class Index extends Model
         return $r;
     }
 
-    public static function propToRel(mixed $value, string $name, array|Schema $schema, array &$output=[], array $base=[]): ?array
+    public static function propToRel(mixed $value, string $name, array|Schema|null $schema, array &$output=[], array $base=[]): ?array
     {
         static $map = ['string'=>'text', 'int64'=>'number', 'int'=>'number', 'float'=>'number', 'decimal'=>'number', 'char'=>'text', 'varchar'=>'text', 'nvarchar'=>'text', 'bit'=>'bool', 'boolean'=>'bool'];
         static $skip = ['_new', '_original', '_update', '_delete', '_relation', '_query', '_connected', '_p', '_forms'];
