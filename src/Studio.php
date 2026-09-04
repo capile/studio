@@ -1252,7 +1252,7 @@ class Studio
         return self::encode($s, 'ISO-8859-1,Windows-1252');
     }
 
-    public static function getBrowserCache(string $etag, int|string $lastModified, int|null $expires=null): void
+    public static function getBrowserCache(string $etag, int|string $lastModified, ?int $expires=null): void
     {
         @header(
             'last-modified: '.

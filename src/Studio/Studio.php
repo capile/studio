@@ -41,8 +41,8 @@ class Studio
         $schema,            // filled with the page schema
         $connection,        // connection to use, set to false to disable database
         $params=array(),    // updated at runtime, general params
-        $cacheTimeout=false,// configurable, cache timeout
-        $staticCache=false, // configurable, store static previews of entries
+        $cacheTimeout,      // configurable, cache timeout
+        $staticCache,       // configurable, store static previews of entries
         $home='/_studio',   // configurable, where to load Studio interface
         $uid='/_me',        // configurable, where to load a json to check if a user is authenticated
         $uploadDir,         // deprecated, use S::uploadDir
