@@ -258,7 +258,7 @@ class Studio
         return $lang;
     }
 
-    public static function languageHeaders()
+    public static function languageHeaders(): string
     {
         $meta = '<meta name="language" content="'.S::$lang.'" />';
         if(!self::$languages) {
@@ -338,7 +338,7 @@ class Studio
         $p = App::request('post');
 
         if($p && is_array($p)) {
-            foreach($p as $i=>$o) {
+            foreach($p as $o) {
                 if($r=static::interfaceAddress($o)) {
                     $R[] = $r;
                 }
@@ -355,7 +355,7 @@ class Studio
         static::listApis();
     }
 
-    public static function listProperties()
+    public static function listProperties(): bool
     {
         $R=array();
         $U=S::getUser();
@@ -413,7 +413,7 @@ class Studio
         return true;
     }
 
-    public static function content($page, $checkLang=true, $checkTemplates=true, $addResponse=true, $extAttr=[])
+    public static function content($page, $checkLang=true, $checkTemplates=true, $addResponse=true, array $extAttr=[])
     {
         static $root;
 
@@ -559,7 +559,7 @@ class Studio
         return $C;
     }
 
-    public static function setStaticCache()
+    public static function setStaticCache(): void
     {
         $r = array(
             'c'=>App::response('cache-control'),
@@ -570,7 +570,7 @@ class Studio
         unset($r);
     }
 
-    public static function setStaticCacheDownload($f, $format=null)
+    public static function setStaticCacheDownload($f, $format=null): void
     {
         $r = array(
             'c'=>App::response('cache-control'),
@@ -689,7 +689,7 @@ class Studio
         return $r;
     }
 
-    public static function ignore($url)
+    public static function ignore($url): bool
     {
         if(!is_array(self::$ignore)) return false;
         foreach(self::$ignore as $p) {
@@ -814,7 +814,10 @@ class Studio
         return false;
     }
 
-    public static function template($url=null)
+    /**
+     * @return non-falsy-string[]|list<(int | string)>[]
+     */
+    public static function template($url=null): array
     {
         $E = new Entries(array('link'=>$url, 'published'=>S_TIMESTAMP, 'updated'=>S_TIMESTAMP),false, false);
         $C = $E->getRelatedContent();
@@ -856,7 +859,7 @@ class Studio
         return self::$app->runError($code, $layout);
     }
 
-    public static function checkIndex($M, $interface=null)
+    public static function checkIndex($M, $interface=null): void
     {
         if(self::$index) {
             // check if the studio connection should be set or changed to self::$index, if it's a string
@@ -1047,12 +1050,12 @@ class Studio
         return $translated;
     }
 
-    public static function li($list)
+    public static function li($list): string
     {
         return S::list($list);
     }
 
-    public static function addResponse($a)
+    public static function addResponse(array $a): void
     {
         static $toAdd=array('script','style','headers','variables');
         foreach($toAdd as $k) {
@@ -1070,7 +1073,7 @@ class Studio
         S::$variables['variables'] += $a;
     }
 
-    public static function interfaceId($M, $prefix=null)
+    public static function interfaceId($M, $prefix=null): string
     {
         $s = (is_string($M)) ?$M :implode('-', $M->getPk(true));
         if($prefix) $s = $prefix.'/preview/'.$s;
@@ -1078,7 +1081,7 @@ class Studio
         return S::encrypt($s, null, 'uuid');
     }
 
-    public static function interfaceAddress($s)
+    public static function interfaceAddress(string $s): string
     {
         return S::decrypt($s, null, 'uuid');
     }
@@ -1205,7 +1208,7 @@ class Studio
         return $f;
     }
 
-    public static function standaloneApp()
+    public static function standaloneApp(): void
     {
         putenv('STUDIO_MODE=app');
         Config::standaloneConfig();

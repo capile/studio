@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 
 class SpreadsheetTest extends TestCase
 {
-    public function testLetterToNumber()
+    public function testLetterToNumber(): void
     {
         $this->assertEquals(S::numberToLetter(0), 'a');
         $this->assertEquals(S::numberToLetter(26), 'aa');
@@ -26,7 +26,7 @@ class SpreadsheetTest extends TestCase
         $this->assertEquals(S::numberToLetter(36388720), 'capile');
     }
 
-    public function testNumberToLetter()
+    public function testNumberToLetter(): void
     {
         $this->assertEquals(S::lettertoNumber('a'), 0);
         $this->assertEquals(S::lettertoNumber('aa'), 26);
@@ -35,7 +35,7 @@ class SpreadsheetTest extends TestCase
         $this->assertEquals(S::lettertoNumber('capile'), 36388720);
     }
 
-    public function testTimedNumberConversion()
+    public function testTimedNumberConversion(): void
     {
         $i = 10;
         while($i--) {

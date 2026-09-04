@@ -191,7 +191,7 @@ class Mongodb
         return $R;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return S::serialize($this->buildQuery(), 'json');
     }
@@ -275,12 +275,12 @@ class Mongodb
         }
     }
 
-    public function cleanup()
+    public function cleanup(): void
     {
         S::log('[WARNING] Define: '.__METHOD__, func_get_args());
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->_scope = null;
         $this->_select = null;
@@ -300,7 +300,7 @@ class Mongodb
     }
 
 
-    public function find($options=[], $asArray=false)
+    public function find($options=[], $asArray=false): self
     {
         $this->reset();
         $sc = $this->schema();
@@ -310,7 +310,7 @@ class Mongodb
         return $this;
     }
 
-    public function filter($options=[])
+    public function filter($options=[]): self
     {
         if(!$this->_schema) return $this;
         if(!is_array($options)) {
@@ -326,7 +326,7 @@ class Mongodb
         return $this;
     }
 
-    public function buildQuery($count=false)
+    public function buildQuery($count=false): array
     {
         $r = [];
         if(isset($this->_select)) $r['select'] = $this->_select;
@@ -338,7 +338,7 @@ class Mongodb
         return $r;
     }
 
-    public static function buildFilter(&$q, $xor='and', $ref=null)
+    public static function buildFilter(array &$q, $xor='and', $ref=null)
     {
         $r = [];
         if(!isset($q['where'])) return $r;
@@ -474,7 +474,7 @@ class Mongodb
         return $this->addSelect($o);
     }
 
-    public function addSelect($o)
+    public function addSelect($o): self
     {
         if(is_array($o)) {
             foreach($o as $s) {
@@ -490,7 +490,7 @@ class Mongodb
         return $this;
     }
 
-    public function addScope($o)
+    public function addScope($o): self
     {
         if(is_array($o)) {
             foreach($o as $s) {
@@ -506,20 +506,20 @@ class Mongodb
         return $this;
     }
 
-    public function where($w)
+    public function where($w): self
     {
         $this->_where = $this->getWhere($w);
         return $this;
     }
 
-    public function addWhere($w)
+    public function addWhere($w): self
     {
         if(is_null($this->_where)) $this->_where = $this->getWhere($w);
         else $this->_where += $this->getWhere($w);
         return $this;
     }
 
-    private function getWhere($w)
+    private function getWhere($w): array
     {
         if(is_array($w)) {
             $r = [];
@@ -540,7 +540,7 @@ class Mongodb
         return array();
    }
 
-    public function addOrderBy($o)
+    public function addOrderBy($o): self
     {
         static $sortOptions = ['asc', '1', 'desc', '-1'];
         if(is_null($this->_orderBy)) $this->_orderBy = array();
@@ -560,7 +560,7 @@ class Mongodb
         return $this;
     }
 
-    public function addGroupBy($o)
+    public function addGroupBy($o): self
     {
         S::log('[WARNING] Define: '.__METHOD__, func_get_args());
         if(is_array($o)) {
@@ -575,31 +575,31 @@ class Mongodb
         return $this;
     }
 
-    public function limit($o)
+    public function limit($o): self
     {
         $this->_limit = (int) $o;
         return $this;
     }
 
-    public function addLimit($o)
+    public function addLimit($o): self
     {
         $this->_limit = (int) $o;
         return $this;
     }
 
-    public function offset($o)
+    public function offset($o): self
     {
         $this->_offset = (int) $o;
         return $this;
     }
 
-    public function addOffset($o)
+    public function addOffset($o): self
     {
         $this->_offset = (int) $o;
         return $this;
     }
 
-    private function getFunctionNext($fn)
+    private function getFunctionNext($fn): void
     {
         S::log('[WARNING] Define: '.__METHOD__, func_get_args());
     }
@@ -648,7 +648,7 @@ class Mongodb
         try {
             $cursor = $this->run($q);
             $r = [];
-            foreach($cursor as $i=>$o) {
+            foreach($cursor as $o) {
                 $a = (array)$o;
                 if($this->_map) {
                     foreach($this->_map as $to=>$from) {
@@ -711,7 +711,7 @@ class Mongodb
         }
     }
 
-    public static function runStatic($q, $n='')
+    public static function runStatic($q, string $n='')
     {
         static $stmt;
         if($stmt) {
@@ -763,7 +763,7 @@ class Mongodb
      * Enables transactions for this connector
      * returns the transaction $id
      */
-    public function transaction($id=null, $conn=null)
+    public function transaction($id=null, $conn=null): void
     {
         if(S::$log>1) S::log('[DEBUG] Define: '.__METHOD__);
     }
@@ -772,7 +772,7 @@ class Mongodb
      * C0mmits transactions opened by ::transaction
      * returns true if successful
      */
-    public function commit($id=null, $conn=null)
+    public function commit($id=null, $conn=null): void
     {
         if(S::$log>1) S::log('[DEBUG] Define: '.__METHOD__);
     }
@@ -781,7 +781,7 @@ class Mongodb
      * Rollback transactions opened by ::transaction
      * returns true if successful
      */
-    public function rollback($id=null, $conn=null)
+    public function rollback($id=null, $conn=null): void
     {
         if(S::$log>1) S::log('[DEBUG] Define: '.__METHOD__);
     }
@@ -790,7 +790,7 @@ class Mongodb
      * Returns the last inserted ID from a insert call
      * returns true if successful
      */
-    public function lastInsertId($M=null, $conn=null)
+    public function lastInsertId($M=null, $conn=null): void
     {
         if(S::$log>1) S::log('[DEBUG] Define: '.__METHOD__);
     }
@@ -929,7 +929,7 @@ class Mongodb
         return $r;
     }
 
-    public function create($schema=null, $conn=null)
+    public function create($schema=null, $conn=null): void
     {
         if(S::$log>0) S::log('[INFO] Define: '.__METHOD__.' ... is it required? or should we control the schemas only at app level?');
         $tn = $schema->tableName;
@@ -940,7 +940,7 @@ class Mongodb
         }
         $L = $conn->listIndexes();
         $a = [];
-        foreach($L as $i=>$o) $a[] = (array)$o;
+        foreach($L as $o) $a[] = (array)$o;
         $columns = $schema->properties;
         unset($columns['_id']);
     }
@@ -961,7 +961,7 @@ class Mongodb
     /**
      * Gets the timestampable last update
      */
-    public function timestamp($tns=null)
+    public function timestamp($tns=null): void
     {
         if(S::$log>1) S::log('[DEBUG] Define: '.__METHOD__);
     }

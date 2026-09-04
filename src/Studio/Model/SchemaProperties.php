@@ -19,7 +19,7 @@ class SchemaProperties extends Model
 
     protected $schema_id, $bind, $type, $item, $title, $description, $primary, $required, $default, $serialize, $created, $updated, $Display, $Schema;
 
-    public function __toString()
+    public function __toString(): string
     {
         $s = $this->bind;
         if($this->title) $s .= ': '.$this->title;
@@ -46,7 +46,7 @@ class SchemaProperties extends Model
         return $o;
     }
 
-    public static function choicesSerialize()
+    public static function choicesSerialize(): array
     {
         return ['json'=>'JSON', 'yaml'=>'YAML', 'php'=>'PHP'];
     }

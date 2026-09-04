@@ -17,7 +17,7 @@ $s = '<li id="e'.$id.'"'.((Studio::$page===$id) ?' class="current"' :'').'>'
 if($C=$entry->getChildren($search=array(), $scope='link', $asCollection=false, ['Related.position'=>'asc', 'title'=>'asc'])) {
     if(!isset($template)) $template = basename(__FILE__, '.php');
     $s .= '<ul>';
-    foreach($C as $i=>$o) {
+    foreach($C as $o) {
         $s .= $o->renderEntry($template);
     }
     $s .= '</ul>';

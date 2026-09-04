@@ -17,7 +17,7 @@ class StudioCest
 {
     protected $configs=['studio','config'], $host='http://127.0.0.1:9999', $terminate;
 
-    public function _before()
+    public function _before(): void
     {
         if($this->configs) {
             Helper::loadConfig($this->configs);
@@ -26,7 +26,7 @@ class StudioCest
         }
     }
 
-    public function homePageWorks(\AcceptanceTester $I)
+    public function homePageWorks(\AcceptanceTester $I): void
     {
         // last test, destroy server afterwards
         $this->terminate = true;
@@ -42,7 +42,7 @@ class StudioCest
 
     }
 
-    public function _after()
+    public function _after(): void
     {
         if($this->terminate) {
             Helper::destroyServer();

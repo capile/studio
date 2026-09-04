@@ -29,7 +29,7 @@ class Query extends SchemaObject
 {
     public static $meta;
 
-    public function __toString()
+    public function __toString(): string
     {
         return S::serialize((array)$this, 'json');
     }
@@ -149,7 +149,7 @@ class Query extends SchemaObject
                 } else if(is_array($records) && $records) {
                     $cs++;
                 }
-                foreach($records as $k=>$r) {
+                foreach($records as $r) {
                     $L=null;
                     $q=null;
                     $set = null;

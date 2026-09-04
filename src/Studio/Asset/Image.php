@@ -56,7 +56,7 @@ class Image {
 
     protected static $reset=['src'=>false, 'backgroundColor'=>false, 'backgroundImage'=>false];
 
-    public function __construct($src=null, $config=[])
+    public function __construct($src=null, array $config=[])
     {
         if(is_array($src)) {
             $config=$src;
@@ -66,18 +66,18 @@ class Image {
         $this->addSettings($config);
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->render();
     }
 
-    public function mimeType()
+    public function mimeType(): string|false
     {
         $type=(!is_null($this->type))?('image/'.$this->type):(false);
         return $type;
     }
 
-    public function addSettings($config=array())
+    public function addSettings(array $config=array()): void
     {
         $x=$this->x;$y=$this->y;$width=$this->width;$height=$this->height;
         if(isset($config['width']))  $width =abs((int)$config['width']);
@@ -381,21 +381,22 @@ class Image {
         }
     }
 
-    public function setColor($color)
+    public function setColor(string $color): int|false
     {
         $r=false;
-        if ($color[0] == '#')
-            $color = substr($color, 1);
-        if (strlen($color) == 8) // alpha blending
+        if ($color[0] == '#') $color = substr($color, 1);
+        if (strlen($color) == 8) {// alpha blending
             $r = imagecolorallocatealpha($this->img, hexdec(substr($color,0,2)), hexdec(substr($color,2,2)), hexdec(substr($color,4,2)), hexdec(substr($color,6,2))*0.5);
-        if (strlen($color) == 6)
+        } else if (strlen($color) == 6) {
             $r = imagecolorallocate($this->img, hexdec(substr($color,0,2)), hexdec(substr($color,2,2)), hexdec(substr($color,4,2)));
-        else if (strlen($color) == 3)
+        } else if (strlen($color) == 3) {
             $r = imagecolorallocate($this->img, hexdec($color[0].$color[0]), hexdec($color[1].$color[1]), hexdec($color[2].$color[2]));
+        }
+
         return $r;
     }
 
-    public function render() 
+    public function render(): ?string
     {
         if(!is_null($this->img)) {
             // Write the resized image to the cache
@@ -414,11 +415,12 @@ class Image {
         return $this->data;
     }
 
-    public function output($exit=true) {
-        return S::output($this->render(), 'image/'.$this->type, $exit);
+    public function output(bool $exit=true): void
+    {
+        S::output($this->render(), 'image/'.$this->type, $exit);
     }
 
-    public function resetSettings()
+    public function resetSettings(): void
     {
         foreach(self::$reset as $vn=>$vv) {
             if(!is_null($this->$vn)) {
@@ -428,7 +430,7 @@ class Image {
         }
     }
 
-    public static function create($src=null, $config=array())
+    public static function create(array|string|null $src=null, array $config=array()): Image
     {
         if(is_array($src)) {
             $config=$src;
@@ -438,13 +440,13 @@ class Image {
         return new Image($config);
     }
 
-    public static function preview($src=null, $config=array())
+    public static function preview(array|string|null $src=null, array $config=array()): ?string
     {
         $img=self::create($src, $config);
         return $img->render();
     }
 
-    public function setSource($src)
+    public function setSource($src): void
     {
         if(!is_null($src)) {
             $src = self::fileSrc($src);
@@ -465,11 +467,10 @@ class Image {
                 }
             }
         }
-
     }
 
     public static $checkSrc=['document-root'];
-    public static function fileSrc($src)
+    public static function fileSrc(string $src): string|false
     {
         if(!file_exists($src)) {
             $o=$src;
@@ -484,11 +485,11 @@ class Image {
         return $src;
     }
 
-    public static function base64Data($img)
+    public static function base64Data(?string $img): array|string|null
     {
         $r = null;
         if(!$img) {
-            return;
+            return null;
         } else if(strpos($img, ',')) {
             $r = array();
             foreach(preg_split('/^\[|\s*\,\s*|\]$/', $img, -1, PREG_SPLIT_NO_EMPTY) as $i) {
@@ -507,8 +508,9 @@ class Image {
     }
 
 
-    public static function captcha(&$text=null, $options=[])
+    public static function captcha(?string &$text=null, array $options=[]): string
     {
+        $img = '';
         if(class_exists('Securimage')) {
             $C = new Securimage($options);
             $cfg = S::getApp()->Securimage;
@@ -529,9 +531,9 @@ class Image {
             $img = 'data:image/png;base64,'.base64_encode(ob_get_contents());
             ob_end_clean();
             $text = $C->getCode(null, true);
-
-            return $img;
         }
+
+        return $img;
     }
 
 }

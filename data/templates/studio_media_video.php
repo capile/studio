@@ -24,7 +24,7 @@ if(is_array($src)) {
     }
     echo '>';
 
-    foreach($src as $i=>$o) {
+    foreach($src as $o) {
         echo '<source';
         if(!is_array($o)) {
             echo ' src="', Studio::xml($o), '"';

@@ -20,7 +20,7 @@ class OAuth2Cest
 {
     public static $baseUri = '/examples/oauth2';
     protected $configFiles = [], $configs=['oauth2'], $host, $uri, $metadata, $accessToken, $expiredAccessToken, $terminate;
-    public function _before()
+    public function _before(): void
     {
         if($this->configs) {
             Helper::loadConfig($this->configs);
@@ -31,7 +31,7 @@ class OAuth2Cest
         }
     }
 
-    public function metadata(ApiTester $I)
+    public function metadata(ApiTester $I): void
     {
         $I->sendGet($this->uri.'/.well-known/openid-configuration');
         $I->seeResponseCodeIs(200);
@@ -40,7 +40,7 @@ class OAuth2Cest
     }
 
     // curl -is http://127.0.0.1:9999/examples/oauth2/access_token -u test-client:test-secret -d 'grant_type=client_credentials'
-    public function tokenEndpoint(ApiTester $I)
+    public function tokenEndpoint(ApiTester $I): void
     {
         $url = $this->metadata['token_endpoint'];
 
@@ -81,7 +81,7 @@ class OAuth2Cest
     }
 
     // test if it's not authenticated first
-    public function userInfo(ApiTester $I)
+    public function userInfo(ApiTester $I): void
     {
         $I->sendPost($this->metadata['token_endpoint'], ['grant_type'=>'client_credentials', 'client_id'=>'test-client', 'client_secret'=>'test-secret', ]);
         list($this->accessToken) = $I->grabDataFromResponseByJsonPath('$.access_token');
@@ -128,7 +128,7 @@ class OAuth2Cest
         $this->terminate = true;
     }
 
-    public function _after()
+    public function _after(): void
     {
         if($this->terminate) {
             Cache::delete('oauth2/metadata/'.$this->uri);

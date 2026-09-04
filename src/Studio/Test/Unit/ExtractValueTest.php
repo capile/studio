@@ -29,7 +29,7 @@ class ExtractValueTest extends TestCase
     }
 
     // tests
-    public function testDataExtraction()
+    public function testDataExtraction(): void
     {
         $a = [
             'test' => 1234,

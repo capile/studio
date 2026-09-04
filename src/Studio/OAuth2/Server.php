@@ -89,7 +89,7 @@ class Server extends \OAuth2\Server
             if(isset($meta['issuer'])) $cfg['issuer'] = $meta['issuer'];
 
             if($r=self::config('grant_types')) {
-                foreach($r as $i=>$o) {
+                foreach($r as $o) {
                     if($oidc && $o=='authorization_code' && class_exists($cn = 'OAuth2\\OpenID\\GrantType\\'.S::camelize($o, true))) {
                         $grantTypes[$o] = new $cn($storage);
                     } else if(class_exists($cn = 'OAuth2\\GrantType\\'.S::camelize($o, true))) {
@@ -185,17 +185,17 @@ class Server extends \OAuth2\Server
         return Studio::error(404);
     }
 
-    public static function appAccessToken()
+    public static function appAccessToken(): void
     {
         static::instance()->executeTokenRequest();
     }
 
-    public static function appAuth()
+    public static function appAuth(): void
     {
         static::instance()->executeAuth();
     }
 
-    public static function appAuthorize()
+    public static function appAuthorize(): void
     {
         static::instance()->executeAuthorize();
     }
@@ -275,12 +275,12 @@ class Server extends \OAuth2\Server
     }
 
 
-    public function executeMetadata()
+    public function executeMetadata(): void
     {
         S::output(json_encode(static::metadata(false),JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_PRETTY_PRINT), 'json');
     }
 
-    public function executeTokenRequest()
+    public function executeTokenRequest(): void
     {
         try {
             if(self::config('allow_credentials_in_request_body') && isset($_SERVER['PHP_AUTH_PW']) && $_SERVER['PHP_AUTH_PW']) {
@@ -303,7 +303,7 @@ class Server extends \OAuth2\Server
         exit();
     }
 
-    public function executeAuth()
+    public function executeAuth(): void
     {
         // Handle a request to a resource and authenticate the access token
         if (!$this->verifyResourceRequest(Request::createFromGlobals(), $this->response = new Response())) {
@@ -314,7 +314,7 @@ class Server extends \OAuth2\Server
         S::output(array('success' => true, 'message' => 'OK'), 'json');
     }
 
-    public function executeUserInfo()
+    public function executeUserInfo(): void
     {
         $request = Request::createFromGlobals();
         $this->response = new Response();
@@ -417,12 +417,12 @@ class Server extends \OAuth2\Server
         return new AuthorizeController($this->storages['client'], $this->responseTypes, $config, $this->getScopeUtil());
     }
 
-    public function executeJwksUri()
+    public function executeJwksUri(): void
     {
         static $ktypes=['rsa'=>'RSA', 'dsa'=>'DSA','dh'=>'DH', 'ec'=>'ECDSA'];
         $r = [];
         if($L = Storage::find('public_key')) {
-            foreach($L as $i=>$o) {
+            foreach($L as $o) {
                 $d = [];
                 if(($K=openssl_pkey_get_public($o['public_key'])) && ($K=openssl_pkey_get_details($K))) {
                     foreach($ktypes as $type=>$T) {

@@ -41,7 +41,7 @@ class SchemaObject implements ArrayAccess
         }
     }
 
-    public static function staticInitialize()
+    public static function staticInitialize(): void
     {
         $schema = static::SCHEMA_PROPERTY;
         if(property_exists(get_called_class(), $schema)) {
@@ -123,17 +123,17 @@ class SchemaObject implements ArrayAccess
         return $n;
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         return $this->offsetGet($name);
     }
 
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         return $this->offsetSet($name, $value);
     }
 
-    public function batchSet($values, $skipValidation=false)
+    public function batchSet($values, $skipValidation=false): self
     {
         if(is_array($values) || is_object($values)) {
             foreach($values as $name=>$value) {

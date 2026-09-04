@@ -145,7 +145,7 @@ class Tasks extends Model
         }
     }
 
-    public static function backgroundExec($exec=null)
+    public static function backgroundExec($exec=null): bool
     {
         if(is_null($exec)) $exec = S_ROOT.'/studio :task';
         if(strtolower(substr(PHP_OS, 0, 3))=='win'){

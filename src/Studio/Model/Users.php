@@ -20,7 +20,7 @@ class Users extends Model
     public static $schema;
     protected $id, $username, $name, $password, $email, $details, $created, $updated, $expired, $Credentials, $lastAccess, $credentials;
 
-    public function __toString()
+    public function __toString(): string
     {
         return ($this->name && $this->username) ?"{$this->name} ({$this->username})" :(string)$this->username; 
     }
@@ -34,7 +34,7 @@ class Users extends Model
         return S::xml($this->__toString());
     }
 
-    public function setPassword($s)
+    public function setPassword($s): void
     {
         if($s!==null) {
             $this->password = Crypto::hash($s, null, User::$hashType);
@@ -79,7 +79,7 @@ class Users extends Model
         return $this->lastAccess;
     }
 
-    public function setLastAccess($t)
+    public function setLastAccess($t): void
     {
         if(is_numeric($t) && $t>$this->getLastAccess()+1) {
             $this->accessed = date('Y-m-d\TH:i:s', $t);
@@ -98,7 +98,7 @@ class Users extends Model
         if($c=$this->getCredentials(false)) {
             if(Api::format()==='html') {
                 $s = '<ul>';
-                foreach($c as $id=>$name) $s .= '<li>'.S::xml($name).'</li>';
+                foreach($c as $name) $s .= '<li>'.S::xml($name).'</li>';
                 $s .= '</ul>';
             } else {
                 $s = $c;
@@ -108,7 +108,7 @@ class Users extends Model
         }
     }
 
-    public function setGroups($v)
+    public function setGroups($v): bool
     {
         if(is_array($v)) {
             $this->getRelation('Credentials', null, null, false);

@@ -16,6 +16,7 @@ use Studio\Cache;
 use Studio\Exception\AppException;
 use Studio\Query;
 use Studio\Model;
+use Studio\Schema;
 use Studio\Schema\Model as SchemaModel;
 use Studio\Schema\ModelProperty;
 use Tecnodesign_Database as Database;
@@ -73,7 +74,7 @@ class Sql
     );
     public static $schemaProperties=array('serialize','alias');
 
-    public function __construct($s=null)
+    public function __construct(object|string|null $s=null)
     {
         if($s) {
             if(is_object($s)) {
@@ -90,12 +91,12 @@ class Sql
         // should throw an exception if no schema is found?
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->buildQuery();
     }
 
-    public static function setConnection($n, $conn)
+    public static function setConnection(string $n, object $conn)
     {
         $r = null;
         if(isset(static::$conn[$n])) $r = static::$conn[$n];
@@ -103,7 +104,7 @@ class Sql
         return $r;
     }
 
-    public static function connect($n='', $exception=true, $tries=3)
+    public static function connect(string $n='', bool $exception=true, int $tries=3)
     {
         if(!isset(static::$conn[$n]) || !static::$conn[$n]) {
             try {
@@ -127,7 +128,7 @@ class Sql
                     $cmd = static::INITIALIZE_CMD;
                 }
                 $level = 'connect';
-                static::$conn[$n] = new \PDO($db['dsn'], $db['username'], $db['password'], $db['options']);
+                static::$conn[$n] = new PDO($db['dsn'], $db['username'], $db['password'], $db['options']);
                 if(!static::$conn[$n]) {
                     S::log('[INFO] Connection to '.$n.' failed, retrying... '.$tries);
                     $tries--;
@@ -156,7 +157,7 @@ class Sql
         return static::$conn[$n];
     }
 
-    public static function disconnect($n='')
+    public static function disconnect(string $n=''): void
     {
         if(isset(static::$conn[$n]) && static::$conn[$n]) {
             static::$conn[$n] = null;
@@ -164,7 +165,7 @@ class Sql
         }
     }
 
-    public function reset()
+    public function reset(): self
     {
         $this->_select = null;
         $this->_distinct = null;
@@ -183,7 +184,7 @@ class Sql
         return $this;
     }
 
-    public function schema($prop=null)
+    public function schema(?string $prop=null)
     {
         $cn = $this->_schema;
         if(is_string($this->_schema)) {
@@ -206,7 +207,7 @@ class Sql
         return $schema;
     }
 
-    public function find($options=array(), $asArray=false)
+    public function find(mixed $options=[], bool $asArray=false): self
     {
         $this->_select = $this->_where = $this->_groupBy = $this->_orderBy = $this->_limit = $this->_offset = null;
         $sc = $this->schema();
@@ -217,7 +218,7 @@ class Sql
         return $this;
     }
 
-    public function getFrom($sc=null)
+    public function getFrom(Schema|array|null $sc=null): string
     {
         if(!$this->_from || !is_array($this->_alias)) {
             if(!$sc) $sc = $this->schema();
@@ -246,7 +247,7 @@ class Sql
         return $this->_from.$this->_from_other;
     }
 
-    public function filter($options=array())
+    public function filter(mixed $options=array()): self
     {
         if(!$this->_schema) return $this;
         else if(!$this->_alias) return $this->find($options);
@@ -262,7 +263,7 @@ class Sql
         return $this;
     }
 
-    public function concat($a, $sep='-', $getAlias=true)
+    public function concat(array|string $a, string $sep='-', bool $getAlias=true): string
     {
         if(is_array($a) && count($a)>1) {
             $r = '';
@@ -280,13 +281,13 @@ class Sql
         return $r;
     }
 
-    public function setQuery($q)
+    public function setQuery(string $q): void
     {
         $this->_select = $this->_where = $this->_groupBy = $this->_orderBy = $this->_limit = $this->_offset = null;
         $this->_query = $q;
     }
 
-    public function buildQuery($count=false)
+    public function buildQuery(mixed $count=false): string
     {
         if(isset($this->_query) && !$count) {
             return $this->_query;
@@ -354,7 +355,7 @@ class Sql
             $this->_offset = $o;
             $this->_limit = $l;
         }
-        return $this->query($this->buildQuery(), \PDO::FETCH_CLASS, $this->schema('className'), array($prop));
+        return $this->query($this->buildQuery(), PDO::FETCH_CLASS, $this->schema('className'), array($prop));
     }
 
     public function fetchArray($o=null, $l=null)
@@ -365,7 +366,7 @@ class Sql
             $this->_offset = $o;
             $this->_limit = $l;
         }
-        return $this->query($this->buildQuery(), \PDO::FETCH_ASSOC);
+        return $this->query($this->buildQuery(), PDO::FETCH_ASSOC);
     }
 
     public function count($column=true)
@@ -378,7 +379,7 @@ class Sql
         return $i;
     }
 
-    public function select($o=false)
+    public function select($o=false): string
     {
         if($o!==false) {
             $this->_select = null;
@@ -387,7 +388,7 @@ class Sql
         return ' '.implode(', ', $this->_select);
     }
 
-    public function addSelect($o)
+    public function addSelect($o): self
     {
         if(is_null($this->_select)) $this->_select = array();
         if(is_array($o) && isset($o['bind'])) {
@@ -397,7 +398,7 @@ class Sql
         }
 
         if(!is_array($o)) $o=[$o];
-        foreach($o as $k=>$n) {
+        foreach($o as $n) {
             if(is_array($n)) {
                 if(isset($n['bind']) && $n['bind']) {
                     $n = $n['bind'];
@@ -421,7 +422,7 @@ class Sql
         return $cn::columns($o, null, 3, true);
     }
 
-    public function addScope($o)
+    public function addScope($o): self
     {
         if(is_array($o)) {
             $this->addSelect($o);
@@ -432,21 +433,21 @@ class Sql
         return $this;
     }
 
-    public function where($w)
+    public function where($w): self
     {
         $this->_where = null;
         $this->_where = $this->getWhere($w);
         return $this;
     }
 
-    public function addWhere($w)
+    public function addWhere($w): self
     {
         if(S::isempty($this->_where)) $this->_where = $this->getWhere($w);
         else $this->_where .= " and ({$this->getWhere($w)})";
         return $this;
     }
 
-    public function addOrderBy($o, $sort='asc')
+    public function addOrderBy(array|string $o, string $sort='asc'): self
     {
         if(is_array($o)) {
             foreach($o as $i=>$s) {
@@ -472,7 +473,7 @@ class Sql
         return $this;
     }
 
-    public function addGroupBy($o)
+    public function addGroupBy(array|string $o): self
     {
         if(is_array($o)) {
             foreach($o as $s) {
@@ -489,36 +490,36 @@ class Sql
         return $this;
     }
 
-    public function limit($o)
+    public function limit($o): self
     {
         $this->_limit = (int) $o;
         return $this;
     }
 
-    public function addLimit($o)
+    public function addLimit($o): self
     {
         $this->_limit = (int) $o;
         return $this;
     }
 
-    public function offset($o)
+    public function offset($o): self
     {
         $this->_offset = (int) $o;
         return $this;
     }
 
-    public function addOffset($o)
+    public function addOffset($o): self
     {
         $this->_offset = (int) $o;
         return $this;
     }
 
-    protected function getFunctionNext($fn)
+    protected function getFunctionNext(string $fn): string
     {
         return 'ifnull(max('.$this->getAlias($fn).'),0)+1';
     }
 
-    protected function getFunctionAlias($fn)
+    protected function getFunctionAlias(string $fn): string
     {
         return $fn;
     }
@@ -751,7 +752,7 @@ class Sql
         return $fn;
     }
 
-    protected function getWhere($w, $xor='and', object|string|null $ref='')
+    protected function getWhere(mixed $w, string $xor='and', object|string|null $ref=''): string
     {
         $r='';
         $sc = null;
@@ -887,7 +888,7 @@ class Sql
                         $nv = array();
                         if($cnot) $nv[] = '!';
                         if($cxor!='and') $nv[] = $cxor;
-                        foreach($v as $vk=>$vs) {
+                        foreach($v as $vs) {
                             $nv[] = ($vs && $cop!='=')?(array($k.$cop=>$vs)):(array($k=>$vs));
                         }
                         $v = $this->getWhere($nv, 'or');
@@ -938,7 +939,7 @@ class Sql
         return trim($r);
     }
 
-    public function exec($q, $conn=null)
+    public function exec(string $q, ?object $conn=null): mixed
     {
         if(!$conn) {
             $conn = self::connect($this->schema('database'));
@@ -949,7 +950,7 @@ class Sql
         return $conn->exec($q);
     }
 
-    public function run($q)
+    public function run(string $q): mixed
     {
         $this->_last = $q;
         if(self::$queryCallback) {
@@ -959,7 +960,7 @@ class Sql
         }
     }
 
-    public static function runMetrics($q, $n='')
+    public static function runMetrics(string $q, string $n=''): ?object
     {
         static $stmt;
         if($stmt) {
@@ -985,7 +986,7 @@ class Sql
         return $stmt;
     }
 
-    public static function runStatic($q, $n='')
+    public static function runStatic($q, $n=''): ?object
     {
         static $stmt;
         if($stmt) {
@@ -999,7 +1000,7 @@ class Sql
         return $stmt;
     }
 
-    public function query($q, $p=null)
+    public function query(string $q, $p=null)
     {
         $ckey = $ct = null;
 
@@ -1034,7 +1035,7 @@ class Sql
                 }
             }
             if (is_null($p)) {
-                $r = $this->run($q)->fetchAll(\PDO::FETCH_ASSOC);
+                $r = $this->run($q)->fetchAll(PDO::FETCH_ASSOC);
             } else {
                 $arg = func_get_args();
                 array_shift($arg);
@@ -1056,13 +1057,13 @@ class Sql
         }
     }
 
-    public function queryColumn($q, $i=0)
+    public function queryColumn(string $q, int $i=0): mixed
     {
-        return $this->query($q, \PDO::FETCH_COLUMN, $i);
+        return $this->query($q, PDO::FETCH_COLUMN, $i);
     }
 
 
-    public static function escape($str, $enclose=true)
+    public static function escape(mixed $str, bool $enclose=true): string
     {
         if(is_array($str)) {
             foreach($str as $k=>$v){
@@ -1087,7 +1088,8 @@ class Sql
         return $str;
     }
 
-    public static function sql($v, $d, $allowDefault=null) {
+    public static function sql(mixed $v, array $d, ?bool $allowDefault=null): string
+    {
         if(is_null($v) || $v===false) {
             if($allowDefault && isset($d['default']) && $d['default']!==false) {
                 return self::sql($d['default'], $d);
@@ -1131,9 +1133,8 @@ class Sql
 
     /**
      * Enables transactions for this connector
-     * returns the transaction $id
      */
-    public function transaction($id=null, $conn=null)
+    public function transaction(?string $id=null, ?object $conn=null): string
     {
         if(is_null($this->_transaction)) $this->_transaction = array();
         if(!$id) {
@@ -1143,7 +1144,7 @@ class Sql
             if(!$conn) {
                 $conn = self::connect($this->schema('database'));
             }
-            if(static::PDO_AUTOCOMMIT) $conn->setAttribute(\PDO::ATTR_AUTOCOMMIT, 0);
+            if(static::PDO_AUTOCOMMIT) $conn->setAttribute(PDO::ATTR_AUTOCOMMIT, 0);
             if(static::PDO_TRANSACTION) {
                 $conn->beginTransaction();
             } else {
@@ -1155,16 +1156,15 @@ class Sql
     }
     
     /**
-     * C0mmits transactions opened by ::transaction
-     * returns true if successful
+     * Commits transactions opened by ::transaction
      */
-    public function commit($id=null, $conn=null)
+    public function commit(?string $id=null, ?object $conn=null): bool
     {
         if(!$this->_transaction) {
             if($id && $conn) {
                 $this->_transaction = array( $id => $conn );
             } else {
-                return;
+                return false;
             }
         }
         if(!$id) {
@@ -1177,27 +1177,27 @@ class Sql
                 if(static::PDO_TRANSACTION) {
                     $r = ($conn->inTransaction() && $conn->commit());
                 } else {
-                    $r = $this->exec('commit transaction '.$id, $conn);
+                    $r = (bool) $this->exec('commit transaction '.$id, $conn);
                 }
-                if(static::PDO_AUTOCOMMIT) $conn->setAttribute(\PDO::ATTR_AUTOCOMMIT, 1);
+                if(static::PDO_AUTOCOMMIT) $conn->setAttribute(PDO::ATTR_AUTOCOMMIT, 1);
+
                 return $r;
-            } else {
-                return false;
             }
         }
+
+        return false;
     }
 
     /**
      * Rollback transactions opened by ::transaction
-     * returns true if successful
      */
-    public function rollback($id=null, $conn=null)
+    public function rollback(?string $id=null, ?object $conn=null): bool
     {
         if(!$this->_transaction) {
             if($id && $conn) {
                 $this->_transaction = array( $id => $conn );
             } else {
-                return;
+                return false;
             }
         }
         if(!$id) {
@@ -1210,21 +1210,20 @@ class Sql
                 if(static::PDO_TRANSACTION) {
                     $r = ($conn->inTransaction() && $conn->rollback());
                 } else {
-                    $r = $this->exec('rollback transaction '.$id, $conn);
+                    $r = (bool) $this->exec('rollback transaction '.$id, $conn);
                 }
-                if(static::PDO_AUTOCOMMIT) $conn->setAttribute(\PDO::ATTR_AUTOCOMMIT, 1);
+                if(static::PDO_AUTOCOMMIT) $conn->setAttribute(PDO::ATTR_AUTOCOMMIT, 1);
                 return $r;
-            } else {
-                return false;
             }
         }
+
+        return false;
     }
 
     /**
      * Returns the last inserted ID from a insert call
-     * returns true if successful
      */
-    public function lastInsertId($M=null, $conn=null)
+    public function lastInsertId(Model|string|null $M=null, ?object $conn=null): mixed
     {
         if(!$conn) {
             $conn = self::connect($this->schema('database'));
@@ -1234,7 +1233,7 @@ class Sql
         return $conn->lastInsertId($fn);
     }
 
-    public function insert($M, $conn=null)
+    public function insert(Model $M, ?object $conn=null): mixed
     {
         $odata = $M->asArray('save', null, null, true);
         $data = [];
@@ -1310,9 +1309,11 @@ class Sql
             }
             return $r;
         }
+
+        return false;
     }
 
-    public function update($M, $conn=null)
+    public function update(Model $M, ?object $conn=null): mixed
     {
         $odata = $M->asArray('save', null, null, true);
         $data = [];
@@ -1380,9 +1381,11 @@ class Sql
             }
             return $r;
         }
+
+        return false;
     }
 
-    public function delete($M, $conn=null)
+    public function delete(Model $M, ?object $conn=null): mixed
     {
         $pk = $M->getPk(true);
         if($pk) {
@@ -1406,9 +1409,11 @@ class Sql
             }
             return $r;
         }
+
+        return false;
     }
 
-    public function create($schema=null, $conn=null)
+    public function create(Schema|string|null $schema=null, object|false|null $conn=null): mixed
     {
         if(!$schema) {
             $schema = $this->schema();
@@ -1497,7 +1502,7 @@ class Sql
         $fks = [];
         $actions = ['cascade', 'no action', 'set null'];
         if($schema->relations) {
-            foreach($schema->relations as $reln=>$rel) {
+            foreach($schema->relations as $rel) {
                 if(isset($rel['constraint']) && $rel['constraint']) {
                     if(!is_array($rel)) $rel = ['fk_'.$schema->tableName.'__'.$rel => $rel ];
                     foreach($rel['constraint'] as $fk=>$action) {
@@ -1543,7 +1548,7 @@ class Sql
     /**
      * Gets the timestampable last update
      */
-    public function timestamp($tns=null)
+    public function timestamp(?array $tns=null): mixed
     {
         $cn = $this->schema('className');
         if(!isset(S::$variables['timestamp']))S::$variables['timestamp']=array();
@@ -1635,7 +1640,7 @@ class Sql
     }
 
 
-    public function getDatabaseName($n=null)
+    public function getDatabaseName(?string $n=null): ?string
     {
         if(!$n) $n = $this->schema('database');
         $db = Query::database($n);
@@ -1645,20 +1650,20 @@ class Sql
         return $n;
     }
 
-    public function getTables($database=null)
+    public function getTables(?string $database=null): array
     {
         if(is_null($database)) $database = $this->schema('database');
         $query = $this->getTablesQuery($database);
         $conn = static::connect($database);
-        return $conn->query($query)->fetchAll(\PDO::FETCH_COLUMN);
+        return $conn->query($query)->fetchAll(PDO::FETCH_COLUMN);
     }
 
-    public function getTablesQuery($database=null, $enableViews=null)
+    public function getTablesQuery(?string $database=null, ?bool $enableViews=null): string
     {
         return 'show tables';
     }
 
-    public function getTableSchemaQuery($table, $database=null, $enableViews=null)
+    public function getTableSchemaQuery(string $table, ?string $database=null, ?bool $enableViews=null): string
     {
         return 'show full columns from '.S::sql($table, false);
     }
@@ -1670,7 +1675,7 @@ class Sql
         'name'=>'bind', 'pk'=>'keys', 'dflt_value'=>'required'
     ];
 
-    public function getColumnSchema($fd, $base=array())
+    public function getColumnSchema(array $fd, $base=array()): ModelProperty
     {
         $protected = array('type', 'min', 'max', 'length', 'null');// , 'increment'
         foreach(static::$columnSchemaMap as $src=>$dst) {
@@ -1774,7 +1779,7 @@ class Sql
         return new ModelProperty($f);
     }
 
-    public function getTableSchema($table, $schema=null, $Model=null)
+    public function getTableSchema(string $table, ?Schema $schema=null, ?Model $Model=null): Schema|false
     {
         if(is_null($schema)) {
             $schema = $this->schema();
@@ -1796,7 +1801,7 @@ class Sql
         $events = $schema->actAs ?$schema->actAs :[];
         $se = $schema->events ?$schema->events :[];
         $reprop = '/('.implode('|',static::$schemaProperties).'):\s*([^,\s\;]+)([,\s\;]+)?/';
-        foreach($raw as $i=>$o) {
+        foreach($raw as $o) {
             $fd = $this->getColumnSchema($o);
             if(isset($fd['bind'])) {
                 $fn = $fd['bind'];
@@ -1876,7 +1881,7 @@ class Sql
         return $schema;
     }
 
-    public function getRelationSchemaQuery($table, $database=null, $enableViews=null)
+    public function getRelationSchemaQuery(string $table, ?string $database=null, ?bool $enableViews=null): string
     {
         $dbname = S::sql($database);
         $tn = S::sql($table);
@@ -1884,12 +1889,12 @@ class Sql
     }
 
 
-    public function getRelationSchema(&$schema)
+    public function getRelationSchema(Schema &$schema): Schema|false
     {
         $conn = static::connect($schema->database);
         $dbname = $this->getDatabaseName($schema->database);
         $tn = $schema->tableName;
-        if(!($q=$this->getRelationSchemaQuery($tn, $dbname, true)) || !($rels = $conn->query($q)->fetchAll(\PDO::FETCH_ASSOC))) {
+        if(!($q=$this->getRelationSchemaQuery($tn, $dbname, true)) || !($rels = $conn->query($q)->fetchAll(PDO::FETCH_ASSOC))) {
             return false;
         }
 
@@ -1947,7 +1952,7 @@ class Sql
         return $schema;
     }
 
-    public static function resetCache($cn)
+    public static function resetCache(string $cn): void
     {
         if(Cache::get($cckey='qc/'.S::slug($cn, '_', true))) {
             Cache::delete($cckey);

@@ -11,6 +11,7 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio\Cache;
 
 use Studio as S;
@@ -23,7 +24,7 @@ class Memcached
 
     private static $_memcached;
 
-    public static function memcached()
+    public static function memcached(): ?Server
     {
         if(is_null(self::$_memcached) && class_exists('Memcached')) {
             $skey = Cache::siteKey();
@@ -48,28 +49,24 @@ class Memcached
         return self::$_memcached;
     } 
 
-    public static function lastModified($key, $expires=0)
+    public static function lastModified(string $key, int|float $expires=0) :int|false
     {
         return self::get($key, $expires, 'modified');
     }
 
-    public static function size($key, $expires=0)
+    public static function size(array|string $key, int|float $expires=0) :int|false
     {
         return self::get($key, $expires, 'size');
     }
     
     /**
      * Gets currently stored key-pair value
-     *
-     * @param $key     mixed  key to be retrieved or array of keys to be tried (first available is returned)
-     * @param $expires int    timestamp to be compared. If timestamp is newer than cached key, false is returned.
-     * @param $method  mixed  Storage method to be used. Should be either a key or a value in self::$_methods
      */
-    public static function get($key, $expires=0, $m=null)
+    public static function get(array|string $key, int|float $expires=0, ?string $method=null) :mixed
     {
         if(!self::memcached()) return File::get($key, $expires);
 
-        if ($expires || $m) {
+        if ($expires || $method) {
             if($expires && $expires<2592000) {
                 $expired = time()-(int)$expires;
                 $expires = time()+(int)$expires;
@@ -84,11 +81,11 @@ class Memcached
                     return false;
                 }
             }
-            if(!is_null($m)) {
+            if(!is_null($method)) {
                 if($meta) {
                     unset($meta);
-                    if($m=='size') return $size;
-                    else if($m=='modified') return $lmod;
+                    if($method==='size') return $size;
+                    else if($method==='modified') return $lmod;
                 }
                 return false;
             }
@@ -100,13 +97,8 @@ class Memcached
 
     /**
      * Sets currently stored key-pair value
-     *
-     * @param $key     mixed  key(s) to be stored
-     * @param $value   mixed  value to be stored
-     * @param $expires int    timestamp to be set as expiration date.
-     * @param $method  mixed  Storage method to be used. Should be either a key or a value in self::$_methods
      */
-    public static function set($key, $value, $expires=0)
+    public static function set(array|string $key, mixed $value, int|float $expires=0) :bool
     {
         if(!self::memcached()) return File::set($key, $value, $expires);
         if(!is_array($key)) {
@@ -129,7 +121,7 @@ class Memcached
         return true;
     }
 
-    public static function delete($key)
+    public static function delete(array|string $key): bool
     {
         if(!self::memcached()) return File::delete($key, $expires);
         if(self::$_memcached->deleteMulti($key.'.meta', $key)) {

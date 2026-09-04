@@ -141,7 +141,7 @@ class Redis
         if($expires<0) return false;
         $meta = ['modified'=>$t, 'size'=>((is_object($value)||is_array($value))?(1):(strlen((string)$value)))];
         if($expires) {
-            if(!is_integer($expires)) $expires = (int)$expires;
+            if(!is_int($expires)) $expires = (int)$expires;
             if(!$S->setEx($key.'.meta', $expires, $meta) || !$S->setEx($key, $expires, $value)) {
                 return false;
             }

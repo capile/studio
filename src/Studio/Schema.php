@@ -148,7 +148,7 @@ class Schema implements ArrayAccess
         $this->offsetSet($name, $value);
     }
 
-    public function batchSet(array|object $values, bool $skipValidation=false)
+    public function batchSet(array|object $values, bool $skipValidation=false): self
     {
         foreach($values as $name=>$value) {
             if($skipValidation) $this->$name = $value;
@@ -700,7 +700,7 @@ class Schema implements ArrayAccess
         foreach($S as $k=>$v) {
             if($k=='allOf') {
                 if(is_array($v)) {
-                    foreach($v as $i=>$o) {
+                    foreach($v as $o) {
                         static::import($o, $R);
                     }
                 }

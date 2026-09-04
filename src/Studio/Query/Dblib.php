@@ -31,7 +31,7 @@ class Dblib extends Sql
      * Returns the last inserted ID from a insert call
      * returns true if successful
      */
-    public function lastInsertId($M=null, $conn=null)
+    public function lastInsertId(\Studio\Model|string|null $M=null, ?object $conn=null): mixed
     {
         if(!$conn) {
             $conn = self::connect($this->schema('database'));
@@ -43,7 +43,7 @@ class Dblib extends Sql
         }
     }
 
-    public function buildQuery($count=false)
+    public function buildQuery(mixed $count=false): string
     {
         if(is_null($this->_where)) {
             $this->_where = $this->getWhere(array());
@@ -95,7 +95,7 @@ class Dblib extends Sql
         return $q;
     }
 
-    public function addOrderBy($o, $sort='asc')
+    public function addOrderBy(array|string $o, string $sort='asc'): self
     {
         parent::addOrderBy($o, $sort);
         if($o && $this->_distinct) {
@@ -123,7 +123,7 @@ class Dblib extends Sql
         return $this;
     }
 
-    public function concat($a, $sep='-', $getAlias=true)
+    public function concat(array|string $a, string $sep='-', bool $getAlias=true): string
     {
         if(is_array($a) && count($a)>1) {
             $r = '';
@@ -139,7 +139,7 @@ class Dblib extends Sql
         }
     }
 
-    public function getTablesQuery($database=null, $enableViews=null)
+    public function getTablesQuery(?string $database=null, ?bool $enableViews=null): string
     {
         $dbname = $this->getDatabaseName($database);
 
@@ -147,7 +147,7 @@ class Dblib extends Sql
             . ((!$enableViews) ?' and TABLE_TYPE=\'BASE TABLE\'' :'');
     }
 
-    public function getTableSchemaQuery($table, $database=null, $enableViews=null)
+    public function getTableSchemaQuery(string $table, ?string $database=null, ?bool $enableViews=null): string
     {
         $dbname = $this->getDatabaseName($database);
         $schema = null;
@@ -170,7 +170,7 @@ class Dblib extends Sql
         return "select COLUMN_NAME as 'bind', DATA_TYPE as 'type', coalesce(cast(CHARACTER_MAXIMUM_LENGTH as varchar), cast(NUMERIC_PRECISION as varchar)+','+cast(NUMERIC_SCALE as varchar)) as 'size', COLUMN_DEFAULT as 'default', case when IS_NULLABLE='NO' then 1 else 0 end as 'required' from INFORMATION_SCHEMA.COLUMNS where TABLE_CATALOG={$dbname} and TABLE_NAME={$tn} order by ORDINAL_POSITION asc";
     }
 
-    public function getRelationSchemaQuery($table, $database=null, $enableViews=null)
+    public function getRelationSchemaQuery(string $table, ?string $database=null, ?bool $enableViews=null): string
     {
         $dbname = $this->getDatabaseName($database);
         $schema = null;

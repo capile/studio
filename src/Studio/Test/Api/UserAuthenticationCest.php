@@ -18,7 +18,7 @@ use ApiTester;
 class UserAuthenticationCest
 {
     protected $configs=['user'], $uri='http://127.0.0.1:9999', $cookie, $terminate;
-    public function _before()
+    public function _before(): void
     {
         if($this->configs) {
             Helper::loadConfig($this->configs);
@@ -30,7 +30,7 @@ class UserAuthenticationCest
     }
 
     // test if it's not authenticated first
-    public function notAuthenticated(ApiTester $I)
+    public function notAuthenticated(ApiTester $I): void
     {
         $I->sendGet($this->uri.'/_me');
         $I->seeResponseCodeIs(200);
@@ -39,7 +39,7 @@ class UserAuthenticationCest
     }
 
     // test if it's authenticated now -- might need a cache reset
-    public function userAuthenticated(ApiTester $I)
+    public function userAuthenticated(ApiTester $I): void
     {
         $I->haveHttpHeader('referer', $this->uri.'/_me');
         $I->sendGet($this->uri.'/signin?ref=1');
@@ -73,7 +73,7 @@ class UserAuthenticationCest
         $this->terminate = true;
     }
 
-    public function _after()
+    public function _after(): void
     {
         if($this->terminate) {
             Helper::destroyServer();

@@ -20,12 +20,12 @@ class Helper
     public static $id, $port;
     protected static $config, $configFiles=[], $db;
 
-    public static function startup()
+    public static function startup(): void
     {
         if(!self::$id) self::$id = S::salt(10);
     }
 
-    public static function startServer()
+    public static function startServer(): string
     {
         self::$port = 9998;
         while(file_exists(S_VAR.'/.studio-test-'.self::$port.'.pid') && self::$port > 9990) self::$port--;
@@ -38,7 +38,7 @@ class Helper
         return 'http://127.0.0.1:'.self::$port;
     }
 
-    public static function stopServer($uriOrPort=null)
+    public static function stopServer($uriOrPort=null): void
     {
         if($uriOrPort && !is_numeric($uriOrPort)) {
             $uriOrPort = preg_replace('/.*\:([0-9]+)$/', '$1', $uriOrPort);
@@ -56,7 +56,7 @@ class Helper
         }
     }
 
-    public static function loadConfig($exampleFiles)
+    public static function loadConfig($exampleFiles): void
     {
         if(!is_array($exampleFiles)) $exampleFiles = [$exampleFiles];
         $update = null;
@@ -88,7 +88,7 @@ class Helper
         }
     }
 
-    public static function unloadConfig()
+    public static function unloadConfig(): void
     {
         if(self::$db && file_exists(S_ROOT.'/'.self::$db)) {
             unlink(S_ROOT.'/'.self::$db);
@@ -104,7 +104,7 @@ class Helper
         }
     }
 
-    public static function destroyServer()
+    public static function destroyServer(): void
     {
         self::unloadConfig();
         if(self::$id) {

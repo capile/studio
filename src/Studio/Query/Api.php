@@ -145,7 +145,7 @@ class Api
         }
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->buildQuery();
     }
@@ -229,7 +229,7 @@ class Api
         return $this->_options;
     }
 
-    public function disconnect($n='')
+    public function disconnect($n=''): void
     {
         if(($c=$this->config('cookieJar')) && is_string($c)) {
             if(file_exists($c)) @unlink($c);
@@ -435,7 +435,7 @@ class Api
         return $R;
     }
 
-    public function authorizationHeader($type, $credentials=null)
+    public function authorizationHeader($type, $credentials=null): void
     {
         $add = 'authorization: '.$type;
         if($credentials) {
@@ -490,7 +490,7 @@ class Api
         return ($cn) ?$cn::$schema :null;
     }
 
-    public function setSchema($s)
+    public function setSchema($s): void
     {
         if($s && property_exists($s, 'schema')) {
             $this->_schema = $s;
@@ -501,7 +501,7 @@ class Api
     {
     }
 
-    public function cleanup()
+    public function cleanup(): void
     {
         if($this->response) {
             if(is_array($this->response)) {
@@ -519,7 +519,7 @@ class Api
         }
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->_select = null;
         $this->_scope = null;
@@ -551,7 +551,7 @@ class Api
     }
 
 
-    public function find($options=[], $asArray=false)
+    public function find($options=[], $asArray=false): self
     {
         $this->reset();
         $sc = $this->schema();
@@ -561,7 +561,7 @@ class Api
         return $this;
     }
 
-    public function filter($options=[])
+    public function filter($options=[]): self
     {
         if(!$this->_schema) return $this;
         if(!is_array($options)) {
@@ -577,7 +577,7 @@ class Api
         return $this;
     }
 
-    public function buildQueryWhere($qs='')
+    public function buildQueryWhere($qs=''): string
     {
         return $qs.(($qs)?('&'):('?')).http_build_query($this->_where);
     }
@@ -612,7 +612,7 @@ class Api
     }
 
 
-    public function buildQuery($count=false)
+    public function buildQuery($count=false): string
     {
         $url = $this->_url;
         $qs = '';
@@ -834,7 +834,7 @@ class Api
         return $this->addSelect($o);
     }
 
-    public function addSelect($o)
+    public function addSelect($o): self
     {
         if(is_array($o)) {
             foreach($o as $s) {
@@ -850,7 +850,7 @@ class Api
         return $this;
     }
 
-    public function addScope($o)
+    public function addScope($o): self
     {
         if(is_array($o)) {
             foreach($o as $s) {
@@ -864,20 +864,20 @@ class Api
         return $this;
     }
 
-    public function where($w)
+    public function where($w): self
     {
         $this->_where = $this->getWhere($w);
         return $this;
     }
 
-    public function addWhere($w)
+    public function addWhere($w): self
     {
         if(is_null($this->_where)) $this->_where = $this->getWhere($w);
         else $this->_where += $this->getWhere($w);
         return $this;
     }
 
-    private function getWhere($w)
+    private function getWhere($w): array
     {
         if(is_array($w)) {
             return $w;
@@ -901,7 +901,7 @@ class Api
         return array();
    }
 
-    public function addOrderBy($o)
+    public function addOrderBy($o): self
     {
         if(is_null($this->_orderBy)) $this->_orderBy = array();
         if(is_array($o)) {
@@ -920,7 +920,7 @@ class Api
         return $this;
     }
 
-    public function addGroupBy($o)
+    public function addGroupBy($o): self
     {
         if(is_array($o)) {
             foreach($o as $s) {
@@ -934,25 +934,25 @@ class Api
         return $this;
     }
 
-    public function limit($o)
+    public function limit($o): self
     {
         $this->_limit = (int) $o;
         return $this;
     }
 
-    public function addLimit($o)
+    public function addLimit($o): self
     {
         $this->_limit = (int) $o;
         return $this;
     }
 
-    public function offset($o)
+    public function offset($o): self
     {
         $this->_offset = (int) $o;
         return $this;
     }
 
-    public function addOffset($o)
+    public function addOffset($o): self
     {
         $this->_offset = (int) $o;
         return $this;
@@ -1029,7 +1029,7 @@ class Api
         return $r;
     }
 
-    public function run($q, $conn=null, $enablePaging=true, $keepAlive=null, $cn=null, $defaults=null, $callback=null, $args=array())
+    public function run($q, $conn=null, $enablePaging=true, $keepAlive=null, $cn=null, $defaults=null, $callback=null, $args=array()): self
     {
         if(!$conn) $conn = $this->connect($this->schema('database'));
         curl_setopt($conn, CURLOPT_URL, $q);
@@ -1241,7 +1241,7 @@ class Api
         return ($s && is_string($s)) ?S::unserialize($s, 'yaml') :$s;
     }
 
-    public function decodeGzip($s)
+    public function decodeGzip($s): ?string
     {
         // Perform GZIP decompression:
         $ctx = inflate_init(ZLIB_ENCODING_GZIP);
@@ -1261,12 +1261,15 @@ class Api
         return $r;
     }
 
-    public function decodeBase64($s)
+    public function decodeBase64($s): string
     {
         return base64_decode($s);
     }
 
-    public function decodeCsv($s)
+    /**
+     * @return mixed[][]
+     */
+    public function decodeCsv($s): array
     {
         $t0 = microtime(true);
         $sep = $this->config('csvSeparator');

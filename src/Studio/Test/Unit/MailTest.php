@@ -16,7 +16,7 @@ use Tecnodesign_Mail as Mail;
 
 class MailTest extends TestCase
 {
-    public function testMailSending()
+    public function testMailSending(): void
     {
         $headers = array(
             'From' => 'robo@capile.net',

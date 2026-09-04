@@ -137,7 +137,7 @@ class Apis extends Model
         return $this->connection;
     }
 
-    public function previewSchemaData()
+    public function previewSchemaData(): string
     {
         return '<code style="white-space:pre">'.S::xml(preg_replace('#^---\n#', '', S::serialize($this->loadSchema(), 'yaml'))).'</code>';
     }
@@ -229,7 +229,7 @@ class Apis extends Model
         }
     }
 
-    public static function executeImport($Interface=null)
+    public static function executeImport($Interface=null): void
     {
         if(!($p=S::urlParams()) && ($route = App::response('route'))) {
             S::scriptName($route['url']);
@@ -267,7 +267,7 @@ class Apis extends Model
         $Interface['text'] = $r;
     }
 
-    public function importSwagger($d, &$msg='')
+    public function importSwagger(array $d, &$msg=''): bool
     {
         $url = $this->schema_source;
         if(isset($d['basePath'])) {

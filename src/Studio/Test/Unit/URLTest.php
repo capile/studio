@@ -30,7 +30,7 @@ class URLTest extends TestCase
     }
 
     // tests
-    public function testValidUrl()
+    public function testValidUrl(): void
     {
         $this->assertEquals(S::slug('áéíóúãẽĩõũñàèìòùïü'), 'aeiouaeiounaeiouiu');
         $D = Yaml::load(S_ROOT.'/data/tests/_data/valid-url.yml');

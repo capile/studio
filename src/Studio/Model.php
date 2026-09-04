@@ -303,7 +303,7 @@ class Model implements ArrayAccess, Iterator, Countable
      * Unless $array evals to true this will return the PK(s) as
      * a string (associative array otherwise)
      */
-    public function getPk(?bool $array=null): string|array
+    public function getPk(?bool $array=null): mixed
     {
         $pk = static::pk(static::$schema, true);
         $r = array();
@@ -664,7 +664,7 @@ class Model implements ArrayAccess, Iterator, Countable
     public function currentForm(?string $fieldName=null) :Form|Field|null
     {
         if(!is_null($this->_forms)) {
-            foreach($this->_forms as $hash=>$instance) {
+            foreach($this->_forms as $instance) {
                 if($Form = Form::getInstance($instance)) {
                     if(!is_null($fieldName)) {
                         if(isset($Form[$fieldName])) {
@@ -833,7 +833,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return true;
     }
 
-    public function identityTrigger($fields, $conn=null)
+    public function identityTrigger($fields, $conn=null): bool
     {
         $cn = get_class($this);
         $Q = static::queryHandler();
@@ -862,7 +862,7 @@ class Model implements ArrayAccess, Iterator, Countable
     /**
      * Versionable Behavior
      */
-    public function versionableTrigger($fields, $conn=null)
+    public function versionableTrigger($fields, $conn=null): bool
     {
         if(!is_array($fields)) $fields = [$fields];
         $fnVersion = $fields[0];
@@ -1466,14 +1466,14 @@ class Model implements ArrayAccess, Iterator, Countable
         return $this->_delete;
     }
 
-    public function setNew($v=null)
+    public function setNew($v=null): self
     {
         if(!is_null($v)) $this->_new = (bool) $v;
         else $this->_new = $v;
         return $this;
     }
 
-    public function setDelete($v=null)
+    public function setDelete($v=null): self
     {
         if(!is_null($v)) $this->_delete = (bool) $v;
         else $this->_delete = $v;
@@ -1665,7 +1665,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return $this->$relation;
     }
 
-    public function unsetRelation($rn)
+    public function unsetRelation($rn): void
     {
         if($this->_relation && isset($this->_relation[$rn])) unset($this->_relation[$rn]);
         if(isset($this->$rn)) {
@@ -1732,7 +1732,7 @@ class Model implements ArrayAccess, Iterator, Countable
         }
     }
 
-    public function save($beginTransaction=null, $relations=null, $conn=false)
+    public function save(?bool $beginTransaction=null, ?int $relations=null, ?object $conn=null): bool
     {
         $cn = get_class($this);
         if(is_null($beginTransaction)) {
@@ -1746,7 +1746,7 @@ class Model implements ArrayAccess, Iterator, Countable
                 $conn = $this->_query->connect($cn::$schema->database);
             }
 
-            if($conn && is_object($conn) && method_exists($conn, 'setAttribute')) {
+            if($conn && method_exists($conn, 'setAttribute')) {
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             }
             if(!$this->runEvent('before-save', $conn)) {
@@ -1868,7 +1868,7 @@ class Model implements ArrayAccess, Iterator, Countable
         return true;
     }
 
-    public function auditLog($action, $pk, $data=null)
+    public function auditLog($action, $pk, $data=null): void
     {
         if(!($a=static::$schema->audit)) return;
 
@@ -1900,7 +1900,7 @@ class Model implements ArrayAccess, Iterator, Countable
         }
     }
 
-    public static function replace($data, $q=null, $scope=null, $save=true)
+    public static function replace(array $data, $q=null, $scope=null, $save=true)
     {
         if(!$q) {
             $pk = static::pk(null, true);
@@ -2113,7 +2113,7 @@ class Model implements ArrayAccess, Iterator, Countable
                 }
             }
 
-            if(is_integer($label)) $label = ($fn) ?static::fieldLabel($fn, false) :'';
+            if(is_int($label)) $label = ($fn) ?static::fieldLabel($fn, false) :'';
             if(substr($label, 0, 1)=='*') {
                 if(!isset($translate)) $translate = 'model-'.static::$schema->tableName;
                 $label = S::t(substr($label, 1), $translate);

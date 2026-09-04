@@ -132,7 +132,7 @@ class Client extends SchemaObject
     {
     }
 
-    public static function signIn($options=[])
+    public static function signIn($options=[]): ?string
     {
         if($options) {
             static::$cfg = $options; 
@@ -156,7 +156,7 @@ class Client extends SchemaObject
         return $s;
     }
 
-    public static function signOut($options=[])
+    public static function signOut($options=[]): void
     {
         $U = S::getUser();
         $U->signOut();
@@ -200,7 +200,7 @@ class Client extends SchemaObject
         $token = null;
         // fetch the correct token (check scope, issuer and client_id)
         if($A=Storage::find(['type'=>'authorization', 'token'=>$this->id])) {
-            foreach($A as $i=>$o) {
+            foreach($A as $o) {
                 if(!isset($o['options'])) continue;
                 $d = (is_array($o['options'])) ?$o['options'] :S::unserialize($o['options'], 'json');
                 if(!$d) continue;
@@ -310,7 +310,7 @@ class Client extends SchemaObject
         App::end('', 401);
     }
 
-    public static function authorizeSignIn($options=[])
+    public static function authorizeSignIn(array $options=[])
     {
         $S = static::config('servers');
         if(isset($options['server']) && $options['server']) {
@@ -689,7 +689,7 @@ class Client extends SchemaObject
         return $Client;
     }
 
-    public function requestAuthorization($options=[])
+    public function requestAuthorization(array $options=[])
     {
         $Client = null;
         if($this->authorization_endpoint) {

@@ -49,7 +49,7 @@ class File extends Api
         $schemas = [],
         $conn = [];
 
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->buildQuery();
     }
@@ -88,14 +88,14 @@ class File extends Api
         return static::$conn[$n];
     }
 
-    public function disconnect($n='')
+    public function disconnect($n=''): void
     {
         if(isset(static::$conn[$n])) {
             unset(static::$conn[$n]);
         }
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->_schema = null;
         $this->_conn = null;
@@ -135,7 +135,7 @@ class File extends Api
     public static function getTables($n=''){}
     */
 
-    public function find($options=array(), $asArray=false)
+    public function find($options=array(), $asArray=false): self
     {
         $this->_select = $this->_where = $this->_limit = $this->_offset = $this->_last = null;
         $this->_from = $this->getFrom();
@@ -143,7 +143,7 @@ class File extends Api
         return $this;
     }
 
-    public function filter($options=array())
+    public function filter($options=array()): self
     {
         if(!$this->_schema) return $this;
         if(!is_array($options)) {
@@ -337,31 +337,31 @@ class File extends Api
         return count($this->_last);
     }
 
-    public function addScope($o)
+    public function addScope($o): self
     {
         if(is_string($o)) $this->_scope = $o;
         return $this;
     }
 
-    public function limit($o)
+    public function limit($o): self
     {
         $this->_limit = (int) $o;
         return $this;
     }
 
-    public function addLimit($o)
+    public function addLimit($o): self
     {
         $this->_limit = (int) $o;
         return $this;
     }
 
-    public function offset($o)
+    public function offset($o): self
     {
         $this->_offset = (int) $o;
         return $this;
     }
 
-    public function addOffset($o)
+    public function addOffset($o): self
     {
         $this->_offset = (int) $o;
         return $this;
@@ -428,7 +428,7 @@ class File extends Api
      * returns the transaction $id
      */
     // public function transaction($id=null, $conn=null) {}
-    
+
     /**
      * Commits transactions opened by ::transaction
      * returns true if successful
@@ -447,7 +447,7 @@ class File extends Api
      */
     // public function lastInsertId($M=null, $conn=null) {}
 
-    public function update($M, $conn=null)
+    public function update($M, $conn=null): ?bool
     {
         $odata = $M->asArray('save', null, null, true);
         $data = array();
@@ -502,7 +502,7 @@ class File extends Api
         return $this->update($M, $conn);
     }
 
-    public function delete($M, $conn=null)
+    public function delete($M, $conn=null): ?bool
     {
         $r = null;
         if(isset($M->__src) && $M->__src) {

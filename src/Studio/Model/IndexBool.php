@@ -18,7 +18,7 @@ class IndexBool extends Model
     public static $schema;
     protected $interface, $id, $name, $value, $created, $updated, $Index;
 
-    public function getValue()
+    public function getValue(): bool
     {
         return (bool) $this->value;
     }

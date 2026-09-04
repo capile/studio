@@ -56,7 +56,7 @@ class Index extends Model
         }
     }
 
-    public static function reindex($q=[], $noCli=null)
+    public static function reindex(array $q=[], $noCli=null)
     {
         // studio indexing
         if(!static::checkConnection()) return;
@@ -231,7 +231,7 @@ class Index extends Model
         ]);
     }
 
-    public static function indexInterface($a, $icn=null, $scope='preview', $keyFormat=false, $valueFormat=false, $serialize=false)
+    public static function indexInterface(array $a, $icn=null, $scope='preview', $keyFormat=false, $valueFormat=false, $serialize=false): void
     {
         $renewCache = (Cache::get(static::$pidKey)==S_TIME);
         $q = null;
@@ -469,7 +469,7 @@ class Index extends Model
                 $L = $R->getItem($offset, $limit);
                 if($renewCache) Cache::set(static::$pidKey, S_TIME, 60);
                 if(!$L) break;
-                foreach($L as $i=>$o) {
+                foreach($L as $o) {
                     $offset++;
                     $o->delete(true);
                 }
@@ -503,7 +503,7 @@ class Index extends Model
         return ($format=='json') ?S::serialize($r, 'json') :$r;
     }
 
-    public static function expandValues($name, $value, &$r=[])
+    public static function expandValues($name, $value, array &$r=[])
     {
         if(strpos($name, self::$pathSeparator)!==false) {
             list($pre, $name) = explode(self::$pathSeparator, $name, 2);

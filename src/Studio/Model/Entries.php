@@ -61,7 +61,7 @@ class Entries extends Model
 
     protected static $repoDir, $repos;
 
-    public function __toString()
+    public function __toString(): string
     {
         return $this->title
             . ' ('.(($this->type) ?$this->choicesTypes($this->type) :'').'#'.$this->id.')';
@@ -82,7 +82,7 @@ class Entries extends Model
         return Studio::interfaceId($this, $prefix);
     }
 
-    public function render()
+    public function render(): void
     {
         if(Studio::$private) {
             $cch = 'private';
@@ -495,7 +495,7 @@ class Entries extends Model
     }
     
 
-    public static function feedPreview($o)
+    public static function feedPreview(array $o)
     {
         $entry=false;
         if(isset($o['entry'])) {
@@ -550,7 +550,7 @@ class Entries extends Model
             $html = (Api::format()=='html');
             $r = $g = $all = $none = null;
             $s = ($html) ?'' :[];
-            foreach($P as $i=>$o) {
+            foreach($P as $o) {
                 if(!$r) $r = $o->choicesRole();
                 if(!$g) $g = $o->choicescredentials();
                 if(!$all) $all = S::t('Everyone', 'model-studio_permissions');
@@ -591,7 +591,10 @@ class Entries extends Model
         }
     }
 
-    public function getAncestors($stopId=false, $scope='string')
+    /**
+     * @return mixed[]
+     */
+    public function getAncestors($stopId=false, $scope='string'): array
     {
         $as = array();
         $a=$this;
@@ -616,7 +619,7 @@ class Entries extends Model
 
     }
 
-    public function getContents($search=array(), $scope='content', $asCollection=false, $orderBy=null, $groupBy=null, $limit=null)
+    public function getContents($search=array(), $scope='content', bool $asCollection=false, $orderBy=null, $groupBy=null, ?int $limit=null)
     {
         if(!$this->id) return null;
         if(!is_array($search)) $search = array();
@@ -634,7 +637,7 @@ class Entries extends Model
         return $this->getChildren($search, $scope, $asCollection, $orderBy, $groupBy, $limit);
     }
 
-    public function getChildren($search=array(), $scope='link', $asCollection=false, $orderBy=null, $groupBy=null, $limit=null)
+    public function getChildren($search=array(), $scope='link', bool $asCollection=false, $orderBy=null, $groupBy=null, $limit=null)
     {
         if(!$this->id) return null;
         if(!is_array($search)) $search = [];
@@ -852,7 +855,7 @@ class Entries extends Model
         return $r;
     }
 
-    public static function meta(&$p)
+    public static function meta(&$p): ?string
     {
         $m = null;
         if(preg_match('/^\<\!\-\-[\s\n]*\-\-\-/', $p, $x) && ($n = strpos($p, '-->'))) {
@@ -1023,7 +1026,7 @@ class Entries extends Model
         return $P;
     }
 
-    public static function loadMeta($url, $page=null, $meta=array())
+    public static function loadMeta($url, $page=null, array $meta=array()): array
     {
         if(is_null($page) && $url) {
             $page = static::file($url, false);
@@ -1201,7 +1204,7 @@ class Entries extends Model
     }
 
 
-    public function validateLink($v)
+    public function validateLink($v): string
     {
         $v = trim($v);
         if(static::$hostnames && preg_match('#^(https?:)?//([^/]+)(/|$)#', $v, $m)) {
@@ -1295,14 +1298,14 @@ class Entries extends Model
         }
     }
 
-    public function apiLink()
+    public function apiLink(): string
     {
         if(!$this->type) $this->refresh(['type']);
 
         return Studio::$home.'/'.((isset(static::$api[$this->type])) ?static::$api[$this->type] :$this->type).'/preview';
     }
 
-    public static function executeNext($Api=null)
+    public static function executeNext($Api=null): void
     {
         if(App::request('headers', 'x-studio-action')==='api' && ($ref=App::request('headers', 'x-studio-api'))) {
                 // /_studio/feeds/preview/31
@@ -1325,11 +1328,11 @@ class Entries extends Model
         else S::redirect($url);
     }
 
-    public function previewContents()
+    public function previewContents(): ?string
     {
         $slots = [];
         if($L=$this->getContents([], 'content', false, ['position'=>'asc', 'id'=>'desc'])) {
-            foreach($L as $i=>$o) {
+            foreach($L as $o) {
                 $ct = ($o->content_type) ?$o->content_type :'text';
                 $slot = ($o->slot) ?$o->slot :static::$slot;
                 if(!isset($slots[$slot])) $slots[$slot] = '';
@@ -1357,7 +1360,7 @@ class Entries extends Model
     {
         if($L=$this->getContents(null, ['content'])) {
             $r = null;
-            foreach($L as $i=>$o) {
+            foreach($L as $o) {
                 $r .= $o->renderSource();
                 if(strlen($r)>750) break;
             }
@@ -1489,12 +1492,12 @@ class Entries extends Model
         return $master;
     }
 
-    public function previewSummary()
+    public function previewSummary(): string
     {
         return S::markdown($this->summary);
     }
 
-    public static function executeList($Interface, $req=[])
+    public static function executeList(array $Interface, $req=[]): void
     {
         $A = $Interface['text'];
 
@@ -1563,7 +1566,7 @@ class Entries extends Model
         $Interface['text'] = $A;
     }
 
-    public static function executeSitemap($Api=null)
+    public static function executeSitemap($Api=null): void
     {
         $params = App::request('get', 'q');
 
@@ -1585,7 +1588,7 @@ class Entries extends Model
         $sep = Studio::config('breadcrumb_separator');
         $L = static::find($q, null, ['id', 'title', 'Relation.Parent.title _parent_title', 'Relation.parent _parent', 'Relation.position _parent_position'], false, ['title'=>'asc'],['id']);
         if($L) {
-            foreach($L as $i=>$o) {
+            foreach($L as $o) {
                 $g = $o->_parent_title;
                 $p[$o->id] = $o->_parent;
 
@@ -1608,7 +1611,7 @@ class Entries extends Model
         S::output(json_encode(array_values($r), $flags), 'json');
     }
 
-    public static function executePages($Api=null)
+    public static function executePages($Api=null): void
     {
         $params = App::request('get', 'q');
 
@@ -1631,7 +1634,7 @@ class Entries extends Model
         $sep = Studio::config('breadcrumb_separator');
         $L = static::find($q, null, ['id', 'title', 'Relation.Parent.title _parent_title', 'Relation.parent _parent', 'Relation.position _parent_position'], false, ['title'=>'asc'],['id']);
         if($L) {
-            foreach($L as $i=>$o) {
+            foreach($L as $o) {
                 $g = $o->_parent_title;
                 $p[$o->id] = $o->_parent;
 
@@ -1654,7 +1657,7 @@ class Entries extends Model
         S::output(json_encode(array_values($r), $flags), 'json');
     }
 
-    public function childrenOptions(&$r)
+    public function childrenOptions(array &$r): void
     {
         if($L = $this->getChildren(null, 'string')) {
             foreach($L as $i=>$o) {
@@ -1671,7 +1674,7 @@ class Entries extends Model
     }
 
     // use $pat===true to return the probable file location  (doesn't need to exist)
-    public static function indexFile($file, $pat=null)
+    public static function indexFile($file, $pat=null): array
     {
         static $pat0;
 
@@ -1688,7 +1691,7 @@ class Entries extends Model
         }
     }
 
-    public function renderMeta($meta=null, $bodySlot='body')
+    public function renderMeta($meta=null, $bodySlot='body'): ?string
     {
         if(isset(self::$rendered[$this->id])) return null;
         self::$rendered[$this->id] = true;

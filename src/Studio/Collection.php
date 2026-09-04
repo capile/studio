@@ -59,14 +59,14 @@ class Collection implements ArrayAccess, Countable, Iterator
         }
     }
 
-    public function setClass($hint)
+    public function setClass($hint): self
     {
         $this->_hint = $hint;
         return $this;
     }
 
 
-    public function combine($col, $distinct=true)
+    public function combine($col, $distinct=true): void
     {
         if($col) {
             if(!($col instanceof Collection)) {
@@ -94,7 +94,7 @@ class Collection implements ArrayAccess, Countable, Iterator
         }
     }
 
-    public function setQueryKey($key)
+    public function setQueryKey($key): void
     {
         $this->_queryKey = $key;
     }
@@ -104,7 +104,7 @@ class Collection implements ArrayAccess, Countable, Iterator
      *
      * By doing this, all items from this collection will be dynamically retrieved from the query
      */
-    public function setQuery($sql, $conn=null, $key=null)
+    public function setQuery($sql, $conn=null, $key=null): self
     {
         if(!is_null($key)) {
             $this->setQueryKey($key);
@@ -175,7 +175,7 @@ class Collection implements ArrayAccess, Countable, Iterator
         $this->_current = 0;
     }
 
-    public function reset($removeMeta=false)
+    public function reset($removeMeta=false): void
     {
         foreach($this->_items as $i) {
             unset($this->$i);
@@ -344,7 +344,7 @@ class Collection implements ArrayAccess, Countable, Iterator
         return $xls->render($ext, $fname);
     }
 
-    public function paginate($hpp=20, $renderMethod=null, $renderArgs=array(), $pagesOnTop=false, $pagesOnBottom=true)
+    public function paginate($hpp=20, $renderMethod=null, $renderArgs=array(), $pagesOnTop=false, $pagesOnBottom=true): string
     {
         $page = 1;
         $pages = ceil($this->_count/$hpp);
@@ -412,7 +412,7 @@ class Collection implements ArrayAccess, Countable, Iterator
      * Adds new items to the collection. If the item is a collection, then it 
      * merges both collections. 
      */
-    public function add()
+    public function add(): self
     {
         $a = func_get_args();
         foreach($a as $item) {
@@ -591,7 +591,7 @@ class Collection implements ArrayAccess, Countable, Iterator
      * 
      * @return string page output
      */
-    function __toString()
+    function __toString(): string
     {
         $s = array();
         foreach($this->_items as $name) {
@@ -609,7 +609,7 @@ class Collection implements ArrayAccess, Countable, Iterator
      *
      * @return void
      */
-    public function  __set($name, $value)
+    public function  __set(string $name, $value)
     {
         if ($this->_hint && !is_object($value)) {
             $cn = $this->_hint;
@@ -646,7 +646,7 @@ class Collection implements ArrayAccess, Countable, Iterator
         return $this;
     }
 
-    public static function __set_state($a)
+    public static function __set_state(array $a)
     {
         $items      = (isset($a['_items']))?($a['_items']):(null);
         $hint       = (isset($a['_hint']))?($a['_hint']):(null);
@@ -662,11 +662,11 @@ class Collection implements ArrayAccess, Countable, Iterator
      * 
      * @return mixed the stored value, or method results
      */
-    public function  __call($name, $arguments)
+    public function  __call(string $name, array $arguments)
     {
         $ret = new Collection;
         if($this->_count) {
-            foreach($this as $i=>$o) {
+            foreach($this as $o) {
                 if(is_object($o)) {
                     $add = S::objectCall($o, $name, $arguments);
                     if(!is_null($add)) {
@@ -686,7 +686,7 @@ class Collection implements ArrayAccess, Countable, Iterator
      * 
      * @return mixed the stored value, or method results
      */
-    public function  __get($name)
+    public function  __get(string $name)
     {
         $ret = null;
         if (isset($this->$name)) {

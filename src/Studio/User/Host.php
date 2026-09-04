@@ -23,7 +23,7 @@ class Host extends SchemaObject
 
     public $id, $name, $username, $address, $credentials, $lastAccess;
 
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->id;
     }

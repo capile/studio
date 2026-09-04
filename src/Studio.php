@@ -266,7 +266,7 @@ class Studio
             $name = '';
         } else if(!$db) {
             //@todo why is that?!
-            foreach(self::$database as $name=>$db) {
+            foreach(self::$database as $db) {
                 break;
             }
         } else {
@@ -564,7 +564,7 @@ class Studio
         if(!is_array($a) && !is_object($a)) return;
         if(substr($p, 0, 2)=='$.') $p = substr($p, 2);
         if(strpos($p, '|')!==false) {
-            foreach(preg_split('#\|+#', $p, -1, PREG_SPLIT_NO_EMPTY) as $i=>$o) {
+            foreach(preg_split('#\|+#', $p, -1, PREG_SPLIT_NO_EMPTY) as $o) {
                 if(!is_null($r = self::extractValue($a, $o))) return $r;
             }
             return;
@@ -782,7 +782,7 @@ class Studio
         $qs = '';
         if (!empty($arg)) {
             array_walk(
-                $arg, static function (&$v,$k) {
+                $arg, static function (&$v,$k): void {
                    $v = urlencode($k) . '=' . urlencode($v);
                 }
             );
@@ -928,7 +928,7 @@ class Studio
         }
     }
 
-    public static function render(array|object $d, array|string|null $scope=null, string $class='s-render', bool $translate=false, bool $xmlEscape=true)
+    public static function render(array|object $d, array|string|null $scope=null, string $class='s-render', bool $translate=false, bool $xmlEscape=true): string
     {
         $cn = false;
         if(is_object($d) && $d instanceof Model) {
@@ -943,7 +943,7 @@ class Studio
             . '<tbody>';
         foreach($d as $label=>$v) {
             if($cn) {
-                if(is_integer($label)) {
+                if(is_int($label)) {
                     $label = $cn::fieldLabel($fn, false);
                 }
                 $v = $o->renderField($v, null, $xmlEscape);
@@ -1647,7 +1647,7 @@ class Studio
     {
         $img = new Image($img, $o);
         $imgd=$img->render();
-        if(!$img || !$img->type) return false;
+        if(!$img instanceof \Studio\Asset\Image || !$img->type) return false;
         $o['content-type'] = $img->mimeType();
         $img=null;
         return $imgd;
@@ -1759,7 +1759,7 @@ class Studio
         $arg = func_get_args();
         if (!headers_sent())
             @header('content-type: text/plain;charset=utf-8');
-        foreach ($arg as $k => $v) {
+        foreach ($arg as $v) {
             if ($v === false)
                 return false;
             print_r(self::toString($v));
@@ -3147,7 +3147,7 @@ class Studio
 
         if($showPossibilities) return $todo;
 
-        foreach($todo as $i=>$o) {
+        foreach($todo as $o) {
             $r = array_merge($r, glob($o));
         }
         if($r) {

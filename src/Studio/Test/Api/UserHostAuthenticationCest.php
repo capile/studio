@@ -20,7 +20,7 @@ class UserHostAuthenticationCest
     protected $configs=['user-host-authentication'], $host='http://127.0.0.1:9999';
 
     // test if it's not authenticated first
-    public function notAuthenticated(ApiTester $I)
+    public function notAuthenticated(ApiTester $I): void
     {
         Helper::loadConfig([]);
         $this->host = Helper::startServer();
@@ -34,7 +34,7 @@ class UserHostAuthenticationCest
     }
 
     // test if it's authenticated now -- might need a cache reset
-    public function hostAuthenticated(\ApiTester $I)
+    public function hostAuthenticated(\ApiTester $I): void
     {
         Helper::loadConfig($this->configs);
         $this->host = Helper::startServer();

@@ -47,7 +47,7 @@ class OData extends Api
         $enableOffset=false,
         $connectionCallback;
 
-    public function buildQueryWhere($qs='')
+    public function buildQueryWhere($qs=''): string
     {
         $url = '';
         if($this->_where) {

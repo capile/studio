@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 
 class StudioTest extends TestCase
 {
-    public function testLetterToNumberAndViceVersa()
+    public function testLetterToNumberAndViceVersa(): void
     {
         $tests = [
             0 => 'a',
@@ -36,7 +36,7 @@ class StudioTest extends TestCase
         }
     }
 
-    public function testTimedNumberConversion()
+    public function testTimedNumberConversion(): void
     {
         $i = 10;
         while ($i--) {

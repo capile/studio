@@ -176,7 +176,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
                     $fn = $scope[$fn];
                 }
 
-                foreach($L as $i=>$o) {
+                foreach($L as $o) {
                     if($o && $o->expires && S::strtotime($o->expires)<S_TIME) continue;
                     if($fn) $r[] = $o->$fn;
                     else $r[] = $o->asArray($scope);
@@ -394,7 +394,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      *
      * @ingroup oauth2_section_4
      */
-    public function setAuthorizationCode($code, $client_id, $user_id, $redirect_uri, $expires, $scope = null, $id_token = null, $code_challenge = null, $code_challenge_method = null)
+    public function setAuthorizationCode($code, $client_id, $user_id, $redirect_uri, $expires, $scope = null, $id_token = null, $code_challenge = null, $code_challenge_method = null): void
     {
         $r = [
             'id'=>$code,
@@ -474,7 +474,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      * @param null|string $user_id
      * @return bool
      */
-    public function setClientDetails($client_id, $client_secret = null, $redirect_uri = null, $grant_types = null, $scope = null, $user_id = null)
+    public function setClientDetails($client_id, $client_secret = null, $redirect_uri = null, $grant_types = null, $scope = null, $user_id = null): void
     {
         $r = [
             'id'=>$client_id,
@@ -572,7 +572,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      *
      * @ingroup oauth2_section_4
      */
-    public function setAccessToken($access_token, $client_id, $user_id, $expires, $scope = null)
+    public function setAccessToken($access_token, $client_id, $user_id, $expires, $scope = null): void
     {
         if(!$scope) $scope = Server::config('default_scope');
         $r = [
@@ -674,7 +674,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      *
      * @ingroup oauth2_section_6
      */
-    public function setRefreshToken($refresh_token, $client_id, $user_id, $expires, $scope = null)
+    public function setRefreshToken($refresh_token, $client_id, $user_id, $expires, $scope = null): void
     {
         $r = [
             'id'=>$refresh_token,
@@ -765,13 +765,13 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      * @param string $password
      * @return bool
      */
-    protected function checkPassword($user, $password)
+    protected function checkPassword(array $user, $password): bool
     {
         return $user['password'] == $this->hashPassword($password);
     }
 
     // use a secure hashing algorithm when storing passwords. Override this for your application
-    protected function hashPassword($password)
+    protected function hashPassword($password): string
     {
         return sha1($password);
     }
@@ -801,7 +801,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      * @param string $lastName
      * @return bool
      */
-    public function setUser($username, $password, $firstName = null, $lastName = null)
+    public function setUser($username, $password, $firstName = null, $lastName = null): void
     {
         S::debug(__METHOD__.' not implemented.');
     }
@@ -901,7 +901,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      * @param $jti
      * The jti to insert.
      */
-    public function setJti($client_id, $subject, $audience, $expires, $jti)
+    public function setJti($client_id, $subject, $audience, $expires, $jti): void
     {
         $r = [
             'id'=>$subject,
@@ -923,7 +923,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      * @return
      * TRUE if the grant type requires a redirect_uri, FALSE if not
      */
-    public function enforceRedirect()
+    public function enforceRedirect(): bool
     {
         $cfg = (($app=S::getApp()->studio) && isset($app['oauth2'])) ?$app['oauth2'] :[];
 
@@ -1009,7 +1009,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
      *
      * @ingroup oauth2_section_4
      */
-    protected function generateAuthorizationCode()
+    protected function generateAuthorizationCode(): string
     {
         return S::salt(40);
     }

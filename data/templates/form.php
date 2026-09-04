@@ -39,7 +39,7 @@ if(isset($limits) && $limits) {
         $before .= '<p class="s-msg s-msg-warn">'.S::xml($limits['warn']).'</p>';
     }
     if(isset($limits['fields'])) {
-        foreach($limits['fields'] as $fn=>$fo) {
+        foreach($limits['fields'] as $fo) {
             if($s=$fo->render()) {
                 if(isset($fo->fieldset)) {
                     $fs = (string) $fo->fieldset;

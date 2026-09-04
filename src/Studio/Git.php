@@ -113,7 +113,7 @@ class Git
         return $r;
     }
 
-    public function run($cmd)
+    public function run($cmd): bool
     {
         $options = '';
         if(($k=$this->config('sshKey')) && file_exists(realpath($k)) && ($k=escapeshellarg($k))) {

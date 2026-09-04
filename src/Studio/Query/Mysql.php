@@ -27,7 +27,7 @@ class Mysql extends Sql
     $tableAutoIncrement='auto_increment',
     $tableDefault='ENGINE=InnoDB DEFAULT CHARSET=utf8mb4';
 
-    public function getTablesQuery($database=null, $enableViews=null)
+    public function getTablesQuery(?string $database=null, ?bool $enableViews=null): string
     {
         if(is_null($database)) $database = $this->schema('database');
         return 'select table_name, table_comment, create_time, update_time from information_schema.tables where table_schema='.S::sql($this->getDatabaseName($database));

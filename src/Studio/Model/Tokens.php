@@ -42,7 +42,7 @@ class Tokens extends Model
       'user_credentials' => 'User Credentials',
     ];
 
-    public function __toString()
+    public function __toString(): string
     {
         if(!$this->type || !$this->id) $this->refresh(['type', 'id']);
 
@@ -52,7 +52,7 @@ class Tokens extends Model
         return $s;
     }
 
-    public function executeConnect($Interface=null)
+    public function executeConnect($Interface=null): void
     {
         if(!($p=S::urlParams()) && ($route = App::response('route'))) {
             S::scriptName($route['url']);
@@ -128,7 +128,7 @@ class Tokens extends Model
         }
     }
 
-    public function executeRunApi($Interface=null)
+    public function executeRunApi($Interface=null): void
     {
         if(!($p=S::urlParams()) && ($route = App::response('route'))) {
             S::scriptName($route['url']);
@@ -158,7 +158,7 @@ class Tokens extends Model
             $R = QueryApi::runStatic($url, $conn, $d[$prefix.'data'], $method, $H);
             $Interface::$pretty = true;
             $Interface::$envelope = false;
-            foreach($F->fields as $k=>$fd) {
+            foreach($F->fields as $fd) {
                 $fd->fieldset = 'Response';
                 $fd->format = 'textarea';
                 $fd->readonly = true;
@@ -196,7 +196,7 @@ class Tokens extends Model
         return static::$types;
     }
 
-    public function previewOptions()
+    public function previewOptions(): ?string
     {
         static $hide = ['client_secret', 'private_key'];
 

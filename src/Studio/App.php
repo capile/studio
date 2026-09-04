@@ -313,7 +313,7 @@ class App
         }
         try {
             // then check addons, like Symfony
-            foreach ($this->addons as $addon=>$class) {
+            foreach ($this->addons as $class) {
                 $addonObject = $this->getObject($class);
                 $m = 'run';
                 if (method_exists($addonObject, $m)) {
@@ -1215,7 +1215,7 @@ class App
     /**
      * Magic terminator. Returns the page contents, ready for output.
      */
-    function __toString()
+    function __toString(): string
     {
         return false;
     }

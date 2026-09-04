@@ -129,7 +129,7 @@ class Markdown extends Parsedown
     #
     # Abbreviation
 
-    protected function blockAbbreviation($Line)
+    protected function blockAbbreviation(array $Line)
     {
         if (preg_match('/^\*\[(.+?)\]:[ ]*(.+?)[ ]*$/', $Line['text'], $matches)) {
             $this->DefinitionData['Abbreviation'][$matches[1]] = $matches[2];
@@ -144,7 +144,7 @@ class Markdown extends Parsedown
     #
     # Footnote
 
-    protected function blockFootnote($Line)
+    protected function blockFootnote(array $Line)
     {
         if (preg_match('/^\[\^(.+?)\]:[ ]?(.*)$/', $Line['text'], $matches)) {
             $Block = array(
@@ -157,7 +157,7 @@ class Markdown extends Parsedown
         }
     }
 
-    protected function blockFootnoteContinue($Line, $Block)
+    protected function blockFootnoteContinue(array $Line, array $Block)
     {
         if ($Line['text'][0] === '[' && preg_match('/^\[\^(.+?)\]:/', $Line['text'])) {
             return;
@@ -174,7 +174,7 @@ class Markdown extends Parsedown
         }
     }
 
-    protected function blockFootnoteComplete($Block)
+    protected function blockFootnoteComplete(array $Block): array
     {
         $this->DefinitionData['Footnote'][$Block['label']] = array(
             'text' => $Block['text'],
@@ -187,7 +187,7 @@ class Markdown extends Parsedown
 
     #
     # Definition List
-    protected function blockDefinitionList($Line, $Block)
+    protected function blockDefinitionList(array $Line, $Block)
     {
         if (!isset($Block) || isset($Block['type'])) {
             return;
@@ -211,7 +211,7 @@ class Markdown extends Parsedown
         return $Block;
     }
 
-    protected function blockDefinitionListContinue($Line, array $Block)
+    protected function blockDefinitionListContinue(array $Line, array $Block)
     {
         if ($Line['text'][0] === ':')
         {
@@ -332,7 +332,7 @@ class Markdown extends Parsedown
         return $Block;
     }
 
-    protected function blockMarkupComplete($Block)
+    protected function blockMarkupComplete(array $Block): array
     {
         if ( ! isset($Block['void'])) {
             $Block['element']['rawHtml'] = $this->processTag($Block['element']['rawHtml']);
@@ -370,7 +370,7 @@ class Markdown extends Parsedown
     #
     # Footnote Marker
 
-    protected function inlineFootnoteMarker($Excerpt)
+    protected function inlineFootnoteMarker(array $Excerpt)
     {
         if (preg_match('/^\[\^(.+?)\]/', $Excerpt['text'], $matches)) {
             $name = $matches[1];
@@ -569,7 +569,7 @@ class Markdown extends Parsedown
     /**
      * Loading applications from Markdown
      */
-    protected function blockApp($Line)
+    protected function blockApp(array $Line)
     {
         if (preg_match('/^!([a-z0-9\-\/]+)[\s\n]*(\(.*\))?[\s\n]*$/i', $Line['text'], $m)) {
             if(is_null(static::$R)) static::$R = S::getApp()->app['routes'];
@@ -597,7 +597,7 @@ class Markdown extends Parsedown
         }
     }
 
-    protected function blockAppContinue($Line, $Block)
+    protected function blockAppContinue(array $Line, array $Block)
     {
         if (isset($Block['complete'])) {
             return;
@@ -611,7 +611,7 @@ class Markdown extends Parsedown
         return $Block;
     }
 
-    protected function blockAppComplete($Block)
+    protected function blockAppComplete(array $Block)
     {
         $Block['element']['text'] = implode("\n", $Block['element']['text']);
         $r = $Block['route'];
@@ -635,7 +635,7 @@ class Markdown extends Parsedown
         return $Block;
     }
 
-    protected function inlineApp($Block)
+    protected function inlineApp(array $Block): ?array
     {
         $s = '';
         if (preg_match('/^!([a-z0-9\-\/]+) *(\(.*\))?/i', $Block['text'], $m)) {
@@ -761,7 +761,7 @@ class Markdown extends Parsedown
     # Util Methods
     #
 
-    protected function addDdElement(array $Line, array $Block)
+    protected function addDdElement(array $Line, array $Block): array
     {
         $text = substr($Line['text'], 1);
         $text = trim($text);
@@ -781,7 +781,7 @@ class Markdown extends Parsedown
     }
 
 
-    protected function buildFootnoteElement()
+    protected function buildFootnoteElement(): array
     {
         $Element = array(
             'name' => 'div',
@@ -833,7 +833,7 @@ class Markdown extends Parsedown
     }
     
     protected $variables=array();
-    protected function inlineGetVariable($Excerpt)
+    protected function inlineGetVariable(array $Excerpt)
     {
         if (preg_match('/^\$([a-z_]+)/', $Excerpt['text'], $m) && isset($this->variables[$m[1]])) {
             return array(
@@ -843,7 +843,7 @@ class Markdown extends Parsedown
         }
     }
 
-    protected function blockVariable($Line)
+    protected function blockVariable(array $Line)
     {
         if (preg_match('/^\$([a-z_]+)=\{(.*)/', $Line['text'], $m)) {
             $Block = array(
@@ -854,7 +854,7 @@ class Markdown extends Parsedown
         }
     }
 
-    protected function blockVariableContinue($Line, $Block)
+    protected function blockVariableContinue(array $Line, array $Block)
     {
         if (isset($Block['complete'])) return;
         else if (isset($Block['closed'])) return;
@@ -872,7 +872,7 @@ class Markdown extends Parsedown
         return $Block;
     }
 
-    protected function blockVariableComplete($Block)
+    protected function blockVariableComplete(array $Block): array
     {
         if(isset($Block['id'])) {
             $this->variables[$Block['id']] = $this->innerText($Block['markup']);
@@ -921,7 +921,7 @@ class Markdown extends Parsedown
         }
     }
 
-    protected function blockSection($Line, $Block)
+    protected function blockSection(array $Line, ?array $Block)
     {
         if (preg_match('/^'.$Line['text'][0].'{3,} *(\{'.$this->regexAttribute.'+\})? *$/', $Line['text'], $m)) {
             $Block = array(
@@ -942,7 +942,7 @@ class Markdown extends Parsedown
         }
     }
 
-    protected function blockSectionContinue($Line, $Block)
+    protected function blockSectionContinue(array $Line, array $Block)
     {
         if (isset($Block['complete'])) return;
 
@@ -961,7 +961,7 @@ class Markdown extends Parsedown
         return $Block;
     }
 
-    protected function blockSectionComplete($Block)
+    protected function blockSectionComplete(array $Block): array
     {
         $Block['complete'] = true;
         return $Block;
@@ -970,7 +970,7 @@ class Markdown extends Parsedown
     /**
      * Implement: https://github.com/egil/php-markdown-extra-extended
      */
-    protected function blockFigure($Line, $Block)
+    protected function blockFigure(array $Line, array $Block)
     {
         if (preg_match('/^'.$Line['text'][0].'{3,} *(\[.*\])? *(\{'.$this->regexAttribute.'+\})? *$/', $Line['text'], $m)) {
             $Block = array(
@@ -995,7 +995,7 @@ class Markdown extends Parsedown
         }
     }
 
-    protected function blockFigureContinue($Line, $Block)
+    protected function blockFigureContinue(array $Line, array $Block)
     {
         if (isset($Block['complete'])) return;
 
@@ -1019,7 +1019,7 @@ class Markdown extends Parsedown
         return $Block;
     }
 
-    protected function blockFigureComplete($Block)
+    protected function blockFigureComplete(array $Block): array
     {
         if(isset($Block['element']['caption'])) {
             $line = $this->element(['name'=>'figcaption', 'text'=>$Block['element']['caption']]);
@@ -1034,11 +1034,11 @@ class Markdown extends Parsedown
         return $Block;
     }
 
-    protected function multiple($a)
+    protected function multiple(array $a)
     {
         if(isset($a['element'])) return $this->multiple(array($a));
         $s = '';
-        foreach($a as $i=>$Block) {
+        foreach($a as $Block) {
             if(is_string($Block)) {
                 if(strpos($Block, "\n")!==false) $s.= $this->innerText($Block);
                 else $s.= $this->line($Block);
@@ -1054,7 +1054,7 @@ class Markdown extends Parsedown
 
     # ~
 
-    protected function parseAttributeData($attributeString)
+    protected function parseAttributeData($attributeString): array
     {
         $Data = array();
         $attributes = preg_split('/[ ]+/', $attributeString, - 1, PREG_SPLIT_NO_EMPTY);
@@ -1074,7 +1074,7 @@ class Markdown extends Parsedown
 
     # ~
 
-    protected function processTag($elementMarkup) # recursive
+    protected function processTag($elementMarkup): ?string # recursive
     {
         # http://stackoverflow.com/q/1148928/200145
         libxml_use_internal_errors(true);
@@ -1121,7 +1121,7 @@ class Markdown extends Parsedown
 
     # ~
 
-    protected function sortFootnotes($A, $B) # callback
+    protected function sortFootnotes(array $A, array $B) # callback
     {
         return $A['number'] - $B['number'];
     }

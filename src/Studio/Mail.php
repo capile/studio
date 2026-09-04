@@ -58,7 +58,7 @@ class Mail
         }
     }
 
-    public function addFile($file, $hint=false, $cid=null, $name=null)
+    public function addFile($file, $hint=false, $cid=null, $name=null): void
     {
         $ct=strtolower($hint);
         $meta=['attachment'=>false, 'file'=>$file ];
@@ -86,7 +86,7 @@ class Mail
         $this->contents[$id]=$meta;
     }
 
-    public function addPart($content, $hint=false, $cid=null)
+    public function addPart($content, $hint=false, $cid=null): void
     {
         $ct=strtolower($hint);
         $meta=['attachment'=>false, 'content'=>$content ];
@@ -178,7 +178,7 @@ class Mail
      *
      * @param string $body
      */
-    public function setTextBody($content)
+    public function setTextBody($content): void
     {
         if (!isset($this->headers['Content-Type'])) {
             $this->headers['Content-Type'] = 'text/plain';
@@ -192,7 +192,7 @@ class Mail
      *
      * @param string $body
      */
-    public function setHtmlBody($content, $replaceAttachments=null)
+    public function setHtmlBody($content, $replaceAttachments=null): void
     {
         $this->headers['Content-Type'] = 'text/html';
         if(!is_null($replaceAttachments)) {
@@ -209,7 +209,7 @@ class Mail
             $r=array();
             $s=array();
             $added=array();
-            foreach($m[1] as $i=>$file) {
+            foreach($m[1] as $file) {
                 if(file_exists($f=$documentRoot.'/'.$file)) {
                     $nf='cid:'.md5(realpath($f));
                     //$s[]=$m[0][$i];
@@ -247,7 +247,10 @@ class Mail
         }
     }
 
-    public static function checkEmail($email)
+    /**
+     * @return mixed[]
+     */
+    public static function checkEmail($email): array
     {
         $r = array();
         if (is_array($email)) {
@@ -278,7 +281,7 @@ class Mail
         return $r;
     }
 
-    public function replaceContent($arr)
+    public function replaceContent($arr): void
     {
         if(isset($this->contents['text/html']['content'])) {
             $this->contents['text/html']['content'] = strtr($this->contents['text/html']['content'], $arr);
@@ -332,7 +335,7 @@ class Mail
      * Set subject
      * @param string $subject
      */
-    public function setSubject ($subject)
+    public function setSubject ($subject): void
     {
         unset($this->headers['Subject']);
         $this->headers['Subject'] = $subject;
@@ -352,7 +355,7 @@ class Mail
      * Set the Sender headers -- must be unique
      * @param string $email sneder valid e-mail
      */
-    public function setSender ($email)
+    public function setSender ($email): void
     {
         unset($this->headers['Sender']);
         $this->headers['Sender'] = $email;
@@ -363,7 +366,7 @@ class Mail
      * @param string $email valid e-mail
      * @param string $name name
      */
-    public function setReturnPath ($email)
+    public function setReturnPath ($email): void
     {
         unset($this->headers['ReturnPath']);
         $this->headers['ReturnPath'] = $email;
@@ -373,7 +376,7 @@ class Mail
      * Set charset
      * @param string $charset
      */
-    public function setCharset ($charset)
+    public function setCharset ($charset): void
     {
         unset($this->headers['charset']);
         $this->headers['charset'] = $charset;
@@ -583,7 +586,7 @@ class Mail
         return $this->sent;
     }
 
-    protected function sendSwiftMailer()
+    protected function sendSwiftMailer(): bool
     {
         /**
          * Load swiftMailer mailer class if is not loaded
@@ -633,7 +636,7 @@ class Mail
 
         //Add To
         if(isset($this->headers['To'])) {
-            foreach ($this->headers['To'] as $k => $v) {
+            foreach ($this->headers['To'] as $v) {
                 if (is_array($v)) {
                     $msg->addTo($v[0],$v[1]);
                 } else {
@@ -644,7 +647,7 @@ class Mail
 
         //Add Cc
         if(isset($this->headers['Cc'])) {
-            foreach ($this->headers['Cc'] as $k => $v) {
+            foreach ($this->headers['Cc'] as $v) {
                 if (is_array($v)) {
                     $msg->addCc($v[0],$v[1]);
                 } else {
@@ -655,7 +658,7 @@ class Mail
 
         //Add Bcc
         if(isset($this->headers['Bcc'])) {
-            foreach ($this->headers['Bcc'] as $k => $v) {
+            foreach ($this->headers['Bcc'] as $v) {
                 if (is_array($v)) {
                     $msg->addBcc($v[0],$v[1]);
                 } else {

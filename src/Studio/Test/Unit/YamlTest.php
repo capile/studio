@@ -23,7 +23,7 @@ class YamlTest extends TestCase
         Yaml::$cache = false;
     }
 
-    public function testParser()
+    public function testParser(): void
     {
         /**
          * The default parser should be the PHP-YAML
@@ -38,14 +38,14 @@ class YamlTest extends TestCase
         }
     }
 
-    public function testParserException()
+    public function testParserException(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid parser: I do not exist');
         Yaml::parser('I do not exist');
     }
 
-    public function testLoadDump()
+    public function testLoadDump(): void
     {
         $yamlFilePath = S_ROOT . '/data/tests/assets/sample.yml';
         $yamlFileContent = file_get_contents($yamlFilePath);
@@ -115,7 +115,7 @@ class YamlTest extends TestCase
     }
     */
 
-    public function testAppendException()
+    public function testAppendException(): void
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('$append must be an array');

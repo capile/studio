@@ -77,7 +77,7 @@ class Asset
         }
     }
 
-    public function render($output=null, $exit=true)
+    public function render(?bool $output=null, bool $exit=true)
     {
         if($this->format && method_exists($this, $m='render'.ucfirst($this->format))) {
             $r = $this->$m($output, $exit);
@@ -86,7 +86,7 @@ class Asset
         } else if($output) {
             $r = '';
             if(is_array($this->source)) {
-                foreach($this->source as $i=>$o) {
+                foreach($this->source as $o) {
                     $r .= file_get_contents($o);
                 }
             } else {
@@ -103,16 +103,18 @@ class Asset
         return $r;
     }
 
-    public function getFormat()
+    public function getFormat(): ?string
     {
         if(isset(S::$formats[$this->extension])) {
             return S::$formats[$this->extension];
         } else if($this->output) {
             return S::fileformat($this->output);
         }
+
+        return null;
     }
 
-    public function build($files=null, $outputFile=null)
+    public function build(array|string|null $files=null, ?string $outputFile=null): bool
     {
         $shell = $optimize = $this->optimize;
         if(!isset(S::$minifier[$this->format])) $shell = false;
@@ -182,7 +184,7 @@ class Asset
             unset($cmdoutput, $ret, $cacheDir);
         }
 
-        foreach($files as $i=>$o) {
+        foreach($files as $o) {
             file_put_contents($tempnam, file_get_contents($o), FILE_APPEND);
         }
         rename($tempnam, $outputFile);
@@ -192,12 +194,12 @@ class Asset
         return file_exists($outputFile);
     }
 
-    public function renderCss($output=null, $exit=true)
+    public function renderCss(?bool $output=null, bool $exit=true): bool
     {
         $r = array();
         $f = is_array($this->source) ?$this->source :[$this->source];
 
-        foreach($f as $i=>$o) {
+        foreach($f as $o) {
             if(!file_exists($o)) {
 
             } else if(substr($o, -5)==='.less') {
@@ -237,7 +239,7 @@ class Asset
         return $this->build($r);
     }
 
-    public function parseLess($fs, $outputFile)
+    public function parseLess(array|string $fs, string $outputFile): bool
     {
         static $compiler='lessc', $format='less';
 
@@ -290,7 +292,7 @@ class Asset
             }
             unset($r);
             if($del) unlink($del);
-            return;
+            return false;
         }
 
 
@@ -302,7 +304,7 @@ class Asset
         }
 
         $parser = new $compiler();
-        $parser->registerFunction('dechex', function($a) {
+        $parser->registerFunction('dechex', function($a): string {
             return dechex($a[1]);
         });
         $parser->setVariables(array('assets-url'=>escapeshellarg(S::$assetsUrl), 'studio-url'=>escapeshellarg(Studio::$home))+static::$assetVariables);
@@ -329,11 +331,12 @@ class Asset
         } else {
             $parser->checkedCompile($fs, $outputFile);
         }
-
         $parser = null;
+
+        return file_exists($outputFile);
     }
 
-    public function parseScss($fs, $outputFile)
+    public function parseScss(array|string $fs, string $outputFile): bool
     {
         static $compiler='ScssPhp\\ScssPhp\\Compiler';
         if(!class_exists($compiler)) {
@@ -342,7 +345,7 @@ class Asset
 
         $parser = new $compiler();
         $parser->setVariables(array('assets-url'=>escapeshellarg(S::$assetsUrl), 'studio-url'=>escapeshellarg(Studio::$home))+static::$assetVariables);
-        $parser->registerFunction('dechex', function($a){
+        $parser->registerFunction('dechex', function($a): string{
             return dechex($a[1]);
         });
         $importDir = (is_array(self::$importDir)) ?self::$importDir :[self::$importDir];
@@ -373,6 +376,8 @@ class Asset
         S::save($outputFile, $parser->compile($fs));
 
         $parser = null;
+
+        return file_exists($outputFile);
     }
 
     public static function html(array|string $src): string
@@ -531,7 +536,7 @@ class Asset
     }
  
 
-    public static function file($url, $root=null)
+    public static function file(string $url, ?string $root=null): string|false
     {
         $p = Studio::page($url);
         if($p) {
@@ -548,7 +553,7 @@ class Asset
         return false;
     }
 
-    public static function run($url=null, $root=null, $optimize=null, $outputToRoot=null)
+    public static function run(?string $url=null, ?string $root=null, ?bool $optimize=null, ?bool $outputToRoot=null): bool
     {
         if(Studio::$cacheTimeout) S::cacheControl('public', Studio::$staticCache);
         if(is_null($url)) $url = S::scriptName();
@@ -633,9 +638,11 @@ class Asset
         }
         unset($result, $file, $method, $ext);
         Studio::$app->end();
+
+        return true;
     }
 
-    public static function check()
+    public static function check(): void
     {
         $a = [];
         $asset = true;
@@ -702,7 +709,8 @@ class Asset
                 $r = S::exec(['shell'=>'HOME='.escapeshellarg(S_PROJECT_ROOT).' '.S::$paths['composer'].' install -n -v -d '.escapeshellarg(S_PROJECT_ROOT)]);
             }
             if($image) {
-                return self::buildDockerImage($a, $publish);
+                self::buildDockerImage($a, $publish);
+                return;
             }
             $metakeys = ['script', 'style', 'assets'];
             if($gitp && ($repos=S::getApp()->config('app', 'web-repos')) && ($d=S::getApp()->config('app', 'repo-dir'))) {
@@ -805,7 +813,7 @@ class Asset
         }
     }
 
-    public static function buildCheck()
+    public static function buildCheck(): void
     {
         static $ckey=self::$lockKey.'Build';
         if(!($r=Cache::get($ckey, 30))) {
@@ -818,7 +826,7 @@ class Asset
         }
     }
 
-    public static function buildDockerImage($a=[], $publish=null)
+    public static function buildDockerImage($a=[], $publish=null): void
     {
         S::log('[INFO] Building images');
         $fs = [S_ROOT.'/Dockerfile'];
@@ -850,10 +858,10 @@ class Asset
         }
     }
 
-    public static function execRoot(&$cmd)
+    public static function execRoot(&$cmd): ?string
     {
         if(preg_match('#^(/|[A-Z]:)#i', $cmd, $m)) {
-            return;
+            return null;
         }
         $w = '/'.preg_replace('#^([^\s]+).*#', '$1', $cmd);
         if(file_exists(($d=getcwd()).$w)

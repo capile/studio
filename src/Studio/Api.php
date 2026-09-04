@@ -416,9 +416,9 @@ class Api extends SchemaObject
     public function checkScope(array $a=[]): void
     {
         if(!$a || !is_array($a)) return;
-        foreach($a as $sn=>$scope) {
+        foreach($a as $scope) {
             if(!is_array($scope)) continue;
-            foreach($scope as $fn=>$fd) {
+            foreach($scope as $fd) {
                 if(is_array($fd) && (isset($fd['api']) || isset($fd['interface'])) && isset($fd['bind'])) {
                     $fid = $fd['api'] ?? $fd['interface'];
                     if(!isset($this->actions[$fid])) {
@@ -598,7 +598,7 @@ class Api extends SchemaObject
             static::loadAssets();
             S::$variables['html-layout'] = 'studio-api';
 
-            if($I && $I->auth && !isset(static::$headers[static::H_CACHE_CONTROL])) {
+            if($I instanceof Api && $I->auth && !isset(static::$headers[static::H_CACHE_CONTROL])) {
                 static::$headers[static::H_CACHE_CONTROL] = 'private';
             }
             $sn = S::scriptName();
@@ -2210,7 +2210,7 @@ class Api extends SchemaObject
         return null;
     }
 
-    public function renderShare($object = null, $scope = 'share', $class = null, $translate = false, $xmlEscape = true)
+    public function renderShare($object = null, $scope = 'share', $class = null, $translate = false, $xmlEscape = true): Form
     {
         $this->options['scope'] = $this->scope($scope);
         $arguments = $this->source ?: array();
@@ -2711,7 +2711,7 @@ class Api extends SchemaObject
                         array_unshift($x, '_x');
                     }
                     */
-                    foreach($d as $k=>$v) {
+                    foreach($d as $v) {
                         if(!isset($G['data']['columns'][$i])) $G['data']['columns'][$i] = [$l];
                         $G['data']['columns'][$i][]=$v;
                     }
@@ -3060,7 +3060,7 @@ class Api extends SchemaObject
         }
 
         if(($itemreq=App::request('item')) && ($label=array_search($itemreq, $d))!==false) {
-            if(is_integer($label)) $label = $cn::fieldLabel($itemreq, false);
+            if(is_int($label)) $label = $cn::fieldLabel($itemreq, false);
             static::$urls[$link]['title'] .= ' ('.$label.')';
             $this->text['title'] = static::$urls[$link]['title'];
             $d = array($label=>$itemreq);

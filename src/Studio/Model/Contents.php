@@ -43,7 +43,7 @@ class Contents extends Model
 
     protected $id, $entry, $slot, $content_type, $source, $attributes, $content, $position, $published, $version=false, $created, $updated=false, $expired, $show_at, $hide_at, $ContentsDisplay, $Entry;
 
-    public function __toString()
+    public function __toString(): string
     {
         if($this->source) {
             $s = $this->source;
@@ -69,7 +69,7 @@ class Contents extends Model
                 static::$contentType = [];
                 $L = Schema::find(['enable_content'=>1],null,['id', 'title'], false);
                 if($L) {
-                    foreach($L as $i=>$o) {
+                    foreach($L as $o) {
                         static::$contentType[$o->id] = ($o->title) ?$o->title :S::t(ucfirst(str_replace(['-', '_'], ' ', trim($o->id, '-_'))), 'model-studio_contents');
                     }
                 }
@@ -147,7 +147,7 @@ class Contents extends Model
     {
         if($this->id && ($L=ContentsDisplay::find(['content'=>$this->id],null,['link','display'], false))) {
             $r = [];
-            foreach($L as $i=>$o) {
+            foreach($L as $o) {
                 $r[] = ($o->display>0) ?S::xml($o->link) :'<s>'.S::xml($o->link).'</s>';
             }
 
@@ -261,7 +261,7 @@ class Contents extends Model
         }
     }
 
-    public function save($beginTransaction=null, $relations=null, $conn=false)
+    public function save(?bool $beginTransaction=null, ?int $relations=null, ?object $conn=null): bool
     {
         if(!Studio::$connection) {
             if($this->isNew() || ($this->source && ($f=Entries::file($this->source)))) {
@@ -302,7 +302,7 @@ class Contents extends Model
         return parent::save($beginTransaction, $relations, $conn);
     }
 
-    public function previewContent()
+    public function previewContent(): string
     {
         if(!isset($this->content_type) && $this->id) $this->refresh(['content_type']);
         $scope = null;
@@ -365,7 +365,7 @@ class Contents extends Model
         return $this->content;
     }
 
-    public function setContent($v)
+    public function setContent($v): bool
     {
         if($v) {
             if(is_string($v)) {
@@ -397,7 +397,7 @@ class Contents extends Model
         return true;
     }
 
-    public static function prepareContentTypes($a)
+    public static function prepareContentTypes(array $a): array
     {
         static $methods = ['u','v'];
         if(($p=S::urlParams()) && count($p)>=2 && in_array($p[0], $methods) && is_numeric($p[1]) && ($E=self::find(['id'=>$p[1]],1,['content_type']))) {
@@ -520,7 +520,7 @@ class Contents extends Model
     }
 
 
-    public static function renderHtml($code=null, $e=null)
+    public static function renderHtml($code=null, $e=null): string
     {
         if(is_array($code)) {
             $code = isset($code['html'])?($code['html']):(array_shift($code));
@@ -539,7 +539,7 @@ class Contents extends Model
         return self::renderMd($code);
     }
 
-    public static function renderMd($code=null)
+    public static function renderMd($code=null): string
     {
         if(is_array($code)) {
             $code = isset($code['txt'])?($code['txt']):(array_shift($code));
@@ -706,7 +706,7 @@ class Contents extends Model
         //return array('export'=>'S::exec('.var_export($o,true).')');
     }
 
-    public function renderSource()
+    public function renderSource(): string
     {
         static $doNotList = ['template'];
         $ct = $slot = null;
@@ -754,7 +754,7 @@ class Contents extends Model
     {
         $r = false;
         if($C = $this->getRelation('ContentsDisplay', null, ['link', 'display'], false)) {
-            foreach($C as $i=>$o) {
+            foreach($C as $o) {
                 if($o->matchUrl($url)) {
                     if($o->display>0) {
                         $r = true;
@@ -775,7 +775,7 @@ class Contents extends Model
         }
     }
 
-    public function prepareContentFormField(&$arg, $Field)
+    public function prepareContentFormField(&$arg, $Field): void
     {
         $this->refresh(['content_type', 'entry']);
         if($Field->getForm()['content_type']) {
@@ -783,7 +783,7 @@ class Contents extends Model
             $cs = [];
             $fn = 'content_type';
             if($L=Schema::find(['enable_content'=>1],null,['type','id','title','aliases'],false)) {
-                foreach($L as $i=>$o) {
+                foreach($L as $o) {
                     $tpls[$o->id] = ['scope'=>$o->formOverlay()];
                     if(($a = $o->aliases) && is_string($a)) $a = S::unserialize($a, 'json');
                     if(!is_array($a)) $a=[];
@@ -820,7 +820,7 @@ class Contents extends Model
         if(is_string($this->content)) $this->content = S::unserialize($this->content, 'json');
     }
 
-    public function updateSource()
+    public function updateSource(): bool
     {
         if(!isset($this->source)) $this->refresh(['source']);
         if(!$this->source) return true;

@@ -122,7 +122,7 @@ class Cache
     /**
      * Gets currently stored key-pair value
      */
-    public static function get(array|string $key, int|float $expires=0, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :mixed
+    public static function get(array|string $key, int|float $expires=0, ?string $method=null, bool $fileFallback=false, ?string $lock=null) :mixed
     {
         $cn = self::storage($method, true);
         if($expires && $expires<2592000) $expires = microtime(true)-(float)$expires;
@@ -155,7 +155,7 @@ class Cache
     /**
      * Sets currently stored key-pair value
      */
-    public static function set(array|string $key, mixed $value, int|float $expires=0, string|null $method=null, bool $fileFallback=false, string|null $lock=null) :bool
+    public static function set(array|string $key, mixed $value, int|float $expires=0, ?string $method=null, bool $fileFallback=false, ?string $lock=null) :bool
     {
         if($lock) self::unlock($key, $lock, $method, true);
         $cn = self::storage($method, true);
@@ -313,12 +313,12 @@ class Cache
         return File::filename($key);
     }
 
-    public static function cacheDir($s=null)
+    public static function cacheDir(?string $s=null): string
     {
         return File::cacheDir($s);
     }
 
-    public static function cleanup()
+    public static function cleanup(): void
     {
         $tokens = false;
         if(S_CLI && App::request('shell')) {

@@ -247,7 +247,7 @@ class Excel extends SchemaObject
         return $img;
     }
 
-    public function setCell($c, $v=null, $t=null, $s=null, $comment=null)
+    public function setCell($c, $v=null, $t=null, $s=null, $comment=null): self
     {
         $c = self::cell($c);
         if($t) {
@@ -280,7 +280,7 @@ class Excel extends SchemaObject
         return $this;
     }
     
-    private function compositeExcel() 
+    private function compositeExcel(): void 
     {
         if(!$this->data || !is_array($this->data)) return;
         foreach($this->data as $r => $c) {
@@ -304,7 +304,7 @@ class Excel extends SchemaObject
         $this->data = array();
     }    
 
-    public function addSheet($i=null)
+    public function addSheet($i=null): void
     {
         if($this->data) {
             $this->sheetNum++;
@@ -394,7 +394,7 @@ class Excel extends SchemaObject
         return $this->sheet($s);
     }
 
-    public function addStylesheet($style=null, $add=true)
+    public function addStylesheet($style=null, $add=true): void
     {
         if($this->style && !is_array($this->style)) $this->style = self::parseCss($this->style);
         if(!is_null($style)) {
@@ -409,7 +409,7 @@ class Excel extends SchemaObject
         return $this->addStylesheet($style, false);
     }
 
-    public function applyStylesheet($style=null)
+    public function applyStylesheet($style=null): void
     {
         if(is_null($style)) $this->addStylesheet($style);
         if($this->style) {
@@ -424,7 +424,7 @@ class Excel extends SchemaObject
      * @param string $cols -- Sintaxe: 'A1' (unique column) or 'A1:D1' (range of columns)
      * @param array $sytle -- array of the format
      */
-    public function setStyle($c, $style)
+    public function setStyle($c, array $style): void
     {
         if($c=='*' || $c=='html' || $c=='table') $c = $this->sheet->getDefaultStyle();
         else {
@@ -518,7 +518,7 @@ class Excel extends SchemaObject
         unset($c, $s);
     }
 
-    public function style($x, $y, $c, $cn=null)
+    public function style($x, $y, array $c, $cn=null)
     {
         $style = (isset($c['style']))?($this->val($c['style'])):(array());
         $on = '::nth-child('.((int)$x).')';
@@ -566,7 +566,7 @@ class Excel extends SchemaObject
         return $this->setHeaderFooter($s, $m, $p, $img, $imgStyle);
     }
 
-    public function setHeaderFooter($s, $w='oddHeader', $p='L', $img=null, $imgStyle=array())
+    public function setHeaderFooter($s, $w='oddHeader', $p='L', $img=null, ?array $imgStyle=array()): void
     {
         $w = ucfirst($w);
         if(!in_array($w, self::$headerFooter)) return;
@@ -650,13 +650,13 @@ class Excel extends SchemaObject
         return $file;
     }
     
-    public function setGrid($v=true)
+    public function setGrid($v=true): self
     {
         $this->sheet->setShowGridlines($v);
         return $this;
     }
 
-    private function download($download, $file, $keepFile=false)
+    private function download($download, $file, $keepFile=false): void
     {
         if($download) {
             $fname = (is_string($download) && strlen($download)>1)?($download):(pathinfo($file, PATHINFO_BASENAME));
@@ -667,7 +667,7 @@ class Excel extends SchemaObject
 
     }
     
-    private function clearAllObjects()
+    private function clearAllObjects(): void
     {
         $this->excel=null;
         $this->sheet=null;
@@ -687,7 +687,7 @@ class Excel extends SchemaObject
         return str_replace(array_keys($this->r), array_values($this->r), $s);
     }
 
-    public function pos($p=null)
+    public function pos($p=null): array
     {
         $P=array($this->x, $this->y);
         if($p && is_array($p)) {
@@ -708,14 +708,14 @@ class Excel extends SchemaObject
     }
 
     protected $r=array();
-    public function addReplacement($r)
+    public function addReplacement($r): void
     {
         if(is_array($r)) {
             $this->r=array_merge($r, $this->r);
         }
     }
 
-    public function addContent($c)
+    public function addContent(array $c): void
     {
         if(isset($c['if']) && !(isset($this->r[$c['if']]) && $this->r[$c['if']])) return;
         if(isset($c['ifnot']) && (isset($this->r[$c['ifnot']]) && $this->r[$c['ifnot']])) return;
@@ -914,7 +914,7 @@ class Excel extends SchemaObject
         } 
     }
 
-    public function addCollection($c, $scope='report')
+    public function addCollection($c, $scope='report'): void
     {
         $cn = $c->getClassName();
         if($cn) {

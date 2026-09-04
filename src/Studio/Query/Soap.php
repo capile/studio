@@ -79,13 +79,13 @@ class Soap
     }
 
 
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->buildQuery();
     }
 
     // move this to curl requests?
-    public function disconnect($n='')
+    public function disconnect($n=''): void
     {
         if(isset(self::$C[$n])) {
             self::$C[$n]=null;

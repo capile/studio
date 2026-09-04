@@ -29,12 +29,12 @@ class Config extends Model
 
     protected $app, $studio, $database, $user;
 
-    public function choicesStudioVersion()
+    public function choicesStudioVersion(): array
     {
         return ["1.0"];
     }
 
-    public function choicesLanguage()
+    public function choicesLanguage(): array
     {
         return ["en"=>"English", "pt"=>"Português"];
     }
@@ -61,7 +61,7 @@ class Config extends Model
         return $title;
     }
 
-    public function checkConfiguration()
+    public function checkConfiguration(): bool
     {
         if(is_null($this->app)) $this->app = [];
         else if(isset($this->app['api-dir'])) unset($this->app['api-dir']);
@@ -172,7 +172,7 @@ class Config extends Model
         return true;
     }
 
-    public static function standaloneConfig()
+    public static function standaloneConfig(): void
     {
         if(S_ROOT!=S_APP_ROOT) S::debug('[ERROR] '.S::t('This action is only available on standalone installations.', 'exception'));
 
@@ -239,7 +239,7 @@ class Config extends Model
         }
     }
 
-    public static function resetStudio()
+    public static function resetStudio(): void
     {
         if(S_ROOT!=S_APP_ROOT) S::debug('[ERROR] '.S::t('This action is only available on standalone installations.', 'exception'));
         $r = ['data/cache/*','data/studio.db','data/config/*.yml'];
@@ -261,7 +261,7 @@ class Config extends Model
         @touch(S_ROOT.'/app.yml');
     }
 
-    public static function executePreview($Api, $args=[])
+    public static function executePreview($Api, $args=[]): void
     {
         $Api->getButtons();
         $r = $Api->text;
@@ -285,7 +285,7 @@ class Config extends Model
         return $v;
     }
 
-    public static function syncRepo(&$repo, $push=null)
+    public static function syncRepo(array &$repo, $push=null): bool
     {
         if(!isset($repo['id']) || !$repo['id'] || !isset($repo['src']) || !$repo['src']) return false;
 

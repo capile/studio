@@ -69,7 +69,7 @@ class Form implements ArrayAccess //, Iterator, Countable
 
     private $_uid;
 
-    public function __construct($formConfig=[])
+    public function __construct(array $formConfig=[])
     {
         if (isset($formConfig['id'])) {
             $id = $formConfig['id'];
@@ -175,7 +175,7 @@ class Form implements ArrayAccess //, Iterator, Countable
         }
     }
 
-    public static function userToken($key='form-token')
+    public static function userToken($key='form-token'): void
     {
         $U = S::getUser();
         $uid = $U->getAttribute($key);
@@ -221,7 +221,7 @@ class Form implements ArrayAccess //, Iterator, Countable
     /**
      * Validates the rate limiting control fields
      */
-    public function checkLimits($post=null)
+    public function checkLimits($post=null): bool
     {
         if(!$this->limits) return true;
         if(!isset($this->limits['keys'])) $this->getLimits();
@@ -461,7 +461,7 @@ class Form implements ArrayAccess //, Iterator, Countable
         return self::$_instances[$id];
      }
 
-    public static function addInstance($id, $form)
+    public static function addInstance($id, $form): void
     {
         $form->register($id);
     }
@@ -513,10 +513,10 @@ class Form implements ArrayAccess //, Iterator, Countable
         return $this->attributes['enctype'];
     }
 
-    public function setPrefix($prefix='')
+    public function setPrefix($prefix=''): void
     {
         $this->prefix  = $prefix;
-        foreach($this->fields as $fn=>$f) {
+        foreach($this->fields as $f) {
             $f->prefix=$this->prefix;
         }
     }
@@ -533,7 +533,7 @@ class Form implements ArrayAccess //, Iterator, Countable
         }
     }
 
-    public function render($arg=array())
+    public function render(array $arg=array())
     {
         $tpl = false;
 
@@ -631,7 +631,7 @@ class Form implements ArrayAccess //, Iterator, Countable
         return $valid;
     }
 
-    private function _value($fn, $d)
+    private function _value($fn, array $d)
     {
         if($fn==='') return $d;
         else if(isset($d[$fn])) return $d[$fn];
@@ -654,10 +654,10 @@ class Form implements ArrayAccess //, Iterator, Countable
         return false;
     }
 
-    public function resetErrors()
+    public function resetErrors(): void
     {
         $this->err='';
-        foreach($this->fields as $fn=>$fv) {
+        foreach($this->fields as $fv) {
             $e = $fv->resetError();
         }
         if(isset($this->limits['error'])) {
@@ -693,7 +693,7 @@ class Form implements ArrayAccess //, Iterator, Countable
         }
     }
 
-    public function setModel($model)
+    public function setModel($model): self
     {
         if($model instanceof Model) {
             if(is_null(self::$models)) {
@@ -731,7 +731,7 @@ class Form implements ArrayAccess //, Iterator, Countable
      *
      * @return array form values, indexed by key
      */
-    public function getData()
+    public function getData(): array
     {
         $d = array();
         foreach($this->fields as $fn=>$fv) {
@@ -745,7 +745,7 @@ class Form implements ArrayAccess //, Iterator, Countable
      *
      * @return string page output
      */
-    function __toString()
+    function __toString(): string
     {
         try {
             return $this->render();
@@ -764,7 +764,7 @@ class Form implements ArrayAccess //, Iterator, Countable
      *
      * @return void
      */
-    public function  __set($name, $value)
+    public function  __set(string $name, $value)
     {
         $m='set'.ucfirst($name);
         if (method_exists($this, $m)) {
@@ -786,7 +786,7 @@ class Form implements ArrayAccess //, Iterator, Countable
      *
      * @return mixed the stored value, or method results
      */
-    public function  __get($name)
+    public function  __get(string $name)
     {
         $m='get'.ucfirst($name);
         $ret = false;

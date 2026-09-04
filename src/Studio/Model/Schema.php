@@ -42,7 +42,7 @@ class Schema extends Model
     {
         if($L=$this->getRelation('SchemaProperties', null, 'string', false)) {
             $s = '<ul>';
-            foreach($L as $i=>$o) {
+            foreach($L as $o) {
                 $t = ($o->title) ?$o->title :S::t($o->bind, 'model-studio_schema');
                 $s .= '<li>'.S::xml($t).(($t!==$o->bind) ?' ('.S::xml($o->bind).')' :'').'</li>';
             }
@@ -52,7 +52,10 @@ class Schema extends Model
         }
     }
 
-    public function formOverlay($prefix=null)
+    /**
+     * @return non-empty-array[]
+     */
+    public function formOverlay($prefix=null): array
     {
         static $multipleType=['array', 'object'];
         $r = [];
@@ -84,7 +87,7 @@ class Schema extends Model
             if($P) {
                 $bool = ['hidden', 'disabled'];
                 $j0 = ['{', '['];
-                foreach($P as $i=>$o) {
+                foreach($P as $o) {
                     if(!isset($r[$o->bind]) || $o->type==='unavailable') {
                         if(isset($r[$o->bind])) unset($r[$o->bind]);
                         continue;

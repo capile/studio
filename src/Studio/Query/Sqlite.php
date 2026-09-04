@@ -21,9 +21,8 @@ class Sqlite extends Sql
     protected static $tableAutoIncrement='';
     /**
      * Enables transactions for this connector
-     * returns the transaction $id
      */
-    public function transaction($id=null, $conn=null)
+    public function transaction(?string $id=null, ?object $conn=null): string
     {
         if(is_null($this->_transaction)) $this->_transaction = array();
         if(!$id) {
@@ -41,9 +40,8 @@ class Sqlite extends Sql
 
     /**
      * Commits transactions opened by ::transaction
-     * returns true if successful
      */
-    public function commit($id=null, $conn=null)
+    public function commit(?string $id=null, ?object $conn=null): bool
     {
         if(!$this->_transaction) return false;
         if(!$id) {
@@ -53,7 +51,7 @@ class Sqlite extends Sql
             if(!$conn) $conn = $this->_transaction[$id];
             unset($this->_transaction[$id]);
             if($conn) {
-                return $this->exec('commit transaction '.$id, $conn);
+                return (bool) $this->exec('commit transaction '.$id, $conn);
             } else {
                 return false;
             }
@@ -64,7 +62,7 @@ class Sqlite extends Sql
      * Commits transactions opened by ::transaction
      * returns true if successful
      */
-    public function rollback($id=null, $conn=null)
+    public function rollback(?string $id=null, ?object $conn=null): bool
     {
         if(!$this->_transaction) return false;
         if(!$id) {
@@ -74,29 +72,29 @@ class Sqlite extends Sql
             if(!$conn) $conn = $this->_transaction[$id];
             unset($this->_transaction[$id]);
             if($conn) {
-                return $this->exec('rollback transaction '.$id, $conn);
+                return (bool) $this->exec('rollback transaction '.$id, $conn);
             } else {
                 return false;
             }
         }
     }
 
-    public function getTablesQuery($database=null, $enableViews=null)
+    public function getTablesQuery(?string $database=null, ?bool $enableViews=null): string
     {
         return 'select name from sqlite_master where type=\'table\'';
     }
 
-    public function getTableSchemaQuery($table, $database=null, $enableViews=null)
+    public function getTableSchemaQuery(string $table, ?string $database=null, ?bool $enableViews=null): string
     {
         return 'pragma table_info('.S::sql($table, false).')';
     }
 
-    public function getRelationSchemaQuery($table, $database=null, $enableViews=null)
+    public function getRelationSchemaQuery(string $table, ?string $database=null, ?bool $enableViews=null): string
     {
-        return;
+        return '';
     }
 
-    protected function getFunctionAlias($fn)
+    protected function getFunctionAlias(string $fn): string
     {
         if(strtolower($fn)==='greatest') return 'max';
 

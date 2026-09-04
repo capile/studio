@@ -136,7 +136,7 @@ class Field extends SchemaObject
         unset($Type, $m);
     }
 
-    public function setForm($F)
+    public function setForm($F): void
     {
         $this->form = $F->register();
     }
@@ -177,7 +177,7 @@ class Field extends SchemaObject
         return false;
     }
 
-    public function setMessages($msgs=array())
+    public function setMessages($msgs=array()): void
     {
         if(is_array($msgs)) {
             if(!is_array($this->messages)) {
@@ -239,13 +239,13 @@ class Field extends SchemaObject
         }
     }
 
-    public function setScope($s)
+    public function setScope($s): void
     {
         // accept string and object scopes
         if($s) $this->scope = $s;
     }
 
-    public function setUpdate($update)
+    public function setUpdate($update): void
     {
         $this->update = (bool) $update;
         if($this->bind) {
@@ -255,7 +255,7 @@ class Field extends SchemaObject
         }
     }
 
-    public function setInsert($insert)
+    public function setInsert($insert): void
     {
         $this->insert = (bool) $insert;
         if($this->bind) {
@@ -265,7 +265,7 @@ class Field extends SchemaObject
         }
     }
 
-    public function setPlaceholder($str) {
+    public function setPlaceholder($str): void {
         if(is_string($str) && substr($str, 0, 1)=='*') {
             $tlib = ($this->bind && ($schema=$this->getSchema()))?('model-'.$schema->tableName):('form');
             $str = S::t(substr($str, 1), $tlib);
@@ -275,7 +275,7 @@ class Field extends SchemaObject
         $this->placeholder = $str;
     }
 
-    public function setType($type)
+    public function setType($type): void
     {
         if(!$type) {
             $type = 'text';
@@ -286,7 +286,7 @@ class Field extends SchemaObject
         $this->type = $type;
     }
 
-    public static function id($name)
+    public static function id($name): string
     {
         return trim(preg_replace('/[^0-9a-z\§\,]+/i', '_', $name),'_');
     }
@@ -355,7 +355,7 @@ class Field extends SchemaObject
         return $this->value;
     }
 
-    public function setValue($value=false, $outputError=true, $validation=null)
+    public function setValue($value=false, $outputError=true, $validation=null): bool
     {
         static $textChecks=['checkDns', 'checkEmail', 'checkIp', 'checkIpBlock', 'checkGuid'];
         if($validation && in_array($this->type, static::$typesNotForValidation)) return true;
@@ -476,7 +476,7 @@ class Field extends SchemaObject
         return true;
     }
 
-    public function resetError()
+    public function resetError(): void
     {
         $this->error=null;
     }
@@ -546,7 +546,7 @@ class Field extends SchemaObject
                 $join = true;
             }
             $count=0;
-            foreach($value as $k=>$v) {
+            foreach($value as $v) {
                 if(!S::isempty($v)) {
                     if(S::isempty($this->checkChoices($v, $message))) {
                         return false;
@@ -571,7 +571,10 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkForm($value, $message='')
+    /**
+     * @return mixed[]
+     */
+    public function checkForm($value, $message=''): array
     {
         if(!is_array($value)) {
             $value = array();
@@ -643,7 +646,7 @@ class Field extends SchemaObject
             if(!is_array($scope)) $scope = $cn::columns($scope);
             if(!$scope) $scope = array_keys($cn::$schema->properties);
             $bnull = array();
-            foreach($scope as $label=>$fn) {
+            foreach($scope as $fn) {
                 if(is_array($fn)) {
                     if(isset($fn['bind'])) {
                         $fn = $fn['bind'];
@@ -852,7 +855,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function preCheckFile()
+    public function preCheckFile(): void
     {
         if(!isset($this->accept['uploader']) || !$this->accept['uploader']) return;
 
@@ -1112,12 +1115,12 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkFileHashDatetime($name, $file)
+    public function checkFileHashDatetime(?string $name, $file): string
     {
         return date('Ymd/His_').S::slug($name,'._');
     }
 
-    public function checkFileHashTime($name, $file)
+    public function checkFileHashTime($name, $file): float
     {
         return microtime(true);
     }
@@ -1163,7 +1166,7 @@ class Field extends SchemaObject
                     $ts = S::$formats[$ts];
                 }
                 if($multiple) {
-                    foreach(S::$formats as $ext=>$tn) {
+                    foreach(S::$formats as $tn) {
                         if(substr($tn, 0, strlen($ts))==$ts) {
                             $types[$tn]=$tn;
                         }
@@ -1186,7 +1189,7 @@ class Field extends SchemaObject
 
     }
 
-    public function checkDns($value, $message=null)
+    public function checkDns($value, $message=null): string
     {
         static $err = '"%s" is not a valid %s DNS record.';
         if($message && $message!=static::$defaultErrorMessage) {
@@ -1212,7 +1215,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkIp($value, $message='')
+    public function checkIp($value, $message=''): string
     {
         static $err = '"%s" is not a valid %s IP address.';
         static $ipTypeFlags = [
@@ -1249,7 +1252,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkIpBlock($value, $message='')
+    public function checkIpBlock($value, $message=''): string
     {
         static $err = '"%s" is not a valid %s IP block.';
         static $ipTypeFlags = [
@@ -1293,7 +1296,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkEmail($value, $message=null)
+    public function checkEmail($value, $message=null): string
     {
         $value = trim($value);
         if($value && !S::checkEmail($value, false)) {
@@ -1334,7 +1337,10 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function getRules()
+    /**
+     * @return mixed[]
+     */
+    public function getRules(): array
     {
         if(!isset($this->rules) || !is_array($this->rules)) {
             $this->rules = [];
@@ -1382,7 +1388,7 @@ class Field extends SchemaObject
         return $rules;
     }
 
-    public static function properties($fd, $new=null)
+    public static function properties(array $fd, $new=null)
     {
         if(is_object($fd)) {
             $fd = $fd->value();
@@ -1476,7 +1482,7 @@ class Field extends SchemaObject
         return (isset($this->error)) ?$this->error :null;
     }
 
-    public function getClass()
+    public function getClass(): string
     {
         $cn = (isset($this->class)) ?$this->class :'';
         if($this->readonly) {
@@ -1493,7 +1499,7 @@ class Field extends SchemaObject
         return trim($cn);
     }
 
-    public function setError($msg)
+    public function setError($msg): self
     {
         if(!is_array($this->error) || !$msg) {
             $this->error = [];
@@ -1714,7 +1720,7 @@ class Field extends SchemaObject
         return (isset($this->label)) ?$this->label :'';
     }
 
-    public function render($arg=array())
+    public function render(array $arg=array())
     {
         $arg0 = $arg;
         $M = ($this->bind && !isset($arg['no-render-model'])) ?$this->getModel() :null;
@@ -1842,7 +1848,7 @@ class Field extends SchemaObject
         return S::exec($run).$s;
     }
 
-    public function renderObject(&$arg)
+    public function renderObject(array &$arg): string
     {
         $input = '<input type="hidden" id="'.S::xml($arg['id']).'" name="'.S::xml($arg['name']).'" />';
         $jsinput = '';
@@ -1940,7 +1946,7 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function checkObject($value, $message='')
+    public function checkObject($value, $message=''): ?array
     {
         $r = null;
         if($value && is_string($value) && $this->serialize && ($a=S::unserialize($value, $this->serialize))) {
@@ -1949,7 +1955,7 @@ class Field extends SchemaObject
         }
         if($value && is_array($value)) {
             $r = [];
-            foreach($value as $i=>$o) {
+            foreach($value as $o) {
                 if(is_array($o) && isset($o['property'])) {
                     $v = (isset($o['value'])) ?$o['value'] :null;
                     $r[$o['property']] = $v;
@@ -1961,7 +1967,7 @@ class Field extends SchemaObject
     }
 
 
-    public function renderForm(&$arg)
+    public function renderForm(array &$arg): string
     {
         $input = '<input type="hidden" id="'.S::xml($arg['id']).'" name="'.S::xml($arg['name']).'" />';
         $jsinput = '';
@@ -2028,7 +2034,7 @@ class Field extends SchemaObject
                     $jsinput = '<div class="item">';
                     $fid = $this->getId();
                     $prefix = $this->getName();
-                    foreach($form->fields as $fn=>$f) {
+                    foreach($form->fields as $f) {
                         $id = ($f->bind)?($f->bind):($f->id);
                         if(in_array($id, $fk)) {
                             $f->type = 'none';
@@ -2176,7 +2182,7 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function getSubForm($scope=null)
+    public function getSubForm($scope=null): ?array
     {
         if(!$scope && $this->scope) {
             $scope = $this->scope;
@@ -2230,49 +2236,49 @@ class Field extends SchemaObject
 
     }
 
-    public function renderEmail(&$arg)
+    public function renderEmail(array &$arg)
     {
         $arg['type']=self::$emailInputType;
         $arg['data-type']='email';
         return $this->renderText($arg);
     }
 
-    public function renderUrl(&$arg)
+    public function renderUrl(array &$arg)
     {
         $arg['type']=self::$urlInputType;
         $arg['data-type']='url';
         return $this->renderText($arg);
     }
 
-    public function renderDns(&$arg)
+    public function renderDns(array &$arg)
     {
         $arg['type']='text';
         $arg['data-type']='dns';
         return $this->renderText($arg);
     }
 
-    public function renderIp(&$arg)
+    public function renderIp(array &$arg)
     {
         $arg['type']='text';
         $arg['data-type']='ip';
         return $this->renderText($arg);
     }
 
-    public function renderIpBlock(&$arg)
+    public function renderIpBlock(array &$arg)
     {
         $arg['type']='text';
         $arg['data-type']='ip-block';
         return $this->renderText($arg);
     }
 
-    public function renderSearch(&$arg)
+    public function renderSearch(array &$arg)
     {
         $arg['type']=self::$searchInputType;
         $arg['data-type']='search';
         return $this->renderText($arg);
     }
 
-    public function renderFile(&$arg)
+    public function renderFile(array &$arg): string
     {
         $arg['type']='file';
         if($F=$this->getForm()) {
@@ -2371,7 +2377,7 @@ class Field extends SchemaObject
         }
     }
 
-    public function filePreview($name='', $img = false)
+    public function filePreview($name='', $img = false): string
     {
         static $b='<span class="s-auto-remove s-file">', $a='</span>';
         $prefix = preg_replace('/_+$/', '', preg_replace('/[\[\]]+/', '_', $name));
@@ -2380,7 +2386,7 @@ class Field extends SchemaObject
             $files = explode(',', $this->value);
             $url = (App::request('query-string'))?(S::requestUri().'&'):(S::scriptName(true).'?');
             $uploadDir = S::uploadDir();
-            foreach($files as $i=>$fdesc) {
+            foreach($files as $fdesc) {
                 $fpart = explode('|', $fdesc);
                 $fname = array_pop($fpart);
                 $arg = ['id'=>$prefix, 'name'=>$name, 'value'=>$fdesc];
@@ -2415,27 +2421,27 @@ class Field extends SchemaObject
         return $s;
     }
 
-    public function renderNumber(&$arg)
+    public function renderNumber(array &$arg)
     {
         $arg['type']=self::$numberInputType;
         $arg['data-type']='number';
         return $this->renderText($arg);
     }
 
-    public function renderTel(&$arg)
+    public function renderTel(array &$arg)
     {
         $arg['type']='tel';
         return $this->renderText($arg);
     }
 
-    public function renderRange(&$arg)
+    public function renderRange(array &$arg)
     {
         $arg['type']=self::$rangeInputType;
         $arg['data-type']='range';
         return $this->renderText($arg);
     }
 
-    public function renderPassword(&$arg)
+    public function renderPassword(array &$arg)
     {
         $arg['type']='password';
         $arg['data-type']='password';
@@ -2443,7 +2449,7 @@ class Field extends SchemaObject
         return $this->renderText($arg);
     }
 
-    public function renderDate(&$arg)
+    public function renderDate(array &$arg)
     {
         $arg['type']=self::$dateInputType;
         $arg['data-type']='date';
@@ -2465,7 +2471,7 @@ class Field extends SchemaObject
         return $this->renderText($arg);
     }
 
-    public function renderDateSelect(&$arg)
+    public function renderDateSelect(array &$arg)
     {
         $a = array('id'=>$arg['id'], 'name'=>$arg['name']);
         if(isset($this->placeholder)) {
@@ -2641,7 +2647,7 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function renderDatetime(&$arg)
+    public function renderDatetime(array &$arg)
     {
         $arg['type']=self::$datetimeInputType;
         $arg['data-type']='datetime';
@@ -2663,7 +2669,7 @@ class Field extends SchemaObject
         return $this->renderText($arg);
     }
 
-    public function renderCaptcha(&$arg)
+    public function renderCaptcha(array &$arg): string
     {
         $arg['type']='text';
         $text = null;
@@ -2684,7 +2690,7 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function checkCaptcha($value, $message='')
+    public function checkCaptcha($value, $message=''): bool
     {
         if(is_array($value) && ($post=$value) || ($post=App::request('post', $this->id))) {
             $exist = false;
@@ -2720,14 +2726,14 @@ class Field extends SchemaObject
     }
 
 
-    public function renderColor(&$arg)
+    public function renderColor(array &$arg)
     {
         $arg['type']='color';
 
         return $this->renderText($arg);
     }
 
-    public function renderPhone(&$arg)
+    public function renderPhone(array &$arg)
     {
         $arg['type']=self::$phoneInputType;
         $arg['data-type']='phone';
@@ -2750,7 +2756,7 @@ class Field extends SchemaObject
         return $this->renderText($arg, $enableChoices);
     }
 
-    public function renderText(&$arg, $enableChoices=true, $enableMultiple=null)
+    public function renderText(array &$arg, $enableChoices=true, $enableMultiple=null): string
     {
         if($this->multiple && ($enableMultiple || (is_null($enableMultiple) && static::$enableMultipleText))) {
             $v0 = $value = $arg['value'];
@@ -2867,7 +2873,7 @@ class Field extends SchemaObject
         return $this->renderTextarea($arg);
     }
 
-    public function renderTextarea(&$arg)
+    public function renderTextarea(array &$arg): string
     {
         $a = array('id'=>$arg['id'], 'name'=>$arg['name']);
         if(isset($this->placeholder)) {
@@ -2896,13 +2902,13 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function renderSubmit(&$arg)
+    public function renderSubmit(array &$arg)
     {
         $arg['type'] = 'submit';
         return $this->renderButton($arg);
     }
 
-    public function renderButton(&$arg)
+    public function renderButton(array &$arg): string
     {
         static $attr = ['id', 'class' ];
         if(!isset($arg['type']) || !$arg['type']) $arg['type'] = 'button';
@@ -2931,7 +2937,7 @@ class Field extends SchemaObject
     {
     }
 
-    public function renderHiddenText(&$arg)
+    public function renderHiddenText(array &$arg)
     {
         if (!isset($arg['template'])) {
             $arg['template'] = 'field';
@@ -2941,7 +2947,7 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function renderHidden(&$arg)
+    public function renderHidden(array &$arg): string
     {
         $a = array('type'=>'hidden', 'id'=>$arg['id'], 'name'=>$arg['name'], 'value'=>$arg['value']);
         $bv = array('required', 'readonly', 'disabled');
@@ -2979,7 +2985,7 @@ class Field extends SchemaObject
         return $this->renderCheckbox($arg, 'checkbox');
     }
 
-    public function renderCheckbox(&$arg, $type = 'checkbox')
+    public function renderCheckbox(array &$arg, $type = 'checkbox'): string
     {
         //$a = array('id'=>$arg['id']);
         $attributeList = array('type' => $type, 'name' => $arg['name']);
@@ -3152,7 +3158,7 @@ class Field extends SchemaObject
         return $dl;
     }
 
-    private function ajaxChoices($s)
+    private function ajaxChoices(string $s)
     {
         $w = null;
         if(!$this->choices && isset($this->query) && ($cn=$this->query->model)) {
@@ -3225,7 +3231,7 @@ class Field extends SchemaObject
         return $ro;
     }
 
-    public function renderSelect(&$arg)
+    public function renderSelect(array &$arg): string
     {
         $a = array('id'=>$arg['id'], 'name'=>$arg['name']);
         $bv = array('required', 'readonly', 'disabled', 'multiple');
@@ -3444,7 +3450,7 @@ class Field extends SchemaObject
     /**
      * CSRF implementation (beta)
      */
-    public function renderCsrf(&$arg)
+    public function renderCsrf(array &$arg)
     {
         $ua = (isset($_SERVER['HTTP_USER_AGENT']))?($_SERVER['HTTP_USER_AGENT']):('unknown');
         $arg['value'] = S::encrypt(md5($ua).":".S_TIME);
@@ -3473,7 +3479,7 @@ class Field extends SchemaObject
         throw new AppException(array(S::t($message, 'exception'), $this->getLabel(), $value));
     }
 
-    public function setClassName($n)
+    public function setClassName($n): void
     {
         $this->_className = $n;
     }
@@ -3484,7 +3490,7 @@ class Field extends SchemaObject
      *
      * @return string page output
      */
-    function __toString()
+    function __toString(): string
     {
         return $this->render();
     }

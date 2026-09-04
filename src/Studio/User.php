@@ -232,7 +232,7 @@ class User
         }
     }
 
-    public function log()
+    public function log(): void
     {
         if(!static::$auditLog) return;
         $cid = (is_null($this->_cid))?($this->getSessionId(true)):($this->_cid);
@@ -313,7 +313,7 @@ class User
         return $this->lastAccess;
     }
 
-    public function checkFingerprint($sid=null, $nso=null, $storage=null, $timeout=null)
+    public function checkFingerprint($sid=null, $nso=null, $storage=null, $timeout=null): bool
     {
         if(!$sid) $sid=$this->getSessionId(false);
         if(!$sid || !isset(static::$fingerprint)) return true;
@@ -343,7 +343,7 @@ class User
         return true;
     }
 
-    public function setObject($nso=false, $me=null, $store=true, $timeout=null)
+    public function setObject($nso=false, $me=null, $store=true, $timeout=null): self
     {
         if(!is_array($nso)) {
             if(isset(static::$cfg['ns'][$nso])) {
@@ -510,7 +510,7 @@ class User
      * 
      * @return bool wether user is authenticated or not
      */
-    public function isAuthenticated()
+    public function isAuthenticated(): bool
     {
         return ($this->_me!=false);
     }
@@ -520,7 +520,7 @@ class User
      * 
      * This method is cumulative, to remove the message, use $User::deleteMessage();
      */
-    public function setMessage($msg, $storage=null)
+    public function setMessage($msg, $storage=null): self
     {
         if(is_null($this->_message)) {
             $this->_message = [];
@@ -536,7 +536,7 @@ class User
     /**
      * User messaging. Gets all stored messages to the user.
      */
-    public function getMessage($storage=null, $delete=false, $cookie=null)
+    public function getMessage($storage=null, $delete=false, $cookie=null): string
     {
         $cid = (is_null($this->_cid))?($this->getSessionId()):($this->_cid);
         if(is_null($storage)) {
@@ -585,7 +585,7 @@ class User
         return $msg;
     }
 
-    protected static function msgTimestamp($s, $t=null)
+    protected static function msgTimestamp($s, $t=null): ?string
     {
         if($t && !is_int($t)) {
             $t = (int) $t;
@@ -601,7 +601,7 @@ class User
     /**
      * User messaging. Removes all messages for the user. Leaves the cookie up for future reference.
      */
-    public function deleteMessage($storage=null)
+    public function deleteMessage($storage=null): self
     {
         $this->_message = null;
         $this->storeMessage($storage);
@@ -618,7 +618,7 @@ class User
     /**
      * User messaging. Storage function. Uses Studio\Cache to store and load messages.
      */
-    public function storeMessage($storage=null, $setcookie=false)
+    public function storeMessage($storage=null, $setcookie=false): self
     {
         $cid = (is_null($this->_cid))?($this->getSessionId(true)):($this->_cid);
         $ckey = "user/message-{$cid}";
@@ -682,7 +682,7 @@ class User
         return $this->_cname;
     }
 
-    public function getCookieHost()
+    public function getCookieHost(): string
     {
         if($domain=$this->nsConfig('domain')) {
             if($domain && substr($domain,0,1)!='.') {
@@ -701,7 +701,7 @@ class User
         return (string) $domain;
     }
 
-    public function setSessionCookie()
+    public function setSessionCookie(): bool
     {
         if(!static::$setCookie) return true;
         $n = $this->getSessionName();
@@ -750,7 +750,7 @@ class User
         return $this->nsConfig('id', $r);
     }
 
-    public function store($storage=null)
+    public function store($storage=null): bool
     {
         if (!$this->_me) {
             return false;
@@ -787,7 +787,7 @@ class User
         return Cache::get($ckey, $timeout, $storage);
     }
     
-    public function destroy($storage=null, $msg=null, $redirect=null)
+    public function destroy($storage=null, $msg=null, $redirect=null): bool
     {
         if(is_null($storage)) {
             $storage = $this->nsConfig('storage', $this->_storage);
@@ -825,13 +825,13 @@ class User
         return $this->_session;
     }
 
-    public function setSession($s, $merge=false)
+    public function setSession($s, $merge=false): void
     {
         $this->_session = ($merge)?($s+$this->_session):($s);
         $this->store($this->_storage);
     }
 
-    public function authenticate($user, $key=null)
+    public function authenticate($user, $key=null): bool
     {
         $u = false;
         if(is_null($this->_ns)) {
@@ -931,7 +931,7 @@ class User
         return self::$_cookies[$cn];
     }
     
-    public function __toString()
+    public function __toString(): string
     {
         if($this->_me) {
             if(is_string($this->_me) || ($this->_me instanceof Model)) {
@@ -939,7 +939,7 @@ class User
             } else {
                 $v = "";
                 if($scope = $this->nsConfig('export', $this->nsConfig('properties'))) {
-                    foreach($scope as $n=>$t) {
+                    foreach($scope as $t) {
                         if(is_object($this->_me)) {
                             $v = (isset($this->_me->$t)) ?$this->_me->$t :null;
                         } else {
@@ -1113,7 +1113,7 @@ class User
         return $s;
     }
 
-    public static function signOutWidget()
+    public static function signOutWidget(): void
     {
         $user = S::getUser();
         if(method_exists($user, 'signOut')) {
@@ -1127,7 +1127,7 @@ class User
         }
     }
 
-    public function signOut()
+    public function signOut(): void
     {
         $url = (isset(static::$actions['signedout'])) ?static::$actions['signedout'] :'/';
         if($this->isAuthenticated()) {
@@ -1312,7 +1312,7 @@ class User
         return $o['app'];
     }
 
-    public function studioSignIn($o=array())
+    public function studioSignIn($o=array()): string
     {
         if (is_string($o['redirect-success'])) {
             $url = $o['redirect-success'];
@@ -1408,7 +1408,7 @@ class User
         return $s;
     }
 
-    public function studioSignInRecovery($o=array())
+    public function studioSignInRecovery($o=array()): string
     {
         if (is_string($o['redirect-success'])) {
             $url = $o['redirect-success'];
@@ -1456,7 +1456,7 @@ class User
         return $s;
     }
 
-    public function asArray($scope=null)
+    public function asArray($scope=null): array
     {
         if($this->_me) {
             if(is_null($scope)) {
@@ -1526,7 +1526,7 @@ class User
         return null;
     }
 
-    public function setAttribute($name, $value)
+    public function setAttribute($name, $value): self
     {
         if($this->_me) {
             if($this->__set('__'.$name, $value))
@@ -1551,7 +1551,7 @@ class User
     {
     }
 
-    public function setCulture($lang)
+    public function setCulture($lang): void
     {
         S::$lang = str_replace('_', '-', $lang);
     }
@@ -1560,7 +1560,7 @@ class User
         return S::$lang;
     }
 
-    public function getFlash($msgid='message', $storage=null)
+    public function getFlash($msgid='message', ?string $storage=null)
     {
         $msgid=S::slug($msgid);
         $ckey = "user/flash-{$msgid}-"
@@ -1595,7 +1595,7 @@ class User
      * 
      * @param string $name  property name
      */
-    public function __call($name, $arguments)
+    public function __call(string $name, array $arguments)
     {
         if (is_null($this->_me) || !is_object($this->_me)) {
             return false;
@@ -1613,7 +1613,7 @@ class User
         return $value;
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         if (is_null($this->_me)) {
             return false;
@@ -1634,7 +1634,7 @@ class User
         return $value;
     }
 
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         if (is_null($this->_me)) {
             return false;

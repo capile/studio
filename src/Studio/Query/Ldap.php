@@ -63,7 +63,7 @@ class Ldap
         // should throw an exception if no schema is found?
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return (string) $this->buildQuery();
     }
@@ -120,7 +120,7 @@ class Ldap
         return static::$conn[$n];
     }
 
-    public static function disconnect($n='')
+    public static function disconnect($n=''): void
     {
         if(isset(static::$conn[$n]) && static::$conn[$n]) {
             ldap_unbind(static::$conn[$n]);
@@ -129,7 +129,7 @@ class Ldap
         }
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->_select = null;
         $this->_distinct = null;
@@ -180,7 +180,7 @@ class Ldap
     public static function getTables($n=''){}
     */
 
-    public function find($options=array(), $asArray=false)
+    public function find($options=array(), $asArray=false): self
     {
         $this->_select = $this->_where = $this->_groupBy = $this->_orderBy = $this->_limit = $this->_offset = $this->_last = null;
         $sc = $this->schema();
@@ -191,7 +191,7 @@ class Ldap
         return $this;
     }
 
-    public function filter($options=array())
+    public function filter($options=array()): self
     {
         if(!$this->_schema) return $this;
         if(!is_array($options)) {
@@ -263,7 +263,10 @@ class Ldap
         return $this->fetch($o, $l, false);
     }
 
-    public static function entry($a, $dn=null)
+    /**
+     * @return mixed[]
+     */
+    public static function entry(array $a, $dn=null): array
     {
         $r = array();
         if($dn) $r['dn'] = $dn;
@@ -305,7 +308,7 @@ class Ldap
         return $this->_select;
     }
 
-    public function addSelect($o)
+    public function addSelect($o): self
     {
         $r = $this->schema()->properties($o, null, null, false);
         if(is_null($this->_select)) $this->_select = $r;
@@ -314,7 +317,7 @@ class Ldap
         return $this;
     }
 
-    public function addScope($o)
+    public function addScope($o): self
     {
         if(is_array($o)) {
             foreach($o as $s) {
@@ -328,13 +331,13 @@ class Ldap
         return $this;
     }
 
-    public function where($w)
+    public function where($w): self
     {
         $this->addWhere($w);
         return $this;
     }
 
-    public function addWhere($w)
+    public function addWhere($w): self
     {
         if(is_null($this->_where)) $this->_where = (is_array($w))?($w):(array($w));
         else if(is_array($w)) {
@@ -351,35 +354,35 @@ class Ldap
         return $this;
     }
 
-    public function addOrderBy($o, $sort='asc')
+    public function addOrderBy($o, $sort='asc'): self
     {
         return $this;
     }
 
-    public function addGroupBy($o) // not yet supported
+    public function addGroupBy($o): self // not yet supported
     {
         return $this;
     }
 
-    public function limit($o)
-    {
-        $this->_limit = (int) $o;
-        return $this;
-    }
-
-    public function addLimit($o)
+    public function limit($o): self
     {
         $this->_limit = (int) $o;
         return $this;
     }
 
-    public function offset($o)
+    public function addLimit($o): self
+    {
+        $this->_limit = (int) $o;
+        return $this;
+    }
+
+    public function offset($o): self
     {
         $this->_offset = (int) $o;
         return $this;
     }
 
-    public function addOffset($o)
+    public function addOffset($o): self
     {
         $this->_offset = (int) $o;
         return $this;
@@ -390,7 +393,7 @@ class Ldap
         return $f;
     }
 
-    protected function getWhere($w, $xor='&', $sc=null)
+    protected function getWhere($w, $xor='&', $sc=null): string
     {
         $r='';
         if(!$sc) $sc = $this->schema();
@@ -505,7 +508,7 @@ class Ldap
                         $nv = array();
                         if($cnot) $nv[] = '!';
                         if($cxor!='and') $nv[] = $cxor;
-                        foreach($v as $vk=>$vs) {
+                        foreach($v as $vs) {
                             $nv[] = ($vs && $cop!='=')?(array($k.$cop=>$vs)):(array($k=>$vs));
                         }
                         $v = $this->getWhere($nv, '|');
@@ -615,7 +618,7 @@ class Ldap
      * returns the transaction $id
      */
     // public function transaction($id=null, $conn=null) {}
-    
+
     /**
      * Commits transactions opened by ::transaction
      * returns true if successful
@@ -694,7 +697,10 @@ class Ldap
 
     }
 
-    protected function valuesToSave($M, $new=null)
+    /**
+     * @return mixed[]
+     */
+    protected function valuesToSave($M, $new=null): array
     {
         $odata = $M->asArray('save', null, null, false);
         $data = array();

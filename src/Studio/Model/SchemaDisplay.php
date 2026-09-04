@@ -18,7 +18,10 @@ class SchemaDisplay extends Model
 
     protected $schema_id, $id, $bind, $type, $content, $condition, $created, $updated, $Schema, $Properties;
 
-    public function choicesBind($check=null, $count=null)
+    /**
+     * @return string[]
+     */
+    public function choicesBind($check=null, $count=null): array
     {
         $r = [];
         $q = [];

@@ -81,7 +81,7 @@ class Calendar implements ArrayAccess
      * 
      * @return string ical output
      */
-    public function renderIcal()
+    public function renderIcal(): string
     {
         $s = array();
         $s[]='BEGIN:VCALENDAR';
@@ -257,7 +257,7 @@ class Calendar implements ArrayAccess
         return $s;
     }
     
-    public function renderPdf($source=false, $options=array())
+    public function renderPdf($source=false, $options=array()): void
     {
         $pdf = $this->getPdf($source, $options);
         S::download($source, null, $filename, 0, true);
@@ -286,7 +286,7 @@ class Calendar implements ArrayAccess
     }
     
 
-    public function setStart($t)
+    public function setStart($t): void
     {
         if(!is_int($t)) $t = strtotime($t);
 
@@ -295,7 +295,7 @@ class Calendar implements ArrayAccess
         }
     }
 
-    public function setEnd($t)
+    public function setEnd($t): void
     {
         if(!is_int($t)) $t = strtotime($t);
 
@@ -443,7 +443,7 @@ class Calendar implements ArrayAccess
      * 
      * @return string selected month in HTML
      */
-    public function renderMonth($month=0, $envelope = null)
+    public function renderMonth($month=0, $envelope = null): string
     {
         $before = $after = null;
         $m0 = $month;
@@ -534,7 +534,7 @@ class Calendar implements ArrayAccess
                 $w = date('YW', $day);
                 if($format!='compact' && isset($ew[$w])) {
                     $line = 1;
-                    foreach ($ew[$w] as $uid=>$e) {
+                    foreach ($ew[$w] as $e) {
                         $class = $cp.'event '.$cp.'event-line';
                         if(isset($e[':class'])) {
                             $class .= ' '.S::slug($e[':class'], '_ ');
@@ -574,7 +574,7 @@ class Calendar implements ArrayAccess
         return $before.$s.$after;
     }
 
-    public static function eventSummary($e)
+    public static function eventSummary(array $e): string
     {
         $s = '<a'
             . ((isset($e['url'])) ?' href="'.S::xml($e['url']).'"' :'')
@@ -604,7 +604,7 @@ class Calendar implements ArrayAccess
      * 
      * @return string selected month in HTML
      */
-    public function renderMonthToPDF($month=0, $setup=array(), $pdf=null)
+    public function renderMonthToPDF($month=0, array $setup=array(), $pdf=null): string
     {
         $start = $this->getStart();
         if (is_int($month) && $month < 10000) {
@@ -644,7 +644,7 @@ class Calendar implements ArrayAccess
        
         //Dias da semana
         $s .= '<tr class="weekdays">';
-        foreach(static::$weekDays as $wk=>$wn) {
+        foreach(static::$weekDays as $wn) {
             $s .= '<th>'.((static::$useWeekInitials) ?substr($wn, 0, static::$useWeekInitials) :$wn).'</th>';
         }
         $s .= '</tr>';
@@ -675,7 +675,7 @@ class Calendar implements ArrayAccess
                 //events
                 if(isset($ew[$w])) {
                     $line = 1;
-                    foreach ($ew[$w] as $uid=>$e) {
+                    foreach ($ew[$w] as $e) {
                         $class = '';
                         $es = $e['start'];
                         if ($e['start'] < $day - 6*86400) {
@@ -733,7 +733,7 @@ class Calendar implements ArrayAccess
      * 
      * @return string page output
      */
-    function __toString()
+    function __toString(): string
     {
         return $this->renderMonth(0);
     }
@@ -747,7 +747,7 @@ class Calendar implements ArrayAccess
      *
      * @return void
      */
-    public function  __set($name, $value)
+    public function  __set(string $name, $value)
     {
         $m='set'.ucfirst($name);
         if (method_exists($this, $m)) {
@@ -764,7 +764,7 @@ class Calendar implements ArrayAccess
      * 
      * @return mixed the stored value, or method results
      */
-    public function  __get($name)
+    public function  __get(string $name)
     {
         $m='get'.ucfirst($name);
         $ret = false;

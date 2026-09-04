@@ -61,7 +61,7 @@ class Jwt extends BaseJwt
      * @return bool
      * @throws InvalidArgumentException
      */
-    private function verifySignature($signature, $input, $key, $algo = 'HS256')
+    private function verifySignature(string $signature, string $input, ?string $key, $algo = 'HS256'): bool
     {
         return Crypto::verify($signature, $input, $key, $algo);
     }
@@ -73,7 +73,7 @@ class Jwt extends BaseJwt
      * @return string
      * @throws Exception
      */
-    private function sign($input, $key, $algo = 'HS256')
+    private function sign(string $input, ?string $key, $algo = 'HS256'): string
     {
         return Crypto::sign($input, $key, $algo);
     }
@@ -126,7 +126,7 @@ class Jwt extends BaseJwt
                     if($throw) throw new Exception(self::ERROR_NO_KEY);
                     return false;
                 }
-                foreach($R['keys'] as $i=>$o) {
+                foreach($R['keys'] as $o) {
                     $okid = $o['kid'];
                     Storage::replace(['type'=>'jwk', 'id'=>$okid, 'token'=>$sid, 'options'=>$o]);
                     if($kid===$okid) $jwk = $o;
