@@ -527,7 +527,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
         if($grant_type = $this->getObject('client_credentials', $client_id, 'grant_type')) {
             $grant_types = explode(' ', $details['grant_types']);
 
-            return in_array($grant_type, (array) $grant_types);
+            return in_array($grant_type,  $grant_types);
         }
 
         // if grant_types are not defined, then none are restricted

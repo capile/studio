@@ -22,7 +22,7 @@ class Users extends Model
 
     public function __toString()
     {
-        return ($this->name && $this->username) ?(string)"{$this->name} ({$this->username})" :(string)$this->username; 
+        return ($this->name && $this->username) ?"{$this->name} ({$this->username})" :(string)$this->username; 
     }
 
     public function renderTitle()

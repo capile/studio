@@ -773,7 +773,7 @@ class Studio
             }
             return $r;
         } else {
-            return self::xml((string)$v);
+            return self::xml($v);
         }
     }
 
@@ -2808,7 +2808,6 @@ class Studio
     public static function compress(string $s, string $chars=''): string
     {
         if(!$chars) $chars = self::Z64;
-        $s = (string)$s;
         if(strlen($s)>8) {
             $ns = '';
             while(strlen($s)>0) {

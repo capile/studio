@@ -552,7 +552,7 @@ class Index extends Model
 
         $rel = 'Index'.ucwords($type);
         if(!isset(static::$schema->relations[$rel])) $rel = 'IndexText';
-        $output[$rel][] = $base + ['name'=>(string)$name, 'value'=>$value];
+        $output[$rel][] = $base + ['name'=>$name, 'value'=>$value];
 
         return $output;
     }

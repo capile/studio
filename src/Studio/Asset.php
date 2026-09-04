@@ -521,13 +521,13 @@ class Asset
         else $r .= $s;
 
         if($raw) {
-            return (string) $s;
+            return  $s;
         } else if($output===true) {
             return $updated;
         }
         unset($s);
 
-        return (string) $r;
+        return  $r;
     }
  
 

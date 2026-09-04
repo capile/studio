@@ -1156,7 +1156,7 @@ class Api extends SchemaObject
                 else if(isset($msg['message'])) static::$headers[static::H_MESSAGE] = $msg['message'];
                 else static::$headers[static::H_MESSAGE] = implode(' ', $msg);
             } else {
-                static::$headers[static::H_MESSAGE] = (string)$msg;
+                static::$headers[static::H_MESSAGE] = $msg;
             }
         }
 
@@ -3150,7 +3150,7 @@ class Api extends SchemaObject
         $I = $this->relation($r);
         $I->template = 'api-sub';
 
-        if($I->actions[$I->action]['identified'] && !$I->isOne()) {
+        if($I?->actions[$I?->action]['identified'] && !$I->isOne()) {
             $r = $I->expand('render');
             if($r) $s = implode('', $r);
             else $s = false;

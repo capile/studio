@@ -175,7 +175,7 @@ class Apis extends Model
                 $addParent = false;
             }
             if(!isset($a['all']['options'])) $a['all']['options'] = [];
-            $indexed = (bool) ($this->indexed || $this->index_interval > 0);
+            $indexed =  ($this->indexed || $this->index_interval > 0);
             if(!isset($a['all']['base']) && (!isset($a['all']['model']) || $indexed)) {
                 $a['all']['_indexApiOptions'] = $a['all'];
                 $a['all']['model'] = 'Studio\\Model\\Index';

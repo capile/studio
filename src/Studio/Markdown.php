@@ -1083,7 +1083,7 @@ class Markdown extends Parsedown
 
         $D->loadHTML('<html><meta http-equiv="Content-Type" content="text/html; charset=utf-8" />'.S::encode($elementMarkup).'</html>', LIBXML_HTML_NOIMPLIED|LIBXML_HTML_NODEFDTD|LIBXML_NOXMLDECL|LIBXML_NONET);
         $r = null;
-        foreach($D->documentElement->childNodes as $i=>$E) {
+        foreach($D->documentElement?->childNodes as $i=>$E) {
             if($i>=1) {
                 $elementText = '';
                 if($E instanceof DOMElement) {

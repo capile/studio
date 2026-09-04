@@ -66,6 +66,7 @@ RUN apk upgrade --update \
       fileinfo \
       gd \
       ldap \
+      intl \
       mbstring \
       pdo \
       pdo_mysql \

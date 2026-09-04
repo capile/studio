@@ -899,7 +899,7 @@ class Model implements ArrayAccess, Iterator, Countable
      */
     public function timestampableTrigger(array $fields, mixed $conn=null): bool
     {
-        list($u, $t) = explode(' ', (string) microtime());
+        list($u, $t) = explode(' ',  microtime());
         $tstamp = date('Y-m-d H:i:s', (int)$t).substr($u,1,6);
         unset($t, $u);
         foreach($fields as $fn) {
@@ -1266,7 +1266,7 @@ class Model implements ArrayAccess, Iterator, Countable
             } else {
                 unset($rr);
             }
-            $fc = (array) $f;
+            $fc =  $f;
             foreach($fc as $k=>$v) {
                 unset($f[$k], $fc[$k]);
                 if(isset($rk[$k])) {

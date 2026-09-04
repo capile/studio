@@ -615,7 +615,7 @@ class Collection implements ArrayAccess, Countable, Iterator
             $cn = $this->_hint;
             $value = new $cn($value);
         }
-        $name = (string) $name;
+        $name =  $name;
         if($name==='') {
             if($this->_count==0) {
                 $name = '0';

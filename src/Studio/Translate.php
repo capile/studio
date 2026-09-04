@@ -79,7 +79,7 @@ class Translate
             $message = (string) $message;
         }
         if(!$message) {
-            return (string) $message;
+            return  $message;
         }
         if(is_null($table)) {
             $table = 'default';
