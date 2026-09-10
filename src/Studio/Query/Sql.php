@@ -1063,7 +1063,7 @@ class Sql
     }
 
 
-    public static function escape(mixed $str, bool $enclose=true): string
+    public static function escape(mixed $str, bool $enclose=true): string|array
     {
         if(is_array($str)) {
             foreach($str as $k=>$v){
@@ -1088,7 +1088,7 @@ class Sql
         return $str;
     }
 
-    public static function sql(mixed $v, array $d, ?bool $allowDefault=null): string
+    public static function sql(mixed $v, Schema|array $d, ?bool $allowDefault=null): string
     {
         if(is_null($v) || $v===false) {
             if($allowDefault && isset($d['default']) && $d['default']!==false) {

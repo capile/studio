@@ -1690,14 +1690,14 @@ class Studio
         return self::$variables['upload-dir'];
     }
 
-    public static function postData(array|null $post=null): array
+    public static function postData(?array $post=null): array
     {
         $nf = (!is_null($post))?($post):($_POST);
         if(count($_FILES) >0) {
             $nf = array($nf);
             foreach($_FILES as $fn=>$fd) {
                 foreach($fd as $up=>$f) {
-                    $nf[][$fn] = self::setLastKey($f, $up, (isset($nf[0][$fn]) && $nf[0][$fn])?($nf[0][$fn]):(null));
+                    $nf[][$fn] = self::setLastKey($f, $up, (isset($nf[0][$fn]) && $nf[0][$fn])?($nf[0][$fn]):([]));
                 }
             }
             $nf = call_user_func_array('Studio::mergeRecursive', $nf);

@@ -9,6 +9,7 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio\Query;
 
 use Studio as S;
@@ -577,13 +578,13 @@ class Api
         return $this;
     }
 
-    public function buildQueryWhere($qs=''): string
+    public function buildQueryWhere(string $qs=''): string
     {
         return $qs.(($qs)?('&'):('?')).http_build_query($this->_where);
     }
 
 
-    public function buildQueryCount($qs='')
+    public function buildQueryCount(string $qs=''): string
     {
         $k = $this->config('limit');
         if($k) {
@@ -593,7 +594,7 @@ class Api
         return $qs;
     }
 
-    public function buildQueryOrder($qs='')
+    public function buildQueryOrder(string $qs=''): string
     {
         $k = $this->config('sort');
         if($k) {
@@ -612,7 +613,7 @@ class Api
     }
 
 
-    public function buildQuery($count=false): string
+    public function buildQuery(bool $count=false): string
     {
         $url = $this->_url;
         $qs = '';
@@ -649,7 +650,7 @@ class Api
             unset($k);
         }
         if($count) {
-            $qs = $this->buildQueryCount($qs, $count);
+            $qs = $this->buildQueryCount($qs);
         } else if(!$this->_unique) {
             if(!is_null($this->_limit)) {
                 $k = $this->config('limit');
@@ -901,7 +902,7 @@ class Api
         return array();
    }
 
-    public function addOrderBy($o): self
+    public function addOrderBy(string|array $o): self
     {
         if(is_null($this->_orderBy)) $this->_orderBy = array();
         if(is_array($o)) {

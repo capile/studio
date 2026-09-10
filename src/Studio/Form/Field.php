@@ -11,6 +11,7 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio\Form;
 
 use Studio as S;
@@ -21,6 +22,7 @@ use Studio\Collection;
 use Studio\Exception\AppException;
 use Studio\Form;
 use Studio\Model;
+use Studio\Schema;
 use Studio\SchemaObject;
 use Studio\Query;
 use Studio\Query\Api as QueryApi;
@@ -743,7 +745,7 @@ class Field extends SchemaObject
         } else if($this->bind && ($fo=$this->getSubForm())) {
             if(!$value) {
                 $value = array();
-            } else if(!is_array($value) && !is_object($value)) {
+            } else if(!is_array($value) && !is_object($value) && $this->serialize) {
                 $value = S::unserialize($value, $this->serialize);
             }
             $p0 = $fo['prefix'];
@@ -1388,7 +1390,7 @@ class Field extends SchemaObject
         return $rules;
     }
 
-    public static function properties(array $fd, $new=null)
+    public static function properties(array|Schema $fd, $new=null): array
     {
         if(is_object($fd)) {
             $fd = $fd->value();
@@ -1428,7 +1430,7 @@ class Field extends SchemaObject
     public function parseValue($value=false)
     {
         $type = $this->type;
-        if(substr($type, 0, 4)=='date') {
+        if($value!==false && substr($type, 0, 4)=='date') {
             if(is_array($value)) {
                 ksort($value);
                 $value = implode('-', $value);
@@ -1682,13 +1684,9 @@ class Field extends SchemaObject
                     }
                 }
                 $val = $v;
-                if($val && substr($val, 0, 1)=='*') {
+                if($val && is_string($val) && substr($val, 0, 1)=='*') {
                     $val = S::t(substr($val, 1), $tlib);
-                    if(is_array($v)) {
-                        $this->choices[$k]['value']=$val;
-                    } else {
-                        $this->choices[$k]=$val;
-                    }
+                    $this->choices[$k]=$val;
                 }
             }
         }
@@ -1766,7 +1764,7 @@ class Field extends SchemaObject
 
         if($M && $this->attributes) {
             foreach($this->attributes as $k=>$v) {
-                if(preg_match_all('#`([^`]+)`#', $v, $vm)) {
+                if(is_string($v) && preg_match_all('#`([^`]+)`#', $v, $vm)) {
                     $r = $s = array();
                     foreach($vm[1] as $i=>$nfn) {
                         $s[]=$vm[0][$i];
@@ -1890,7 +1888,7 @@ class Field extends SchemaObject
 
         $value = $this->getValue();
 
-        if(!is_array($value)) {
+        if($value && !is_array($value) && $this->serialize) {
             $value = S::unserialize($value, $this->serialize);
         }
 
@@ -2103,7 +2101,7 @@ class Field extends SchemaObject
 
             $value = $this->getValue();
 
-            if($value && !is_array($value)) {
+            if($value && !is_array($value) && $this->serialize) {
                 $value = S::unserialize((string)$value, $this->serialize);
             }
 
