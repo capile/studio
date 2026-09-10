@@ -143,22 +143,22 @@ class Field extends SchemaObject
         $this->form = $F->register();
     }
 
-    public function getForm()
+    public function getForm(): Form
     {
         return Form::instance($this->form);
     }
 
-    public function getModel()
+    public function getModel(): ?Model
     {
         return Form::instance($this->form)->model;
     }
 
-    public function getBindModel()
+    public function getBindModel(): ?Model
     {
         return $this->getModel();
     }
 
-    public function getSchema()
+    public function getSchema(): Schema|false
     {
         $cn = false;
         if(is_null($this->_className)) {
@@ -179,7 +179,7 @@ class Field extends SchemaObject
         return false;
     }
 
-    public function setMessages($msgs=array()): void
+    public function setMessages(array $msgs=array()): void
     {
         if(is_array($msgs)) {
             if(!is_array($this->messages)) {
@@ -194,15 +194,15 @@ class Field extends SchemaObject
     /**
      * Binds field to $form->model column or relation
      */
-    public function setBind($name, $return=false, $recursive=3)
+    public function setBind(string $name, bool $return=false, int $recursive=3): array
     {
         $M = $this->getModel();
         if(!$M) return false;
         if(strpos($name, ' ')!==false) $name = substr($name, strrpos($name, ' ')+1);
 
         $schema = $this->getSchema();
-
         $fd = [];
+        $ret = [];
         if(($p=strpos($name, '.')) && isset($schema->properties[substr($name, 0, $p)]['serialize'])) {
             $fd = $schema->properties[substr($name, 0, $p)];
         }
@@ -213,32 +213,31 @@ class Field extends SchemaObject
                 $this->bind = $schema->relations[$name]['local'];
             }
             if($return) {
-                $return = array();
                 if(!$fd && isset($schema->properties[$name])) $fd=$schema->properties[$name];
-                $return['required']=(isset($fd['required']) && $fd['required']);
+                $ret['required']=(isset($fd['required']) && $fd['required']);
                 if($fd) {
-                    $return = static::properties($fd, $M->isNew());
+                    $ret = static::properties($fd, $M->isNew());
                 } else {
                     $rel = $schema->relations[$name];
                     if($rel['type']=='one') {
-                        $return['type']='select';
-                        $return['choices']=$name;
+                        $ret['type']='select';
+                        $ret['choices']=$name;
                     } else {
-                        $return['type']='form';
+                        $ret['type']='form';
                     }
                 }
                 unset($M, $name, $schema, $rel, $fd);
-                return $return;
             }
         } else if(isset($schema->overlay[$name]['bind']) && preg_replace('/^.*\s([^\s]+)$/', '$1', $schema->overlay[$name]['bind'])!=$name && $recursive--) {
-            return $this->setBind($schema->overlay[$name]['bind'], $return, $recursive);
+            $ret = $this->setBind($schema->overlay[$name]['bind'], $return, $recursive);
         } else if(substr($name, 0, 1)=='_' || property_exists($M, $name) || $M::$allowNewProperties || (($cm=S::camelize($name, true)) && method_exists($M, 'get'.$cm) && method_exists($M, 'set'.$cm))) {
             $this->bind = $name;
             unset($M, $name, $schema);
-            return array();
         } else {
             throw new AppException(array(S::t('Field name "%s" is bound to non-existing model'), $name));
         }
+
+        return $ret;
     }
 
     public function setScope($s): void
@@ -277,7 +276,7 @@ class Field extends SchemaObject
         $this->placeholder = $str;
     }
 
-    public function setType($type): void
+    public function setType(string $type): void
     {
         if(!$type) {
             $type = 'text';
@@ -288,17 +287,17 @@ class Field extends SchemaObject
         $this->type = $type;
     }
 
-    public static function id($name): string
+    public static function id(string $name): string
     {
         return trim(preg_replace('/[^0-9a-z\§\,]+/i', '_', $name),'_');
     }
 
-    public function getId()
+    public function getId(): string
     {
         return static::id($this->getName(false));
     }
 
-    public function getName($useAttributes=true)
+    public function getName(bool $useAttributes=true): string
     {
         $name = '';
         if (is_null($this->id)) {
@@ -320,7 +319,7 @@ class Field extends SchemaObject
         return $name;
     }
 
-    public function getValue()
+    public function getValue(): mixed
     {
         if(!isset($this->value) && $this->bind) {
             try {
@@ -357,7 +356,7 @@ class Field extends SchemaObject
         return $this->value;
     }
 
-    public function setValue($value=false, $outputError=true, $validation=null): bool
+    public function setValue(mixed $value=false, bool $outputError=true, ?bool $validation=null): bool
     {
         static $textChecks=['checkDns', 'checkEmail', 'checkIp', 'checkIpBlock', 'checkGuid'];
         if($validation && in_array($this->type, static::$typesNotForValidation)) return true;
@@ -368,7 +367,6 @@ class Field extends SchemaObject
 
         $this->error=array();
         $v0 = $value = $this->parseValue($value);
-
         foreach($this->getRules() as $m=>$message) {
             $msg = '';
             try {
@@ -483,7 +481,7 @@ class Field extends SchemaObject
         $this->error=null;
     }
 
-    public function checkRequired($value, $message='')
+    public function checkRequired(mixed $value, string $message=''): mixed
     {
         if($this->disabled) {
             $value = $this->getValue();
@@ -494,7 +492,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkModel($value, $message='')
+    public function checkModel(mixed $value, string $message=''): mixed
     {
         if(!isset($this->value)) {
             $this->getValue();
@@ -531,7 +529,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkChoices($value, $message='')
+    public function checkChoices(mixed $value, string $message=''): mixed
     {
         if($value===false) {
             return false;
@@ -573,10 +571,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    /**
-     * @return mixed[]
-     */
-    public function checkForm($value, $message=''): array
+    public function checkForm(mixed $value, string $message=''): array
     {
         if(!is_array($value)) {
             $value = array();
@@ -777,7 +772,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkSize($value, $message='')
+    public function checkSize(mixed $value, string|array $message=''): mixed
     {
         if($this->type=='form') {
             if(is_object($value)) {
@@ -824,7 +819,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkRange($value, $message='')
+    public function checkRange(mixed $value, string|array $message=''): mixed
     {
         $r = $this->range;
         $err = null;
@@ -955,7 +950,7 @@ class Field extends SchemaObject
 
     }
 
-    public function checkFile($value=false, $message='')
+    public function checkFile(mixed $value=false, string|array $message=''): string|false
     {
         // check ajax uploader
         if(is_string($value) && preg_match('/^ajax:([^\|]+)/', $value, $m)) {
@@ -1063,7 +1058,7 @@ class Field extends SchemaObject
                     } else if($size && $upload['size']>$size) {
                         throw new AppException(array(S::t('Uploaded file exceeds the limit of %s.', 'exception'), S::bytes($size)));
                     }
-                    $file = $dest = $upload['tmp_name'];
+                    $file = $dest = (string) $upload['tmp_name'];
                     $file = $this->$hfn($name, $dest);
                     $this->checkFileType($upload['type']);
 
@@ -1117,32 +1112,32 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkFileHashDatetime(?string $name, $file): string
+    public function checkFileHashDatetime(?string $name, string $file): string
     {
         return date('Ymd/His_').S::slug($name,'._');
     }
 
-    public function checkFileHashTime($name, $file): float
+    public function checkFileHashTime(?string $name, string $file): float
     {
         return microtime(true);
     }
 
-    public function checkFileHashMd5($name, $file)
+    public function checkFileHashMd5(?string $name, string $file): string
     {
         return md5_file($file);
     }
 
-    public function checkFileHashSha1($name, $file)
+    public function checkFileHashSha1(?string $name, string $file): string
     {
         return sha1_file($file);
     }
 
-    public function checkFileHashNone($name, $file)
+    public function checkFileHashNone(?string $name, string $file): string
     {
         return $name;
     }
 
-    public function checkFileType($filetype, $message=null)
+    public function checkFileType(string $filetype, string $message=''): string
     {
         if(!$this->accept) return $filetype;
 
@@ -1188,10 +1183,9 @@ class Field extends SchemaObject
         }
 
         return $filetype;
-
     }
 
-    public function checkDns($value, $message=null): string
+    public function checkDns(string $value, string|array $message=''): string
     {
         static $err = '"%s" is not a valid %s DNS record.';
         if($message && $message!=static::$defaultErrorMessage) {
@@ -1217,7 +1211,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkIp($value, $message=''): string
+    public function checkIp(string $value, string|array $message=''): string
     {
         static $err = '"%s" is not a valid %s IP address.';
         static $ipTypeFlags = [
@@ -1254,7 +1248,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkIpBlock($value, $message=''): string
+    public function checkIpBlock(string $value, string|array $message=''): string
     {
         static $err = '"%s" is not a valid %s IP block.';
         static $ipTypeFlags = [
@@ -1298,7 +1292,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkEmail($value, $message=null): string
+    public function checkEmail(string $value, string|array $message=''): string
     {
         $value = trim($value);
         if($value && !S::checkEmail($value, false)) {
@@ -1310,7 +1304,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkDate($value, $message='')
+    public function checkDate(string $value, string|array $message=''): string
     {
 
         if($value != '' && !preg_match('/^[0-9]{4}(-[0-9]{1,2}(-[0-9]{1,2}([ T][0-9]{1,2}(:[0-9]{1,2}(:[0-9]{1,2}(\.[0-9]+)?)?)?)?)?)?$/', $value)) {
@@ -1319,7 +1313,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkDatetime($value, $message='')
+    public function checkDatetime(string $value, string|array $message=''): string
     {
         if($value != '' && !preg_match('/^[0-9]{4}(-[0-9]{1,2}(-[0-9]{1,2}([ T][0-9]{1,2}(:[0-9]{1,2}(:[0-9]{1,2}(\.[0-9]+)?)?)?)?)?)?$/', $value)) {
             $value = date('Y-m-d H:i:s', S::strtotime($value));
@@ -1327,7 +1321,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkGuid($value, $message='')
+    public function checkGuid(string $value, string|array $message=''): string
     {
         if($value && is_string($value) && !($value=S::checkGuid($value))) {
             if(!$message) {
@@ -1335,7 +1329,6 @@ class Field extends SchemaObject
             }
             $this->error[$message]=$message;
         }
-
         return $value;
     }
 
@@ -1390,7 +1383,7 @@ class Field extends SchemaObject
         return $rules;
     }
 
-    public static function properties(array|Schema $fd, $new=null): array
+    public static function properties(array|Schema $fd, ?bool $new=null): array
     {
         if(is_object($fd)) {
             $fd = $fd->value();
@@ -1427,7 +1420,7 @@ class Field extends SchemaObject
      * Whenever a form is posted, the values might need adjustment, like to convert search strings to keys, arrays to strings.
      *
      */
-    public function parseValue($value=false)
+    public function parseValue(mixed $value=false)
     {
         $type = $this->type;
         if($value!==false && substr($type, 0, 4)=='date') {
@@ -1501,7 +1494,7 @@ class Field extends SchemaObject
         return trim($cn);
     }
 
-    public function setError($msg): self
+    public function setError(string|array $msg): self
     {
         if(!is_array($this->error) || !$msg) {
             $this->error = [];
@@ -1517,7 +1510,7 @@ class Field extends SchemaObject
         return $this;
     }
 
-    public function setChoices($s)
+    public function setChoices(array|object|string|null $s): void
     {
         static $schemaProp = ['orderBy'=>'order', 'order'=>'order' ];
 
@@ -1530,7 +1523,8 @@ class Field extends SchemaObject
             if(strpos($s, '::')) {
                 list($model, $method) = explode('::', $s, 2);
                 if(substr($method, 0, 1)==='$' && property_exists($model, $p=substr($method, 1))) {
-                    return $this->setChoices($model::${$p});
+                    $this->setChoices($model::${$p});
+                    return;
                 } else if(is_a($model, 'Studio\\Model', true)) {
                     if(strpos($method, '(')!==false) $method = substr($method, 0, strpos($method, '('));
                     $Q = [ 'model' => $model, 'method' => $method ];
@@ -1694,7 +1688,7 @@ class Field extends SchemaObject
         return $this->choices;
     }
 
-    public function getLabel()
+    public function getLabel(): string|false
     {
         $ttable = false;
         if (!isset($this->label) && $this->type!=='hidden') {
@@ -1706,7 +1700,7 @@ class Field extends SchemaObject
             }
             $this->label = S::t(trim($label), $ttable);
         }
-        if(isset($this->label) && substr($this->label, 0, 1)=='*' && strlen($this->label)>1) {
+        if(isset($this->label) && $this->label && substr($this->label, 0, 1)=='*' && strlen($this->label)>1) {
             if(!$ttable) {
                 $ttable = 'labels';
                 if($schema=$this->getSchema()) {
@@ -1718,7 +1712,7 @@ class Field extends SchemaObject
         return (isset($this->label)) ?$this->label :'';
     }
 
-    public function render(array $arg=array())
+    public function render(array $arg=array()): string
     {
         $arg0 = $arg;
         $M = ($this->bind && !isset($arg['no-render-model'])) ?$this->getModel() :null;
@@ -1843,7 +1837,7 @@ class Field extends SchemaObject
             }
         }
 
-        return S::exec($run).$s;
+        return (string) S::exec($run).$s;
     }
 
     public function renderObject(array &$arg): string
@@ -1944,7 +1938,7 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function checkObject($value, $message=''): ?array
+    public function checkObject(string|array $value, string|array $message=''): ?array
     {
         $r = null;
         if($value && is_string($value) && $this->serialize && ($a=S::unserialize($value, $this->serialize))) {
@@ -2234,35 +2228,35 @@ class Field extends SchemaObject
 
     }
 
-    public function renderEmail(array &$arg)
+    public function renderEmail(array &$arg): string
     {
         $arg['type']=self::$emailInputType;
         $arg['data-type']='email';
         return $this->renderText($arg);
     }
 
-    public function renderUrl(array &$arg)
+    public function renderUrl(array &$arg): string
     {
         $arg['type']=self::$urlInputType;
         $arg['data-type']='url';
         return $this->renderText($arg);
     }
 
-    public function renderDns(array &$arg)
+    public function renderDns(array &$arg): string
     {
         $arg['type']='text';
         $arg['data-type']='dns';
         return $this->renderText($arg);
     }
 
-    public function renderIp(array &$arg)
+    public function renderIp(array &$arg): string
     {
         $arg['type']='text';
         $arg['data-type']='ip';
         return $this->renderText($arg);
     }
 
-    public function renderIpBlock(array &$arg)
+    public function renderIpBlock(array &$arg): string
     {
         $arg['type']='text';
         $arg['data-type']='ip-block';
@@ -2419,27 +2413,27 @@ class Field extends SchemaObject
         return $s;
     }
 
-    public function renderNumber(array &$arg)
+    public function renderNumber(array &$arg): string
     {
         $arg['type']=self::$numberInputType;
         $arg['data-type']='number';
         return $this->renderText($arg);
     }
 
-    public function renderTel(array &$arg)
+    public function renderTel(array &$arg): string
     {
         $arg['type']='tel';
         return $this->renderText($arg);
     }
 
-    public function renderRange(array &$arg)
+    public function renderRange(array &$arg): string
     {
         $arg['type']=self::$rangeInputType;
         $arg['data-type']='range';
         return $this->renderText($arg);
     }
 
-    public function renderPassword(array &$arg)
+    public function renderPassword(array &$arg): string
     {
         $arg['type']='password';
         $arg['data-type']='password';
@@ -2447,7 +2441,7 @@ class Field extends SchemaObject
         return $this->renderText($arg);
     }
 
-    public function renderDate(array &$arg)
+    public function renderDate(array &$arg): string
     {
         $arg['type']=self::$dateInputType;
         $arg['data-type']='date';
@@ -2469,7 +2463,7 @@ class Field extends SchemaObject
         return $this->renderText($arg);
     }
 
-    public function renderDateSelect(array &$arg)
+    public function renderDateSelect(array &$arg): string
     {
         $a = array('id'=>$arg['id'], 'name'=>$arg['name']);
         if(isset($this->placeholder)) {
@@ -2645,7 +2639,7 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function renderDatetime(array &$arg)
+    public function renderDatetime(array &$arg): string
     {
         $arg['type']=self::$datetimeInputType;
         $arg['data-type']='datetime';
@@ -2688,7 +2682,7 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function checkCaptcha($value, $message=''): bool
+    public function checkCaptcha(string|array $value, $message=''): bool
     {
         if(is_array($value) && ($post=$value) || ($post=App::request('post', $this->id))) {
             $exist = false;
@@ -2724,37 +2718,37 @@ class Field extends SchemaObject
     }
 
 
-    public function renderColor(array &$arg)
+    public function renderColor(array &$arg): string
     {
         $arg['type']='color';
 
         return $this->renderText($arg);
     }
 
-    public function renderPhone(array &$arg)
+    public function renderPhone(array &$arg): string
     {
         $arg['type']=self::$phoneInputType;
         $arg['data-type']='phone';
         return $this->renderText($arg);
     }
 
-    public function renderString(&$arg, $enableChoices=true)
+    public function renderString(array &$arg, bool $enableChoices=true): string
     {
         return $this->renderText($arg, $enableChoices);
     }
 
-    public function renderList(&$arg, $enableChoices=true)
+    public function renderList(array &$arg, bool $enableChoices=true): string
     {
         return $this->renderArray($arg, $enableChoices);
     }
 
-    public function renderArray(&$arg, $enableChoices=true)
+    public function renderArray(array &$arg, bool $enableChoices=true): string
     {
         $this->multiple = true;
         return $this->renderText($arg, $enableChoices);
     }
 
-    public function renderText(array &$arg, $enableChoices=true, $enableMultiple=null): string
+    public function renderText(array &$arg, bool $enableChoices=true, ?bool $enableMultiple=null): string
     {
         if($this->multiple && ($enableMultiple || (is_null($enableMultiple) && static::$enableMultipleText))) {
             $v0 = $value = $arg['value'];
@@ -2862,10 +2856,11 @@ class Field extends SchemaObject
             }
         }
         $input .= '/>'.$dl;
+
         return $input;
     }
 
-    public function renderHtml(&$arg)
+    public function renderHtml(array &$arg): string
     {
         $this->attributes['data-format']='html';
         return $this->renderTextarea($arg);
@@ -2900,7 +2895,7 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function renderSubmit(array &$arg)
+    public function renderSubmit(array &$arg): string
     {
         $arg['type'] = 'submit';
         return $this->renderButton($arg);
@@ -2931,11 +2926,12 @@ class Field extends SchemaObject
     }
 
 
-    public function renderNone()
+    public function renderNone(): string
     {
+        return '';
     }
 
-    public function renderHiddenText(array &$arg)
+    public function renderHiddenText(array &$arg): string
     {
         if (!isset($arg['template'])) {
             $arg['template'] = 'field';
@@ -2972,18 +2968,18 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function renderRadio(&$arg)
+    public function renderRadio(array &$arg): string
     {
         $this->multiple=false;
         return $this->renderCheckbox($arg, 'radio');
     }
 
-    public function renderBool(&$arg)
+    public function renderBool(array &$arg): string
     {
         return $this->renderCheckbox($arg, 'checkbox');
     }
 
-    public function renderCheckbox(array &$arg, $type = 'checkbox'): string
+    public function renderCheckbox(array &$arg, string $type = 'checkbox'): string
     {
         //$a = array('id'=>$arg['id']);
         $attributeList = array('type' => $type, 'name' => $arg['name']);
@@ -3443,12 +3439,10 @@ class Field extends SchemaObject
         return $input;
     }
 
-
-
     /**
      * CSRF implementation (beta)
      */
-    public function renderCsrf(array &$arg)
+    public function renderCsrf(array &$arg): string
     {
         $ua = (isset($_SERVER['HTTP_USER_AGENT']))?($_SERVER['HTTP_USER_AGENT']):('unknown');
         $arg['value'] = S::encrypt(md5($ua).":".S_TIME);
@@ -3465,7 +3459,7 @@ class Field extends SchemaObject
         }
     }
 
-    public function checkCsrf($value, $message='')
+    public function checkCsrf(?string $value, string $message=''): string
     {
         if($value && ($d=S::decrypt($value))) {
             @list($h, $t) = explode(':', $d, 2);
@@ -3485,37 +3479,9 @@ class Field extends SchemaObject
 
     /**
      * Magic terminator. Returns the page contents, ready for output.
-     *
-     * @return string page output
      */
     function __toString(): string
     {
         return $this->render();
     }
-
-    /**
-     * Magic setter. Searches for a set$Name method, and stores the value in $_vars
-     * for later use.
-     *
-     * @param string $name  parameter name, should start with lowercase
-     * @param mixed  $value value to be set
-     *
-     * @return void
-    public function __set($name, $value)
-    {
-        $Name = S::camelize($name, true);
-        $m='set'.$Name;
-        if (method_exists($this, $m)) {
-            $this->$m($value);
-        } else if(property_exists($this,$name)) {
-            $this->$name=$value;
-        } else if(property_exists($this,$Name=lcfirst($Name))) {
-            $this->$Name=$value;
-        } else if(static::$allowedProperties && (static::$allowedProperties===true || in_array($name, static::$allowedProperties))) {
-            $this->$name = $value;
-        } else {
-            throw new AppException(array('Method or property not available: "%s"', $name));
-        }
-    }
-     */
 }
