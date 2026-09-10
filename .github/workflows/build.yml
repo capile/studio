@@ -1,0 +1,55 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - "main"
+    tags:
+      - "2.*"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-dev:
+    uses: docker/github-builder/.github/workflows/build.yml@v1
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      output: image
+      push: ${{ github.event_name != 'pull_request' }}
+      platforms: linux/amd64,linux/arm64
+      context: .
+      file: ./Dockerfile-dev
+      meta-images: tecnodesign/studio
+      meta-tags: |
+        type=semver,pattern=v{{major}}-dev
+        type=semver,pattern=v{{version}}-dev
+    secrets:
+      registry-auths: |
+        - registry: docker.io
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+  build:
+    uses: docker/github-builder/.github/workflows/build.yml@v1
+    needs: build-dev
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      output: image
+      push: ${{ github.event_name != 'pull_request' }}
+      platforms: linux/amd64,linux/arm64
+      context: .
+      file: ./Dockerfile
+      meta-images: tecnodesign/studio
+      meta-tags: |
+        type=semver,pattern=v{{major}}
+        type=semver,pattern=v{{version}}
+    secrets:
+      registry-auths: |
+        - registry: docker.io
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
