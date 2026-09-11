@@ -2,11 +2,8 @@ name: ci
 
 on:
   push:
-    branches:
-      - "main"
     tags:
       - "2.*"
-  pull_request:
 
 permissions:
   contents: read
@@ -25,6 +22,7 @@ jobs:
       file: ./Dockerfile-dev
       meta-images: tecnodesign/studio
       meta-tags: |
+        type=raw,value=latest-dev
         type=semver,pattern=v{{major}}-dev
         type=semver,pattern=v{{version}}-dev
     secrets:
@@ -46,6 +44,7 @@ jobs:
       file: ./Dockerfile
       meta-images: tecnodesign/studio
       meta-tags: |
+        type=raw,value=latest
         type=semver,pattern=v{{major}}
         type=semver,pattern=v{{version}}
     secrets:
