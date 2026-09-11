@@ -697,7 +697,6 @@ class Studio
         $build = self::getApp()->config('app', 'asset-build-strategy');
         if(!$build) $build = App::$assetsBuildStrategy;
         if($build==='auto') {
-            self::$log=2;
             return Asset::minify($s, $root, $compress, $before, $raw, $output);
         } else {
             return Asset::html((is_string($output)) ?$output :$s);
