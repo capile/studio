@@ -492,7 +492,24 @@ class Asset
                 $outputFile = $root.'/'.$outputUrl;
             }
 
-            if($force || !file_exists($outputFile) || filemtime($outputFile)<max($fs)) {
+            $build = false;
+            $ckey = null;
+            if($force || !file_exists($outputFile)) {
+                $build = true;
+            } else if(filemtime($outputFile)<max($fs)) {
+                // updates: build only if no other processes are running for this file
+                $ckey=self::$lockKey.'minify'.md5($outputFile);
+                if(!($buildStarted=Cache::get($ckey, 30))) {
+                    Cache::set($ckey, S_TIMESTAMP, 30);
+                    $build = true;
+                } else {
+                    if(S::$log>0) S::log("[INFO] Minifying to $outputFile is already being built since $buildStarted, skipping");
+                    $ckey = null;
+                }
+                unset($buildStarted);
+            }
+
+            if($build) {
                 $A = new Asset(array(
                     'source'=>array_keys($fs),
                     'output'=>$outputFile,
@@ -507,6 +524,10 @@ class Asset
                 unset($d);
                 $add = $A->render(false);
                 unset($A);
+                if($ckey) {
+                    Cache::delete($ckey);
+                    unset($ckey);
+                }
             } else {
                 $add = true;
                 $updated = false;

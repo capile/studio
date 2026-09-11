@@ -1,6 +1,6 @@
 @imgdir: ~"@{assets-url}/";
-@text: @colorTabActiveText;
-@bg: @colorTabActive;
+@text: var(--s-colorTabActiveText);
+@bg: var(--s-colorTabActive);
 @bgAlpha: 0.5;
 @bgViewport: #000000;
 @bgViewportAlpha: 0.8;
@@ -8,8 +8,7 @@
 @icon:'\f044';
 @bgIcon:@bg;
 @bginactive: #888;
-
-
+@studio-logo: ~"@{imgdir}/studio-logo.svg";
 @btop: 1px solid #eee;
 @bleft: 1px solid #eee;
 @bbottom: 1px solid @border;
