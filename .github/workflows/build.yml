@@ -45,6 +45,7 @@ jobs:
       meta-images: tecnodesign/studio
       meta-tags: |
         type=raw,value=v2
+        type=raw,value=v2.0
         type=raw,value=latest
         type=semver,pattern=v{{major}}
         type=semver,pattern=v{{version}}

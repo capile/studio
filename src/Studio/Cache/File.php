@@ -73,8 +73,8 @@ class File
                 $expired = ($expires>time())?(0):($expires);
             }
         }
-        if (file_exists($cfile) && (!$expires || filemtime($cfile) > $expired)) {
-            list($toexpire, $ret) = explode("\n", file_get_contents($cfile), 2);
+        if (file_exists($cfile) && (!$expires || filemtime($cfile) > $expired) && ($ret=@file_get_contents($cfile))) {
+            list($toexpire, $ret) = explode("\n", $ret, 2);
             if($toexpire && $toexpire<microtime(true)) {
                 @unlink($cfile);
                 $ret = false;
