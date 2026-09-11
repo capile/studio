@@ -452,7 +452,7 @@ class Api
                     $un=$this->config('client_id');
                 }
                 if($un) {
-                    $add .= ' '.base64_encode(urlencode($un).':'.urlencode($pw));
+                    $add .= ' '.base64_encode(urlencode((string)$un).':'.urlencode((string)$pw));
                 }
             }
         }
@@ -1322,6 +1322,8 @@ class Api
             $a = $s;
         }
         foreach($a as $n=>$v) {
+            $n = (string)$n;
+            $v = (string)$v;
             if(preg_match('#(\?|\&)'.preg_quote($n, '#').'=([^\&]*)(&|$)#', $url, $m)) {
                 $url = str_replace($m[0], $m[1].$n.'='.urlencode($v).$m[3], $url);
             } else if(strpos($url, '?')!==false) {
@@ -1701,7 +1703,7 @@ class Api
         if($h) {
             $this->_requestHeaders = curl_getinfo($conn,  CURLINFO_HEADER_OUT);
         }
-        if(S::$log) S::log("[INFO] {$this->_method} call to ".curl_getinfo($conn, CURLINFO_EFFECTIVE_URL).' ('.ceil(memory_get_peak_usage() * 0.000001).'M, '.substr((microtime(true) - S_TIME), 0, 5).'s)');
+        if(S::$log) S::log("[INFO] {$this->_method} call to ".curl_getinfo($conn, CURLINFO_EFFECTIVE_URL).' ('.ceil(memory_get_peak_usage() * 0.000001).'M, '.substr((string)(microtime(true) - S_TIME), 0, 5).'s)');
 
         $body = null;
         if(!$r) {

@@ -1925,14 +1925,15 @@ class Studio
     {
         $acceptPat = ($accept) ?preg_quote($accept, '/') :'';
         $r0 = $r = preg_replace('/[^\pL\d'.$acceptPat.']+/u', '-', (string) $s);
-        $r = @iconv('UTF-8', 'ASCII//TRANSLIT', $r);
+        $encoding = (ICONV_IMPL==='unknown') ?'ASCII' :'ASCII//TRANSLIT';
+        $r = iconv('UTF-8', $encoding, $r);
         if(ICONV_IMPL==='libiconv') { // non glibc iconv returns accents with translit
             $r = preg_replace('/[^\-\pL\d'.$acceptPat.']+/u', '', $r);
         } else if(strpos($r, '?')!==false && strpos($acceptPat, '?')===false) { // outdated libiconv won't have all translit chars, rebuilding from source ref
             if(!isset(self::$translit)) {
                 require_once S_ROOT.'/data/translate/translit.php';
             }
-            $r = @iconv('UTF-8', 'ASCII//TRANSLIT', strtr($r0, self::$translit));
+            $r = iconv('UTF-8', 'ASCII//TRANSLIT', strtr($r0, self::$translit));
         }
         $r = preg_replace('/[^0-9a-z'.$acceptPat.']+/i', '-', $r);
         $r = trim($r, '-');

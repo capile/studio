@@ -22,7 +22,7 @@ jobs:
       file: ./Dockerfile-dev
       meta-images: tecnodesign/studio
       meta-tags: |
-        type=raw,value=latest-dev
+        type=raw,value=v2-dev
         type=semver,pattern=v{{major}}-dev
         type=semver,pattern=v{{version}}-dev
     secrets:
@@ -44,6 +44,7 @@ jobs:
       file: ./Dockerfile
       meta-images: tecnodesign/studio
       meta-tags: |
+        type=raw,value=v2
         type=raw,value=latest
         type=semver,pattern=v{{major}}
         type=semver,pattern=v{{version}}
