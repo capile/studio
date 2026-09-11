@@ -369,7 +369,7 @@ class Sql
         return $this->query($this->buildQuery(), PDO::FETCH_ASSOC);
     }
 
-    public function count($column=true)
+    public function count($column=true): int|false
     {
         if(!$this->_schema) return false;
         if(!$column) $column=true;

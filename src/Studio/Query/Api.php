@@ -781,7 +781,7 @@ class Api
 
     }
 
-    public function count($column='1')
+    public function count(): int|false|null
     {
         if(is_null($this->_count)) {
             if(!$this->_schema) return false;
@@ -792,8 +792,8 @@ class Api
         if(is_null($this->_count)) {
             if(!is_null($r=$this->header('headerCount'))) {
                 $this->_count = (int) $r;
-            } else if($this->response) {
-                $this->_count = @count($this->response);
+            } else if($this->response && is_array($this->response)) {
+                $this->_count = count($this->response);
             }
         }
 
