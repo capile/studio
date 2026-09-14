@@ -23,7 +23,6 @@ jobs:
       meta-images: tecnodesign/studio
       meta-tags: |
         type=raw,value=v2-dev
-        type=semver,pattern=v{{major}}-dev
         type=semver,pattern=v{{version}}-dev
     secrets:
       registry-auths: |
@@ -44,10 +43,9 @@ jobs:
       file: ./Dockerfile
       meta-images: tecnodesign/studio
       meta-tags: |
-        type=raw,value=v2
-        type=raw,value=v2.0
         type=raw,value=latest
         type=semver,pattern=v{{major}}
+        type=semver,pattern=v{{major}}.{{minor}}
         type=semver,pattern=v{{version}}
     secrets:
       registry-auths: |
