@@ -1,6 +1,7 @@
 ## tecnodesign/studio:v2-dev
 FROM php:8.5-fpm-alpine
 ARG PHP_PEAR_PHP_BIN="php -d error_reporting=0"
+ARG STUDIO_VERSION="2.0.X"
 WORKDIR /var/www/studio
 COPY . .
 RUN apk upgrade --update \
@@ -50,6 +51,8 @@ RUN apk upgrade --update \
     curl -fsL --output /usr/local/bin/pie https://github.com/php/pie/releases/latest/download/pie.phar && chmod +x /usr/local/bin/pie \
     && \
     pie install -n mongodb/mongodb-extension \
+    && \
+    pie install -n thomas-0816/pdo-duckdb-php \
     && \
     pie install -n phpredis/phpredis \
     && \
@@ -137,6 +140,7 @@ RUN apk upgrade --update \
     mkdir -p \
       /var/www/.cache \
       /var/www/.composer \
+      /var/www/.duckdb \
       /var/www/.npm \
       /var/www/studio/data \
       /opt/studio/data \
@@ -147,6 +151,7 @@ RUN apk upgrade --update \
       /var/www/studio \
       /var/www/.cache \
       /var/www/.composer \
+      /var/www/.duckdb \
       /var/www/.gitconfig \
       /var/www/.npm \
       /opt/studio/data \
@@ -170,6 +175,7 @@ RUN apk upgrade --update \
 USER www-data
 ENV HOME=/var/www \
     PATH="${PATH}:/var/www/studio" \
+    STUDIO_VERSION="$STUDIO_VERSION" \
     STUDIO_IP="0.0.0.0" \
     STUDIO_PORT="9999" \
     STUDIO_DEBUG="" \

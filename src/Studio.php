@@ -16,7 +16,7 @@ use Studio\Exception\AppException;
 
 class Studio
 {
-    const VERSION = '2.0.7';
+    const VERSION = '2.0.X';
     const VER = 2.0;
 
     protected static
@@ -2275,7 +2275,9 @@ class Studio
                 setlocale(LC_ALL, 'en_US.UTF-8');
             }
             unset($locale);
-            define('STUDIO_VERSION', Studio::VERSION);
+            if(!defined('STUDIO_VERSION')) {
+                define('STUDIO_VERSION', (isset($_SERVER['STUDIO_VERSION']) && $_SERVER['STUDIO_VERSION']) ?$_SERVER['STUDIO_VERSION'] :Studio::VERSION);
+            }
             if(!defined('S_APP')) {
                 if(isset($_SERVER['STUDIO_APP']) && $_SERVER['STUDIO_APP']) define('S_APP', $_SERVER['STUDIO_APP']);
                 else define('S_APP', 'studio');

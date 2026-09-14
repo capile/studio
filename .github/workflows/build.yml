@@ -21,6 +21,8 @@ jobs:
       context: .
       file: ./Dockerfile-dev
       meta-images: tecnodesign/studio
+      build-args: |
+        STUDIO_VERSION={{version}}
       meta-tags: |
         type=raw,value=v2-dev
         type=semver,pattern=v{{version}}-dev
@@ -42,6 +44,8 @@ jobs:
       context: .
       file: ./Dockerfile
       meta-images: tecnodesign/studio
+      build-args: |
+        STUDIO_VERSION={{version}}
       meta-tags: |
         type=raw,value=latest
         type=semver,pattern=v{{major}}

@@ -1,6 +1,6 @@
 {
     "name": "Studio",
-    "version": "2.0.7",
+    "version": "2.0.X",
     "description": "Own your data!",
     "main": "studio.js",
     "author": "Guilherme Capilé",
@@ -25,6 +25,7 @@
         "publish": "docker push tecnodesign/studio:v2-dev && docker push tecnodesign/studio:v2 && docker push tecnodesign/studio:v2.0 && docker push tecnodesign/studio:latest",
         "build-nginx": "docker build -t tecnodesign/nginx:latest 'git@github.com:capile/studio.git#v2.0' -f data/deploy/containers/nginx.dockerfile && docker push tecnodesign/nginx:latest",
         "build-all": "npm run build-nginx && npm run build && npm run publish",
+        "build-local": "docker build -t tecnodesign/studio:v2-dev -f Dockerfile-dev . && docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.0 -t tecnodesign/studio:latest .",
         "start": "electron ."
     },
     "license": "GPL-3.0-only"
