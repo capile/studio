@@ -923,7 +923,7 @@ class Entries extends Model
         } else {
             $format = (isset(S::$formats[$ext]))?(S::$formats[$ext]):(null);
         }
-        $meta=array();
+        $meta=[];
 
         if($isPage) {
             $p = file_get_contents($page);
@@ -940,13 +940,12 @@ class Entries extends Model
 
             if($m) {
                 $meta = Yaml::load($m);
-                if($multiview && (!isset($meta['multiview']) || !$meta['multiview'])) return;
+                if(!is_array($meta)) $meta = [];
+                else if($multiview && (!isset($meta['multiview']) || !$meta['multiview'])) return;
             }
         } else if($multiview) return;
 
-
         $id = $source = null;
-
         if($extAttr) {
             $source = ((isset($extAttr['src'])) ?$extAttr['src'] :'').substr($page, strlen($extAttr['file']));
         } else if(S_REPO_ROOT && strpos($page, S_REPO_ROOT.'/')===0) {
