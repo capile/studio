@@ -3748,7 +3748,7 @@ class Api extends SchemaObject
                 unset($R);
             }
             unset($Q);
-            if($r && !is_int($r)) {
+            if(!is_int($r)) {
                 if(S::$log > 0) S::log('[INFO] Count method on '.$this->id.' returned non-numerical value: '.S::serialize($r, 'json'));
                 $r = (int) $r;
             }
