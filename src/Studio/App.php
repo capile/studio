@@ -159,12 +159,22 @@ class App
                     foreach($value as $i=>$dvalue) {
                         if(substr($dvalue, 0, 1)!='/' && substr($dvalue, 1, 1)!=':') {
                             $save = true;
-                            $this->_vars['app'][$name][$i]=str_replace('\\', '/', realpath($base.'/'.$dvalue));
+                            $path = realpath($base.'/'.$dvalue);
+                            if($path!==false) {
+                                $this->_vars['app'][$name][$i]=str_replace('\\', '/', realpath($base.'/'.$dvalue));
+                            } else if(S::$log>0) {
+                                S::log('[INFO] Path '.$base.'/'.$dvalue.' does not exist');
+                            }
                         }
                     }
                 } else {
                     $save = true;
-                    $this->_vars['app'][$name]=str_replace('\\', '/', realpath($base.'/'.$value));
+                    $path = realpath($base.'/'.$value);
+                    if($path!==false) {
+                        $this->_vars['app'][$name]=str_replace('\\', '/', realpath($base.'/'.$value));
+                    } else if(S::$log>0) {
+                        S::log('[INFO] Path '.$base.'/'.$value.' does not exist');
+                    }
                 }
             }
             unset($name, $value);

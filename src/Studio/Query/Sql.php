@@ -256,7 +256,7 @@ class Sql
             $options = ($options)?(array('where'=>$options)):(array());
         }
         foreach($options as $p=>$o) {
-            if(method_exists($this, ($m='add'.ucfirst($p)))) {
+            if($o!==false && method_exists($this, ($m='add'.ucfirst($p)))) {
                 $this->$m($o);
             }
             unset($m, $p, $o);
@@ -643,7 +643,7 @@ class Sql
                     $rcn = (isset($rel['className']))?($rel['className']):($rn);
                     $rsc = $rcn::$schema;
                     if(!isset($this->_alias[$rnf])) {
-                        $chpos=($this->_alias)?(ceil(count($this->_alias)/2)):(0);
+                        $chpos=($this->_alias)?((int) ceil(count($this->_alias)/2)):(0);
                         while(in_array($an=S::numberToLetter($chpos), $this->_alias)) $chpos++;
 
                         $this->_alias[$rnf]=$an;

@@ -442,7 +442,13 @@ class Entries extends Model
                 }
             }
         }
-        if(substr($this->format, -4)!='html') S::download($file,($this->format)?($this->format):(S::fileFormat($file)));
+        $format = ($this->format) ?(string)$this->format :S::fileFormat($file);
+        if(!$format) {
+            S::download($file);
+        } else if(substr($format, -4)!='html') {
+            S::download($file, $format);
+        }
+
         return $file;
     }
     public function renderFile()
@@ -888,9 +894,9 @@ class Entries extends Model
                 S::redirect($P->link);
             }
         } else if($url) {
-            if(in_array('php', Contents::$multiviewContentType) && is_file($f=static::file($url.'.php')))
+            if(in_array('php', Contents::$multiviewContentType) && ($f=static::file($url.'.php')) && is_file($f))
                 $P=self::_checkPage($f, $url, $multiview);
-            if(in_array('md', Contents::$multiviewContentType) && is_file($f=static::file($url.'.md')))
+            if(in_array('md', Contents::$multiviewContentType) && ($f=static::file($url.'.md')) && is_file($f))
                 $P=self::_checkPage($f, $url, $multiview);
         }
 
@@ -1063,7 +1069,7 @@ class Entries extends Model
             }
             unset($mf);
             $d = substr($d, 0, strrpos($d, '/'));
-            $p = substr($p, 0, strrpos($p, '/'));
+            $p = (strrpos($p, '/')!==false) ?substr($p, 0, strrpos($p, '/')) :'';
         }
         unset($d, $p);
 

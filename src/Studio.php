@@ -1426,7 +1426,7 @@ class Studio
         return $html;
     }
 
-    public static function fileFormat(string $file, bool $checkExtension=true, string $fallback='', array $fallbackFormats=[]): string|bool
+    public static function fileFormat(string $file, bool $checkExtension=true, string $fallback='', array $fallbackFormats=[]): string|false
     {
         $format = false;
         $ext = null;
@@ -1479,7 +1479,7 @@ class Studio
         }
     }
 
-    public static function cacheControl(?string $set=null, int|null $expires=null): string
+    public static function cacheControl(?string $set=null, int|float|null $expires=null): string
     {
         static $private='private, no-cache, no-store, must-revalidate';
 
