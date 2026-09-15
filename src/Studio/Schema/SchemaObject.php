@@ -117,9 +117,9 @@ class SchemaObject implements ArrayAccess
         return $this->offsetGet($name);
     }
 
-    public function __set(mixed $name, mixed $value): mixed
+    public function __set(mixed $name, mixed $value): void
     {
-        return $this->offsetSet($name, $value);
+        $this->offsetSet($name, $value);
     }
 
     public function batchSet(array $values, bool $skipValidation=false): SchemaObject

@@ -9,6 +9,7 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio\Query;
 
 use Studio as S;
@@ -47,7 +48,7 @@ class OData extends Api
         $enableOffset=false,
         $connectionCallback;
 
-    public function buildQueryWhere($qs=''): string
+    public function buildQueryWhere(string $qs=''): string
     {
         $url = '';
         if($this->_where) {
@@ -109,7 +110,7 @@ class OData extends Api
         return $url.$qs;
     }
 
-    public function buildQueryCount($qs='')
+    public function buildQueryCount(string $qs=''): string
     {
         if($qs) {
             $qs = preg_replace('/\$(select|top|orderby)=[^\&]+\&?/', '', $qs);
@@ -118,7 +119,7 @@ class OData extends Api
         return '/$count'.$qs;
     } 
 
-    public function buildQueryOrder($qs='')
+    public function buildQueryOrder(string $qs=''): string
     {
         $k = (isset($this->_options['sort']))?($this->_options['sort']):(static::$sort);
         if($k) {
@@ -142,7 +143,7 @@ class OData extends Api
         return $qs;
     } 
 
-    public function count($column='1')
+    public function count(): int|false|null
     {
         if(is_null($this->_count)) {
             if(!$this->_schema) return false;

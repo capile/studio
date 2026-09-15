@@ -9,6 +9,7 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio\Query;
 
 use Studio as S;
@@ -157,12 +158,12 @@ class File extends Api
         return $this;
     }
 
-    public function where($w=null)
+    public function where($w): self
     {
         if($w) {
             $this->_where = (is_array($w)) ?array_values($w) :[$w];
         }
-        return $this->_where;
+        return $this;
     }
 
     public function getFrom()
@@ -171,7 +172,7 @@ class File extends Api
         else return $this->schema('tableName');
     }
 
-    public function buildQuery($count=false)
+    public function buildQuery(bool $count=false): string
     {
         $src = ($this->_conn) ?$this->_conn :$this->connect($this->schema('database'));
         $pattern = $src['dsn'];
@@ -196,9 +197,9 @@ class File extends Api
 
         $recursive = (isset($src['options']['recursive'])) ?$src['options']['recursive'] :self::$options['recursive'];
         $create = (isset($src['options']['create'])) ?$src['options']['create'] :self::$options['create'];
-        $this->_last = null;
+        $this->_last = '';
         if($r) {
-            $this->_last = [];
+            $last = [];
             while($f=array_shift($r)) {
                 if($this->_where && !in_array(basename($f, $ext), $this->_where)) {
                     continue;
@@ -208,9 +209,10 @@ class File extends Api
                         $r = array_merge($d, $r);
                     }
                 } else if($create || file_exists($f)) {
-                    $this->_last[] = $f;
+                    $last[] = $f;
                 }
             }
+            $this->_last = implode("\n", $last);
         }
 
         return $this->_last;
@@ -238,10 +240,9 @@ class File extends Api
         $i0 = (int) $this->_offset;
         $i1 = ($this->_limit)?($i0 + (int)$this->_limit):(0);
 
+        $res = explode("\n", $this->_last);
         if($i0 || $i1) {
-            $res = array_slice($this->_last, $i0, $i1);
-        } else {
-            $res = $this->_last;
+            $res = array_slice($res, $i0, $i1);
         }
         if($res) {
             $db = ($this->_conn) ?$this->_conn :$this->connect($this->schema('database'));
@@ -328,13 +329,13 @@ class File extends Api
         return $this->fetch($o, $l, false);
     }
 
-    public function count($column = '1') // @TODO: compatibility updates
+    public function count(): int
     {
         if(!$this->_schema) return false;
         if(!$this->_last) {
             $this->buildQuery();
         }
-        return count($this->_last);
+        return ($this->_last) ?substr_count($this->_last, "\n") + 1 :0;
     }
 
     public function addScope($o): self
@@ -382,9 +383,10 @@ class File extends Api
         return $this->_last;
     }
 
-    public function run($q, $conn = null, $enablePaging = true, $keepAlive = null, $cn = null, $defaults = null, $callback = null, $args = []) // @TODO: compatibility for , $conn = null, $enablePaging = true, $keepAlive = null, $cn = null, $defaults = null, $callback = null, $args = [])
+    public function run($q, $conn=null, $enablePaging=true, $keepAlive=null, $cn=null, $defaults=null, $callback=null, $args=[]): self
     {
-        return $this->exec($q);
+        $this->exec($q);
+        return $this;
     }
 
     public function query($q, $as = 'array', $cn = null, $prop = null, $callback = null, $args = null) // @TODO: compatibility for $as = 'array', $cn = null, $prop = null, $callback = null, $args = null)

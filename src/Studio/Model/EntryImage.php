@@ -7,9 +7,10 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
+declare(strict_types=1);
 namespace Studio\Model;
 
-class EntryImage extends Entry
+class EntryImage extends Entries
 {
     public static $schema;
 }
