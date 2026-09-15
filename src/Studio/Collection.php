@@ -578,8 +578,6 @@ class Collection implements ArrayAccess, Countable, Iterator
     
     /**
      * Items counter
-     *  
-     * @return int 
      */
     public function count(): int
     {
@@ -588,8 +586,6 @@ class Collection implements ArrayAccess, Countable, Iterator
 
     /**
      * Magic terminator. Returns the page contents, ready for output.
-     * 
-     * @return string page output
      */
     function __toString(): string
     {
@@ -603,11 +599,6 @@ class Collection implements ArrayAccess, Countable, Iterator
     /**
      * Magic setter. Searches for a set$Name method, and stores the value in $_vars
      * for later use.
-     *
-     * @param string $name  parameter name, should start with lowercase
-     * @param mixed  $value value to be set
-     *
-     * @return void
      */
     public function  __set(string $name, $value)
     {
@@ -657,12 +648,8 @@ class Collection implements ArrayAccess, Countable, Iterator
 
     /**
      * Magic functions. Pass to referred object, if any.
-     *
-     * @param string $name parameter name, should start with lowercase
-     * 
-     * @return mixed the stored value, or method results
      */
-    public function  __call(string $name, array $arguments)
+    public function  __call(string $name, array $arguments): mixed
     {
         $ret = new Collection;
         if($this->_count) {
@@ -681,12 +668,8 @@ class Collection implements ArrayAccess, Countable, Iterator
     /**
      * Magic getter. Searches for a get$Name method, or gets the stored value in
      * $_vars.
-     *
-     * @param string $name parameter name, should start with lowercase
-     * 
-     * @return mixed the stored value, or method results
      */
-    public function  __get(string $name)
+    public function  __get(string|int $name): mixed
     {
         $ret = null;
         if (isset($this->$name)) {
@@ -701,40 +684,25 @@ class Collection implements ArrayAccess, Countable, Iterator
 
     /**
      * ArrayAccess abstract method. Searches for stored parameters.
-     *
-     * @param string $name parameter name, should start with lowercase
-     *
-     * @return bool true if the parameter exists, or false otherwise
      */
-    public function offsetExists($name): bool
+    public function offsetExists(mixed $name): bool
     {
         return (in_array($name, $this->_items) || ($this->_query && $this->_queryKey && $this->getNamedItem($name)) || ($this->_query && is_numeric($name) && (int)$name >=0 && (int)$name < $this->_count));
     }
     
     /**
      * ArrayAccess abstract method. Gets stored parameters.
-     *
-     * @param string $name parameter name, should start with lowercase
-     *
-     * @return mixed the stored value, or method results
-     * @see __get()
      */
     #[\ReturnTypeWillChange]
-    public function offsetGet($name)
+    public function offsetGet(mixed $name): mixed
     {
         return $this->__get($name);
     }
     
     /**
      * ArrayAccess abstract method. Sets parameters to the PDF.
-     *
-     * @param string $name  parameter name, should start with lowercase
-     * @param mixed  $value value to be set
-     * 
-     * @return void
-     * @see __set()
      */
-    public function offsetSet($name, $value): void
+    public function offsetSet(mixed $name, mixed $value): void
     {
         $this->__set($name, $value);
     }
@@ -742,12 +710,8 @@ class Collection implements ArrayAccess, Countable, Iterator
     /**
      * ArrayAccess abstract method. Unsets parameters to the PDF. Not yet implemented
      * to the PDF classes — only unsets values stored in $_vars
-     *
-     * @param string $name parameter name, should start with lowercase
-     * 
-     * @return void
      */
-    public function offsetUnset($name): void
+    public function offsetUnset(mixed $name): void
     {
         $key = array_search($name, $this->_items);
         if($key!==false) {

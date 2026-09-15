@@ -462,7 +462,7 @@ class Image {
                     $this->srcY=0;
                     if(function_exists($fn='imagecreatefrom'.$this->srcType)) {
                         $msg = (S::$log>0) ?'[INFO] Tuning for image optimization' :null;
-                        S::tune($msg, filesize($src)*48/1024/1024);
+                        S::tune($msg, (int) (filesize($src)*48/1024/1024));
                         $this->src=$fn($src);
                     }
                 }

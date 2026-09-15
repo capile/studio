@@ -539,7 +539,7 @@ class Field extends SchemaObject
             $value=null;
             return $value;
         }
-        if($this->multiple && (is_array($value) || strpos($value, ',')!==false)) {
+        if($this->multiple && (is_array($value) || (is_string($value) && strpos($value, ',')!==false))) {
             $join=false;
             if(!is_array($value)) {
                 $value = explode(',', $value);

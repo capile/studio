@@ -442,16 +442,16 @@ class Excel extends SchemaObject
                 if($style['width']<=0) {
                     $this->sheet->getColumnDimension($col)->setVisible(false);
                 } else {
-                    $this->sheet->getColumnDimension($col)->setWidth($style['width']);
+                    $this->sheet->getColumnDimension($col)->setWidth((float)$style['width']);
                     $wrap = true;
                 }
             }
             if(isset($style['height'])) {
-                $row = preg_replace('/^[a-z]+([0-9]+).*/i', '$1', $c);
+                $row = (int) preg_replace('/^[a-z]+([0-9]+).*/i', '$1', $c);
                 if($style['height']<=0) {
                     $this->sheet->getRowDimension($row)->setVisible(false);
                 } else {
-                    $this->sheet->getRowDimension($row)->setRowHeight($style['height']);
+                    $this->sheet->getRowDimension($row)->setRowHeight((float)$style['height']);
                 }
             }
             $c = $this->sheet->getStyle($c);
@@ -675,7 +675,7 @@ class Excel extends SchemaObject
     }
 
 
-    public function val($s)
+    public function val(mixed $s): string|array
     {
         if(is_array($s)) {
             foreach($s as $i=>$o) {
@@ -685,7 +685,7 @@ class Excel extends SchemaObject
             return $s;
         }
 
-        return str_replace(array_keys($this->r), array_values($this->r), $s);
+        return str_replace(array_keys($this->r), array_values($this->r), (string) $s);
     }
 
     public function pos($p=null): array

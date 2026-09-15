@@ -2715,9 +2715,10 @@ class Model implements ArrayAccess, Iterator, Countable
             if($choices) {
                 if(is_array($val)) {
                     foreach($val as $k=>$v) {
-                        if(isset($choices[$v])) $val[$k] = (string) $choices[$v];
-                        else if(is_array($v)) $val[$k] = array_shift($v);
+                        if(isset($choices[$v])) $val[$k] = $choices[$v];
+                        else if(is_array($v)) $val[$k] = $v;
                         else if(is_object($v)) $val[$k] = (string) $v;
+                        if(is_array($val[$k])) $val[$k] = array_shift($val[$k]);
                     }
                     $val = implode(', ', $val);
 
