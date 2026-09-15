@@ -2203,7 +2203,7 @@ class Api extends SchemaObject
             return $r;
         } else if($download && ($uid=App::request('get', '-bgd')) && ($st=Cache::get($prefix.$uid)) && isset($st['f'])) {
             Cache::delete($prefix.$uid);
-            S::download($st['f'], null, preg_replnullace('/^[0-9]+\.[0-9]+\-/', '', basename($st['f'])), 0, true, false, false);
+            S::download($st['f'], null, preg_replace('/^[0-9]+\.[0-9]+\-/', '', basename($st['f'])), 0, true, false, false);
             unlink($st['f']);
             exit();
         }

@@ -1098,9 +1098,9 @@ class Sql
                 return 'null';
             }
         } else if(isset($d['type']) && $d['type']=='int') {
-            return (int) $v;
+            return (string) ((int) $v);
         } else if(isset($d['type']) && $d['type']=='bool') {
-            return ($v && $v>0)?(1):(0);
+            return ($v && $v>0)?('1'):('0');
         } else if((isset($d['format']) && $d['format']=='datetime') || (isset($d['type']) && $d['type']=='datetime')) {
             $ms = (int) static::$microseconds;
             if(preg_match('/^(([0-9]{4}\-[0-9]{2}\-[0-9]{2})[ T]?(([0-9]{2}:[0-9]{2})(:[0-9]{2}(\.[0-9]{1,'.$ms.'})?)?)?)[0-9]*$/', $v, $m)) {

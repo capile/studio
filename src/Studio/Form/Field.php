@@ -194,7 +194,7 @@ class Field extends SchemaObject
     /**
      * Binds field to $form->model column or relation
      */
-    public function setBind(string $name, bool $return=false, int $recursive=3): array
+    public function setBind(string $name, bool $return=false, int $recursive=3): array|false
     {
         $M = $this->getModel();
         if(!$M) return false;
@@ -1185,7 +1185,7 @@ class Field extends SchemaObject
         return $filetype;
     }
 
-    public function checkDns(string $value, string|array $message=''): string
+    public function checkDns(?string $value, string|array $message=''): string
     {
         static $err = '"%s" is not a valid %s DNS record.';
         if($message && $message!=static::$defaultErrorMessage) {
@@ -1211,7 +1211,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkIp(string $value, string|array $message=''): string
+    public function checkIp(?string $value, string|array $message=''): string
     {
         static $err = '"%s" is not a valid %s IP address.';
         static $ipTypeFlags = [
@@ -1248,7 +1248,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkIpBlock(string $value, string|array $message=''): string
+    public function checkIpBlock(?string $value, string|array $message=''): string
     {
         static $err = '"%s" is not a valid %s IP block.';
         static $ipTypeFlags = [
@@ -1292,7 +1292,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkEmail(string $value, string|array $message=''): string
+    public function checkEmail(?string $value, string|array $message=''): string
     {
         $value = trim($value);
         if($value && !S::checkEmail($value, false)) {
@@ -1304,7 +1304,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkDate(string $value, string|array $message=''): string
+    public function checkDate(?string $value, string|array $message=''): string
     {
 
         if($value != '' && !preg_match('/^[0-9]{4}(-[0-9]{1,2}(-[0-9]{1,2}([ T][0-9]{1,2}(:[0-9]{1,2}(:[0-9]{1,2}(\.[0-9]+)?)?)?)?)?)?$/', $value)) {
@@ -1313,7 +1313,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkDatetime(string $value, string|array $message=''): string
+    public function checkDatetime(?string $value, string|array $message=''): string
     {
         if($value != '' && !preg_match('/^[0-9]{4}(-[0-9]{1,2}(-[0-9]{1,2}([ T][0-9]{1,2}(:[0-9]{1,2}(:[0-9]{1,2}(\.[0-9]+)?)?)?)?)?)?$/', $value)) {
             $value = date('Y-m-d H:i:s', S::strtotime($value));
@@ -1321,7 +1321,7 @@ class Field extends SchemaObject
         return $value;
     }
 
-    public function checkGuid(string $value, string|array $message=''): string
+    public function checkGuid(?string $value, string|array $message=''): string
     {
         if($value && is_string($value) && !($value=S::checkGuid($value))) {
             if(!$message) {
@@ -1636,13 +1636,21 @@ class Field extends SchemaObject
             if(!is_null($check)) {
                 if(!$c) {
                     return false;
-                } else if(!is_array($check)) {
-                    return $this->_choicesCollection[$check];
                 } else {
+                    $one = false;
+                    if(!is_array($check)) {
+                        $pk = $this->_choicesCollection->getQueryKey();
+                        if(!$pk) return false;
+                        else if(is_array($pk)) $pk = array_shift($pk);
+                        $check = ['where'=>[$pk => $check]];
+                        $one = true;
+                    } else if(!isset($check['where'])) {
+                        $check = ['where'=>$check];
+                    }
                     $this->_choicesCollection->setQuery($check);
                     $c = $this->_choicesCollection->count();
                     if(!$c) return false;
-                    return $this->_choicesCollection->getItems();
+                    return ($one) ?array_shift($this->_choicesCollection->getItems(0, 1)) :$this->_choicesCollection->getItems();
                 }
             } else if($count) {
                 return $c;
@@ -1938,7 +1946,7 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function checkObject(string|array $value, string|array $message=''): ?array
+    public function checkObject(string|array|null $value, string|array $message=''): ?array
     {
         $r = null;
         if($value && is_string($value) && $this->serialize && ($a=S::unserialize($value, $this->serialize))) {
@@ -2682,9 +2690,9 @@ class Field extends SchemaObject
         return $input;
     }
 
-    public function checkCaptcha(string|array $value, $message=''): bool
+    public function checkCaptcha(string|array|null $value, $message=''): bool
     {
-        if(is_array($value) && ($post=$value) || ($post=App::request('post', $this->id))) {
+        if(is_array($value) && (($post=$value) || ($post=App::request('post', $this->id)))) {
             $exist = false;
             foreach($post as $k=>$v) {
                 if($msg=Cache::get('captcha/'.$k)) {

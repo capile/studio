@@ -1514,7 +1514,7 @@ class Studio
         return $cacheControl;
     }
 
-    public static function download(string $file, ?string $format=null, ?string $fname=null, int $speed=0, bool $attachment=false, bool $nocache=false, bool $exit=true): void
+    public static function download(string $file, string|false|null $format=null, ?string $fname=null, int $speed=0, bool $attachment=false, bool $nocache=false, bool $exit=true): void
     {
         if (connection_status() != 0 || !$file)
             return;

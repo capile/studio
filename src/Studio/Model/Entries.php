@@ -464,7 +464,7 @@ class Entries extends Model
             return false;
         }
         $file = $this->filePreview();
-        S::download($file,$this->format);
+        S::download($file, (string) $this->format);
     }
 
     public function renderEntry($template=false, $args=array())
