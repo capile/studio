@@ -1819,14 +1819,15 @@ class Api extends SchemaObject
         }
 
         $this->getButtons();
-        if($one && method_exists($cn, $m=$this->config('modelRenderPrefix').S::camelize($this->action, true))) {
+        $renderer = $this->actions[$this->action]['renderer'] ?? $this->config('modelRenderPrefix').S::camelize($this->action, true);
+        if($one && $renderer && method_exists($cn, $renderer)) {
             $this->scope((isset($cn::$schema->scope[$this->action]))?($this->action):('preview'));
             if(!$o) $o = $this->model([], 1, false, true);
-            $this->text['preview'] = $o->$m($this);
+            $this->text['preview'] = $o->$renderer($this);
             unset($o);
-        } else if((isset($this->actions[$this->action]['renderer']) && ($m=$this->actions[$this->action]['renderer']) && method_exists($this, $m)) 
-            || (method_exists($this, $m='render'.S::camelize($this->action, true)))) {
-            $this->text['preview'] = $this->$m();
+        } else if(($renderer && method_exists($this, $renderer))
+            || (method_exists($this, $renderer='render'.S::camelize($this->action, true)))) {
+            $this->text['preview'] = $this->$renderer();
         } else {
             $this->text['summary'] = $this->getSummary();
             $this->getList($req);
