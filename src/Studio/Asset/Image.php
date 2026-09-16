@@ -246,9 +246,8 @@ class Image {
             $img = imagecreatetruecolor($width, $height);
             $new = true;
             ImageCopyResampled($img, $this->img, $x, $y, $this->x, $this->y, $width, $height, $this->width, $this->height);
-            $oimg=$this->img;
+            $this->img=null;
             $this->img=$img;
-            ImageDestroy($oimg);
         }
         if($new && !is_null($this->antialias) && function_exists('imageantialias')) {
             imageantialias($this->img, $this->antialias);
@@ -298,7 +297,6 @@ class Image {
         if(!is_null($this->src)) {
             // Resample the original image into the resized canvas we set up earlier
             ImageCopyResampled($this->img, $this->src, $srcX, $srcY, $this->srcX, $this->srcY, $srcWidth, $srcHeight, $this->srcWidth, $this->srcHeight);
-            ImageDestroy($this->src);
             $this->src=null;
             if(is_null($this->sharpen) && $this->resize && $this->type!='gif') {
                 $this->sharpen=true;
@@ -410,7 +408,6 @@ class Image {
             $this->data = ob_get_contents();
             ob_end_clean();
             // Clean up the memory
-            ImageDestroy($this->img);
             $this->img=null;
         }
         return $this->data;

@@ -232,7 +232,7 @@ class Index extends Model
         ]);
     }
 
-    public static function indexInterface(array $a, $icn=null, $scope='preview', $keyFormat=false, $valueFormat=false, $serialize=false): void
+    public static function indexInterface(array|Apis $a, $icn=null, $scope='preview', $keyFormat=false, $valueFormat=false, $serialize=false): void
     {
         $renewCache = (Cache::get(static::$pidKey)==S_TIME);
         $q = null;
@@ -548,7 +548,7 @@ class Index extends Model
         if(isset($map[$type])) $type = $map[$type];
         else if($type=='text' && is_string($value) && strlen($value)>2000) $type='blob';
         else if(substr($type, 0, 4)=='date') $type='date';
-        else if((is_int($value) || is_float($value)) && strlen($value)<20) $type = 'number';
+        else if((is_int($value) || is_float($value)) && strlen((string)$value)<20) $type = 'number';
         else if(is_bool($value)) $type = 'bool';
 
         $rel = 'Index'.ucwords($type);

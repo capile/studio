@@ -1172,7 +1172,8 @@ class Api extends SchemaObject
             if(method_exists($cn, $m='to'.ucfirst(static::$format))) $msg = static::$m((is_array($msg))?($msg):(array()));
 
             App::response(array('headers'=>array('Content-Type'=>'application/'.static::$format.'; charset=utf-8')));
-            App::end($msg, $code);
+            if(is_array($msg)) $msg = implode(' ', $msg);
+            App::end((string)$msg, $code);
         }
         if(isset(static::$errorModule)) {
             $cn = static::$errorModule;

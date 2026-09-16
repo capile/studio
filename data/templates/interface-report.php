@@ -25,7 +25,7 @@ if(!isset($r)) $r=array(
     '{interface}'=>$api,
     '{title}'=>$title,
     '{action}'=>$action,
-    '{model}'=>$model,
+    '{model}'=>$model ?? '',
     '{count}'=>$count,
     '{now}'=>date('YmdHis'),
 );
