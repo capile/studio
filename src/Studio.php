@@ -1479,7 +1479,7 @@ class Studio
         }
     }
 
-    public static function cacheControl(?string $set=null, int|float|null $expires=null): string
+    public static function cacheControl(?string $set=null, int|float|false|null $expires=null): string
     {
         static $private='private, no-cache, no-store, must-revalidate';
 
