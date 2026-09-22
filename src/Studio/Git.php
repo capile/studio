@@ -116,7 +116,7 @@ class Git
     public function run($cmd): bool
     {
         $options = '';
-        if(($k=$this->config('sshKey')) && file_exists(realpath($k)) && ($k=escapeshellarg($k))) {
+        if(($k=$this->config('sshKey')) && realpath($k) && file_exists($k) && ($k=escapeshellarg($k))) {
             $options = " -c core.sshCommand=\"ssh -i {$k} -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new\"";
         }
         $r = S::exec(['shell'=>$this->config('gitExecutable').$options.' '.$cmd]);
