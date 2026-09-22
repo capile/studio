@@ -16,6 +16,7 @@ namespace Studio;
 
 use Studio as S;
 use ArrayAccess;
+use Tecnodesign_Pdf;
 
 class Calendar implements ArrayAccess
 {
@@ -365,9 +366,9 @@ class Calendar implements ArrayAccess
         return $this->_start;
     }
     
-    public static function parseDate($d)
+    public static function parseDate(mixed $d): int|false
     {
-        if (preg_match('/^([0-9]{4})([0-9]{2})([0-9]{2})?$/', $d, $m)) {
+        if (preg_match('/^([0-9]{4})([0-9]{2})([0-9]{2})?$/', (string) $d, $m)) {
             if(isset($m[3]) && $m[3]!='') {
                 $d = strtotime("{$m[1]}-{$m[2]}-{$m[3]}");
             } else {
@@ -376,7 +377,7 @@ class Calendar implements ArrayAccess
         } else if (is_numeric($d)) {
             $d = (int) $d;
         } else {
-            $d  =strtotime($d);
+            $d = strtotime($d);
         }
         return $d;
     }
@@ -444,7 +445,7 @@ class Calendar implements ArrayAccess
      * 
      * @return string selected month in HTML
      */
-    public function renderMonth($month=0, $envelope = null): string
+    public function renderMonth(mixed $month=0, ?bool $envelope = null): string
     {
         $before = $after = null;
         $m0 = $month;
@@ -468,18 +469,18 @@ class Calendar implements ArrayAccess
         	}
         	return $before.$s.$after;
         } else if (is_int($month) && $month < 10000) {
-            $startm=mktime(0,0,0,date('n',$start)+$month, 1, date('Y', $start));
+            $startm = mktime(0, 0, 0, (int) date('n', $start) + $month, 1, (int) date('Y', $start));
         } else {
             $month = self::parseDate($month);
-            $startm=mktime(0,0,0,date('n',$month), 1, date('Y', $month));
+            $startm = mktime(0, 0, 0, (int) date('n', $month), 1, (int) date('Y', $month));
         }
-        $starto=date('w',$startm);
-        $start=mktime(0,0,0,date('m',$startm),1-$starto,date('Y',$startm));
-        $end=mktime(0, 0, 0, date('n',$startm)+1, 0,   date('Y', $startm));
-        $end0=$end;
-        $end=mktime(0, 0, 0, date('n',$end)+1, 6-date('w',$end), date('Y', $end));
-        $format = (isset($this->_vars['format']))?($this->_vars['format']):('extended');
-        $ew = $this->getEventsByWeek((date('m',$start)=='01')?(date('Y00',$start)):(date('YW',$start)), date('YW',$end));
+        $starto = date('w',$startm);
+        $start  = mktime(0, 0, 0, (int) date('m', $startm), 1 - $starto, (int) date('Y', $startm));
+        $end    = mktime(0, 0, 0, (int) date('n',$startm) + 1, 0, (int) date('Y', $startm));
+        $end0   = $end;
+        $end    = mktime(0, 0, 0, (int) date('n',$end) + 1, 6 - (int) date('w', $end), (int) date('Y', $end));
+        $format = $this->_vars['format'] ?? 'extended';
+        $ew = $this->getEventsByWeek((date('m',$start)==='01')?(date('Y00', $start)):(date('YW', $start)), date('YW', $end));
         $mn = (static::$useMonthInitials) ?substr(static::$months[date('M', $startm)], 0, static::$useMonthInitials) :static::$months[date('M', $startm)];
         if(static::$includeYear && (static::$includeYear==1 || date('Y', $startm)!==date('Y'))) {
             $mn .= ' '.date('Y', $startm);
@@ -568,7 +569,7 @@ class Calendar implements ArrayAccess
                 }
                 $s .= '</'.static::$elWeek.'>';
             }
-            $day=mktime(0,0,0,date('n',$day),date('j',$day)+1,date('Y',$day));
+            $day=mktime(0, 0, 0, (int) date('n', $day), (int) date('j', $day) + 1, (int) date('Y',$day));
         }
         $s .= '</div>';
 
@@ -584,7 +585,7 @@ class Calendar implements ArrayAccess
             .   S::xml($e['summary'])
             . '</a>'
             ;
-        if(!preg_match('/^[0-9]{4}\-?[0-9]{2}\-?[0-9]{2}$/', $e['start'])) {
+        if(!preg_match('/^[0-9]{4}\-?[0-9]{2}\-?[0-9]{2}$/', (string) $e['start'])) {
             $t0 = S::date($e['start'], 'H:i');
             $t1 = (isset($e['end'])) ?S::date($e['end'], 'H:i') :$t0;
             if(!($t0===$t1 && $t0==='00:00')) {
@@ -605,19 +606,19 @@ class Calendar implements ArrayAccess
      * 
      * @return string selected month in HTML
      */
-    public function renderMonthToPDF($month=0, array $setup=array(), $pdf=null): string
+    public function renderMonthToPDF(mixed $month=0, array $setup=[]): string
     {
         $start = $this->getStart();
         if (is_int($month) && $month < 10000) {
-            $startm=mktime(0,0,0,date('n',$start)+$month, 1, date('Y', $start));
+            $startm=mktime(0, 0, 0, (int) date('n', $start) + $month, 1, (int) date('Y', $start));
         } else {
             $month = self::parseDate($month);
-            $startm=mktime(0,0,0,date('n',$month), 1, date('Y', $month));
+            $startm=mktime(0, 0, 0, (int) date('n',$month), 1, (int) date('Y', $month));
         }
-        $starto=date('w',$startm);
-        $start=mktime(0,0,0,date('m',$startm),1-$starto,date('Y',$startm));
-        $end=mktime(0, 0, 0, date('n',$startm)+1, 0,   date('Y', $startm));
-        $end=mktime(0, 0, 0, date('n',$end)+1, 6-date('w',$end), date('Y', $end));
+        $starto = (int) date('w',$startm);
+        $start  = mktime(0, 0, 0, (int) date('m', $startm), 1 - $starto, (int) date('Y',$startm));
+        $end=mktime(0, 0, 0, (int) date('n', $startm) + 1, 0, (int) date('Y', $startm));
+        $end=mktime(0, 0, 0, (int) date('n',$end) + 1, 6 - (int) date('w', $end), (int) date('Y', $end));
 
         $month = static::$months[date('M', $startm)];
         $smonth = substr(static::$months[date('M', $startm)],0,3);
@@ -721,7 +722,7 @@ class Calendar implements ArrayAccess
                 $s .= "</tr>";
                 
             }
-            $day=mktime(0,0,0,date('n',$day),date('j',$day)+1,date('Y',$day));
+            $day=mktime(0, 0, 0, (int) date('n', $day), (int) date('j', $day) + 1, (int) date('Y', $day));
         }
         $s .= "</table>";
 

@@ -2485,16 +2485,18 @@ class Studio
         return $r;
     }
 
-    public static function date(string|int|float $t, bool $showtime=true): string
+    public static function date(string|int|float $t, bool|string $showtime=true): string
     {
         $s = (is_string($showtime) && !is_numeric($showtime)) ?$showtime :self::$dateFormat.(($showtime)?(' '.self::$timeFormat):(''));
-        if(!is_int($t)) {
+        if(is_string($t)) {
             $t = strtotime($t);
+        } else if(!is_int($t)) {
+            $t = (int) $t;
         }
         return date($s, $t);
     }
 
-    public static function dateDiff(string|int|float $start, string|int|float $end='', bool $showtime=false, string $ttable='date'): string
+    public static function dateDiff(string|int|float $start, string|int|float $end='', bool|string $showtime=false, string $ttable='date'): string
     {
         $tstart = (is_int($start))?($start):(@strtotime($start));
         $tend = (is_int($end))?($end):(@strtotime($end));
