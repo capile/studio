@@ -22,7 +22,7 @@ jobs:
       file: ./Dockerfile-dev
       meta-images: tecnodesign/studio
       build-args: |
-        STUDIO_VERSION={{version}}
+        STUDIO_VERSION={{meta.version}}
       meta-tags: |
         type=semver,pattern=v{{major}}-dev
         type=semver,pattern=v{{major}}.{{minor}}-dev
