@@ -15,8 +15,8 @@ use Studio\Exception\AppException;
 
 class Studio
 {
-    const VERSION = '2.0.X';
-    const VER = 2.0;
+    const VERSION = '2.1.X';
+    const VER = 2.1;
 
     protected static
     $_app = null,
