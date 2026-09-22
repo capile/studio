@@ -1,4 +1,4 @@
-## tecnodesign/studio:v2.0
+## tecnodesign/studio:v2.1
 FROM tecnodesign/studio:v2-dev
 USER root
 RUN apk --purge del apk-tools curl npm tar yarn \
