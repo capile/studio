@@ -9,7 +9,6 @@
  * @license   GNU General Public License v3.0
  * @link      https://tecnodz.com
  */
-declare(strict_types=1);
 namespace Studio\Model;
 
 use Studio as S;

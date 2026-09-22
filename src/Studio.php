@@ -10,7 +10,6 @@
  * @link      https://tecnodz.com
  * @version   2.0
  */
-declare(strict_types=1);
 use Studio\{App,Asset,Asset\Image,Cache,Collection,Crypto,Model,Model\Entries,Yaml,Query,Mail};
 use Studio\Exception\AppException;
 

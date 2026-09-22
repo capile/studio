@@ -24,7 +24,6 @@ jobs:
       build-args: |
         STUDIO_VERSION={{version}}
       meta-tags: |
-        type=semver,pattern=v{{major}}-dev
         type=semver,pattern=v{{major}}.{{minor}}-dev
         type=semver,pattern=v{{version}}-dev
     secrets:
@@ -48,8 +47,6 @@ jobs:
       build-args: |
         STUDIO_VERSION={{version}}
       meta-tags: |
-        type=raw,value=latest
-        type=semver,pattern=v{{major}}
         type=semver,pattern=v{{major}}.{{minor}}
         type=semver,pattern=v{{version}}
     secrets:
