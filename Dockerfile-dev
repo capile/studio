@@ -1,7 +1,7 @@
 ## tecnodesign/studio:v2-dev
 FROM php:8.5-fpm-alpine
 ARG PHP_PEAR_PHP_BIN="php -d error_reporting=0"
-ARG STUDIO_VERSION="2.1.X"
+ARG STUDIO_VERSION="2.0.X"
 WORKDIR /var/www/studio
 COPY . .
 RUN apk upgrade --update \
