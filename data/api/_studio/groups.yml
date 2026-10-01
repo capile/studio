@@ -1,5 +1,6 @@
 ---
 all:
+  title: "*Groups"
   model: Studio\Model\Groups
   options:
     list-parent: users
