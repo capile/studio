@@ -1,5 +1,6 @@
 ---
 all:
+  title: "*Credentials"
   model: Studio\Model\Permissions
   options:
     list-parent: users
