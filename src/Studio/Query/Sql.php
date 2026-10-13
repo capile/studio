@@ -564,7 +564,7 @@ class Sql
             }
             return strtr($fn, $r);
         } else if(preg_match('#^([a-z\.0-9A-Z_]+)\s+(as\s+)?([a-z\.0-9A-Z_]+)$#', trim($fn), $m) && ($r = $this->getAlias($m[1], $ref, true))) {
-            return $r.' '.S::sql($m[3]);
+            return $r.' '.((preg_match('/[^a-z0-9_]/i', $m[3])) ?S::sql($m[3]) :$m[3]);
         } else if($r===false) {
             return null;
         } else if(preg_match('/@([a-z]+)\(([^\)]*)\)/', $fn, $m) && method_exists($this, $a='getFunction'.ucfirst($m[1]))) {

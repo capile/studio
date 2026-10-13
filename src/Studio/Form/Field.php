@@ -1479,7 +1479,7 @@ class Field extends SchemaObject
 
     public function getClass(): string
     {
-        $cn = (isset($this->class)) ?$this->class :'';
+        $cn = $this->class ?? '';
         if($this->readonly) {
             $cn .= ' readonly';
         }
@@ -1491,7 +1491,7 @@ class Field extends SchemaObject
                 $cn .= ' p-'.$n;
             }
         }
-        return trim($cn);
+        return trim((string)$cn);
     }
 
     public function setError(string|array $msg): self
