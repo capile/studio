@@ -186,11 +186,13 @@ class Studio
         return new App($s, self::$_app, self::$_env);
     }
 
-    public static function appName(): string
+    public static function appName(?string $name=null): string
     {
         if(is_null(self::$_app)) {
             self::$_app = S_APP;
-            if(isset($_SERVER['STUDIO_CONFIG']) && $_SERVER['STUDIO_CONFIG']) {
+            if(!is_null($name)) {
+                self::$_app = $name;
+            } else if(isset($_SERVER['STUDIO_CONFIG']) && $_SERVER['STUDIO_CONFIG']) {
                 $s = $_SERVER['STUDIO_CONFIG'];
                 if(is_string($s) && file_exists($s)) {
                     self::$_app = basename($s, '.yml');

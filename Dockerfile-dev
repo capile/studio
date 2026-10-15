@@ -186,6 +186,7 @@ ENV HOME=/var/www \
     STUDIO_DATA=/opt/studio/data \
     STUDIO_CONFIG=/var/www/studio/app.yml \
     STUDIO_AUTOLOAD=/var/www/studio/vendor/autoload.php \
+    STUDIO_FASTLOAD_DIR="" \
     STUDIO_ENV="prod" \
     STUDIO_INIT="" \
     STUDIO_TAG="" \

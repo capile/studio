@@ -216,6 +216,15 @@ class App
 
     public function __wakeup(): void
     {
+        if(is_null(App::$_instances)) {
+            App::$_instances = new ArrayObject();
+            $name = S::appName();
+            if(!$name) $name = 'studio';
+            $env = S_ENV;
+            $instance="{$name}/{$env}";
+            App::$_instances[$instance] = $this;
+            unset($name, $env, $instance);
+        }
         $this->start();
     }
 
