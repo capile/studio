@@ -12,7 +12,7 @@ FASTCGI_ACCESS_LOG=${FASTCGI_ACCESS_LOG:=""}
 sed -E \
     -e "s/^process_control_timeout .*//g" \
     -e "s/\[global\]/[global]\nprocess_control_timeout = $PHP_FCGI_QUIT_TIMEOUT/" \
-    -i /usr/local/etc/php-fpm.d/docker.conf
+    -i $PHP_INI_DIR/php-fpm.d/docker.conf
 
 sed -E \
     -e "s/^pm.max_children = .*/pm.max_children = $PHP_FCGI_CHILDREN/" \
@@ -20,18 +20,18 @@ sed -E \
     -e "s/^pm.min_spare_servers .*/pm.min_spare_servers = $PHP_FCGI_START_SERVERS/" \
     -e "s/^pm.max_spare_servers .*/pm.max_spare_servers = $PHP_FCGI_SPARE_SERVERS/" \
     -e "s/^;?pm.max_requests = .*/pm.max_requests = $PHP_FCGI_MAX_REQUESTS/" \
-    -i /usr/local/etc/php-fpm.d/www.conf
+    -i $PHP_INI_DIR/php-fpm.d/www.conf
 
 if [[ "$FASTCGI_STATUS_LISTEN" != "" ]]; then
     sed -E \
         -e "s/;?pm.status_path = .*/pm.status_path = \/status/" \
         -e "s/;?pm.status_listen = .*/pm.status_listen = $FASTCGI_STATUS_LISTEN/" \
-        -i /usr/local/etc/php-fpm.d/www.conf
+        -i $PHP_INI_DIR/php-fpm.d/www.conf
 else
     sed -E \
         -e "s/^pm.status_path = /;pm.status_path = /g" \
         -e "s/^pm.status_listen =/;pm.status_listen =/g" \
-        -i /usr/local/etc/php-fpm.d/www.conf
+        -i $PHP_INI_DIR/php-fpm.d/www.conf
 fi
 
 if [[ "$FASTCGI_ACCESS_LOG" != "" ]] && [[ "$FASTCGI_ACCESS_LOG" != "off" ]]; then
@@ -40,11 +40,11 @@ if [[ "$FASTCGI_ACCESS_LOG" != "" ]] && [[ "$FASTCGI_ACCESS_LOG" != "off" ]]; th
     fi
     sed -E \
         -e "s|;?access.log = .*|access.log = $FASTCGI_ACCESS_LOG|" \
-        -i /usr/local/etc/php-fpm.d/docker.conf
+        -i $PHP_INI_DIR/php-fpm.d/docker.conf
 else
     sed -E \
         -e "s/^access.log = /;access.log = /g" \
-        -i /usr/local/etc/php-fpm.d/docker.conf
+        -i $PHP_INI_DIR/php-fpm.d/docker.conf
 fi
 
 if [[ "$1" == "restart" ]]; then
