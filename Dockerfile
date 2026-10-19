@@ -1,7 +1,5 @@
 ## tecnodesign/studio:v2.1
 FROM tecnodesign/studio:v2-dev
-USER root
-RUN apk --purge del apk-tools curl npm tar yarn zip \
-    && \
-    rm -rf /usr/local/bin/docker-php* /usr/local/bin/pear* /usr/local/bin/pecl /usr/local/bin/phpize /usr/bin/composer
-USER www-data
+USER 0
+RUN rm -rf /usr/bin/curl /usr/bin/zip* /usr/bin/npm /usr/bin/yarn* /usr/share/node_modules /usr/bin/pear* /usr/bin/pecl /usr/bin/phar* /usr/bin/phpize /usr/bin/composer
+USER nonroot
