@@ -9,32 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  build-dev:
-    uses: docker/github-builder/.github/workflows/build.yml@v1
-    permissions:
-      contents: read
-      id-token: write
-    with:
-      output: image
-      push: ${{ github.event_name != 'pull_request' }}
-      platforms: linux/amd64,linux/arm64
-      context: .
-      file: ./Dockerfile-dev
-      meta-images: tecnodesign/studio
-      build-args: |
-        STUDIO_VERSION={{meta.version}}
-      meta-tags: |
-        type=semver,pattern=v{{major}}-dev
-        type=semver,pattern=v{{major}}.{{minor}}-dev
-        type=semver,pattern=v{{version}}-dev
-    secrets:
-      registry-auths: |
-        - registry: docker.io
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
   build:
     uses: docker/github-builder/.github/workflows/build.yml@v1
-    needs: build-dev
     permissions:
       contents: read
       id-token: write
@@ -46,7 +22,7 @@ jobs:
       file: ./Dockerfile
       meta-images: tecnodesign/studio
       build-args: |
-        STUDIO_VERSION={{version}}
+        STUDIO_VERSION={{meta.version}}
       meta-tags: |
         type=raw,value=latest
         type=semver,pattern=v{{major}}
