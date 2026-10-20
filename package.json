@@ -19,13 +19,10 @@
         "uglify-js": "^3.19"
     },
     "scripts": {
-        "composer-install": "docker run -it -u root -v $PWD:/var/www/studio:z tecnodesign/studio:v2-dev composer install --no-dev",
-        "composer-update": "docker run -it -u root -v $PWD:/var/www/studio:z tecnodesign/studio:v2-dev composer update --no-dev",
-        "build": "docker build -t tecnodesign/studio:v2-dev 'git@github.com:capile/studio.git#main' -f Dockerfile-dev && docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.0 -t tecnodesign/studio:latest 'git@github.com:capile/studio.git#main'",
-        "publish": "docker push tecnodesign/studio:v2-dev && docker push tecnodesign/studio:v2 && docker push tecnodesign/studio:v2.0 && docker push tecnodesign/studio:latest",
-        "build-nginx": "docker build -t tecnodesign/nginx:latest 'git@github.com:capile/studio.git#v2.0' -f data/deploy/containers/nginx.dockerfile && docker push tecnodesign/nginx:latest",
-        "build-all": "npm run build-nginx && npm run build && npm run publish",
-        "build-local": "docker build -t tecnodesign/studio:v2-dev -f Dockerfile-dev . && docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.0 -t tecnodesign/studio:latest .",
+        "composer-install": "docker run -it -u 0 -v $PWD:/var/www/studio:z tecnodesign/studio:v2 composer install --no-dev --ignore-platform-req=ext-zip",
+        "composer-update":  "docker run -it -u 0 -v $PWD:/var/www/studio:z tecnodesign/studio:v2 composer update --no-dev --ignore-platform-req=ext-zip",
+        "build": "docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.1 -t tecnodesign/studio:latest 'git@github.com:capile/studio.git#main'",
+        "build-local": "docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.0 -t tecnodesign/studio:latest .",
         "start": "electron ."
     },
     "license": "GPL-3.0-only"

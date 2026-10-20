@@ -127,6 +127,9 @@ COPY --from=ext /usr/local/etc/php/conf.d /etc/php-8.5/conf.d
 ARG PHP_INI_DIR="/etc/php-8.5"
 RUN cd /var/www/studio \
     && \
+    rm /etc/php-8.5/conf.d/docker-php-ext-sodium.ini \
+      /etc/php-8.5/conf.d/docker-php-ext-intl.ini \
+    && \
     curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --2.2 \
     && \
     HOME=/var/www composer install --no-dev -n --ignore-platform-req=ext-zip \
@@ -187,7 +190,7 @@ RUN cd /var/www/studio \
     && \
     ln -s "/opt/studio/data/web" /var/www/studio/data/web \
     && \
-    apk --purge del apk-tools curl npm tar yarn zip \
+    apk --purge del apk-tools curl tar yarn zip \
     && \
     rm -f /usr/bin/pear* /usr/bin/pecl /usr/bin/phar* /usr/bin/phpize
 FROM dhi.io/php:8.5-alpine-fpm AS src
@@ -208,9 +211,6 @@ ARG PHP_INI_DIR="/etc/php-8.5"
 WORKDIR /var/www/studio
 USER 0
 RUN chown nonroot -R /etc/php-8.5/php-fpm.d /var/www /opt/studio \
-    && \
-    rm /etc/php-8.5/conf.d/docker-php-ext-sodium.ini \
-      /etc/php-8.5/conf.d/docker-php-ext-intl.ini \
     && \
     sed -E \
         -e "s@/usr/local/etc/php-fpm.d/@$PHP_INI_DIR/php-fpm.d/@g" \
