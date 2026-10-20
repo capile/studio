@@ -4,9 +4,9 @@
 FROM dhi.io/alpine-base:3.24-dev AS bin
 
 FROM php:8.5-fpm-alpine AS ext
-RUN apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
-      curl \
-      curl-dev \
+RUN apk add curl curl-dev --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
+    && \
+    apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
       cyrus-sasl-dev \
       freetype-dev \
       icu \
@@ -69,7 +69,7 @@ RUN apk add --no-cache --update --virtual .deps $PHPIZE_DEPS \
     && \
     rm -rf /tmp/* /usr/bin/pie \
     && \
-    apk del .deps \
+    apk del .deps curl curl-dev \
     && \
     echo 'max_input_vars = 10000' > $PHP_INI_DIR/conf.d/x-studio.ini \
     && \
@@ -101,6 +101,8 @@ FROM dhi.io/php:8.5-alpine-dev AS builder
 COPY --from=bin /bin /bin
 COPY --from=bin /sbin /sbin
 RUN apk upgrade --update \
+    && \
+    apk add curl --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
     && \
     apk add --no-cache --update \
       curl \
