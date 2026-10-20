@@ -710,7 +710,7 @@ class Asset
                         } else  if(substr($o, 1, 1)==='a' && preg_match('/^\-a(=[a-z0-9\-\_\.]+)?$/', $o, $m)) {
                             if(isset($m[1])) {
                                 $v = substr($m[1],1);
-                                $asset = ($v || (is_numeric($v) && $v>0) || strtolower($v)==='true');
+                                $asset = (($v && is_numeric($v) && $v>0) || strtolower($v)==='true');
                                 unset($v);
                             }
                             unset($m);

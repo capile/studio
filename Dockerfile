@@ -166,7 +166,7 @@ RUN cd /var/www/studio \
       /opt/studio/data/web \
       /opt/studio/config \
    && \
-   chown -R nonroot:nonroot \
+   chown -R nonroot:82 \
      /var/www/studio \
      /var/www/.cache \
      /var/www/.composer \
@@ -210,7 +210,15 @@ ARG STUDIO_VERSION="2.1.X"
 ARG PHP_INI_DIR="/etc/php-8.5"
 WORKDIR /var/www/studio
 USER 0
-RUN chown nonroot -R /etc/php-8.5/php-fpm.d /var/www /opt/studio \
+RUN sed -E -e 's@:nonroot:/home/nonroot:@:nonroot:/var/www:@' -i /etc/passwd \
+    && \
+    echo 'www-data:x:82:nonroot' >> /etc/group \
+    && \
+    chown nonroot:www-data -R /etc/php-8.5/php-fpm.d /var/www /opt/studio \
+    && \
+    chmod 775 /etc/php-8.5/php-fpm.d /opt/studio \
+    && \
+    chmod 664 /etc/php-8.5/php-fpm.d/*.conf \
     && \
     sed -E \
         -e "s@/usr/local/etc/php-fpm.d/@$PHP_INI_DIR/php-fpm.d/@g" \
