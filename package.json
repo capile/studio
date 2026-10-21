@@ -22,7 +22,7 @@
         "composer-install": "docker run -it -u 0 -v $PWD:/var/www/studio:z tecnodesign/studio:v2 composer install --no-dev --ignore-platform-req=ext-zip",
         "composer-update":  "docker run -it -u 0 -v $PWD:/var/www/studio:z tecnodesign/studio:v2 composer update --no-dev --ignore-platform-req=ext-zip",
         "build": "docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.1 -t tecnodesign/studio:latest 'git@github.com:capile/studio.git#main'",
-        "build-local": "docker build -t tecnodesign/studio:v2 -t tecnodesign/studio:v2.0 -t tecnodesign/studio:latest .",
+        "build-local": "docker build -t tecnodesign/studio:latest .",
         "start": "electron ."
     },
     "license": "GPL-3.0-only"

@@ -146,14 +146,15 @@ RUN cd /var/www/studio \
         -e 's/expose_php = On/expose_php = Off/' \
         -e 's/max_execution_time = 30/max_execution_time = 10/' \
         -e 's/max_input_time = 60/max_input_time = 5/' \
-        -e 's/^;catch_workers_output.*/catch_workers_output = yes/' \
-        -e 's/^error_log.*/error_log = \/dev\/stderr/' \
-        -e 's/^;error_log.*/error_log = \/dev\/stderr/' \
-        -e 's/^memory_limit.*/memory_limit = 32M/' \
-        -e 's/post_max_size = 8M/post_max_size = 4M/' \
-        -e 's/;?default_charset = "UTF-8"/default_charset = "UTF-8"/' \
-        -e 's/;?max_input_vars = 1000/max_input_vars = 10000/' \
-        -e 's/;?date.timezone =/date.timezone = UTC/' \
+        -e 's/^;catch_workers_output.*/catch_workers_output = yes/g' \
+        -e 's/^error_log.*/error_log = \/dev\/stderr/g' \
+        -e 's/^;error_log.*/error_log = \/dev\/stderr/g' \
+        -e 's/^memory_limit.*/memory_limit = 32M/g' \
+        -e 's/post_max_size = 8M/post_max_size = 4M/g' \
+        -e 's/;?default_charset = "UTF-8"/default_charset = "UTF-8"/g' \
+        -e 's/;?max_input_vars = 1000/max_input_vars = 10000/g' \
+        -e 's/;?date.timezone =/date.timezone = UTC/g' \
+        -e 's/;?session.upload_progress.enabled.*/session.upload_progress.enabled = Off/g' \
         -i $PHP_INI_DIR/php.ini \
     && \
     echo -e "[safe]\n\tdirectory = *" > /var/www/.gitconfig \
