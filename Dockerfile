@@ -155,6 +155,7 @@ RUN cd /var/www/studio \
         -e 's/;?max_input_vars = 1000/max_input_vars = 10000/g' \
         -e 's/;?date.timezone =/date.timezone = UTC/g' \
         -e 's/;?session.upload_progress.enabled.*/session.upload_progress.enabled = Off/g' \
+        -e 's/;?fatal_error_backtraces.*/fatal_error_backtraces = Off/g' \
         -i $PHP_INI_DIR/php.ini \
     && \
     echo -e "[safe]\n\tdirectory = *" > /var/www/.gitconfig \
