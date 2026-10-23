@@ -1383,7 +1383,8 @@ class Sql
             return $r;
         }
 
-        return false;
+        // if no change is found, no $sql is filled, then no change is necessary -- however, unlike insert/delete it should not fail
+        return true;
     }
 
     public function delete(Model $M, ?object $conn=null): mixed
