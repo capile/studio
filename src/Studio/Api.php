@@ -31,6 +31,7 @@ class Api extends SchemaObject
     const REQ_SCOPE='scope';
     const REQ_FIELDS='fields';
     const REQ_ORDER='order';
+    const REQ_ORDER_DESC='!';
     const REQ_PAGE='p';
     const H_STATUS='status';
     const H_STATUS_CODE='status-code';
@@ -3466,7 +3467,7 @@ class Api extends SchemaObject
                 $scope = $nscope;
                 unset($nscope);
             }
-            if($order && preg_match('/^(\!)?(.+)$/', $order, $m) && isset($scope[$m[2]])) {
+            if($order && preg_match('/^('.preg_quote(static::REQ_ORDER_DESC).')?(.+)$/', $order, $m) && isset($scope[$m[2]])) {
                 $fn = $scope[$m[2]];
                 if(is_array($fn)) $fn=$fn['bind'];
                 if(strpos($fn, ' ')!==false) $fn = preg_replace('/(\s+as)?\s+[^\s]+$/', '', $fn);
