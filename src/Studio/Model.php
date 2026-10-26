@@ -2296,11 +2296,13 @@ class Model implements ArrayAccess, Iterator, Countable
         $max = (isset($o['hits']))?($o['hits']):(20);
 
         $sf = null;
-        if(!is_array($link) && isset(S::$variables['Interface']) && is_object(S::$variables['Interface'])) {
-            $I = S::$variables['Interface'];
+        $I = null;
+        if(isset(S::$variables['Api']) && is_object(S::$variables['Api'])) $I = S::$variables['Api']; 
+        else if(isset(S::$variables['Interface']) && is_object(S::$variables['Interface'])) $I = S::$variables['Interface']; 
+        if(!is_array($link) && $I) {
             $sf = App::request('get', $I::REQ_ORDER);
             if($sf && strpos($sf, ',')) $sf = substr($sf, 0, strpos($sf, ','));
-            if($sf && substr($sf, 0, 1)=='!') {
+            if($sf && $I::REQ_ORDER_DESC && substr($sf, 0, strlen($I::REQ_ORDER_DESC))==$I::REQ_ORDER_DESC) {
                 $sd = 'desc';
                 $sf = substr($sf,1);
             } else {
@@ -2391,7 +2393,7 @@ class Model implements ArrayAccess, Iterator, Countable
                 if(isset($I)) {
                     $sc = $label;
                     $soa = $I::REQ_ORDER.'='.rawurlencode($sc);
-                    $sod = $I::REQ_ORDER.'=!'.rawurlencode($sc);
+                    $sod = $I::REQ_ORDER.'='.rawurlencode($I::REQ_ORDER_DESC).rawurlencode($sc);
                 } else {
                     $sc = $so;
                     $soa = 'o='.urlencode($so).'&d=asc';
