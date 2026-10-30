@@ -957,7 +957,7 @@ class Storage implements ClientCredentialsInterface, UserCredentialsInterface, A
             'user'=>$user_id,
             'options' => [
                 'client_id'=>$client_id,
-                'redirect_uri'=>$reirect_uri,
+                'redirect_uri'=>$redirect_uri,
             ],
             'expires' => date('Y-m-d H:i:s', time()+$timeout),
         ];
