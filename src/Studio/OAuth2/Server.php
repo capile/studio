@@ -22,6 +22,9 @@ use OAuth2\OpenID\ResponseType\IdToken;
 use Studio\OAuth2\OpenID\AuthorizeController as OpenIDAuthorizeController;
 use OAuth2\Storage\JwtAccessToken as JwtAccessTokenStorage;
 use OAuth2\ResponseType\JwtAccessToken;
+use Studio\Exception\AppException;
+use Exception;
+use LogicException;
 
 
 class Server extends \OAuth2\Server
@@ -140,7 +143,7 @@ class Server extends \OAuth2\Server
             try {
                 $cn = get_called_class();
                 static::$instance = new $cn($S, $cfg, $grantTypes, $responseTypes, $tokenType, $Scope);
-            } catch(\Exception $e) {
+            } catch(Exception $e) {
                 S::log('[ERROR] While fetching Oauth2 Server: '.$e->getMessage());
             }
         }
@@ -295,7 +298,7 @@ class Server extends \OAuth2\Server
             $request = Request::createFromGlobals();
             $this->response = new Response();
             $this->handleTokenRequest($request, $this->response);
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             S::log('[WARNING] Failed token request: '.$e->getMessage());
         }
         if(S::$log > 1)S::log('[DEBUG] OAuth2 token request: '.S::requestUri(), "\n{$this->response}");
@@ -335,7 +338,7 @@ class Server extends \OAuth2\Server
                 $this->response->send();
                 die;
             }
-        } catch(\Exception $e) {
+        } catch(Exception $e) {
             S::log('[ERROR] Could not run user authorization: '.$e->getMessage()."\n{$e}");
         }
 
@@ -396,7 +399,7 @@ class Server extends \OAuth2\Server
     protected function createDefaultAuthorizeController()
     {
         if (!isset($this->storages['client'])) {
-            throw new \LogicException('You must supply a storage object implementing \OAuth2\Storage\ClientInterface to use the authorize server');
+            throw new LogicException('You must supply a storage object implementing \OAuth2\Storage\ClientInterface to use the authorize server');
         }
         if (0 == count($this->responseTypes)) {
             $this->responseTypes = $this->getDefaultResponseTypes();
@@ -455,7 +458,7 @@ class Server extends \OAuth2\Server
     protected function createDefaultJwtAccessTokenStorage()
     {
         if (!isset($this->storages['public_key'])) {
-            throw new \LogicException('You must supply a storage object implementing OAuth2\Storage\PublicKeyInterface to use crypto tokens');
+            throw new LogicException('You must supply a storage object implementing OAuth2\Storage\PublicKeyInterface to use crypto tokens');
         }
         $tokenStorage = null;
         if (!empty($this->config['store_encrypted_token_string']) && isset($this->storages['access_token'])) {
@@ -492,7 +495,7 @@ class Server extends \OAuth2\Server
     protected function createDefaultJwtAccessTokenResponseType()
     {
         if (!isset($this->storages['public_key'])) {
-            throw new \LogicException('You must supply a storage object implementing OAuth2\Storage\PublicKeyInterface to use crypto tokens');
+            throw new LogicException('You must supply a storage object implementing OAuth2\Storage\PublicKeyInterface to use crypto tokens');
         }
 
         $tokenStorage = null;
