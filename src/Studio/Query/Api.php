@@ -230,8 +230,9 @@ class Api
         return $this->_options;
     }
 
-    public function disconnect($n=''): void
+    public function disconnect(?string $n=''): void
     {
+        if(!is_string($n)) $n = (string)$n;
         if(($c=$this->config('cookieJar')) && is_string($c)) {
             if(file_exists($c)) @unlink($c);
             $this->config('cookieJar', true);
@@ -242,8 +243,9 @@ class Api
         }
     }
 
-    public function connect($n='', $exception=true, $tries=3)
+    public function connect(?string $n='', bool $exception=true, int $tries=3): mixed
     {
+        if(!is_string($n)) $n = (string)$n;
         $this->_cid = $n;
         if(isset(self::$expires[$n]) && time()>self::$expires[$n]) {
             if(isset(self::$C[$n])) {
@@ -290,8 +292,9 @@ class Api
         return self::$C[$n];
     }
 
-    public function requestToken($n='', $exception=true)
+    public function requestToken(?string $n='', bool $exception=true): string|false
     {
+        if(!is_string($n)) $n = (string)$n;
         $ckey = $n.'/req-token';
         if(!($url=$this->config('token_endpoint')) || !isset(self::$C[$n]) || !($conn = curl_copy_handle(self::$C[$n]))) return false;
         $ckey .= '-'.sha1($url);
@@ -319,6 +322,8 @@ class Api
             if($R && isset($R['expires']) && is_int($R['expires'])) {
                 self::$expires[$n] = $R['expires']; // expire this connection
             }
+        } else if($R) {
+            $R = null;
         }
         if(!$R) {
             // try to fetch a new access_token based on the refresh token
@@ -343,10 +348,13 @@ class Api
         }
 
         $this->authorizationHeader('Bearer',  $R['access_token']);
+
+        return $R['access_token'];
     }
 
-    public function refreshToken($n='', $R=null, $exception=true)
+    public function refreshToken(?string $n='', ?array $R=null, bool $exception=true): array|false
     {
+        if(!is_string($n)) $n = (string)$n;
         $ckey = $n.'/req-token';
         if($url=$this->config('token_endpoint')) {
             $ckey .= '-'.sha1($url);
@@ -379,8 +387,9 @@ class Api
         return $R;
     }
 
-    public function tokenRequest($n='', $grant_type='client_credentials', $exception=true)
+    public function tokenRequest(?string $n='', $grant_type='client_credentials', $exception=true): ?array
     {
+        if(!is_string($n)) $n = (string)$n;
         // try to fetch a new access_token based on the refresh token
         if(!($url=$this->config('token_endpoint')) || !isset(self::$C[$n]) || !($conn = curl_copy_handle(self::$C[$n]))) return false;
         $d = [
